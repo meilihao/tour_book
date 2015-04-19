@@ -39,7 +39,7 @@
 
 ### 以centos 7 x64为例
 
-1. 下载名为[liteidex27.1.linux-64.tar.bz2](http://sourceforge.net/projects/liteide/files/X27.1/)的版本;如果已安装了qt4.8,那下载[liteidex27.1.linux-64-system-qt4.8.tar.bz2]()即可
+1. 下载名为[liteidex27.1.linux-64.tar.bz2](http://sourceforge.net/projects/liteide/files/X27.1/)的版本;如果已安装了qt4.8,那下载[liteidex27.1.linux-64-system-qt4.8.tar.bz2]()即可[**推荐**]
 2. 安装liteide
 
 	```shell
@@ -50,10 +50,14 @@
     
 #### FAQ
 
-1. `error while loading shared libraries: libQtGui.so.4: cannot open shared object file: No such file or directory`
+1 . `error while loading shared libraries: libQtGui.so.4: cannot open shared object file: No such file or directory`
 
 >`export LD_LIBRARY_PATH=~/opt/liteide/lib/liteide:$LD_LIBRARY_PATH`
 
-2. `error while loading shared libraries: libpng12.so.0: cannot open shared object file: No such file or directory`
+2 . `error while loading shared libraries: libpng12.so.0: cannot open shared object file: No such file or directory`
 
 >`sudo yum install libpng12`,缺少so时可在[pkgs.org](http://pkgs.org)查询
+
+3 . 安装qt4.8
+
+>执行`sudo yum install qt`即可
