@@ -1,6 +1,6 @@
-## FAQ
+### FAQ
 
-1 . 显示sql历史
+#### 显示sql历史
 
 ```shell
 # 方法1:
@@ -14,4 +14,10 @@ show variables like '%general_log%';
 set global general_log=on;
 # 注意global general_log_file在Linux中只能设置到 /tmp 或 /var 文件夹下，设置其他路径会报错
 set global general_log_file='/var/log/mysql/mysql.log';
+```
+
+#### 修改用户密码
+
+```shell
+mysqladmin -u 用户名 -p password "新密码"
 ```
