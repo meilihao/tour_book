@@ -10,6 +10,7 @@ $ sensors
 #### ubuntu14.04 风扇狂转
 
 ```shell
+# thinkpad T430
 # 方法1(**推荐**):
 # 安装lm-sensors : http://kr.archive.ubuntu.com/ubuntu/pool/universe/l/lm-sensors/lm-sensors_3.3.4-2ubuntu1_amd64.deb
 # 安装fancontrol : http://kr.archive.ubuntu.com/ubuntu/pool/universe/l/lm-sensors/fancontrol_3.3.4-2ubuntu1_all.deb
