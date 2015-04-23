@@ -12,7 +12,7 @@
 	```shell
 	tar -zxvf haroopad-v0.13.1-x64.tar.gz
 	tar -zxvf data.tar.gz  # 程序主体,相关路径都已规划好
-	sudo cp ./usr /
+	sudo cp -r ./usr /
 
 	tar zxf control.tar.gz
 	chmod 755 postinst
