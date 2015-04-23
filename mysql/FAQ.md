@@ -21,3 +21,28 @@ set global general_log_file='/var/log/mysql/mysql.log';
 ```shell
 mysqladmin -u 用户名 -p password "新密码"
 ```
+
+#### 查看表结构
+
+	desc table_name;
+
+#### 查看建表语句
+
+	show create table table_name;
+
+#### 查看schema(数据库)下的所有table
+
+	show tables;
+
+#### 查看实例下的所有数据库
+
+	show databases;
+
+#### 切换scheme
+
+	use scheme_name;
+
+#### 查看mysql变量
+
+	show variables;
+
