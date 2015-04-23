@@ -22,3 +22,7 @@
 ## 显示内建命令的help信息
 
     help command
+
+## 标准输入、输出和错误
+
+	0 – stdin (standard input)，1 – stdout (standard output)，2 – stderr (standard error)
