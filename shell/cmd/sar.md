@@ -56,6 +56,7 @@ Linux 3.16.0-34-generic (localhost) 	2015年04月20日 	_x86_64_	(8 CPU)
 
 1 . `无法打开 /var/log/sysstat/saXX: 没有那个文件或目录 Please check if data collecting is enabled in /etc/default/sysstat`
 
->方法1(**推荐**):修改`/etc/default/sysstat`文件， 将 ENABLED 设置为 true,再重启系统.
+>方法1(**ubuntu推荐**):修改`/etc/default/sysstat`文件， 将 ENABLED 设置为 true,再重启系统.
 >方法2:执行` sudo sar -o XX`创建文件
+>方法3(fedora22):执行`sudo systemctl enable sysstat && sudo systemctl start sysstat`创建文件
 
