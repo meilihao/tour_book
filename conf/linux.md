@@ -28,3 +28,13 @@ http://packages.ubuntu.com/,推荐
 查找Debian的deb包地址：
 https://www.debian.org/distrib/packages
 
+### 美化
+
+#### 安装雅黑字体
+
+```shell
+# 从网上下载字体或其他windows系统上获取
+# 用"字体查看器"打开并安装字体,此时默认安装位置是'/home/$USER/.local/share/fonts/'
+# 用工具"Ubuntu Tweak"-"调整"-"字体"中修改相关默认字体即可.
+```
+
