@@ -17,7 +17,7 @@
 
 用于查找rpm包：
 http://rpm.pbone.net/
-http://rpmfind.net/,推荐
+[rpmfind.net](http://rpmfind.net/),推荐
 
 Fedora的koji下的rpm包：
 http://koji.fedoraproject.org/koji/
