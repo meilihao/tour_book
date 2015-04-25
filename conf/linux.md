@@ -27,4 +27,19 @@ http://packages.ubuntu.com/,推荐
 
 查找Debian的deb包地址：
 https://www.debian.org/distrib/packages
+### 专业名词
 
+- `fedora rawhide` ： 简单的说，Rawhide就是Fedora的滚动更新版，但这与 Gentoo、ArchLinux 等又不同，因为这个分支指向的是当前开发版（如同 FreeBSD 的 CURRENT 分支），所以极其不稳定。需要注意的是，这不是测试版，而是开发版.
+
+### so
+
+- `libwbclient.so.0`
+
+```shell
+# Fedora22,运行“系统设置”程序
+$ gnome-control-center --overview
+gnome-control-center: error while loading shared libraries: libwbclient.so.0: cannot open shared object file: No such file or directory
+# dnf update后出现这个error，应该是/usr/lib/libwbclient.so.0不存在引起的.
+# sudo dnf install libwbclient时却提示已安装，通过find命令找到其已存在于/usr/lib/samba/wbclient/libwbclient.so.0.12,作软连接即可解决。
+$ sudo ln -s  /usr/lib/samba/wbclient/libwbclient.so.0.12 /usr/lib/libwbclient.so.0
+```
