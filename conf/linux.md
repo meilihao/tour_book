@@ -5,6 +5,20 @@
 1 . [live-usb-install](http://sourceforge.net/projects/liveusbinstall/files/?source=navbar)
 2 . [UNetbootin](http://sourceforge.net/projects/unetbootin/files/UNetbootin/),推荐
 
+#### 解压缩
+
+- Fedora22归档管理器解压rar报错`Parsing filters is unsupported`
+
+	```shell
+wget http://www.rarsoft.com/rar/rarlinux-x64-5.2.1.tar.gz
+tar zxvf rarlinux-x64-5.2.1.tar.gz
+cd rar
+make
+make install
+# 如果在32位系统上安装了64位的软件，运行unrar命令的时候，会提示如下错误:
+# bash: /usr/local/bin/rar: cannot execute binary file
+```
+
 ### 查询
 
 #### 内核模块参数
