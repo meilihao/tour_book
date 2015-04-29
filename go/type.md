@@ -76,7 +76,6 @@ func main() {
 // (*main.String)(nil),true
 // false
 // <nil>,true
-
 ```
 
 ## 接口查询
@@ -227,3 +226,120 @@ if str, ok := value.(string); ok {
 参考:
 
 - [golang反射规则使用详解](http://mikespook.com/2011/09/%E5%8F%8D%E5%B0%84%E7%9A%84%E8%A7%84%E5%88%99/)
+
+### 根据reflect.Value.Type()初始化变量
+
+```go
+package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+func main() {
+	var a []int  //未初始化
+
+	var value reflect.Value = reflect.ValueOf(&a)
+
+	value = reflect.Indirect(value) //使指针指向内存地址
+	fmt.Println(value.Kind())
+    //>>slice
+
+    fmt.Println(value.Interface().([]int) == nil)
+    //>>true
+
+	value = reflect.New(value.Type()) //初始化后返回指针
+	fmt.Println(value.Kind())
+	//>>ptr
+
+	value = reflect.Indirect(value) //使指针指向内存地址
+	fmt.Println(value.Kind())
+	//>>slice
+}
+```
+
+### reflect->struct 的例子
+
+```go
+package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+type User struct {
+	Name string
+}
+
+func (u *User) Hello() string {
+	return "hello"
+}
+func (u *User) ShakeHand(name string) {
+	fmt.Printf("Shake hand with %s\n", name)
+}
+func main() {
+	u := &User{Name: "xxxx"}
+	value := reflect.ValueOf(u)
+	fmt.Printf("%s\n", value.Kind()) //Kind()获取底层结构
+
+	value1 := reflect.Indirect(value) //获取内存里的实际值
+	typ1 := value1.Type()
+	fmt.Println(typ1.NumField()) //值包含字段的个数
+	for i := 0; i < typ1.NumField(); i++ {
+		fmt.Printf("Field %d: %s [%s]: %v\n",
+			i, typ1.Field(i).Name, value1.Field(i).Type(), value1.Field(i))
+	}
+	fmt.Println(value1.CanSet())                              //判断值是否可设置性,反射时传入指针即为可设置
+	value1.FieldByName("Name").Set(reflect.ValueOf("hellos")) //设置字段
+	fmt.Println(value1.Interface())//从 reflect.Value 可以使用 Interface 方法还原接口值,即方法高效的打包类型和值信息到接口表达中，并返回这个结果
+	value1.FieldByName("Name").SetString("hellos2")
+	fmt.Println(value1.Interface())
+	fmt.Println("-------------------")
+
+	typ := value.Type()
+	fmt.Println(typ.NumMethod()) //值的方法个数
+
+	for i := 0; i < value.NumMethod(); i++ {
+		fmt.Printf("method[%d]%s\n", i, typ.Method(i).Name) //值的方法的名称
+	}
+	fmt.Println("-------------------")
+
+	b := value.MethodByName("Hello").Call(nil)
+	fmt.Printf("%T\n", b) //golang函数可多值返回的原因
+	fmt.Println(b[0])
+	fmt.Println("-------------------")
+
+	params := make([]reflect.Value, 1)
+	params[0] = reflect.ValueOf("18")
+	c := value.MethodByName("ShakeHand").Call(params) //反射调用方法
+	fmt.Printf("%d", len(c))
+}
+/*
+ptr
+1
+Field 0: Name [string]: xxxx
+true
+{hellos}
+{hellos2}
+-------------------
+2
+method[0]Hello
+method[1]ShakeHand
+-------------------
+[]reflect.Value
+hello
+-------------------
+Shake hand with 18
+0
+*/
+```
+
+> [reflect.Indirect和v.Elem()比较](http://stackoverflow.com/questions/24318389/golang-elem-vs-indirect-in-the-reflect-package)
+>
+> If a reflect.Value is a pointer, then v.Elem() is equivalent to reflect.Indirect(v). If it is not a pointer, then they are not equivalent:
+> 
+> If the value is an interface then reflect.Indirect(v) will return the same value, while v.Elem() will return the contained dynamic value.
+> If the value is something else, then v.Elem() will panic.
+> The reflect.Indirect helper is intended for cases where you want to accept either a particular type, or a pointer to that type. One example is the database/sql conversion routines: by using reflect.Indirect, it can use the same code paths to handle the various types and pointers to those types.

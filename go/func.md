@@ -266,3 +266,59 @@ CopyFile success:  8
 4 3 2 1 0
 */
 ```
+
+## 函数作为变量
+
+在go中函数也是一种变量，我们通过type定义这种变量的类型。拥有相同参数和相同返回值的函数属于同一种类型。
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+//声明函数类型 t1,t2
+type t1 func(*int)
+type t2 func(*int) int
+
+//t的类型为t1
+func method1(i int, t t1) {
+	t(&i)
+}
+
+//声明func(*int)类型的函数
+func test1(m *int) {
+	fmt.Println(*m)
+}
+
+//t的类型为t2
+func method2(i int, t t2) {
+	//t的参数是一个指针类型的int,返回一个int类型
+	r := t(&i)
+	fmt.Println(r)
+}
+
+//声明(func(*int) int)类型的函数
+func test2(n *int) int {
+	return *n
+}
+
+func main() {
+	//调用 test1为类型为t1的函数,函数当做值来传递
+	method1(100, test1)
+	//调用,test2为类型为t2的函数
+	method2(10, test2)
+	
+	x:=t1(func(i *int){
+		fmt.Println("this is ",*i)
+	})
+               
+	y:=func(i *int){
+		fmt.Println("this is ",*i)
+	}
+	
+	method1(100,x)
+	method1(101,y)
+}
+```
