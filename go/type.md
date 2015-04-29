@@ -34,6 +34,51 @@ empty = w
 
 **一个很重要的细节是接口内部的对总是 (value, 实际类型) 的格式，而不会有 (value, 接口类型) 的格式。接口不能保存接口值。**
 
+### interface何时为nil
+
+```golang
+package main
+
+import "fmt"
+
+type Stringer interface {
+	String() string
+}
+type String struct {
+	data string
+}
+
+func (s *String) String() string {
+	return s.data
+}
+
+func GetString() *String {
+	return nil
+}
+
+func CheckString(s Stringer) bool {
+	//interface底层实际上是一个结构体，包括两个成员，一个是指向数据的指针，一个包含了成员的类型信息,两者同时为nil时接口才是nil
+	//此处接口s里存储的类型明显不为nil,而是*String
+	return s == nil
+}
+
+func main() {
+	fmt.Printf("%#v,%t\n", GetString(), GetString() == nil)
+	println(CheckString(GetString()))
+	var a interface{}
+
+    //nil可看成是<nil>(nil)(空类型的空指针)
+    //nil只能赋值给pointer,channel,func,interface,map,slice类型的变量,详见http://pkg.golang.org/pkg/builtin/#Type
+	fmt.Printf("%#v,%t\n", a, a == nil)
+}
+
+// Output:
+// (*main.String)(nil),true
+// false
+// <nil>,true
+
+```
+
 ## 接口查询
 
 接口查询是否成功，要在运行期才能够确定。他不像接口的赋值，编译器只需要通过静态类型检查即可判断赋值是否可行。
@@ -176,3 +221,9 @@ if str, ok := value.(string); ok {
     return str.String()
 }
 ```
+
+## reflect/反射
+
+参考:
+
+- [golang反射规则使用详解](http://mikespook.com/2011/09/%E5%8F%8D%E5%B0%84%E7%9A%84%E8%A7%84%E5%88%99/)
