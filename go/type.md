@@ -351,9 +351,108 @@ Shake hand with 18
 >
 > The reflect.Indirect helper is intended for cases where you want to accept either a particular type, or a pointer to that type. One example is the database/sql conversion routines: by using reflect.Indirect, it can use the same code paths to handle the various types and pointers to those types.
 
-## 基本类型
+## Go：保留关键字及基本数据类型
 
-### 字符串/string
+### 命名规范
 
-字符串在 Go 中是 UTF-8 的由双引号(`"`)包裹的字符序列。如果你使用单引号(`'`)则
-表示一个字符(UTF-8 编码)——这种在 Go 中 不是 string。
+在Go中几乎所有的东西都是有名字或标识符的（类似于C家族语言），且它们是对大小写敏感的。相应的规则如下：
+
+- 必须以字符开头（所有Unicode UTF-8中的字符 或 下划线“_”）,后面可以跟0或多个字符或数字，如：x56, _x32等。
+- 不能以数字开头或系统保留关键字和操作符。如：1ab, case, a+b。
+- 下划线"_"本身在Go中是一个特殊的标识符，称为空标识符。可以代表任何其它的标识符，但是它对应的值会被忽略。所以仅能被作为占位符使用。
+
+同时，在Go中也支持匿名，如匿名变量、自定类型和函数。
+
+### 系统关键字或保留字
+
+在Go中，为了简化代码编译过程中对代码的解析，其定义的保留关键字只有25个。详见如下：
+
+break 	default 	func 	interface 	select
+case 	defer 	go 	map 	struct
+chan 	else 	goto 	package 	switch
+const 	fallthrough 	if 	range 	type
+continue 	for 	import 	return 	var
+
+除了保留关键字外，外另还提供了36个预定的标识符，其包括基础数据类型和系统内嵌函数。
+
+append 	bool 	byte 	cap 	close 	complex
+complex64 	complex128 	uint16 	copy 	false 	float32
+float64 	imag 	int 	int8 	int16 	uint32
+int32 	int64 	iota 	len 	make 	new
+nil 	panic 	uint64 	print 	println 	real
+recover 	string 	true 	uint 	uint8 	uintprt
+
+#### 内嵌数据类型
+
+- Boolean类型：
+
+		系统为此类型定义了两个常量：true 和 false.
+        初始默认值为：false。
+        格式化输出时的格式字符串为：%t
+
+- Byte类型：
+
+    	为uint8的别外，即只有8个bit。
+
+- 数字类型：
+
+ - 整数类型：
+		有符号整数：int8， int16， int32， int64和int（此类型会根据特定的平台可能会有所不同）
+        无符号整数：uint8， uint16， uint32， uint64和uint （此类型会根据特定的平台可能会有所不同）
+        初始默认值为：0。
+        格式化输出时的格式字符串为：%d，输出16进制：%x或%X；8进制：%o。
+
+ - 浮点类型：float32 和 float64
+        初始默认值为：0.0。
+        注意：这里没有float的类型，且两个浮点数比较时不能使用== 和 !=
+        格式化输出时的格式字符串为：%g，%f则对应浮点类型的指针；%e则对应科学计数法办输出；%n.mg用于指定小数位输出。
+
+ - 复数类型：
+        complex64：实数与虚数都是32位
+        complex128： 实数与虚数都是64位
+        real（c）：获取实数部分
+        imag（c）：获取虚数部分
+        格式化输出时的格式字符串为：%v， 另外也可以使用%f输出实部和虚部。
+
+- 字符类型：
+	  严格的说，在Go中没有此类型类型，它是特殊的整数类型,包含在单引号中。
+      它对应uint8类型，对传统的ASCII码对应，占1byte。
+      同时也支持Unicode（UTF-8）的编码，所以它可能点多个byte，被称为Unicode code points或runes。此时它对应的rune(int32)的数字类型。
+      Unicode的字符通常以16进制的形式表示（\u+4或\U+8）
+      格式化输出时的格式字符串为：%c；%v或%d则显示对应的整数值；%U则输出：U+hhhh
+
+- 字符串类型：
+      一串UTF-8编码格式的字符序列（每个字符可能占1~4byte）
+      包含在双引号中，只能在独立的一行内。（Interpreted string）
+      包含在反引号中，可以跨越多行。（raw string）
+      注：Go所有的代码都是UTF-8格式，所以不存在对字符进行编码和解码。
+      它是不可变的值类型，所以不能直接修改字符串。
+    指针类型：
+      长度和uint一样
+      各种数据类型都有对应的指针类型。
+      声明方法类似于C中对指针的声明： *type。
+
+
+### 操作符
+
+- 逻辑运算符：
+      与：&&，或：||，非：！。
+      ==，!=，<，>，<=，>=
+- 位运算符：
+      按位与：&，按位或：|，按位异或：^
+      左移：<<，右移：>>。（空位补0）
+      位清除:&^ 
+- 算术运算符：
+      +，-，*，/。
+      取模：%
+      简化操作：-=，*=， +=， %=
+      ++， --。（只能在数字变量的后面，不能放在开头，这是与C，Java不一样的地方）
+- 优先级：（7 -> 1：由高到低）
+
+	![operators-precedence.png](images/operators-precedence.png)
+
+其他参考:
+
+- [Go 编程语言规范(英文)](http://golang.org/ref/spec)
+- [Go 编程语言规范(中文)](http://ilovers.sinaapp.com/doc/golang-specification.html)
+
