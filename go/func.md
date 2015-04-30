@@ -304,21 +304,47 @@ func test2(n *int) int {
 	return *n
 }
 
+func (f t1) PrintNum(i *int){
+	f(i)
+}
+
+type P interface{
+	PrintNum(*int)
+}
+
 func main() {
 	//调用 test1为类型为t1的函数,函数当做值来传递
-	method1(100, test1)
+	method1(11, test1)
 	//调用,test2为类型为t2的函数
-	method2(10, test2)
-	
-	x:=t1(func(i *int){
-		fmt.Println("this is ",*i)
-	})
-               
-	y:=func(i *int){
+	method2(12, test2)
+
+	x:=func(i *int){
 		fmt.Println("this is ",*i)
 	}
-	
-	method1(100,x)
-	method1(101,y)
+	fmt.Printf("%T,%#v\n",x,x)
+
+	y:=t1(x)
+	fmt.Printf("%T,%#v\n",y,y)
+
+	method1(101,x)
+	method1(102,y)
+
+	n:=1000
+	y.PrintNum(&n)
+    //x.PrintNum(&n) //x.PrintNum undefined (type func(*int) has no field or method PrintNum)
+
+	var z P
+	z=y
+	z.PrintNum(&n)
 }
+/*
+11
+12
+func(*int),(func(*int))(0x4011e0)
+main.t1,(main.t1)(0x4011e0)
+this is  101
+this is  102
+this is  1000
+this is  1000
+*/
 ```
