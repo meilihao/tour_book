@@ -325,6 +325,7 @@ func main() {
 
 	y:=t1(x)
 	fmt.Printf("%T,%#v\n",y,y)
+    //其实就是类似于int和type Myint int的区别
 
 	method1(101,x)
 	method1(102,y)
