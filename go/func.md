@@ -283,7 +283,7 @@ type t1 func(*int)
 type t2 func(*int) int
 
 //t的类型为t1
-func method1(i int, t t1) {
+func method1(i int, t t1) { //回调函数
 	t(&i)
 }
 
