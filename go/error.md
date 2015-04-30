@@ -16,3 +16,7 @@ func main() {
 	fmt.Println(store)
 }
 ```
+
+### `not enough arguments in call to %func%`
+
+可能使用了静态类型去调用方法而不是其声明的变量去调用方法
