@@ -68,3 +68,36 @@ $ sudo ln -s  /usr/lib/samba/wbclient/libwbclient.so.0.12 /usr/lib/libwbclient.s
 # 用"字体查看器"打开并安装字体,此时默认安装位置是'/home/$USER/.local/share/fonts/'
 # 用工具"Ubuntu Tweak"-"调整"-"字体"中修改相关默认字体即可.
 ```
+
+### 虚拟机
+
+#### visualbox
+
+- Ubuntu 14.04 `不能为虚拟电脑 Ubuntu 打开一个新任务.VT-x is disabled in the BIOS. (VERR_VMX_MSR_VMXON_DISABLED).`
+
+> 解决方法：
+> 1、移除当前不能打开的虚拟镜像
+> 2、新建虚拟电脑,选择使用已有的虚拟硬盘文件(即刚才移除的)
+
+### 硬件信息
+
+#### cpu
+
+	#cpu信息
+	cat /proc/cpuinfo
+    #cpu当前运行模式:32/64
+    getconf LONG_BIT
+
+#### 内存
+
+	cat /proc/meminfo
+
+#### linux发行版本
+
+	cat /etc/issue
+
+#### 获取有关硬件方面的信息
+
+**DMI (Desktop Management Interface)**就是帮助收集电脑系统信息的管理系统，DMI信息的收集必须在严格遵照SMBIOS规范的前提下进行。
+
+[Dmidecode命令详解](http://www.ha97.com/4120.html)
