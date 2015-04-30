@@ -350,3 +350,10 @@ Shake hand with 18
 >-  If the value is something else, then v.Elem() will panic.
 >
 > The reflect.Indirect helper is intended for cases where you want to accept either a particular type, or a pointer to that type. One example is the database/sql conversion routines: by using reflect.Indirect, it can use the same code paths to handle the various types and pointers to those types.
+
+## 基本类型
+
+### 字符串/string
+
+字符串在 Go 中是 UTF-8 的由双引号(`"`)包裹的字符序列。如果你使用单引号(`'`)则
+表示一个字符(UTF-8 编码)——这种在 Go 中 不是 string。
