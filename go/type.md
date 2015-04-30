@@ -351,6 +351,71 @@ Shake hand with 18
 >
 > The reflect.Indirect helper is intended for cases where you want to accept either a particular type, or a pointer to that type. One example is the database/sql conversion routines: by using reflect.Indirect, it can use the same code paths to handle the various types and pointers to those types.
 
+### reflect -> slice
+
+```go
+package main
+
+import (
+	"errors"
+	"fmt"
+	"reflect"
+)
+
+type User struct {
+	Name string
+}
+
+func main() {
+	c := make([]*User, 0)
+	err := test(&c)
+	fmt.Println("err is ", err)
+}
+
+func test(i interface{}) error {
+
+	v := reflect.ValueOf(i)
+	t := v.Type()
+
+	if t.Kind() != reflect.Ptr {
+		return errors.New("Need pointer")
+	} else if v.IsNil() {
+		return errors.New("Not nil") //c := make([]*User, 0);p := &c;p = nil,即传入指针为nil时
+	} else {
+		t = t.Elem()
+	}
+
+	if t.Kind() != reflect.Slice {
+		return errors.New("Need slice of struct")
+	} else {
+		//返回该类型的元素类型，如果该类型的Kind不是Array、Chan、Map、Ptr或Slice，会panic
+		t = t.Elem()
+	}
+	fmt.Printf("%#v\n", t.String())
+	fmt.Printf("%#v,%t\n", t.Name(), t.Kind() == reflect.Ptr) //t还是指针,Name()无法使用
+	fmt.Printf("---\n")
+
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+		fmt.Printf("%#v\n", t.String())
+		fmt.Printf("%#v\n", t.Name())
+	}
+	if t.Kind() != reflect.Struct {
+		return errors.New("Need struct")
+	}
+	return nil
+}
+/*
+"*main.User"
+"",true
+---
+"main.User"
+"User"
+err is nil
+*/
+```
+
+
 ## Go：保留关键字及基本数据类型
 
 ### 命名规范
