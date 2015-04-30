@@ -300,7 +300,7 @@ func main() {
 	fmt.Println(value1.CanSet())                              //判断值是否可设置性,反射时传入指针即为可设置
 	value1.FieldByName("Name").Set(reflect.ValueOf("hellos")) //设置字段
 	fmt.Println(value1.Interface())//从 reflect.Value 可以使用 Interface 方法还原接口值,即方法高效的打包类型和值信息到接口表达中，并返回这个结果
-	value1.FieldByName("Name").SetString("hellos2")
+	value1.FieldByName("Name").SetString("hellos2") //set struct的私有字段将panic
 	fmt.Println(value1.Interface())
 	fmt.Println("-------------------")
 
