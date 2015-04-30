@@ -42,6 +42,19 @@ http://packages.ubuntu.com/,推荐
 查找Debian的deb包地址：
 https://www.debian.org/distrib/packages
 
+#### 公钥认证
+
+```shell
+# 导入公钥
+rpm --import /path/to/key_file
+# 显示所有已经导入的gpg格式的公钥
+rpm -qa gpg-*
+# 显示某个密钥的详细信息
+rpm -qi gpg-pubkey-NAME
+# 检查包的公钥认证：安装过程中会自动执行
+rpm -K /path/to/package_file
+```
+
 ### 专业名词
 
 - `fedora rawhide` ： 简单的说，Rawhide就是Fedora的滚动更新版，但这与 Gentoo、ArchLinux 等又不同，因为这个分支指向的是当前开发版（如同 FreeBSD 的 CURRENT 分支），所以极其不稳定。需要注意的是，这不是测试版，而是开发版.
@@ -101,3 +114,40 @@ $ sudo ln -s  /usr/lib/samba/wbclient/libwbclient.so.0.12 /usr/lib/libwbclient.s
 **DMI (Desktop Management Interface)**就是帮助收集电脑系统信息的管理系统，DMI信息的收集必须在严格遵照SMBIOS规范的前提下进行。
 
 [Dmidecode命令详解](http://www.ha97.com/4120.html)
+
+### FAQ
+
+- fedora 22 dnf update时报`google-chrome-stable-xxx.i386.rpm 的公钥没有安装`
+
+	```shell
+$ cd /etc/yum.repos.d
+$ sudo vim google-chrome.repo
+# 在文件末尾追加“gpgkey=https://dl-ssl.google.com/linux/linux_signing_key.pub”，再重新更新即可
+# 或者设置gpgcheck=0，关闭检查也可(不推荐)
+```
+
+- fedora 22 运行goagent报`请安装python-vte`
+
+	```shell
+$ sudo dnf install vte
+```
+
+- fedora22下运行goagent（python goagent-gtk.py）出错`ImportError: No module named OpenSSL`
+
+	```shell
+$ sudo dnf install pyOpenSSL
+# 安装再运行后即可在桌面的左下角的任务栏里看到goagent运行的图标
+```
+
+- fedora22下运行goagent（python goagent-gtk.py）出错`Load Crypto.Cipher.ARC4 Failed, Use Pure Python Instead`
+
+	```shell
+$ sudo dnf install pycrypto
+```
+
+- fedora22下运行python uploader.py出错`urllib2.URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:581)>`
+
+	```shell
+Goagent上传是可以使用自身goagent服务或VPN，因为上传过程也是需要”梯子“才可以。默认开启了goagent服务，且现有GAE工作不正常的时候就会报这个错。
+解决方法：临时关闭goagent服务；再找个VPN，通过VPN（http://www.i-vpn.net/free-vpn/）完成上传
+```
