@@ -3,6 +3,7 @@
 参考:[golang反射规则使用详解](http://www.sharejs.com/codes/go/7309)
 
 接口类型的变量存储了两个内容：***赋值给变量实际的值**和**这个值的类型描述**。更准确的说，值是底层实现了接口的实际数据内容，而类型描述了这个项目完整的类型。例如下面，
+
 ```go
 var r io.Reader
 tty, err = os.OpenFile("/dev/tty", os.O_RDWR, 0)
@@ -14,6 +15,7 @@ r = tty
 
 注意: 类型 *os.File 除了 Read 方法还实现了其他方法：尽管接口值仅仅提供了访问 Read 方法的可能（即通过r 只能访问Read方法），但是内部包含了这个值的完整的类型信息（反射的依据）。
 这也就是为什么可以这样做：
+
 ```go
 var w io.Writer
 w = r.(io.Writer) //接口查询
@@ -22,6 +24,7 @@ w = r.(io.Writer) //接口查询
 在这个赋值中的断言是一个类型断言：它断言了 r 内部的条目同时也实现了 io.Writer，因此可以赋值它到 w。在赋值之后，w 将会包含 (tty, *os.File)，跟在 r 中保存的一致。接口的静态类型决定了哪个方法可以通过接口变量调用，即便内部实际的值可能有一个更大的方法集。
 
 接下来，可以这样做：
+
 ```go
 view sourceprint?
 var empty interface{}
@@ -36,7 +39,7 @@ empty = w
 
 ### interface何时为nil
 
-```golang
+```go
 package main
 
 import "fmt"
@@ -81,6 +84,7 @@ func main() {
 ## 接口查询
 
 接口查询是否成功，要在运行期才能够确定。他不像接口的赋值，编译器只需要通过静态类型检查即可判断赋值是否可行。
+
 ```go
 var file1  Writer = ...
 if file5,ok := file1.(two.IStream);ok {
@@ -90,6 +94,7 @@ if file5,ok := file1.(two.IStream);ok {
 这个if语句检查file1接口指向的对象实例是否实现了two.IStream接口，如果实现了，则执行特定的代码。
 
 在Go语言中，你可以询问它指向的对象是否是某个类型，比如，
+
 ```go
 var file1 Writer = ...
 if file6,ok := file1.(*File);ok {
@@ -144,6 +149,7 @@ func Sort(array interface{}, traveser Traveser) error {
 ## 类型转换（Conversions）
 
 类型转换的语法：
+
 ```go
 Conversion = Type "(" Expression [ "," ] ")"
 ```
@@ -188,7 +194,7 @@ case Stringer: //type of str is Stringer
 }
 ```
 
-If the switch declares a variable in the expression, the variable will have the corresponding type in each clause. It's also idiomatic to reuse the name in such cases, in effect declaring a new variable with the same name but a different type in each case.
+If the switch declares a variable in the expression, the variable will have the corresponding type in each clause. It is also idiomatic to reuse the name in such cases, in effect declaring a new variable with the same name but a different type in each case.
 如果我们只关心一种类型该如何做？如果我们知道值为一个string，只是想将它抽取出来该如何做？只有一个case的类型switch是可以的，不过也可以用类型断言（type assertions）。
 
 类型断言接受一个接口值，从中抽取出显式指定类型的值。其语法借鉴了类型switch子句，不过是使用了显式的类型，而不是type关键字，如下：
@@ -339,7 +345,8 @@ Shake hand with 18
 > [reflect.Indirect和v.Elem()比较](http://stackoverflow.com/questions/24318389/golang-elem-vs-indirect-in-the-reflect-package)
 >
 > If a reflect.Value is a pointer, then v.Elem() is equivalent to reflect.Indirect(v). If it is not a pointer, then they are not equivalent:
-> 
-> If the value is an interface then reflect.Indirect(v) will return the same value, while v.Elem() will return the contained dynamic value.
-> If the value is something else, then v.Elem() will panic.
+>
+>-  If the value is an interface then reflect.Indirect(v) will return the same value, while v.Elem() will return the contained dynamic value.
+>-  If the value is something else, then v.Elem() will panic.
+>
 > The reflect.Indirect helper is intended for cases where you want to accept either a particular type, or a pointer to that type. One example is the database/sql conversion routines: by using reflect.Indirect, it can use the same code paths to handle the various types and pointers to those types.
