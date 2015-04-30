@@ -149,5 +149,9 @@ $ sudo dnf install pycrypto
 
 	```shell
 Goagent上传是可以使用自身goagent服务或VPN，因为上传过程也是需要”梯子“才可以。默认开启了goagent服务，且现有GAE工作不正常的时候就会报这个错。
-解决方法：临时关闭goagent服务；再找个VPN，通过VPN（http://www.i-vpn.net/free-vpn/）完成上传
+解决方法：临时关闭goagent服务；再找个VPN，通过VPN（http://www.i-vpn.net/free-vpn/）完成上传(以测试可行)
+
+ 在uploader.py里加入（未测试）：
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 ```
