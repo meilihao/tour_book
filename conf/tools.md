@@ -49,3 +49,9 @@
 5 . `from PySide.QtGui import * ImportError: /usr/lib64/python2.7/site-packages/PySide/QtGui.so: undefined symbol`
 
 > 前几天安装liteide时设置了LD_LIBRARY_PATH,现在qt的so库包括了liteide自带的qt动态库和为解决python-pyside依赖而安装的qt库,两者冲突,所以还原LD_LIBRARY_PATH再重启系统即可.
+
+# 梯子
+
+- [goagent](https://github.com/goagent/goagent),可行
+- [greatagent](https://github.com/greatagent/greatagent/wiki),未测试
+- [lantern](https://getlantern.org/),未测试
