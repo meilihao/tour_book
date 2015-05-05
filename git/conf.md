@@ -11,3 +11,7 @@ github.com/lvv/git-prompt/git-prompt.sh
 # 使修改生效
 $ source ~/.bashrc
 ```
+
+### 默认参数
+
+- `git config --global core.editor vim`,修改git默认编辑器
