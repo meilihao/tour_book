@@ -38,3 +38,24 @@ sudo tlp start
 参考:
 - [使用thinkfan控制thinkpad风扇](http://vmlinz.is-programmer.com/posts/25834.html)
 - [Ubuntu 10.04风扇声音太大](http://blog.chinaunix.net/uid-521083-id-2109229.html)
+
+#### ubuntu输入正确用户密码登陆时重新跳转到登陆界面即无法登陆
+
+原因：用户home目录下的.Xauthority文件拥有者变成了root，从而以用户登陆的时候无法都取.Xauthority文件.
+
+解决：删除home目录下的.Xauthority文件，再重启(chown修改文件属性不可行).
+
+#### ubuntu 14.10进入登录界面前黑屏，命令行界面可用
+
+今天ubuntu系统从14.04升级到14.10时碰到.先apt-get dist-upgrade一下再重启即可恢复.
+
+其他方法(未测试)：
+
+```shell
+# 进入命令行模式
+sudo apt-get update
+sudo apt-get install xserver-xorg-lts-quantal
+sudo dpkg-reconfigure xserver-xorg-lts-quantal
+sudo reboot
+```
+
