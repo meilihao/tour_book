@@ -415,6 +415,77 @@ err is nil
 */
 ```
 
+```go
+package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+type MyInt int
+
+func main() {
+	x := new(MyInt)
+	*x = 123
+
+	t := reflect.TypeOf(x)
+	po(t)
+
+	//返回类型t的切片的类型
+	st := reflect.SliceOf(t)
+	po(st)
+	//建一个新申请的元素类型为st，长度len容量cap的切片类型的Value值
+	sd := reflect.MakeSlice(st, 0, 10)
+	po(sd)
+
+	tv := reflect.ValueOf(x)
+	po(tv)
+
+	sd = reflect.Append(sd, tv)
+	po(sd)
+
+        //reflect.New 用指定类型初始化一个新的零值，返回一个指针指向被初始化的零值Value
+	j := reflect.New(t).Elem()
+	po(j)
+	j.Set(reflect.ValueOf(x))
+	sd = reflect.Append(sd, j)
+	po(sd)
+
+	if res, ok := sd.Interface().([]*MyInt); ok {
+		po(res)
+		printSlice(res)
+	} else {
+		po("You are out of luck :(")
+	}
+
+}
+
+func po(in interface{}) {
+	fmt.Printf("%+v\n", in)
+}
+
+func printSlice(s []*MyInt) {
+	fmt.Println("print slice:")
+	for _, v := range s {
+		fmt.Println(*v)
+	}
+}
+/*
+*main.MyInt
+[]*main.MyInt
+<[]*main.MyInt Value>
+<*main.MyInt Value>
+<[]*main.MyInt Value>
+<*main.MyInt Value>
+<[]*main.MyInt Value>
+[0xc20800a200 0xc20800a200]
+print slice:
+123
+123
+*/
+```
+
 
 ## Go：保留关键字及基本数据类型
 
