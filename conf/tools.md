@@ -55,3 +55,19 @@
 - [goagent](https://github.com/goagent/goagent),可行
 - [greatagent](https://github.com/greatagent/greatagent/wiki),未测试
 - [lantern](https://getlantern.org/),未测试
+
+# 翻译
+
+## 有道词典
+
+- `ImportError: No module named 'PyQt5.QtWebKitWidgets'`
+
+	  sudo apt-get install python3-pyqt5.qtwebkit
+
+- `ImportError: cannot import name 'QtQuick'`
+
+	  sudo apt-get install python3-pyqt5.qtquick
+
+- `module "QtQuick.Controls" is not installed`
+
+	  sudo apt-get install qml-module-qtquick-controls
