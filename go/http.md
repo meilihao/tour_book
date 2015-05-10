@@ -49,3 +49,111 @@ func main() {
 	fmt.Println("http.Do:",string(body))
 }
 ```
+
+### http post 带文件
+
+client:
+
+```go
+    //see "Golang Multipart File Upload Example":http://matt.aimonetti.net/posts/2013/07/01/golang-multipart-file-upload-example/
+	file_data, _ := ioutil.ReadFile("main.go")
+
+	body := new(bytes.Buffer)
+
+	//multipart实现了MIME的multipart解析
+	w := multipart.NewWriter(body)
+	//header
+	//方法返回w对应的HTTP multipart请求的Content-Type的值，多以multipart/form-data起始
+	content_type := w.FormDataContentType()
+	fmt.Println(content_type)
+
+	//form's other param
+	w.WriteField("name", "test")
+    //upload file
+	file, _ := w.CreateFormFile("file", "main.go")
+	file.Write(file_data)
+
+	w.Close()
+
+	fmt.Println(body)
+	//request
+	req, _ := http.NewRequest("POST", "http://127.0.0.1:8080/test", body)
+	req.Header.Set("Content-Type", content_type)
+
+	resp, _ := http.DefaultClient.Do(req)
+	data, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	fmt.Println(resp.StatusCode)
+	fmt.Println(string(data))
+```
+
+server:
+
+```go
+//推荐
+func HandFile1(w http.ResponseWriter, r *http.Request) {
+	r.ParseMultipartForm(32 << 20) //和r.MultipartReader一起用会冲突
+	//MultipartForm是解析好的多部件表单，包括上传的文件.该字段只有在调用ParseMultipartForm后才有效
+	form := r.MultipartForm
+	fmt.Println(form)
+
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer file.Close()
+
+	err = os.MkdirAll("test", 0644)
+	//在dir目录下创建一个新的、使用prefix为前缀的临时文件，以读写模式打开该文件并返回os.File指针。
+	out, err := ioutil.TempFile("test", "file")
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	defer out.Close()
+
+	if _, err := io.Copy(out, file); err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Fprint(w, []byte("123"))
+}
+
+func HandFile2(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("file's zise ≈", r.ContentLength)
+	//如果请求是multipart/form-data POST请求，MultipartReader返回一个multipart.Reader接口，否则返回nil和一个错误。使用本函数代替ParseMultipartForm，可以将r.Body作为流处理。
+	rd, err := r.MultipartReader()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	for {
+		p, err := rd.NextPart()
+		if err == io.EOF {
+			break
+		}
+
+		if p.FormName() == "file" {
+			filename := p.FileName()
+			file, err := ioutil.TempFile("test", filename)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			if _, err := io.Copy(file, p); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+	}
+
+	fmt.Fprint(w, []byte("123"))
+}
+func main() {
+	http.HandleFunc("/test", HandFile2)
+	http.ListenAndServe(":8081", nil)
+}
+```
