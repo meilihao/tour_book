@@ -22,10 +22,14 @@ func main() {
 	q.Set("entry", "weibo")
 	q.Add("gateway", "1")
 	fmt.Println("url.Values:",q.Encode())
-	
+
 	u.RawQuery=q.Encode()
 	fmt.Println("url+url.Values:",u.String())
 	u.RawQuery=""
+
+    //data := `substitution_vars={"to": ["` + to + `"],"sub":{"%name%": ["` + user_name + `"],"%usrl_string%":["` + url_string + `"]}}`
+    //将字符串以URL编码,再传入http.Post
+	//body := url.QueryEscape(data)
 
 	http.Get("www.baidu.com?" + q.Encode())
 	//参数要设置成"application/x-www-form-urlencoded",否则post参数无法传递
@@ -44,7 +48,7 @@ func main() {
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		
+
 	}
 	fmt.Println("http.Do:",string(body))
 }
@@ -121,6 +125,7 @@ func HandFile1(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandFile2(w http.ResponseWriter, r *http.Request) {
+	//获取上传文件大小(有较小误差)
 	fmt.Println("file's zise ≈", r.ContentLength)
 	//如果请求是multipart/form-data POST请求，MultipartReader返回一个multipart.Reader接口，否则返回nil和一个错误。使用本函数代替ParseMultipartForm，可以将r.Body作为流处理。
 	rd, err := r.MultipartReader()
