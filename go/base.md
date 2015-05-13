@@ -82,7 +82,7 @@ func (s *SocialConf) Add(sc ...SocialClient) {
 
 func main() {
 	var s *SocialConf
-	s = new(SocialConf) //关键,因为s只是一个值为nil的指针
+	s = new(SocialConf) //关键,因为原先s只是一个值为nil的指针
 	s.New()
 	var sc1 = SocialClient{Name: "weibo"}
 	var sc2 = SocialClient{Name: "qq"}
@@ -93,4 +93,33 @@ func main() {
 &main.SocialConf(nil)
 main.SocialConf{main.SocialClient{Name:"weibo"}, main.SocialClient{Name:"qq"}}
 */
+```
+
+### 初始化
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+type T struct {
+	Name string
+}
+
+func (t *T) Print() string {
+	t.Name = "test"
+	return t.Name
+}
+
+var t *T
+
+func main() {
+	fmt.Printf("%#v\n", t)
+	//t = new(T)<=>t = &T{} //ok
+	*t = T{} //error:*t此时为nil,根本没有分配内存过(即没指向变量),谈何赋值
+	fmt.Printf("%#v\n", t)
+	fmt.Println(t.Print())
+}
 ```
