@@ -11,7 +11,7 @@ $ sensors
 
 ```shell
 # thinkpad T430
-# 方法1(**推荐**):
+# 方法1(经尝试效果不明显):
 # 安装lm-sensors : http://kr.archive.ubuntu.com/ubuntu/pool/universe/l/lm-sensors/lm-sensors_3.3.4-2ubuntu1_amd64.deb
 # 安装fancontrol : http://kr.archive.ubuntu.com/ubuntu/pool/universe/l/lm-sensors/fancontrol_3.3.4-2ubuntu1_all.deb
 # 打开thinkpad_acpi的风扇控制支持,否则其参数(/proc/acpi/ibm/fan和/sys/devices/platform/thinkpad_hwmon/pwm1_enable)不允许修改,方法如下:
@@ -33,6 +33,9 @@ sudo tlp start
 # ///
 # 方法3:
 # 安装bumblebee,经测试,无效
+# ///
+# 方法4(**推荐**):
+# 升级到高版本系统,15.04时情况改善.
 ```
 
 参考:
