@@ -14,7 +14,7 @@ var x myint
 
 type myint int
 
-// "var _ XXX"形式是用于判断类型是否已定义或者是否已实现该接口
+// "var _ XXX"形式是(从运行的角度来说没用，从编译的角度来说是)用于判断类型是否已定义或者是否已实现接口
 var _ Result = myint(0)
 
 func (myint) test() {
