@@ -9,6 +9,10 @@
  - [SSL/TLS协议运行机制的概述](2015_05_23_010.md)
  - [图解SSL/TLS协议](2015_05_23_011.md)
  - [数字证书, 数字签名, SSL(TLS) , SASL](http://www.cnblogs.com/mailingfeng/archive/2012/07/18/2597392.html)
+ - [让SSL/TLS协议流行起来：深度解读SSL/TLS实现](http://netsecurity.51cto.com/art/201505/476337_all.htm)
+ - [使用wireshark观察SSL/TLS握手过程--双向认证/单向认证 ](http://blog.csdn.net/fw0124/article/details/40983787)
+ - [SSL/TLS原理详解](http://segmentfault.com/a/1190000002554673)
+ - [大型网站的 HTTPS 实践(共3篇)](http://op.baidu.com/2015/04/https-s01a01/)
 
 * 证书
  - [数字证书及 CA 的扫盲介绍](2015_05_23_004.md)
@@ -21,3 +25,15 @@
 
 * 硬件
  - [为什么寄存器比内存快？](2015_05_23_012.md)
+
+* base
+ - [互联网协议入门（一）](http://www.ruanyifeng.com/blog/2012/05/internet_protocol_suite_part_i.html)
+ - [MVC，MVP 和 MVVM 的图示](http://www.ruanyifeng.com/blog/2015/02/mvcmvp_mvvm.html)
+
+* web
+
+* css
+ - [CSS动画简介](http://www.ruanyifeng.com/blog/2014/02/css_transition_and_animation.html)
+
+* javascript
+ -[React 入门实例教程](http://www.ruanyifeng.com/blog/2015/03/react.html)
