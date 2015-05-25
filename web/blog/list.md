@@ -31,6 +31,7 @@
  - [MVC，MVP 和 MVVM 的图示](http://www.ruanyifeng.com/blog/2015/02/mvcmvp_mvvm.html)
 
 * web
+- [已支持http2的软件](https://github.com/http2/http2-spec/wiki/Implementations)
 
 * css
  - [CSS动画简介](http://www.ruanyifeng.com/blog/2014/02/css_transition_and_animation.html)
