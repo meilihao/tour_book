@@ -7,3 +7,7 @@
 解决:
 
 使用`chown`命令改回原有的文件夹拥有者和群组即可.
+
+### `error: src refspec master does not match any`
+
+原因: 本地版本库为空, 空目录不能提交 (只进行了init, 没有add和commit)
