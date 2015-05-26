@@ -11,3 +11,7 @@
 ### `error: src refspec master does not match any`
 
 原因: 本地版本库为空, 空目录不能提交 (只进行了init, 没有add和commit)
+
+### `remote: fatal: Unable to create temporary file '/xxx.git/./objects/pack/tmp_pack_XXXXXX': Permission denied`
+
+git remote url中的账户无权写入远程库目录，方法就是修改远程库目录的所属用户和所属用户组或在remote url中使用有权限的账户,通常时是`git`
