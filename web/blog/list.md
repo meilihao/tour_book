@@ -32,9 +32,14 @@
 
 * web
 - [已支持http2的软件](https://github.com/http2/http2-spec/wiki/Implementations)
+- [前端工程精粹（一）：静态资源版本更新与缓存](http://www.infoq.com/cn/articles/front-end-engineering-and-performance-optimization-part1)
+- [前端工程精粹（二）：静态资源管理与模板框架](http://www.infoq.com/cn/articles/front-end-engineering-and-performance-optimization-part2)
 
 * css
  - [CSS动画简介](http://www.ruanyifeng.com/blog/2014/02/css_transition_and_animation.html)
 
 * javascript
  -[React 入门实例教程](http://www.ruanyifeng.com/blog/2015/03/react.html)
+
+* 静态资源
+ - [静态资源（js以及css）发布对比](2015_05_26_001.md)
