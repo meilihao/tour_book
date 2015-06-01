@@ -26,3 +26,16 @@ core.autocrlf:
 - input : 提交时把CRLF转换成LF，签出时不转换.适用于Linux,Mac等类UNIX系统.
 - false : 提交和签出时均不转换.
 
+### `.gitignore`无效，不能过滤某些文件
+
+`.gitignore` 文件只能作用于 Untracked Files，也就是那些从来没有被 Git 记录过的文件（即自添加以后，从未 add 及 commit 过的文件).
+
+之所以规则不生效，是因为那些文件曾经被 Git 记录过，因此 .gitignore 对它们完全无效.
+
+解决方法：
+
+    1. 用git rm从 Git 的数据库中删除对于该文件的追踪；
+    2. 把对应的规则写入 .gitignore，让忽略真正生效；
+    3. 提交＋推送。
+
+最后有一点需要注意的，`git rm –cached filename`或`git rm -rf –cached foldername`删除的是追踪状态，而不是物理文件.
