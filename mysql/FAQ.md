@@ -46,3 +46,27 @@ mysqladmin -u 用户名 -p password "新密码"
 
 	show variables;
 
+##### mysql备份
+
+其他参考: http://www.cnblogs.com/Cherie/p/3309456.html
+
+```
+1) 导出整个数据库
+    mysqldump -u 用户名 -p 数据库名 > 导出的文件名
+    mysqldump -u user_name -p123456 database_name > outfile_name.sql
+
+2) 导出一个表
+    mysqldump -u 用户名 -p 数据库名 表名> 导出的文件名
+    mysqldump -u user_name -p database_name table_name > outfile_name.sql
+
+3) 导出一个数据库结构
+    mysqldump -u user_name -p -d –add-drop-table database_name > outfile_name.sql
+    -d 没有数据 –add-drop-table 在每个create语句之前增加一个drop table
+
+4) 带语言参数导出
+    mysqldump -uroot -p –default-character-set=latin1 –set-charset=gbk –skip-opt database_name > outfile_name.sql
+
+数据库导入:
+
+mysql -h 10.6.208.183 -u test2 -p  -P 3310 < test.sql;也可以直接在mysql命令行下面用source导入(先用use进入到某个数据库，mysql>source /home/xxx/test.sql，后面的参数为sql文件)
+```
