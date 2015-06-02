@@ -68,5 +68,5 @@ mysqladmin -u 用户名 -p password "新密码"
 
 数据库导入:
 
-mysql -h 10.6.208.183 -u test2 -p  -P 3310 < test.sql;也可以直接在mysql命令行下面用source导入(先用use进入到某个数据库，mysql>source /home/xxx/test.sql，后面的参数为sql文件)
+mysql -h 10.6.208.183 -u test2 -p  -P 3310 目的数据库名称 < test.sql;也可以直接在mysql命令行下面用source导入(先用use进入到某个数据库，mysql>source /home/xxx/test.sql，后面的参数为sql文件).注意,**导入前应先确保目的数据库存在**.
 ```
