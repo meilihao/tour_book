@@ -22,6 +22,10 @@ set global general_log_file='/var/log/mysql/mysql.log';
 mysqladmin -u 用户名 -p password "新密码"
 ```
 
+### 查看warning信息
+
+    show warning;
+
 #### 查看表结构
 
 	desc table_name;
@@ -71,7 +75,7 @@ mysqladmin -u 用户名 -p password "新密码"
 mysql -h 10.6.208.183 -u test2 -p  -P 3310 目的数据库名称 < test.sql;也可以直接在mysql命令行下面用source导入(先用use进入到某个数据库，mysql>source /home/xxx/test.sql，后面的参数为sql文件).注意,**导入前应先确保目的数据库存在**.
 ```
 
-#### 大小写
+### 大小写
 
 数据库中表名用小写,程序中表名用大写开头,mysql报错`Table '数据库名.表名' doesn't exist`.
 
@@ -91,3 +95,77 @@ MySQL在Linux下数据库名、表名、列名、别名大小写规则是这样�
 在MySQL的配置文件中my.ini [mysqld] 中增加`lower_case_table_names = 1`(0：区分大小写;1：不区分大小写)即可,这样MySQL 将在创建与查找时将所有的表名自动转换为小写字符,不过不推荐这种方法.
 
 推荐的命名规则是：在定义数据库、表、列的时候全部采用小写字母加下划线的方式，不使用任何大写字母.
+
+#### 字符集
+
+查询数据库支持的编码
+
+    show character set;
+
+查看mysql当前使用的编码
+
+    status;
+
+查看数据库编码：
+
+    SHOW CREATE DATABASE db_name;
+
+查看表编码：
+
+    SHOW CREATE TABLE tbl_name;
+
+查看字段编码：
+
+    SHOW FULL COLUMNS FROM tbl_name;
+
+修改数据库字符集：
+
+    ALTER DATABASE db_name DEFAULT CHARACTER SET character_name [COLLATE ...];
+
+把表默认的字符集和所有字符列（CHAR,VARCHAR,TEXT）改为新的字符集：
+
+    ALTER TABLE tbl_name CONVERT TO CHARACTER SET character_name [COLLATE ...]
+    //如：ALTER TABLE logtest CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+只是修改表的默认字符集：
+
+    ALTER TABLE tbl_name DEFAULT CHARACTER SET character_name [COLLATE...];
+    //如：ALTER TABLE logtest DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+修改字段的字符集：
+
+    ALTER TABLE tbl_name CHANGE c_name c_name c_type CHARACTER SET character_name [COLLATE ...];
+    //如：ALTER TABLE logtest CHANGE title title VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+注:修改字符集时无法将原先存入latin1字符集字段中的中文转为utf-8,即latin1不兼容utf8.
+
+[配置默认编码为utf8](https://mariadb.com/kb/en/mariadb/setting-character-sets-and-collations/)
+
+参考:
+
+- [理解和解决 MySQL 乱码问题](https://linux.cn/article-5028-1.html)
+- [十分钟搞清字符集和字符编码](https://linux.cn/article-5027-1.html)
+
+### 自增
+
+插入时,如果在自增字段上指定了数值,那么将由指定数值取代默认的自增值.
+
+### 启动脚本
+
+[mariadb](https://mariadb.com/kb/zh-cn/iniciando-e-parando-mariadb-automaticamente/)脚本在`/etc/init.d/mysql`.
+
+### 主键
+
+    Alter table tb_name add primary key(id);
+    Alter table tb_name drop primary key;
+
+### warning
+
+#### update limit warning
+
+[官方文档](https://dev.mysql.com/doc/refman/5.6/en/replication-features-limit.html),可忽略该警告.但推荐update时不使用limit.
+
+### update
+
+update重复执行相同语句(即同一语句多次执行),返回mysql_affected_rows为0,[文档在这](https://mariadb.com/kb/en/mariadb/mysql_affected_rows/).
+

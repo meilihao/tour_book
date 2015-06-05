@@ -39,3 +39,27 @@ core.autocrlf:
     3. 提交＋推送。
 
 最后有一点需要注意的，`git rm –cached filename`或`git rm -rf –cached foldername`删除的是追踪状态，而不是物理文件.
+
+### 撤销
+
+#### 修改最后一次提交
+
+提交信息写错:
+
+    $ git commit --amend
+
+提交时忘了暂存某些修改,下面的三条命令最终只是产生一个提交，第二个提交命令会修正第一个的提交内容:
+
+    $ git commit -m 'initial commit'
+    $ git add forgotten_file
+    $ git commit --amend
+
+撤销上一次的提交,提交内容回到暂存区:
+
+    git reset --soft HEAD^
+
+git reset --mixed id,是将git的HEAD变了（也就是提交记录变了），且文件变动回到工作目录.
+git reset --soft id,实际上，是git reset –mixed id 后，又做了一次git add
+git reset --herd id,是将git的HEAD变了,抛弃文件变动.
+
+参考: [`git寻根——^和~的区别`](http://mux.alimama.com/posts/799)
