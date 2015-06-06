@@ -76,6 +76,8 @@
 
 ## tmux
 
+[tmux快捷键](http://blog.csdn.net/hcx25909/article/details/7602935)
+
 - `configure: error: "libevent not found"`
 
     sudo apt-get install libevent-dev
@@ -84,3 +86,17 @@
 
     sudo apt-get install ncurses-dev
     sudo dnf install ncurses-devel
+
+- 快捷键失效
+
+ 按键顺序是`ctrl+b`松开后再按其他键.例如`ctrl+b ？`，应该先同时按`ctrl+b` 松开后，`shift+/（即输入？）`
+
+## Terminator
+
+安装:
+
+    sudo apt-get install terminator
+
+推荐配置：
+
+－　右键-> preferences -> `Profiles` tab -> `Colors` tab -> "Foreground and Background # Build-in schemes"="Ambience" && "Palette # Built-in schemes"="Ambience"
