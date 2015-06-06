@@ -24,7 +24,7 @@ mysqladmin -u 用户名 -p password "新密码"
 
 ### 查看warning信息
 
-    show warning;
+    show warnings;
 
 #### 查看表结构
 
@@ -168,4 +168,10 @@ MySQL在Linux下数据库名、表名、列名、别名大小写规则是这样�
 ### update
 
 update重复执行相同语句(即同一语句多次执行),返回mysql_affected_rows为0,[文档在这](https://mariadb.com/kb/en/mariadb/mysql_affected_rows/).
+
+## mysql workbench
+
+### 技巧
+
+- 在`SQL Editor`窗口只执行选中的sql语句,使用快捷键F9.
 
