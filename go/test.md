@@ -16,3 +16,7 @@ $ go test types_test.go  types.go driver.go # ok
 
 
 	go test -v xxx_test.go
+
+#### `go test -v -run=XXX`,预先设置的调试信息未输出，直接`PASS ok`
+
+XXX函数名字和*_test.go里的待测试函数的名称不一致.
