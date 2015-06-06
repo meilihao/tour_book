@@ -71,3 +71,16 @@
 - `module "QtQuick.Controls" is not installed`
 
 	  sudo apt-get install qml-module-qtquick-controls
+
+# 终端/terminal
+
+## tmux
+
+- `configure: error: "libevent not found"`
+
+    sudo apt-get install libevent-dev
+
+- `configure: error: "curses not found"`
+
+    sudo apt-get install ncurses-dev
+    sudo dnf install ncurses-devel
