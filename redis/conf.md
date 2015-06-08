@@ -9,3 +9,10 @@
 ### 停止redis
 
 运行`redis-cli shutdown`
+
+### dump.rdb存放位置
+
+    dbfilename dump.rdb
+    dir ./
+
+默认dump.rdb存放位置是不固定的，而是存放在启动redis时的当前目录下.修改`dir`路径即可.
