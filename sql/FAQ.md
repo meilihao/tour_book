@@ -31,3 +31,29 @@ from emp;
 
     select ename from emp limit 2;
 
+### 从表中随机返回n行
+
+mysql(使用内置函数:rand()):
+
+    select ename,job from emp order by rand() limit 5;
+
+postgres(使用内置函数:random()):
+
+    select ename,job from emp order by random() limit 5;
+
+ps:
+`order by`子句指定数字常量时,是按照select列表中的相应列来排序;使用随机函数时是先按照函数给每一行计算一个结果,再按结果排序.
+
+### 将空值转换为实际值
+
+使用coalesce函数用实际值替换空值.
+
+    select coalesce(comm,0) from emp;
+
+COALESCE表达式是 CASE 表达式的语法快捷方式:
+
+    select case when comm is null then 0 else comm end from emp;
+
+### 按模式搜索
+
+like模式:`%`,匹配任意字符序列;`_`,匹配单个字符.
