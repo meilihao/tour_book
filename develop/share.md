@@ -46,3 +46,16 @@
 
 - 第三方分享插件
 - 自己生成二维码或调用其他接口生成二维码
+
+### 豆瓣
+
+[文档](http://www.douban.com/service/bookmarklet),在"推荐到豆瓣"按钮的html代码中.
+
+分享所需的url为`http://www.douban.com/share/service?image=http://d.hiphotos.baidu.com/image/pic/item/b03533fa828ba61e43973e704234970a304e5970.jpg&href=image.baidu.com&name=title&text=content`
+
+参数说明:
+
+- [image] 要分享的图片
+- href 分享的url
+- title 要分享的标题
+- content 分享内容
