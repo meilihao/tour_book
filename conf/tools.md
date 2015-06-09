@@ -100,3 +100,9 @@
 推荐配置：
 
 －　右键-> preferences -> `Profiles` tab -> `Colors` tab -> "Foreground and Background # Build-in schemes"="Ambience" && "Palette # Built-in schemes"="Ambience"
+
+## Bash shell对话框
+
+zenity和whiptail
+
+[如何在Bash Shell脚本中显示对话框](https://linux.cn/article-5558-1.html)
