@@ -1,6 +1,6 @@
 ## 简介
 
-参考:[ImageMagick简介、GraphicsMagick、命令行使用示例](http://elf8848.iteye.com/blog/382528)
+参考:[ImageMagick简介、GraphicsMagick、命令行使用示例](http://elf8848.iteye.com/blog/382528),[PHP ImageMagick扩展API](http://php.net/manual/zh/class.imagick.php)
 
 ### ImageMagick
 
