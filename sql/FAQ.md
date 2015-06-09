@@ -42,7 +42,7 @@ postgres(使用内置函数:random()):
     select ename,job from emp order by random() limit 5;
 
 ps:
-`order by`子句指定数字常量时,是按照select列表中的相应列来排序;使用随机函数时是先按照函数给每一行计算一个结果,再按结果排序.
+`order by`子句,默认以升序排序,以逗号分隔排序列,优先次序是从左到右.其指定数字常量时,是按照select列表中的相应列来排序;使用随机函数时是先按照函数给每一行计算一个结果,再按结果排序.
 
 ### 将空值转换为实际值
 
@@ -57,3 +57,45 @@ COALESCE表达式是 CASE 表达式的语法快捷方式:
 ### 按模式搜索
 
 like模式:`%`,匹配任意字符序列;`_`,匹配单个字符.
+
+## 排序
+
+### 按子串排序
+
+按照job的最后三个字符排序:
+
+     select ename,job from emp order by substr(job,length(job)-2);
+
+>substr(string string,num start,num length):
+string为字符串；
+start为起始位置；
+length为长度
+注：**sql(mysql,postgres等)中的start是从1开始的**
+
+### 对字母数字混合的数据排序
+
+按照混合数据中的数字或字符来排序.
+
+    create view v as select concat(ename,' ',deptno) as data from emp;
+
+按data中的deptno排序:
+
+    select * from v order by replace(data,replace(translate(data,'0123456789','##########'),'#',''),'')
+
+按data中的ename排序:
+
+    select * from v order by replace(translate(data,'0123456789','##########'),'#','')
+
+>replace(string text, from text, to text) : 把字符串string里出现地所有子字符串from 替换成子字符串to
+>
+>     replace('abcdefabcdef', 'cd', 'XX')	abXXefabXXef
+>
+>translate(string text, from text, to text) : 把在string中包含的任何匹配from中的字符转化为对应的在to中的字符,即目标字符to和源字符from都可以同时指定多个.如果from比to长， 删掉在from中出现的额外的字符.
+>
+>     translate('12345', '143', 'ax')==a2x5
+>[Postgres # 9.4. 字符串函数和操作符](http://www.postgres.cn/docs/9.3/functions-string.html)
+
+因mysql不支持translate(),这个问题无解决方案.
+
+### 处理排序空值
+
