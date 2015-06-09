@@ -269,3 +269,19 @@ libpam.so.0 -> libpam.so.0.83.0
  在这个文档的最后加上这样一行:
 
        vm.swappiness=10
+
+改成10后感觉开关机,运行都慢了许多,调为50即可.
+
+### FAQ
+
+#### dmesg中出现`tpm_tis 00:05: A TPM error (6) occurred attempting to read a pcr value`
+
+可能会导致开机时卡住几秒钟.
+
+tpm资料,[TPM安全芯片](http://baike.baidu.com/view/687208.htm),[Trusted Platform Module](https://wiki.archlinux.org/index.php/Trusted_Platform_Module)
+
+在BIOS里把TPM芯片禁用(推荐,thinkpad t430:F1->Security->Security Chip);或者禁用tpm系统模块(`echo blacklist tpm_tis > /etc/modprobe.d/tpm_tis.conf`),经测试,dmesg中还是有该错误信息.
+
+#### `[drm:cpt_set_fifo_underrun_reporting] *ERROR* uncleared pch fifo underrun on pch transcoder A [drm:cpt_serr_int_handler] *ERROR* PCH transcoder A FIFO underrun`
+
+导致开机卡住几秒钟,drm错误,待官方解决.
