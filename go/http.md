@@ -77,7 +77,7 @@ client:
 	file, _ := w.CreateFormFile("file", "main.go")
 	file.Write(file_data)
 
-	w.Close()
+	w.Close()//需在http.NewRequest()前关闭,否则服务端FormFile()时会碰到错误"ERROR: unexpected EOF"
 
 	fmt.Println(body)
 	//request
