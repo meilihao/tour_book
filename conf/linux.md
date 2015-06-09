@@ -247,3 +247,25 @@ libpam.so.0 -> libpam.so.0.83.0
 - 执行当前可执行程序加`./`的原因：
 
 	主要是安全原因，因为在linux中执行程序时，会先搜索当前目录然后是系统目录，所以如果当前目录中有与系统可执行程序重名的程序，比如cp，她就会优先执行当前目录中的cp，但是如果当前目录的cp是木马，就会威胁到系统安全，所以这是Linux的一种安全策略，所以默认并没有把当前目录加到环境变量PATH中去.
+
+### 优化
+
+#### swappiness
+
+在linux里面，swappiness的值的大小对如何使用swap分区是有着很大的联系的。swappiness=0的时候表示最大限度使用物理内存，然后才是 swap空间，swappiness＝100的时候表示积极的使用swap分区，并且把内存上的数据及时的搬运到swap空间里面。两个极端，对于ubuntu的默认设置，这个值等于60，建议修改为10。具体这样做：
+
+1. 查看你的系统里面的swappiness
+
+       $ cat /proc/sys/vm/swappiness
+
+2. 修改swappiness值为10
+
+       $ sudo sysctl vm.swappiness=10
+
+ 这只是临时性的修改，在你重启系统后会恢复默认的60，所以，还要做一步：
+
+       $ sudo gedit /etc/sysctl.conf
+
+ 在这个文档的最后加上这样一行:
+
+       vm.swappiness=10
