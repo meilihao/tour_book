@@ -10,6 +10,8 @@
 
 ## 常用命令
 
+psql:
+
 - psql登入 : `psql -U user_name`
 - 列出所有的数据库 : `\l`
 - 切换数据库 : `\c db_name`
@@ -17,3 +19,8 @@
 - 列出指定表的所有字段 : `\d tb_name`
 - 查看指定表的基本情况 : `\d+ tb_name`
 - psql登出 ： `\q`
+
+postgres:
+
+- 启动数据库 : `pg_ctl start -D $PGDATA`,$PGDATA是postgres的数据目录
+- 停止数据库 : `pg_ctl stop -D $PGDATA [-m SHUTDOWN-MODE]`,SHUTDOWN-MODE:smart(默认),等所有连接中止才关闭,如果client连接不中止,则无法关闭数据库;fast,主动断开client连接,回滚已有事务,然后正常关闭;immediate,立即停止数据库进程,直接退出,下次启动数据库需进行crash-recovery操作.
