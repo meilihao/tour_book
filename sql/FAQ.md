@@ -8,8 +8,8 @@
 
 ### 连接列值
 
-select ename||' works as a'||job as msg from emp where deptno=10;//psql 使用双竖线作为连接运算符
-select concat(ename,' works as a',job) as msg from EMP where DEPTNO=10; //mysql使用concat函数
+    select ename||' works as a'||job as msg from emp where deptno=10;//psql 使用双竖线作为连接运算符
+    select concat(ename,' works as a',job) as msg from EMP where DEPTNO=10; //mysql使用concat函数
 
 其实psql也支持concat,其`||`即是concat函数的简写形式,推荐使用concat,方便移植.
 
@@ -98,4 +98,28 @@ length为长度
 因mysql不支持translate(),这个问题无解决方案.
 
 ### 处理排序空值
+
+使用case表达式来"标记"一个值是否为NULL(排除空值的干扰),再排序.
+
+所有空值在后且comm升序:
+
+    select ename,sal,comm from (select ename,sal,comm, case when comm is null then 0 else 1 end as is_null from emp) x order by is_null desc,comm
+
+### 根据数据项的键排序
+
+如果job是"SALESMAN",要根据comm列排序,否则按sal列排序:
+
+    select ename,sal,job,comm from emp order by case when job='SALESMAN' then comm else sal end;
+
+## 多表操作
+
+### 记录集的叠加
+
+显示emp中deptno=10的员工名字和部门编号与dept中所有部门的名称和编号
+
+    select ename as ename_and_dname,deptno from emp where deptno=10 union all select '---',null union all select dname,deptno from dept;
+
+>UNION 操作符用于合并两个或多个 SELECT 语句的结果集.
+**注意**:UNION 内部的 SELECT 语句必须拥有相同数量的列,列也必须拥有相似的数据类型,同时，每条 SELECT 语句中的列的顺序必须相同.UNION ALL 命令和 UNION 命令几乎是等效的，不过 UNION ALL 命令会列出所有的值(即包括重复项),而UNION会去重.**使用UNION时postgres会对新结果重新排序(排序方式未知)**,mysql还是按照各自select语句的结果直接合并;使用UNION ALL时,postgres和mysql均是按照各自select语句的结果直接合并.除非有必要,一般使用UNION ALL即可．
+
 
