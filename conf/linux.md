@@ -23,6 +23,11 @@ make install
 
 	通过unzip命令解压，指定字符集`unzip -O CP936 xxx.zip` (用GBK, GB18030也可以)
 
+#### 开机启动项管理
+
+- sysv-rc-conf : for ubuntu
+- chkconfig : for redhat,centos,fedora
+
 ### 查询
 
 #### 内核模块参数
