@@ -38,7 +38,7 @@ core.autocrlf:
     2. 把对应的规则写入 .gitignore，让忽略真正生效；
     3. 提交＋推送。
 
-最后有一点需要注意的，`git rm –cached filename`或`git rm -rf –cached foldername`删除的是追踪状态，而不是物理文件.
+最后有一点需要注意的，`git rm --cached filename`或`git rm -rf --cached foldername`删除的是追踪状态，而不是物理文件.
 
 ### 撤销
 
