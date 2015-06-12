@@ -169,9 +169,16 @@ MySQL在Linux下数据库名、表名、列名、别名大小写规则是这样�
 
 update重复执行相同语句(即同一语句多次执行),返回mysql_affected_rows为0,[文档在这](https://mariadb.com/kb/en/mariadb/mysql_affected_rows/).
 
-## mysql workbench
+### mysql workbench
 
 ### 技巧
 
 - 在`SQL Editor`窗口只执行选中的sql语句,使用快捷键F9.
 
+### 关键字
+
+    alter table Avatar drop column `Using`//报错
+
+因为`Using`是mysql的关键字,这里是建表时错误使用造成的,需用反引号包裹关键字,再进行操作.
+
+    alter table Avatar drop column `Using`

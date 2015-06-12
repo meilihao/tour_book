@@ -22,6 +22,10 @@
 
 [LoveWallpaper](http://www.lovebizhi.com)是专业的桌面高清壁纸软件，提供万款优质高清壁纸，具有试试手气、按颜色筛选壁纸以及定时切换壁纸功能等功能，充分满足了壁纸达人需求.
 
+## 主题
+
+[一款很棒的GTK桌面主题：Arc](https://linux.cn/article-5614-1.html)
+
 ### 以centos 7 x64为例
 
 1. 下载Fedora分类下的最新版[LoveWallpaper](http://www.lovebizhi.com/linux_fedora)
