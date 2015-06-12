@@ -110,3 +110,25 @@
 zenity和whiptail
 
 [如何在Bash Shell脚本中显示对话框](https://linux.cn/article-5558-1.html)
+
+## 通信
+
+### RTX2013
+
+1. [安装Wine1.7](https://www.winehq.org/download/ubuntu)
+2. 把wine的环境设置为32位的（实践证明，不这样做的话，安装的RTX是没法用的）
+
+       export WINEARCH="win32"
+       sudo rm -rf ~/.wine
+
+3. 安装依赖软件
+
+       winetricks msxml3 msxml6 riched20 riched30 ie6 vcrun6 vcrun2005sp1
+
+ 如果64位系统，安装msxml6时，要下载64位的，点击[这里](http://www.microsoft.com/en-us/download/details.aspx?id=3988)
+
+ 64位的ubuntu需要把ie6改成ie8(我没改,还是用ie6).
+
+ 如果有些软件如果下载不了，可以根据提示使用浏览器下载后，放到～/.cache/winetricks相应目录下，例如vcrun6就放在～/.cache/winetricks/vcrun6/下,再运行winetricks进行安装即可.
+
+4. 打开rtx2013的安装软件安装，这过程会遇到一个组件未注册，忽略即可。安装成功后，就可以使用rtx了.rtx这时还有个问题，就是rtx会一直停留在离开状态，不启用`文件-个人设置-回复设置-自动状态切换`即可.
