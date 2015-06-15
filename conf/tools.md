@@ -15,7 +15,7 @@
     1. 在uget的`编辑`-`设置`-`插件`选项卡中勾选`启用 aria2 插件`
     2. uget主界面左侧的`分类`窗口-`Home`分类-右键`属性`-`新下载的默认设置1`选项卡-`每台服务器连接数`改为'16'(其它数字也可).
     ```
-    
+
 # 美化
 
 ## 爱壁纸/LoveWallpaper
@@ -131,4 +131,43 @@ zenity和whiptail
 
  如果有些软件如果下载不了，可以根据提示使用浏览器下载后，放到～/.cache/winetricks相应目录下，例如vcrun6就放在～/.cache/winetricks/vcrun6/下,再运行winetricks进行安装即可.
 
-4. 打开rtx2013的安装软件安装，这过程会遇到一个组件未注册，忽略即可。安装成功后，就可以使用rtx了.rtx这时还有个问题，就是rtx会一直停留在离开状态，不启用`文件-个人设置-回复设置-自动状态切换`即可.
+4. 打开rtx2013的安装软件安装，这过程会遇到一个组件未注册，忽略即可.安装成功后，就可以使用rtx了.rtx这时还有个问题，就是rtx会一直停留在离开状态，不启用`文件-个人设置-回复设置-自动状态切换`即可.
+
+5. 输入框内容或其他地方的中文乱码
+
+       从windows下拷贝simsun.ttc字体到~/.wine/driver_c/windows/Fonts下
+
+ 修改注册表,将如下内容写入rtx.reg:
+
+ ```
+REGEDIT4
+[HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\FontSubstitutes]
+"Arial"="simsun"
+"Arial CE,238"="simsun"
+"Arial CYR,204"="simsun"
+"Arial Greek,161"="simsun"
+"Arial TUR,162"="simsun"
+"Courier New"="simsun"
+"Courier New CE,238"="simsun"
+"Courier New CYR,204"="simsun"
+"Courier New Greek,161"="simsun"
+"Courier New TUR,162"="simsun"
+"FixedSys"="simsun"
+"Helv"="simsun"
+"Helvetica"="simsun"
+"MS Sans Serif"="simsun"
+"MS Shell Dlg"="simsun"
+"MS Shell Dlg 2"="simsun"
+"System"="simsun"
+"Tahoma"="simsun"
+"Times"="simsun"
+"Times New Roman CE,238"="simsun"
+"Times New Roman CYR,204"="simsun"
+"Times New Roman Greek,161"="simsun"
+"Times New Roman TUR,162"="simsun"
+"Tms Rmn"="simsun"
+```
+
+ 最后执行
+
+       $ regedit rtx.reg
