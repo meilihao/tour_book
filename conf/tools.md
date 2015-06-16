@@ -18,13 +18,21 @@
 
 # 美化
 
-## 爱壁纸/LoveWallpaper
-
-[LoveWallpaper](http://www.lovebizhi.com)是专业的桌面高清壁纸软件，提供万款优质高清壁纸，具有试试手气、按颜色筛选壁纸以及定时切换壁纸功能等功能，充分满足了壁纸达人需求.
-
 ## 主题
 
 [一款很棒的GTK桌面主题：Arc](https://linux.cn/article-5614-1.html)
+
+###  gnome-tweak-tool
+
+gnome-tweak-tool是一款个性化GNOME 3 的图形界面工具,可用于切换gnome-shell主题等.
+
+### Unity Tweak Tool
+
+Unity Tweak Tool 是一个专为Ubuntu Unity 桌面环境的配置工具，允许你对Unity 环境进行各项配置,功能和gnome-tweak-tool类似.
+
+## 爱壁纸/LoveWallpaper
+
+[LoveWallpaper](http://www.lovebizhi.com)是专业的桌面高清壁纸软件，提供万款优质高清壁纸，具有试试手气、按颜色筛选壁纸以及定时切换壁纸功能等功能，充分满足了壁纸达人需求.
 
 ### 以centos 7 x64为例
 
