@@ -15,3 +15,9 @@ sudo dnf -y install  openssl-devel
 ### `nginx: [emerg] unknown log format "main" in /usr/local/nginx/conf/nginx.conf`
 
 打开access_log选项后未启用日志格式main，启用log_format	main(nginx默认日志格式)即可.
+
+### `An error occurred`
+
+可能情况:
+
+`proxy_pass`指定的地址不可用.
