@@ -492,3 +492,15 @@ imagickpixeliterator ::synciteratorsyncs 同步的像素迭代器
 - cropimage : 提取/截取区域的图像
 - readimage : 载入图像
 - writeimage : 保存图像到指定位置
+
+## 开发包
+
+### imagick
+
+[gographics/imagick](https://github.com/gographics/imagick) is a Go bind to ImageMagick's MagickWand C API.
+
+Ubuntu安装见官方README,下面是Fedora的安装方式:
+
+    yum install ImageMagick-devel
+
+32bit OS安装碰到错误:"github.com/gographics/imagick/imagick/draw_info.go:17:19: unexpected: 12-byte float type - long double",待官方解决(issues#19).
