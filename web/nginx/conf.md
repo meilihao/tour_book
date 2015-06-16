@@ -50,3 +50,15 @@ output(前提是应用中url需支持二级目录,且需对url做StripPrefix处�
 /blog/t
 ---*/
 ```
+
+### 静态文件匹配
+
+```
+location ^~ /static/ {
+           root /home/chen/xxx.com/;
+        }
+/*---
+请求将匹配到xxx.com下的static目录.
+---*/
+```
+
