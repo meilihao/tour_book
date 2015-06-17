@@ -24,3 +24,28 @@ postgres:
 
 - 启动数据库 : `pg_ctl start -D $PGDATA`,$PGDATA是postgres的数据目录
 - 停止数据库 : `pg_ctl stop -D $PGDATA [-m SHUTDOWN-MODE]`,SHUTDOWN-MODE:smart(默认),等所有连接中止才关闭,如果client连接不中止,则无法关闭数据库;fast,主动断开client连接,回滚已有事务,然后正常关闭;immediate,立即停止数据库进程,直接退出,下次启动数据库需进行crash-recovery操作.
+
+###`psql: 致命错误:  用户 "postgres" peer 认证失败`
+
+原因：postgres中缺省仅存在 postgres 用戶,且受制于pg_hba.conf中对Local采用peer方式验证用戶身份，具体原因可查看pg的日志.
+
+- 使用postgres账户登入即可(pg9.4 默认规则是`local all all peer`)，即`sudo -u postgres psql`.
+- 修改数据库实例的认证文件，比如`/var/lib/pgsql/data/pg_hba.conf`,再重启pg，根据新规则进行登入即可.
+
+>[postgres认证相关文档](http://postgres.cn/docs/9.3/auth-methods.html#AUTH-PASSWORD)
+>postgres会根据pg_hba.conf中规则出现的位置，从上到下依次匹配.规则中的METHOD是指定如何处理客户端的认证,常用的有ident，md5，password，trust，reject，pam:
+>- ident是Linux下PostgreSQL默认的local认证方式，凡是能正确登录服务器的操作系统用户（注：不是数据库用户）就能使用本用户映射的数据库用户不需密码登录数据库。用户映射文件为pg_ident.conf，这个文件记录着与操作系统用户匹配的数据库用户，如果某操作系统用户在本文件中没有映射用户，则默认的映射数据库用户与操作系统用户同名。比如，服务器上有名为user1的操作系统用户，同时数据库上也有同名的数据库用户，user1登录操作系统后可以直接输入psql，以user1数据库用户身份登录数据库且不需密码。很多初学者都会遇到psql -U username登录数据库却出现“username ident 认证失败”的错误，明明数据库用户已经createuser。原因就在于此，使用了ident认证方式，却没有同名的操作系统用户或没有相应的映射用户。解决方案：1、在pg_ident.conf中添加映射用户；2、改变认证方式。
+>- md5是常用的密码认证方式，如果你不使用ident，最好使用md5.密码是以md5形式传送给数据库，较安全，且不需建立同名的操作系统用户
+>- password是以明文密码传送给数据库，建议不要在生产环境中使用
+>- trust是只要知道数据库用户名就不需要密码或ident就能登录，建议不要在生产环境中使用
+>- reject是拒绝认证
+>- pam 	使用操作系统提供的可插入认证模块服务(PAM)来认证
+
+### `sudo systemctl status postgresql.service` failed
+
+使用`dnf install postgresql-server`安装了Fedora22 repo默认提供的postgres9.4,但无法启动.
+原因：postgres未初始化,启动前运行`postgresql-setup initdb`即可.
+
+### postgres日志
+
+postgres日志是在`${PGDATA}/pg_log`文件夹中.
