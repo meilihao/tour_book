@@ -63,3 +63,31 @@ git reset --soft id,实际上，是git reset –mixed id 后，又做了一次gi
 git reset --herd id,是将git的HEAD变了,抛弃文件变动.
 
 参考: [`git寻根——^和~的区别`](http://mux.alimama.com/posts/799)
+
+### 历史
+
+#### 更改commit信息
+
+修改历史commit信息:
+
+更新前和remote同步一下.
+
+```
+git filter-branch --env-filter '
+if test "$GIT_AUTHOR_EMAIL" = "OldEmail"
+then
+    GIT_AUTHOR_NAME="NewName"
+    GIT_AUTHOR_EMAIL="NewEmail"
+    GIT_COMMITTER_NAME="NewName"
+    GIT_COMMITTER_EMAIL="NewEmail"
+fi
+export GIT_AUTHOR_NAME
+export GIT_AUTHOR_EMAIL
+export GIT_COMMITTER_NAME
+export GIT_COMMITTER_EMAIL
+'
+```
+如果git报错`Cannot rewrite branches: You have unstaged changes.` 只需要 git stash再运行上面代码.
+此时查看`git log`，确认名字和邮箱改好以后，`git push origin master --force`，大功告成！
+
+参考:[Git-工具-重写历史](http://git-scm.com/book/zh/v1/Git-%E5%B7%A5%E5%85%B7-%E9%87%8D%E5%86%99%E5%8E%86%E5%8F%B2)
