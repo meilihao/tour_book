@@ -49,3 +49,8 @@ postgres:
 ### postgres日志
 
 postgres日志是在`${PGDATA}/pg_log`文件夹中.
+
+### 查找PGDATA
+
+- `ps -aux|grep postgres`,查看pg的启动参数`-D`
+- PGDATA环境变量
