@@ -54,3 +54,7 @@ postgres日志是在`${PGDATA}/pg_log`文件夹中.
 
 - `ps -aux|grep postgres`,查看pg的启动参数`-D`
 - PGDATA环境变量
+
+### 执行计划
+
+使用explain,如`explain select * from table_name`.
