@@ -122,4 +122,59 @@ length为长度
 >UNION 操作符用于合并两个或多个 SELECT 语句的结果集.
 **注意**:UNION 内部的 SELECT 语句必须拥有相同数量的列,列也必须拥有相似的数据类型,同时，每条 SELECT 语句中的列的顺序必须相同.UNION ALL 命令和 UNION 命令几乎是等效的，不过 UNION ALL 命令会列出所有的值(即包括重复项),而UNION会去重.**使用UNION时postgres会对新结果重新排序(排序方式未知)**,mysql还是按照各自select语句的结果直接合并;使用UNION ALL时,postgres和mysql均是按照各自select语句的结果直接合并.除非有必要,一般使用UNION ALL即可．
 
+### 内联接
 
+部门10中所有员工名称及其工作地点．
+
+    select e.ename,d.loc from emp e,dept d where e.deptno=d.deptno and e.deptno=10;
+
+相等于下面使用显式JOIN子句(INNER关键字可选)的语句:
+
+    select e.ename,d.loc from emp e inner join dept d on (e.deptno=d.deptno) where e.deptno=10;
+
+inner join(等值连接) 只返回两个表中联结字段相等的行，具体过程：
+
+执行`select e.ename,d.loc,e.deptno as emp_deptno,d.deptno as despt_deptno from
+ emp e,dept d  where e.deptno=10;`,获取表的笛卡尔积(行的所有可能组合),再取`emp.deptno=dept.deptno`相等的行.
+
+### 从一个表中查找另一个表没有的值
+
+从表dept中查找不存在与表emp关联的所有部门.
+
+pg(支持差集操作EXCEPT):
+
+    select deptno from dept except select deptno from emp;
+
+except:获取第一个结果集,再从中去掉第二个结果集中也有的行.其限制条件:两个select列表中的值的数目和数据类型必须匹配.**except不会返回重复行,而且跟使用NOT IN的子查询不同,NULL值不会有问题.**
+
+mysql:
+
+    select distinct deptno from dept where deptno no in (select deptno from emp);
+
+在mysql中使用not in时一定要注意NULL值问题.
+
+执行`select deptno from dept where deptno not in (10,50,NULL);`(等价于`select deptno from dept wehre not (deptno=10 or deptno=50 or deptno=NUll);`),结果为空.
+
+原因:sql中`任意值=NULL`,`任意值!=NULL`,`false or NULL`,`not NULL`的结果均为NULL.
+
+- deptno=10=>not (true or false or NUll)=>not (true)=>false
+- deptno=20=>not (false or false or NULL)=>not (NULL)=>NULL
+
+>补充:
+>IN和NOT IN的本质是OR运算.
+>`NULL in (NULL)`和`12 in (13,NULL)`的结果均为NULL.
+
+解决`NOT IN 和NULL`有关问题的方法:
+
+1. 使用is:
+
+       select deptno from dept wehre not (deptno=10 or deptno=50 or deptno is NUll);
+
+2. 使用NOT EXISTS和相关子查询.
+
+       select d.deptno from dept d where not exists (select null from emp e wher
+e d.deptno=e.deptno);
+
+>补充:
+>exists : 强调的是是否返回结果集，不要求知道返回什么.exists(sql 返回结果集为真);not exists(sql 不返回结果集为真)
+>exists 与 in 最大的区别在于 in引导的子句只能返回一个字段.
