@@ -51,6 +51,7 @@
 
 ## 静态资源
  - [静态资源（js以及css）发布对比](2015_05_26_001.md)
+ - [图片服务架构演进](http://blog.aliyun.com/967)
 
 ## 认证
  - [使用 AngularJS & NodeJS 实现基于 token 的认证应用](http://zhuanlan.zhihu.com/FrontendMagazine/19920223)
