@@ -179,3 +179,11 @@ REGEDIT4
  最后执行
 
        $ regedit rtx.reg
+
+# 其他
+
+### flash
+
+    sudo dnf install flash-plugin
+
+前提:设置adobe的repo,即到[官网](https://get.adobe.com/flashplayer/?loc=cn)下载yum文件(rpm文件)再安装即可.
