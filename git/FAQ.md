@@ -4,7 +4,19 @@
 # 此时不会对0x80以上的字符进行quote,中文显示正常
 git config --global core.quotepath false
 ```
-### git diff 出现"^M"
+### git diff
+
+`git diff`：是查看working tree与index file的差别
+`git diff --cached`：是查看index file与commit的差别
+`git diff HEAD`：是查看working tree和commit的差别
+
+`git diff commit_id1 commit_id2` : 比较两个历史版本之间的差异
+`git diff dev` : 当前目录和"dev"分支间的差异
+`git diff dev...master` : dev分支和master分支的差异,`git diff ...dev`表示当前分支和dev分支的差异
+
+`-- file_name`参数可指定文件名或目录,比如`git diff HEAD -- readme.txt`,`git diff HEAD -- ./lib`.
+
+#### git diff 出现"^M"
 
 Windows用CR LF来定义换行，Linux用LF,Mac用LF(Mac OS 9 及之前是CR，之后换成 UNIX 的 LF). CR全称是Carriage Return ,或者表示为\r, 意思是回车; LF全称是Line Feed，它才是真正意义上的换行表示符.
 
@@ -61,6 +73,13 @@ core.autocrlf:
 git reset --mixed id,是将git的HEAD变了（也就是提交记录变了），且文件变动回到工作目录.
 git reset --soft id,实际上，是git reset –mixed id 后，又做了一次git add
 git reset --herd id,是将git的HEAD变了,抛弃文件变动.
+
+HEAD指向的版本就是当前版本,Git允许我们使用命令`git reset --hard commit_id`在版本的历史之间穿梭.
+`git reset`可修改当前HEAD指针.
+
+#### 后悔药
+
+要用git reflog查看命令历史，以便确定要回到未来的哪个版本,再用`git reset --hard commit_id`返回指定版本.
 
 参考: [`git寻根——^和~的区别`](http://mux.alimama.com/posts/799)
 
