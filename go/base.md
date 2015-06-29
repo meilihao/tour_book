@@ -123,3 +123,14 @@ func main() {
 	fmt.Println(t.Print())
 }
 ```
+
+## 指针
+
+unsafe模块的文档中提到几条转换规则，理解了以后就很容易做指针运算了：
+
+A pointer value of any type can be converted to a Pointer.
+A Pointer can be converted to a pointer value of any type.
+A uintptr can be converted to a Pointer.
+A Pointer can be converted to a uintptr.
+
+unsafe.Pointer类似C的void *,即通用指针类型,可表示任意类型值的指针,用于转换不同类型指针，但它不可以参与指针运算;uintptr是golang的内置类型，是能存储指针的uint整型,是变量的首地址,可用于指针运算.
