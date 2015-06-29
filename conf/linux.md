@@ -290,3 +290,10 @@ tpm资料,[TPM安全芯片](http://baike.baidu.com/view/687208.htm),[Trusted Pla
 #### `[drm:cpt_set_fifo_underrun_reporting] *ERROR* uncleared pch fifo underrun on pch transcoder A [drm:cpt_serr_int_handler] *ERROR* PCH transcoder A FIFO underrun`
 
 导致开机卡住几秒钟,drm错误,待官方解决.
+
+# 软件包管理工具
+
+## dnf
+
+- [27 个 Linux 下软件包管理工具 DNF 命令例子](https://linux.cn/article-5718-1.html)
+
