@@ -151,3 +151,14 @@ func f() (i int) {
 	return 3
 }
 ```
+
+### init函数
+
+init函数会被自动调用，在main函数之前执行，且不能在其他函数中调用(会报错该函数未定义)
+
+所有init函数都会被自动调用，调用顺序如下：
+
+- 同一个go文件的init函数调用顺序是 从上到下的
+- 同一个package中按go源文件名字符串比较 从小到大顺序调用各文件中的init函数
+- 不同的package，如果不相互依赖的，按照main包中 先import的后调用的顺序调用其包中的init函数
+- 如果package存在依赖，则先调用最早被依赖的package中的init函数
