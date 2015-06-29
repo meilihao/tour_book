@@ -134,3 +134,20 @@ A uintptr can be converted to a Pointer.
 A Pointer can be converted to a uintptr.
 
 unsafe.Pointer类似C的void *,即通用指针类型,可表示任意类型值的指针,用于转换不同类型指针，但它不可以参与指针运算;uintptr是golang的内置类型，是能存储指针的uint整型,是变量的首地址,可用于指针运算.
+
+### defer
+
+**defer在函数返回后执行，可以修改函数返回值**
+
+```go
+func main() {
+	fmt.Println(f()) // 返回： 15
+}
+
+func f() (i int) {
+	defer func() {
+		i *= 5
+	}()
+	return 3
+}
+```
