@@ -40,6 +40,7 @@
 ## css
  - [CSS动画简介](http://www.ruanyifeng.com/blog/2014/02/css_transition_and_animation.html)
  - [浏览器内建支持的响应式图像](http://zhuanlan.zhihu.com/FrontendMagazine/19858945)
+ - [CSS参考手册](https://github.com/doyoe/css-handbook)
 
 ## javascript
  - [React 入门实例教程](http://www.ruanyifeng.com/blog/2015/03/react.html)
