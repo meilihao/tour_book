@@ -136,7 +136,7 @@ div[id^="nav"] { background:#ff0; }
 input[type="text"]:disabled { background:#ddd; }
 ```
 
-### 九、CSS 3中的结构性伪类
+### 九、CSS 3中的结构伪类(选择器)
 | 序号 | 选择器 | 含义 |
 |--------|---------------------|--------|
 |   32   |E:root               |匹配文档的根元素，对于HTML文档，就是HTML元素|
