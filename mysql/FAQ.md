@@ -70,6 +70,12 @@ mysqladmin -u 用户名 -p password "新密码"
 4) 带语言参数导出
     mysqldump -uroot -p –default-character-set=latin1 –set-charset=gbk –skip-opt database_name > outfile_name.sql
 
+ps:
+
+备份时排除系统表：
+
+    mysql -e "show databases;" -uroot -proot | grep -Ev "Database|information_schema|mysql|performance_schema" | xargs mysqldump -uroot -proot --databases > /home/chen/mysql_dump.sql
+
 数据库导入:
 
 mysql -h 10.6.208.183 -u test2 -p  -P 3310 目的数据库名称 < test.sql;也可以直接在mysql命令行下面用source导入(先用use进入到某个数据库，mysql>source /home/xxx/test.sql，后面的参数为sql文件).注意,**导入前应先确保目的数据库存在**.
