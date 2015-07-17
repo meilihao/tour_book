@@ -188,3 +188,9 @@ update重复执行相同语句(即同一语句多次执行),返回mysql_affected
 因为`Using`是mysql的关键字,这里是建表时错误使用造成的,需用反引号包裹关键字,再进行操作.
 
     alter table Avatar drop column `Using`
+
+## CRUD出错
+
+### 插入空值出错
+
+mysql sql-mode包含"STRICT_TRANS_TABLES"时(严格模式),db不允许插入空值.在建表时该字段添加default即可解决.
