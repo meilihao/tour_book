@@ -14,3 +14,26 @@
 停止redis时碰到,可能是权限问题，因为在shutdown命令的时候，会进行save操作，而save需要操作dump.rdb文件，如果没有权限则会报这个错.
 
 解决:先kill redis-server,再用适当权限(通常是sudo)重启.
+
+#### github.com/garyburd/redigo/redis
+
+redis.Pool参数：
+
+- MaxIdle：最大的空闲连接数，表示即使没有redis连接时依然可以保持N个空闲的连接，而不被清除，随时处于待命状态。
+- MaxActive：最大的激活连接数，表示同时最多有N个连接
+- IdleTimeout：最大的空闲连接等待时间，超过此时间后，空闲连接将被关闭
+- Dial：建立连接的function
+- Wait：当Wait=true时,在Pool达到MaxIdle限制(即没有空闲连接)时,Get()等待直到有连接返回Pool中.
+
+ 例如：
+```
+[Redis]
+	Addr        = '127.0.0.1:6379'
+	Password    = ''
+	MaxIdle     = 5
+	MaxActive   = 50
+	IdleTimeout = 3600 # 1小时
+	Wait        = true
+```
+
+
