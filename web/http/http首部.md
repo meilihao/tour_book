@@ -512,6 +512,12 @@ HttpOnly	加以限制，使 Cookie 不能被 JavaScript 脚本访问
 
 #### expires 属性
 
+**expires是HTTP/1.0中的;现已经被max-age属性所取代，max-age用秒来设置`cookie`的生存期.**
+
+max-age是HTTP/1.1中的,它是个相对的值,相对于`Set-Cookie's Request_time(请求时间)`,如果max-age为0，则表示删除该cookie,但ie系的浏览器不支持该属性.
+
+如果不设置expires或者max-age这个cookie默认显示是`Session`,而不是具体时间，也就是关闭浏览器该cookie就消失了(具体浏览器和其策略有关,firefox和chrome都不是立即消失，有延迟，但firefox上消失比较快，chrome上会延迟久一点).
+
 一旦 Cookie 从服务器端发送至客户端，服务器端就不存在可以显式删除 Cookie 的方法.但可通过覆盖**已过期**的 Cookie，实现对客户端 Cookie 的实质性删除操作
 
 #### path 属性
