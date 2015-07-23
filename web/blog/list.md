@@ -57,6 +57,9 @@
 ## 认证
  - [使用 AngularJS & NodeJS 实现基于 token 的认证应用](http://zhuanlan.zhihu.com/FrontendMagazine/19920223)
  - [关于 Token，你应该知道的十件事](2015_05_29_001.md)
+ - [身份验证中Cookies与 Tokens比较](2015_07_21_001.md)
+ - [OAuth 2.0 笔记](https://blog.yorkxin.org)
+ - [OAuth 2.0安全案例回顾](http://drops.wooyun.org/papers/598)
 
 ## git
 - [如何用简单的语言解释 Git 的基础命令？](http://zhuanlan.zhihu.com/FrontendMagazine/19845650)
