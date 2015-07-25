@@ -274,3 +274,66 @@ func main() {
 常量只有在最终被赋值给一个变量的时候才可以会出现溢出的情况,因此下面的语句是合法的:
 
     const t=(1<<100)>>97 //t=8
+
+### 转换
+
+#### unsafe.Pointer转Slice
+
+```go
+package main
+
+import (
+	"fmt"
+	"reflect"
+	"unsafe"
+)
+
+type T struct {
+	Name  int
+	Slice []int
+	Map   map[string]int
+}
+
+func main() {
+	t := new(T)
+	t.Name = 12
+	t.Slice = make([]int, 3, 6)
+	t.Map = map[string]int{"A": 1, "B": 2}
+	fmt.Println(t)
+
+	fmt.Printf("%p\n", &t.Slice)
+
+	k := unsafe.Pointer(uintptr(unsafe.Pointer(t)) + uintptr(unsafe.Sizeof(int(0))))
+	fmt.Printf("%#v\n", k)
+
+	p := (*struct {
+		array uintptr
+		len   int
+		cap   int
+	})(k)
+
+	fmt.Printf("output: %+v\n", p) //检查k的地址是否正确(看len)
+	fmt.Printf("%x\n", p.array)
+
+	s := *(*[]int)(k) //Pointer转slice
+	fmt.Println(s)
+
+	//---其他获取slice底层结构的方式
+
+	hdr := (*reflect.SliceHeader)(k)
+
+	// Create a header for comparison via pointer manipulation
+	address := (uintptr)(k)
+	lenAddr := address + unsafe.Sizeof(address)
+	capAddr := lenAddr + unsafe.Sizeof(int(0))
+
+	unsafeHdr := reflect.SliceHeader{
+		Data: *(*uintptr)(unsafe.Pointer(address)),
+		Len:  *(*int)(unsafe.Pointer(lenAddr)),
+		Cap:  *(*int)(unsafe.Pointer(capAddr)),
+	}
+
+	fmt.Printf("Real Header:  %#v\n", *hdr)
+	fmt.Printf("UnsafeHeader: %#v\n", unsafeHdr)
+}
+```
