@@ -337,3 +337,78 @@ func main() {
 	fmt.Printf("UnsafeHeader: %#v\n", unsafeHdr)
 }
 ```
+
+### 方法
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+type Tc interface {
+	V()
+}
+type myType struct {
+}
+
+func (m *myType) V() {
+	fmt.Println("V()")
+}
+func main() {
+	//var i Tc = myType{}
+	// i.V() //报错,类型 T 的可调用方法集不包含接受者为 *T 的方法,参考:http://se77en.cc/2014/05/05/methods-interfaces-and-embedded-types-in-golang/
+
+	// 而这里不报错
+	var w myType = myType{}
+	w.V()//=>(&w).V(),编译器自动推导
+}
+```
+```go
+//<<Go语言编程>>.许式伟.p74
+type Integer int
+
+func (a Integer) Less(b Integer) bool {
+	return a < b
+}
+
+func (a *Integer) Add(b Integer) {
+	*a += b
+}
+
+type LessAdder interface {
+	Less(b Integer) bool
+	Add(b Integer)
+}
+
+func main() {
+	var a Integer = 1
+	var b LessAdder = &a //正确,编译器自动生成会func (a *Integer) Less(b Integer) bool，其实直接按照接口赋值规则理解更方便
+	var b LessAdder = a //错误,go无法自动生成func (a Integer) Add(b Integer),原因如下
+}
+```
+```go
+type Integer int
+func (a *Integer) Add(b Integer) {
+    *a += b
+}
+
+func (a Integer) Bdd(b Integer) {
+    (&a).Add(b)
+}
+
+type LessAdder interface {
+    Add(b Integer)
+}
+func main() {
+    var a,b,c Integer = 1,1,2
+    p:=&a
+
+	p.Add(c)
+	fmt.Println(a)
+
+	b.Bdd(c)
+	fmt.Println(b) //b=1，和实际期望3不符。
+}
+```
