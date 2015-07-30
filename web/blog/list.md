@@ -66,3 +66,6 @@
 
 ## 经验
 - [TJ Holowaychuk是怎样学习编程的？](http://zhuanlan.zhihu.com/FrontendMagazine/19572823)
+
+## nginx
+- [深入NGINX：我们如何设计它的性能和扩展性](https://linux.cn/article-5681-1.html)
