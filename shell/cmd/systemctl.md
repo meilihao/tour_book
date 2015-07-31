@@ -207,6 +207,8 @@ systemd-ask-password-conso
 1. 启动运行等级3，即多用户模式（命令行）
        # systemctl isolate runlevel3.target #或# systemctl isolate multiuser.target
 
+1. 切换系统运行级别
+       # systemctl isolate graphical.target
 1. 设置多用户模式或图形模式为默认运行等级
        # systemctl set-default runlevel3.target
        # systemctl set-default runlevel5.target
@@ -221,9 +223,15 @@ systemd-ask-password-conso
 
  对于不知运行等级为何物的人，说明如下:
 
- Runlevel 0 : 关闭系统
-Runlevel 1 : 救援/维护模式
-Runlevel 3 : 多用户，无图形系统
-Runlevel 4 : 多用户，无图形系统
-Runlevel 5 : 多用户，图形化系统
-Runlevel 6 : 关闭并重启机器
+ Runlevel 0 : 关闭系统(runlevel0.target, poweroff.target)
+Runlevel 1 : 救援/维护模式(runlevel1.target, rescue.target)
+Runlevel 3 : 多用户，无图形系统(runlevel3.target, multi-user.target)
+Runlevel 2/4 : 多用户，无图形系统(runlevel2.target, runlevel4.target, multi-user.target)
+Runlevel 5 : 多用户，图形化系统(runlevel5.target, graphical.target)
+Runlevel 6 : 关闭并重启机器(runlevel6.target, reboot.target)
+
+### 管理远程系统
+
+1. systemctl命令通常都能被用来管理远程主机(用ssh通讯),只需将远程主机和用户名添加到systemctl命令后
+
+       # systemctl status sshd -H root@1.2.3.4
