@@ -16,7 +16,7 @@
 - [appkey] [AppKey的作用仅作来源显示用](http://open.weibo.com/wiki/FAQ)
 - language 语言设置
 - title 要分享的文字
-- [pic] 预设要分享的图片
+- [pic] 预设要分享的图片(必须带扩展名)
 - [searchPic] 抓图服务,true时会抓取参数url网页中的图片追加为要分享的图片
 - [ralateUid] 关联账号,在分享文字后追加分享来源(`（分享自 @XXX）`)
 - [content] 设置页面编码gb2312|utf-8
