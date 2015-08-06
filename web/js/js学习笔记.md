@@ -274,7 +274,7 @@ a.forEach(function (element, index, array) {
 ```
 注意，forEach()方法是ES5.1标准引入的，你需要测试浏览器是否支持。
 
-Set与Array类似，但Set没有索引，因此回调函数最多两个参数(element,set本身).
+Set与Array类似，但Set没有索引，因此其forEach的回调函数的element与index相等.
 如果对某些参数不感兴趣，由于JavaScript的函数调用不要求参数必须一致，因此可以忽略它们。例如，只需要获得Array的element：
 ```js
 var a = ['A', 'B', 'C'];
