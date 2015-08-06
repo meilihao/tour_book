@@ -17,6 +17,7 @@ myApp.config(function($httpProvider) {
         'Content-Type': 'application/x-www-form-urlencoded'
     }
 });
+//再如下面,在$http中使用data属性聚集参数即可.
 ```
 1. 在post中配置
 ```js
