@@ -1,3 +1,7 @@
+# js学习笔记
+
+参考：[JavaScript教程](http://www.liaoxuefeng.com/wiki/001434446689867b27157e896e74d51a89c25cc8b43bdb3000)
+
 ## 基础
 
 ## 数据类型和变量
@@ -158,7 +162,28 @@ s.toLowerCase();　  // 字符转小写
 s.indexOf('world'); // 检索指定字符串出现的起始位置，返回7，没找到时返回-1
 s.substring(0, 5);  // 返回指定索引区间的子串，索引0开始到5（不包括5），返回'Hello'
 s.substring(7);     // 从索引7开始到结束，返回'world!中'
+//----其他方法
+Method    描述
+charAt()    返回指定索引位置的字符
+charCodeAt()    返回指定索引位置字符的 Unicode 值
+concat()    连接两个或多个字符串，返回连接后的字符串
+fromCharCode()    将字符转换为 Unicode 值
+indexOf()    返回字符串中检索指定字符第一次出现的位置
+lastIndexOf()    返回字符串中检索指定字符最后一次出现的位置
+localeCompare()    用本地特定的顺序来比较两个字符串
+match()    找到一个或多个正则表达式的匹配
+replace()    替换与正则表达式匹配的子串
+search()    检索与正则表达式相匹配的值
+slice()    提取字符串的片断，并在新的字符串中返回被提取的部分
+split()    把字符串分割为子字符串数组
+substr()    从起始索引号提取字符串中指定数目的字符
+substring()    提取字符串中两个指定的索引号之间的字符
+toString()    返回字符串对象值
+toUpperCase()    把字符串转换为大写
+trim()    移除字符串首尾空白
+valueOf()    返回某个字符串对象的原始值
 ```
+更多方法参考[JavaScript标准库之String](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/String)
 
 ### FAQ
 
@@ -300,3 +325,652 @@ JavaScript在设计时，有两种比较相等运算符：
 唯一能判断NaN的方法是通过isNaN()函数：
 
     isNaN(NaN); // true
+
+因此，不等运算符也有两个`!=`和`!==`,区别与相等运算符类试．
+
+## 函数
+
+于JavaScript的函数也是一个对象，而函数名可以视为指向该函数的变量。
+
+由于JavaScript允许传入任意个参数而不影响调用，因此传入的参数比定义的参数多也没有问题，虽然函数内部并不使用这些参数；传入的参数比定义的少也没有问题，此时参数将收到undefined，要避免收到undefined，可以对参数进行检查。
+
+#### arguments参数
+arguments，JavaScript的关键字，它只在函数内部起作用，并且永远指向当前函数的调用者传入的所有参数。arguments类似Array但它不是一个Array，即利用arguments，可以获得调用者传入的所有参数．实际上arguments最常用于判断传入参数的个数．
+
+#### rest参数
+ES6标准引入,用于获取已定义参数外的其他参数.rest参数只能写在最后，前面用...标识，从运行结果可知，传入的参数先绑定a、b，多余的参数以数组形式交给变量rest;如果传入的参数连正常定义的参数都没填满，rest参数会接收一个空数组.
+
+chrome 44还未支持rest,firefox最新版已支持.
+```js
+function foo(a, b, ...rest) {
+    console.log('a = ' + a);
+    console.log('b = ' + b);
+    console.log(rest);
+}
+
+foo(1, 2, 3, 4, 5);
+// 结果:
+// a = 1
+// b = 2
+// Array [ 3, 4, 5 ]
+
+foo(1);
+// 结果:
+// a = 1
+// b = undefined
+// Array []
+```
+
+### 变量作用域
+在JavaScript中，用var申明的变量实际上是有作用域的。
+
+规则:
+
+- 如果一个变量在函数体内部申明，则该变量的作用域为整个函数体，在函数体外不可引用该变量.
+- 如果两个不同的函数各自申明了同一个变量，那么该变量只在各自的函数体内起作用。换句话说，不同函数内部的同名变量互相独立，互不影响.
+- 由于JavaScript的函数可以嵌套，此时，内部函数可以访问外部函数定义的变量，反过来则不行.
+- JavaScript的函数在查找变量时从自身函数定义开始，从"内"向"外"查找。如果内部函数定义了与外部函数重名的变量，则内部函数的变量将"屏蔽"外部函数的变量。
+
+#### 变量提升
+
+**JavaScript的函数定义有个特点，它会先扫描整个函数体的语句，把所有申明的变量“提升”到函数顶部**：
+
+```js
+'use strict';
+function foo() {
+    var x = 'Hello, ' + y;
+    alert(x);
+    var y = 'Bob';
+}
+
+foo();
+```
+尽管是strict模式，但语句var x = 'Hello, ' + y;并不报错，原因是变量y在稍后申明了。但是alert显示`Hello, undefined`，说明变量y的值为undefined。这正是因为**JavaScript引擎自动提升了变量y的声明，但不会提升变量y的赋值**。
+
+对于上述foo()函数，JavaScript引擎看到的代码相当于：
+```js
+function foo() {
+    var y; // 提升变量y的申明
+    var x = 'Hello, ' + y;
+    alert(x);
+    y = 'Bob';
+}
+```
+由于JavaScript的这一怪异的“特性”，我们**在函数内部定义变量时，请严格遵守“在函数内部首先申明所有变量”这一规则**。最常见的做法是用一个var申明函数内部用到的所有变量：
+```js
+function foo() {
+    var
+        x = 1, // x初始化为1
+        y = x + 1, // y初始化为2
+        z, i; // z和i为undefined
+    // 其他语句:
+    for (i=0; i<100; i++) {
+        ...
+    }
+}
+```
+#### 全局作用域
+不在任何函数内定义的变量就具有全局作用域。实际上，JavaScript默认有一个全局对象`window`，全局作用域的变量实际上被绑定到window的一个属性.
+
+顶层函数的定义也被视为一个全局变量，并绑定到window对象.常用的`alert()`函数其实也是`window`的一个变量.
+
+>JavaScript实际上只有一个全局作用域。任何变量（函数也视为变量），如果没有在当前函数作用域中找到，就会继续往上查找，最后如果在全局作用域中也没有找到，则报ReferenceError错误。
+
+#### 命名空间
+全局变量会绑定到window上，不同的JavaScript文件如果使用了相同的全局变量，或者定义了相同名字的顶层函数，都会造成命名冲突，并且很难被发现。
+
+**减少冲突的一个方法是把自己的所有变量和函数全部绑定到一个变量(通常是全局变量)中,该变量就叫命名空间**.
+#### 局部作用域
+由于JavaScript的变量作用域实际上是函数内部，我们在for循环等语句块中是无法定义具有局部作用域的变量的：
+```js
+'use strict';
+function foo() {
+    for (var i=0; i<100; i++) {
+        //
+    }
+    i += 100; // 仍然可以引用变量i
+}
+```
+为了解决块级作用域，ES6引入了新的关键字let，用let替代var可以申明一个块级作用域的变量：
+```js
+'use strict';
+function foo() {
+    var sum = 0;
+    for (let i=0; i<100; i++) {
+        sum += i;
+    }
+    i += 1; // SyntaxError
+}
+```
+chrome 44还未支持`let`,firefox最新版已支持.
+#### 常量
+由于var和let申明的是变量，如果要申明一个常量，在ES6之前是不行的，我们通常用全部大写的变量来表示“这是一个常量，不要修改它的值”：
+
+    var PI = 3.14;
+ES6标准引入了新的关键字`const`来定义常量，**const与let都具有块级作用域**：
+```js
+'use strict';
+
+const PI = 3.14;
+PI = 3; // chrome 44不报错,但有效果,firefox最新版报错.
+PI; // 3.14
+```
+### 方法
+在一个对象的属性上绑定函数，称为这个对象的方法。
+
+**在一个方法内部，this是一个特殊变量，它始终指向当前对象.如果以对象的方法形式调用，比如`obj.xxx()`，该函数的this指向被调用的对象，这是符合我们预期的;如果单独调用函数，比如`xxx()`，此时，该函数的this指向全局对象，也就是window**。
+```js
+function getAge() {
+    var y = new Date().getFullYear();
+    return y - this.birth;
+}
+
+var xiaoming = {
+    name: '小明',
+    birth: 1990,
+    age: getAge
+};
+
+xiaoming.age(); // 25, 正常结果
+getAge(); // NaN
+
+var fn = xiaoming.age; // 先拿到xiaoming的age函数
+fn(); // NaN,因此要保证this指向正确，必须用obj.xxx()的形式调用.
+```
+由于这是一个巨大的设计错误，要想纠正可没那么简单。ECMA决定，在strict模式下让函数的this指向undefined并报错(chrome 44仍指向全局对象`window`,不报错;firefox最新版已支持).这个决定只是让错误及时暴露出来，并没有解决this应该指向的正确位置.
+
+有些时候，喜欢重构的你把方法重构了一下：
+```js
+'use strict';
+var xiaoming = {
+    name: '小明',
+    birth: 1990,
+    age: function () {
+        function getAgeFromBirth() {
+            var y = new Date().getFullYear();
+            return y - this.birth;
+        }
+        return getAgeFromBirth();
+    }
+};
+
+xiaoming.age(); // Uncaught TypeError: Cannot read property 'birth' of undefined
+```
+结果又报错了！原因是this指针只在age方法的函数内指向xiaoming，在函数内部定义的函数，this又指向undefined了（在非strict模式下，它重新指向全局对象window）!firefox已支持该方式;chrome 44在非strict和struct都指向window.
+
+修复的办法也不是没有，我们用一个that变量首先捕获this：
+```js
+'use strict';
+var xiaoming = {
+    name: '小明',
+    birth: 1990,
+    age: function () {
+        var that = this; // 在方法内部一开始就捕获this
+        function getAgeFromBirth() {
+            var y = new Date().getFullYear();
+            return y - that.birth; // 用that而不是this
+        }
+        return getAgeFromBirth();
+    }
+};
+
+xiaoming.age(); // 25
+```
+#### apply
+
+要指定函数的this指向哪个对象，可以用函数本身的apply方法,即apply() 方法在指定this值和参数的情况下调用某个函数.它接收两个参数，第一个参数就是需要绑定的this变量，第二个参数是Array，表示函数本身的参数。
+
+用apply修复getAge()调用：
+```js
+function getAge() {
+    var y = new Date().getFullYear();
+    return y - this.birth;
+}
+
+var xiaoming = {
+    name: '小明',
+    birth: 1990,
+    age: getAge
+};
+
+xiaoming.age(); // 25
+getAge.apply(xiaoming, []); // 25, this指向xiaoming, 参数为空
+```
+另一个与apply()类似的方法是call()，唯一区别是：
+
+- apply()把参数打包成Array再传入；
+- call()把参数按顺序传入。
+
+比如调用Math.max(3, 5, 4)，分别用apply()和call()实现如下：
+```js
+Math.max.apply(null, [3, 5, 4]); // 5
+Math.max.call(null, 3, 5, 4); // 5
+```
+对普通函数调用，我们通常把this绑定为null。
+
+### 高阶函数
+
+JavaScript的函数其实都指向某个变量。既然变量可以指向函数，函数的参数能接收变量，那么一个函数就可以接收另一个函数作为参数，这种函数就称之为高阶函数.
+
+#### map/reduce
+map()方法定义在JavaScript的Array中，我们调用Array的map()方法，传入我们自己的函数，就得到了一个新的Array作为结果：
+```js
+function pow(x) {
+    return x * x;
+}
+
+var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+arr.map(pow); // [1, 4, 9, 16, 25, 36, 49, 64, 81]
+```
+Array的reduce()把一个函数作用在这个Array的[x1, x2, x3...]上，这个函数**必须接收两个参数**，reduce()把结果继续和序列的下一个元素做累积计算，其效果就是：
+
+    [x1, x2, x3, x4].reduce(f) = f(f(f(x1, x2), x3), x4)
+比方说对一个Array求和，就可以用reduce实现：
+```js
+var arr = [1, 3, 5, 7, 9];
+arr.reduce(function (x, y) {
+    return x + y;
+}); // 25
+```
+当Array.length===1时,Array.reduce()返回Array[0],其实是reduce()的回调函数根本就没有执行.
+
+#### filter
+用于把Array的某些元素过滤掉，然后返回剩下的元素.
+
+Array的filter()也接收一个函数。和map()不同的是，filter()把传入的函数依次作用于每个元素，然后根据返回值是true还是false决定保留还是丢弃该元素。
+
+例如，把一个Array中的空字符串删掉，可以这么写：
+```js
+var arr = ['A', '', 'B', null, undefined, 'C', '  '];
+arr.filter(function (s) {
+    return s && s.trim(); // 注意：IE9以下的版本没有trim()方法
+}); // ['A', 'B', 'C']
+```
+#### sort
+默认情况下，对字符串排序，是按照ASCII的大小比较的;数字排序时是所有元素先转换为String再排序.注意,**sort()方法会直接对Array进行修改，它返回的结果仍是当前Array.**
+
+sort()方法也是一个高阶函数，它还可以接收一个比较函数来实现自定义的排序。比较的过程必须通过函数抽象出来,通常规定，对于两个元素x和y，如果认为x < y，则返回-1，如果认为x == y，则返回0，如果认为x > y，则返回1.
+```js
+var arr = [10, 20, 1, 2];
+arr.sort(function (x, y) {
+    if (x < y) {
+        return -1;
+    }
+    if (x > y) {
+        return 1;
+    }
+    return 0;
+}); // [1, 2, 10, 20]
+```
+### 闭包
+```js
+function lazy_sum(arr) {
+    var sum = function () {
+        return arr.reduce(function (x, y) {
+            return x + y;
+        });
+    }
+    return sum;
+}
+var f = lazy_sum([1, 2, 3, 4, 5]); // function sum()
+f(); // 15
+var f2 = lazy_sum([1, 2, 3, 4, 5]);
+f === f2; // false,每次调用都会返回一个新的函数，即使传入相同的参数
+```
+在函数lazy_sum中又定义了函数sum，并且，内部函数sum可以引用外部函数lazy_sum的参数和局部变量，当lazy_sum返回函数sum时，相关参数和变量都保存在返回的函数中，这种形式称为"闭包(Closure)".
+```js
+function count() { //每次循环，都创建了一个新的函数，然后，把创建的3个函数都添加到一个Array中返回
+    var arr = [];
+    for (var i=1; i<=3; i++) {
+        arr.push(function () {
+            return i * i; //返回的函数并没有立刻执行，而是直到调用时才执行
+        });
+    }
+    return arr;
+}
+
+var results = count();
+var f1 = results[0];
+var f2 = results[1];
+var f3 = results[2];
+f1(); // 16
+f2(); // 16
+f3(); // 16
+```
+全部都是16！原因就在于返回的函数引用了变量i，但它并非立刻执行。等到3个函数都返回时，它们所引用的变量i已经变成了4，因此最终结果为16。
+
+因此,**返回闭包时牢记的一点就是：返回函数不要引用任何循环变量，或者后续会发生变化的变量。**
+
+如果一定要引用循环变量怎么办？方法是再创建一个函数，用该函数的参数绑定循环变量当前的值，无论该循环变量后续如何更改，已绑定到函数参数的值不变：
+```js
+function count() {
+    var arr = [];
+    for (var i=1; i<=3; i++) {
+        arr.push((function (n) {
+            return function () {
+                return n * n;
+            }
+        })(i));
+    }
+    return arr;
+}
+
+var results = count();
+var f1 = results[0];
+var f2 = results[1];
+var f3 = results[2];
+
+f1(); // 1
+f2(); // 4
+f3(); // 9
+```
+这里用了一个“创建一个匿名函数并立刻执行”的语法：
+```js
+(function (x) {
+    return x * x;
+})(3); // 9
+```
+闭包其他作用:
+```js
+function create_counter(initial) {
+    var x = initial || 0;
+    return {
+        inc: function () {
+            x += 1;
+            return x;
+        }
+    }
+}
+var c2 = create_counter(10);
+c2.inc(); // 11
+c2.inc(); // 12
+```
+在返回的对象中，实现了一个闭包，该闭包携带了局部变量x，并且，从外部代码根本无法访问到变量x,相当于C++里的私有变量(private修饰一个成员变量)。换句话说，闭包就是携带状态的函数，并且它的状态可以完全对外隐藏起来。
+#### 箭头函数
+
+ES6标准新增了一种新的函数：Arraw Function（箭头函数）.chrome44不支持,firefox最新版支持.
+```js
+x => x * x
+//上面的箭头函数相当于：
+function (x) {
+    return x * x;
+}
+```
+箭头函数类似于匿名函数，并且简化了函数定义。箭头函数有两种格式，一种像上面的，只包含一个表达式，连{ ... }和return都省略掉了。还有一种可以包含多条语句，这时候就不能省略{ ... }和return.而且如果参数不是一个，就需要用括号()括起来：
+```js
+// 两个参数:
+(x, y) => x * x + y * y
+
+// 无参数:
+() => 3.14
+
+// 可变参数:
+(x, y, ...rest) => {
+    var i, sum = x + y;
+    for (i=0; i<rest.length; i++) {
+        sum += rest[i];
+    }
+    return sum;
+}
+```
+如果要返回一个对象，就要注意：
+```js
+// SyntaxError,因为和函数体的{ ... }有语法冲突:
+x => { foo: x }
+
+// ok:
+x => ({ foo: x })
+```
+箭头函数看上去是匿名函数的一种简写，但实际上，箭头函数和匿名函数有个明显的区别：箭头函数内部的this是词法作用域，由上下文确定。即**箭头函数完全修复了this的指向，this总是指向词法作用域，也就是外层调用者obj**.
+
+由于this在箭头函数中已经按照词法作用域绑定了，所以，用call()或者apply()调用箭头函数时，无法对this进行绑定，即传入的第一个参数被忽略：
+```js
+var obj = {
+    birth: 1990,
+    getAge: function (year) {
+        var b = this.birth; // 1990
+        var fn = (y) => y - this.birth; // this.birth仍是1990
+        return fn.call({birth:2000}, year);
+    }
+};
+obj.getAge(2015); // 25
+```
+### generator
+generator（生成器）是ES6标准引入的新的数据类型。一个generator看上去像一个函数，但可以返回多次.generator和函数不同的是，generator由`function*`定义（注意多出的*号），并且，除了return语句，还可以用yield返回多次。
+
+产生斐波那契数列的函数:
+```js
+function fib(max) { //函数只能返回一次，所以必须返回一个Array
+    var
+        t,
+        a = 0,
+        b = 1,
+        arr = [0, 1];
+    while (arr.length < max) {
+        t = a + b;
+        a = b;
+        b = t;
+        arr.push(t);
+    }
+    return arr;
+}
+
+// 测试:
+fib(5); // [0, 1, 1, 2, 3]
+fib(10); // [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
+//---
+function* fib(max) { //创建了一个generator对象，还没有去执行它
+    var
+        t,
+        a = 0,
+        b = 1,
+        n = 1;
+    while (n < max) {
+        yield a;
+        t = a + b;
+        a = b;
+        b = t;
+        n ++;
+    }
+    return a;
+}
+var f = fib(5);
+f.next(); // {value: 0, done: false}
+f.next(); // {value: 1, done: false}
+f.next(); // {value: 1, done: false}
+f.next(); // {value: 2, done: false}
+f.next(); // {value: 3, done: true}
+
+for (var x of fib(5)) {
+    console.log(x); // 依次输出0, 1, 1, 2, 3
+}
+```
+调用generator对象有两个方法:
+1. 不断地调用generator对象的next()方法,next()方法会执行generator的代码，然后，每次遇到yield x;就返回一个对象{value: x, done: true/false}，然后“暂停”。返回的value就是yield的返回值，done表示这个generator是否已经执行结束了。如果done为true，则value就是return的返回值,当执行next()超过可执行次数时将返回`{done=true,  value=undefined}`
+2. 直接用`for ... of`循环迭代generator对象，这种方式不需要我们自己判断done.
+
+generator可以在执行过程中多次返回，所以它看上去就像一个可以记住执行状态的函数，利用这一点，写一个generator就可以实现需要用面向对象才能实现的功能:
+```js
+//编写自增的ID
+function* next_id() {
+    var count = 0;
+
+    while(true){
+        count++;
+        yield count;
+    }
+}
+```
+generator还有另一个巨大的好处，就是把异步回调代码变成“同步”代码。这个好处要等到后面学了AJAX以后才能体会到。
+
+没有generator之前的黑暗时代，用AJAX时需要这么写代码：
+```js
+ajax('http://url-1', data1, function (err, result) {
+    if (err) {
+        return handle(err);
+    }
+    ajax('http://url-2', data2, function (err, result) {
+        if (err) {
+            return handle(err);
+        }
+        ajax('http://url-3', data3, function (err, result) {
+            if (err) {
+                return handle(err);
+            }
+            return success(result);
+        });
+    });
+});
+```
+回调越多，代码越难看。
+
+有了generator的美好时代，用AJAX时可以这么写：
+```js
+try {
+    r1 = yield ajax('http://url-1', data1);
+    r2 = yield ajax('http://url-2', data2);
+    r3 = yield ajax('http://url-3', data3);
+    success(r3);
+}
+catch (err) {
+    handle(err);
+}
+```
+看上去是同步的代码，实际执行是异步的。
+## javascript标准对象
+在JavaScript的世界里，一切都是对象。为了区分对象的类型，我们用typeof操作符获取对象的类型，它总是返回一个字符串：
+```js
+typeof 123; // 'number'
+typeof NaN; // 'number'
+typeof 'str'; // 'string'
+typeof true; // 'boolean'
+typeof undefined; // 'undefined'
+typeof Math.abs; // 'function'
+typeof null; // 'object'
+typeof []; // 'object'
+typeof {}; // 'object'
+```
+可见，number、string、boolean、function和undefined有别于其他类型。特别注意null的类型是object，Array的类型也是object，如果我们**用typeof将无法区分出null、Array和通常意义上的object——{}**。
+#### 包装对象
+除了这些类型外，JavaScript还提供了包装对象，类似于Java的int和Integer.
+
+number、boolean和string都有包装对象。包装对象用new创建：
+```js
+var n = new Number(123); // 123,生成了新的包装类型
+var b = new Boolean(true); // true,生成了新的包装类型
+var s = new String('str'); // 'str',生成了新的包装类型
+```
+虽然包装对象看上去和原来的值一模一样，显示出来也是一模一样，但他们的类型已经变为object了！所以，包装对象和原始值用===比较会返回false：
+```js
+typeof new Number(123); // 'object'
+new Number(123) === 123; // false
+
+typeof new Boolean(true); // 'object'
+new Boolean(true) === true; // false
+
+typeof new String('str'); // 'object'
+new String('str') === 'str'; // false
+```
+所以**不要使用包装对象！尤其是针对string类型**.
+
+如果我们在使用Number、Boolean和String时，此时，Number()、Boolean和String()被当做普通函数，把任何类型的数据转换为number、boolean和string类型：
+```js
+var n = Number('123'); // 123，相当于parseInt()或parseFloat()
+typeof n; // 'number'
+
+var b = Boolean('true'); // true
+typeof b; // 'boolean'
+
+var b2 = Boolean('false'); // true! 'false'字符串转换结果为true！因为它是非空字符串！
+var b3 = Boolean(''); // false
+
+var s = String(123.45); // '123.45'
+typeof s; // 'string'
+```
+总结一下，有这么几条规则需要遵守：
+
+- 不要使用new Number()、new Boolean()、new String()创建包装对象；
+- 用parseInt()或parseFloat()来转换任意类型到number；
+- 用String()来转换任意类型到string，或者直接调用某个对象的toString()方法；
+- 通常不必把任意类型转换为boolean再判断，因为可以直接写if (myVar) {...}；
+- typeof操作符可以判断出number、boolean、string、function和undefined；
+- 判断Array要使用Array.isArray(arr)；
+- 判断null请使用myVar === null；
+- 判断某个全局变量是否存在用typeof window.myVar === 'undefined'；
+- 函数内部判断某个变量是否存在用typeof myVar === 'undefined'。
+- 任何对象都有toString()方法吗？null和undefined就没有！确实如此，这两个特殊值要除外，虽然null还伪装成了object类型。
+- 数值直接调用toString()报SyntaxError.
+      ```js
+      123.toString(); // SyntaxError,javascript的解析器试图将点操作符解析为浮点数字面值的一部分
+
+      //遇到这种情况，要特殊处理一下：
+      123..toString(); // '123', 注意是两个点！
+      (123).toString(); // '123'
+      ```
+### Date
+在JavaScript中，Date对象用来表示日期和时间。
+```js
+var now = new Date(); // 获取系统当前时间
+now; // Wed Jun 24 2015 19:49:22 GMT+0800 (CST)
+now.getFullYear(); // 2015, 年份
+now.getMonth(); // 5, 月份，注意月份范围是0~11，5表示六月
+now.getDate(); // 24, 表示24号
+now.getDay(); // 3, 表示星期三
+now.getHours(); // 19, 24小时制
+now.getMinutes(); // 49, 分钟
+now.getSeconds(); // 22, 秒
+now.getMilliseconds(); // 875, 毫秒数
+now.getTime(); // 1435146562875, 以number形式表示的Unix时间戳(精确到毫秒,GMT时区)<=>Date.now()// 老版本IE没有now()方法
+```
+注意，当前时间是浏览器从本机操作系统获取的时间，所以不一定准确，因为用户可以把当前时间设定为任何值。
+
+如果要创建一个指定日期和时间的Date对象，可以用：
+```js
+var d = new Date(2015, 5, 19, 20, 15, 30, 123);//最后一个参数是毫秒数
+d; // Fri Jun 19 2015 20:15:30 GMT+0800 (CST)
+```
+**JavaScript的月份范围用整数表示是0~11，0表示一月，1表示二月……，所以要表示6月，我们传入的是5**.
+
+第二种创建一个指定日期和时间的方法是解析一个符合`ISO 8601`格式的字符串：
+```js
+var d = Date.parse('2015-06-24T19:49:22.875+08:00');
+d; // 1435146562875 //但它返回的不是Date对象，而是一个时间戳。不过有时间戳就可以很容易地把它转换为一个Date：
+var d = new Date(1435146562875);
+d; // Wed Jun 24 2015 19:49:22 GMT+0800 (CST)
+```
+#### 时区
+Date对象表示的时间总是按浏览器所在时区显示的，不过我们既可以显示本地时间，也可以显示调整后的UTC时间：
+```js
+var d = new Date(1435146562875);
+d.toLocaleString(); // '2015/6/24 下午7:49:22'，本地时间（北京时区+8:00），显示的字符串与操作系统设定的格式有关
+d.toUTCString(); // 'Wed, 24 Jun 2015 11:49:22 GMT'，UTC时间，与本地时间相差8小时
+```
+那么在JavaScript中如何进行时区转换呢？实际上，只要我们传递的是一个number类型的时间戳，我们就不用关心时区转换。**任何浏览器都可以把一个时间戳正确转换为本地时间**。
+### RegExp
+正则表达式是一种用来匹配字符串的强有力的武器。它的设计思想是用一种描述性的语言来给字符串定义一个规则，凡是符合规则的字符串，我们就认为它“匹配”了，否则，该字符串就是不合法的.
+
+因为正则表达式也是用字符串表示的，所以，我们要首先了解如何用字符来描述字符。
+
+在正则表达式中，如果直接给出字符，就是精确匹配。用`\d`可以匹配一个数字，`\w`可以匹配一个字母或数字，所以：
+
+- `'00\d'`可以匹配`'007'`，但无法匹配`'00A'`；
+- `'\d\d\d'`可以匹配`'010'`；
+- `'\w\w'`可以匹配`'js'`；
+
+`.`可以匹配任意字符，所以：
+
+ -`'js.'`可以匹配`'jsp'`、`'jss'`、`'js!'`等等。
+
+要匹配变长的字符，在正则表达式中，用`*`表示任意个字符（包括0个），用`+`表示至少一个字符，用`?`表示0个或1个字符，用`{n}`表示`n`个字符，用`{n,m}`表示`n-m`个字符：
+
+来看一个复杂的例子：`\d{3}\s+\d{3,8}`,我们来从左到右解读一下：
+1. `\d{3}`表示匹配3个数字，例如`'010'`；
+1. `\s`可以匹配一个空格（也包括Tab等空白符），所以\s+表示至少有一个空格，例如匹配`' '`，`'\t\t'`等；
+1. `\d{3,8}`表示3-8个数字，例如`'1234567'`。
+
+综合起来，上面的正则表达式可以匹配以任意个空格隔开的带区号的电话号码。
+
+如果要匹配'010-12345'这样的号码呢？由于'-'是特殊字符，在正则表达式中，要用'\'转义，所以，上面的正则是\d{3}\-\d{3,8}。
+
+但是，仍然无法匹配'010 - 12345'，因为带有空格。所以我们需要更复杂的匹配方式。
+
