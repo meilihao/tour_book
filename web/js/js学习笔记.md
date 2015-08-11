@@ -970,7 +970,284 @@ d.toUTCString(); // 'Wed, 24 Jun 2015 11:49:22 GMT'，UTC时间，与本地时�
 
 综合起来，上面的正则表达式可以匹配以任意个空格隔开的带区号的电话号码。
 
-如果要匹配'010-12345'这样的号码呢？由于'-'是特殊字符，在正则表达式中，要用'\'转义，所以，上面的正则是\d{3}\-\d{3,8}。
+如果要匹配`010-12345`这样的号码呢？由于`-`是特殊字符，在正则表达式中，要用`\`转义，所以，上面的正则是`\d{3}\-\d{3,8}`。
 
-但是，仍然无法匹配'010 - 12345'，因为带有空格。所以我们需要更复杂的匹配方式。
+但是，仍然无法匹配`010 - 12345`，因为带有空格。所以我们需要更复杂的匹配方式。
+#### 进阶
+要做更精确地匹配，可以用`[]`表示范围，比如：
+- `[0-9a-zA-Z\_]`可以匹配一个数字、字母或者下划线；
+- `[0-9a-zA-Z\_]+`可以匹配至少由一个数字、字母或者下划线组成的字符串，比如'a100'，'0_Z'，'js2015'等等；
+- `[a-zA-Z\_\$][0-9a-zA-Z\_\$]*`可以匹配由字母或下划线、$开头，后接任意个由一个数字、字母或者下划线、$组成的字符串，也就是JavaScript允许的变量名；
+- `[a-zA-Z\_\$][0-9a-zA-Z\_\$]{0, 19}`更精确地限制了变量的长度是1-20个字符（前面1个字符+后面最多19个字符）。
 
+`A|B`可以匹配A或B，所以`[J|j]ava[S|s]cript`可以匹配'JavaScript'、'Javascript'、'javaScript'或者'javascript'。
+
+`^`表示行的开头，`^\d`表示必须以数字开头。
+
+`$`表示行的结束，`\d$`表示必须以数字结束。
+
+你可能注意到了，`js`也可以匹配'jsp'，但是加上`^js$`就变成了整行匹配，就只能匹配'js'了。
+#### RegExp
+JavaScript有两种方式创建一个正则表达式：
+- 直接通过`/正则表达式/`写出来，
+- 通过`new RegExp('正则表达式')`创建一个RegExp对象。
+
+```js
+var re1 = /ABC\-001/;
+var re2 = new RegExp('ABC\\-001');
+
+re1; // /ABC\-001/
+re2; // /ABC\-001/
+```
+注意，如果使用第二种写法，因为字符串的转义问题，字符串的两个`\\`实际上是一个`\`。
+
+RegExp对象的test()方法用于测试给定的字符串是否符合条件:
+```js
+var re = /^\d{3}\-\d{3,8}$/;
+re.test('010-12345'); // true
+re.test('010-1234x'); // false
+re.test('010 12345'); // false
+```
+#### 切分字符串
+用正则表达式切分字符串比用固定的字符更灵活，请看正常的切分代码：
+```js
+'a b   c'.split(' '); // ['a', 'b', '', '', 'c']
+```
+嗯，无法识别连续的空格，用正则表达式：
+```js
+'a b   c'.split(/\s+/); // ['a', 'b', 'c']
+```
+无论多少个空格都可以正常分割。加入,试试：
+```js
+'a,b, c  d'.split(/[\s\,]+/); // ['a', 'b', 'c', 'd']
+```
+再加入;试试：
+```js
+'a,b;; c  d'.split(/[\s\,\;]+/); // ['a', 'b', 'c', 'd']
+```
+如果用户输入了一组标签，下次记得用正则表达式来把不规范的输入转化成正确的数组。
+#### 分组
+正则表达式还有提取子串的强大功能。用`()`表示的就是要提取的分组（Group）。比如：
+
+`^(\d{3})-(\d{3,8})$`分别定义了两个组，可以直接从匹配的字符串中提取出区号和本地号码：
+```js
+var re = /^(\d{3})-(\d{3,8})$/;
+re.exec('010-12345'); // ['010-12345', '010', '12345']
+re.exec('010 12345'); // null
+```
+如果正则表达式中定义了组，就可以在RegExp对象上用exec()方法提取出子串来。
+
+exec()方法在匹配成功后，会返回一个Array，第一个元素始终是原始字符串本身，后面的字符串表示匹配成功的子串;exec()方法在匹配失败时返回`null`。
+
+提取子串非常有用。来看一个更凶残的例子：
+```js
+var re = /^(0[0-9]|1[0-9]|2[0-3]|[0-9])\:(0[0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9]|[0-9])\:(0[0-9]|1[0-9]|2[0-9]|3[0-9]|4[0-9]|5[0-9]|[0-9])$/;
+re.exec('19:05:30'); // ['19:05:30', '19', '05', '30']
+```
+这个正则表达式可以直接识别合法的时间。但是有些时候，用正则表达式也无法做到完全验证，比如识别日期：
+```js
+var re = /^(0[1-9]|1[0-2]|[0-9])-(0[1-9]|1[0-9]|2[0-9]|3[0-1]|[0-9])$/;
+```
+对于'2-30'，'4-31'这样的非法日期，用正则还是识别不了，或者说写出来非常困难，这时就需要程序配合识别了。
+####贪婪匹配
+
+需要特别指出的是，正则匹配默认是**贪婪匹配**，也就是匹配尽可能多的字符。举例如下，匹配出数字后面的0：
+```js
+var re = /^(\d+)(0*)$/;
+re.exec('102300'); // ['102300', '102300', '']
+```
+由于`\d+`采用贪婪匹配，直接把后面的0全部匹配了，结果0*只能匹配空字符串了。
+
+必须让`\d+`采用非贪婪匹配（也就是尽可能少匹配），才能把后面的0匹配出来，加个?就可以让\d+采用非贪婪匹配：
+```js
+var re = /^(\d+?)(0*)$/;
+re.exec('102300'); // ['102300', '1023', '00']
+```
+####全局搜索
+
+JavaScript的正则表达式还有几个特殊的标志，最常用的是g，表示全局匹配：
+```js
+var r1 = /test/g;
+var r2 = new RegExp('test', 'g');//r2<=>r1
+```
+全局匹配可以多次执行exec()方法来搜索一个匹配的字符串。当我们指定g标志后，每次运行exec()，正则表达式本身会更新lastIndex属性，表示上次匹配到的最后索引：
+```js
+var s = 'JavaScript, VBScript, JScript and ECMAScript';
+var re=/[a-zA-Z]+Script/g;
+
+// 使用全局匹配:
+re.exec(s); // ['JavaScript']
+re.lastIndex; // 10
+
+re.exec(s); // ['VBScript']
+re.lastIndex; // 20
+
+re.exec(s); // ['JScript']
+re.lastIndex; // 29
+
+re.exec(s); // ['ECMAScript']
+re.lastIndex; // 44
+
+re.exec(s); // null，直到结束仍没有匹配到
+```
+全局匹配类似搜索，因此不能使用/^...$/，那样只会最多匹配一次。
+
+正则表达式还可以指定`i`标志，表示**忽略大小写**，`m`标志，表示**执行多行匹配**。
+### json
+JSON是JavaScript Object Notation的缩写，它是一种**数据交换格式**,用于取代复杂的xml。在JSON中，一共就这么几种数据类型：
+
+- number：和JavaScript的number完全一致；
+- boolean：就是JavaScript的true或false；
+- string：就是JavaScript的string；
+- null：就是JavaScript的null；
+- array：就是JavaScript的Array表示方式——[]；
+- object：就是JavaScript的{ ... }表示方式。
+
+以及上面的任意组合。
+
+并且，**JSON还定死了字符集必须是`UTF-8`**，表示多语言就没有问题了。为了统一解析，**JSON的字符串规定必须用双引号`""`，Object的键也必须用双引号`""`**。
+#### 序列化
+```js
+var xiaoming = {
+    name: '小明',
+    age: 14,
+    gender: true,
+    height: 1.65,
+    grade: null,
+    'middle-school': '\"W3C\" Middle School',
+    skills: ['JavaScript', 'Java', 'Python', 'Lisp']
+};
+
+JSON.stringify(xiaoming); // '{"name":"小明","age":14,"gender":true,"height":1.65,"grade":null,"middle-school":"\"W3C\" Middle School","skills":["JavaScript","Java","Python","Lisp"]}'
+//要输出得好看一些，可以加上参数，按缩进输出,第二个参数用于控制如何筛选对象的键值，如果我们只想输出指定的属性，可以传入Array：
+JSON.stringify(xiaoming, null, '  '); //null表示不筛选
+JSON.stringify(xiaoming, ['name', 'skills'], '  ');
+//还可以传入一个函数，这样对象的每个键值对都会被函数先处理：
+function convert(key, value) {
+    if (typeof value === 'string') {
+        return value.toUpperCase();
+    }
+    return value;
+}
+JSON.stringify(xiaoming, convert, '  ');
+//想要精确控制如何序列化，可以定义一个toJSON()的方法，直接返回JSON应该序列化的数据
+var xiaoming = {
+    name: '小明',
+    age: 14,
+    gender: true,
+    height: 1.65,
+    grade: null,
+    'middle-school': '\"W3C\" Middle School',
+    skills: ['JavaScript', 'Java', 'Python', 'Lisp'],
+    toJSON: function () {
+        return { // 只输出name和age，并且改变了key：
+            'Name': this.name,
+            'Age': this.age
+        };
+    }
+};
+
+JSON.stringify(xiaoming); // '{"Name":"小明","Age":14}'
+```
+#### 反序列化
+直接用JSON.parse()把它变成一个JavaScript对象.
+```js
+JSON.parse('[1,2,3,true]'); // [1, 2, 3, true]
+JSON.parse('{"name":"小明","age":14}'); // Object {name: '小明', age: 14}
+JSON.parse('true'); // true
+JSON.parse('123.45'); // 123.45
+//JSON.parse()还可以接收一个函数，用来转换解析出的属性：
+JSON.parse('{"name":"小明","age":14}', function (key, value) {
+    if (key === 'name') {
+        return value + '同学';
+    }
+    return value;
+}); // Object {name: '小明同学', age: 14}
+```
+## 面向对象
+**JavaScript的原型链和Java的Class区别就在，它没有“Class”的概念，所有对象都是实例，所谓继承关系不过是把一个对象的原型指向另一个对象而已**。
+```js
+// 基于Obj原型创建一个新对象:
+var s = Object.create(Obj); //是E5中提出的一种新的对象创建方式
+```
+### 创建对象
+JavaScript对每个创建的对象都会设置一个原型，指向它的原型对象。
+
+当我们用obj.xxx访问一个对象的属性时，JavaScript引擎先在当前对象上查找该属性，如果没有找到，就到其原型对象上找，如果还没有找到，就一直上溯到Object.prototype对象，最后，如果还没有找到，就只能返回undefined。
+
+#### 构造函数
+除了直接用`{...}`创建一个对象外，JavaScript还可以用一种构造函数的方法来创建对象。它的用法是，先定义一个构造函数：
+```js
+function Student(name) {
+    this.name = name;
+    this.hello = function () {
+        alert('Hello, ' + this.name + '!');
+    }
+}
+
+var xiaoming = new Student('小明'); //用关键字new来调用这个函数，并返回一个对象
+xiaoming.name; // '小明'
+xiaoming.hello(); // Hello, 小明!
+```
+
+注意，如果不写new，这就是一个普通函数，它返回undefined。但是，如果写了new，它就变成了一个构造函数，它绑定的this指向新创建的对象，并默认返回this，也就是说，不需要在最后写`return this;`。
+
+用`new Student()`创建的对象还从原型上获得了一个constructor属性，它指向函数Student本身.
+```js
+xiaoming.constructor === Student.prototype.constructor; // true
+Student.prototype.constructor === Student; // true
+
+Object.getPrototypeOf(xiaoming) === Student.prototype; // true
+
+xiaoming instanceof Student; // true
+```
+Student.prototype指向的对象就是xiaoming、xiaohong的原型对象，这个原型对象自己还有个属性constructor，指向Student函数本身。
+
+另外，函数Student恰好有个属性prototype指向它的原型，但是xiaoming、xiaohong这些对象可没有prototype这个属性，不过可以用__proto__这个非标准用法来查看。
+
+现在我们就认为xiaoming、xiaohong这些对象“继承”自Student。
+```js
+xiaoming.name; // '小明'
+xiaohong.name; // '小红'
+xiaoming.hello; // function: Student.hello()
+xiaohong.hello; // function: Student.hello()
+xiaoming.hello === xiaohong.hello; // false,xiaoming和xiaohong各自的hello是一个函数，但它们是两个不同的函数，虽然函数名称和代码都是相同的
+```
+要让创建的对象共享一个hello函数，根据对象的属性查找原则，我们只要把hello函数移动到xiaoming、xiaohong这些对象共同的原型上就可以了，也就是Student.prototype：
+```js
+function Student(name) {
+    this.name = name;
+}
+Student.prototype.hello = function () {
+    alert('Hello, ' + this.name + '!');
+};
+```
+如果一个函数被定义为用于创建对象的构造函数，但是调用时忘记了写new怎么办？
+
+在strict模式下，this.name = name将报错，因为this绑定为undefined，在非strict模式下，this.name = name不报错，因为this绑定为window，于是无意间创建了全局变量name，并且返回undefined，这个结果更糟糕。
+
+所以，调用构造函数千万不要忘记写new。**为了区分普通函数和构造函数，按照约定，构造函数首字母应当大写，而普通函数首字母应当小写，这样，一些语法检查工具如jslint将可以帮你检测到漏写的new**。
+
+最后，我们还可以编写一个createStudent()函数，在内部封装所有的new操作。一个常用的编程模式像这样：
+```js
+function Student(props) {
+    this.name = props.name || '匿名'; // 默认值为'匿名'
+    this.grade = props.grade || 1; // 默认值为1
+}
+Student.prototype.hello = function () {
+    alert('Hello, ' + this.name + '!');
+};
+function createStudent(props) {
+    return new Student(props || {})
+}
+```
+这个createStudent()函数有几个巨大的优点：一是不需要new来调用，二是参数非常灵活，可以不传，也可以这么传：
+```js
+var xiaoming = createStudent({
+    name: '小明'
+});
+
+xiaoming.grade; // 1
+```
+如果创建的对象有很多属性，我们只需要传递需要的某些属性，剩下的属性可以用默认值。由于参数是一个Object，我们无需记忆参数的顺序。如果恰好从JSON拿到了一个对象，就可以直接创建出xiaoming。
+## 原型继承
