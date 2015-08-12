@@ -434,4 +434,190 @@ fadeIn() 方法逐渐改变被选元素的不透明度，从隐藏到可见（�
 在使用 .animate() 方法时,必须明确CSS对我们要改变的元素所施加的限制。例如,在元素的CSS定位没有设置成 relative 或 absolute 的情况下,调整 left 属性对于匹配的元素毫无作用。所有块级元素默认的CSS定位属性都是 static ,这个值精确地表明:在改变元素的定位属性之前试图移动它们,它们只会保持静止不动。
 
 ## 并发与排队效果
+### 处理一组元素
+当为同一组元素应用多重效果时,可以通过连缀这些效果轻易地实现排队。
+```js
+$switcher
+  .css({position: 'relative'})
+  .animate({left: paraWidth - switcherWidth}, 'slow')
+  .animate({height: '+=20px'}, 'slow')
+  .animate({borderWidth: '5px'}, 'slow');
+```
+通过使用连缀,可以对其他任何jQuery效果进行排队,而并不限于 .animate() 方法。
+```js
+$switcher
+  .css({position: 'relative'})
+  .fadeTo('fast', 0.5)
+  .animate({left: paraWidth - switcherWidth}, 'slow')
+  .fadeTo('slow', 1.0)
+  .slideUp('slow')
+  .slideDown('slow');
+```
+想在这个 div 不透明度减退至一半的同时,把它移动到右侧:
+```js
+$switcher
+  .css({position: 'relative'})
+  .fadeTo('fast', 0.5)
+  .animate({
+    left: paraWidth - switcherWidth
+  }, {
+    duration: 'slow',
+    queue: false
+  })
+  .fadeTo('slow', 1.0)
+  .slideUp('slow')
+  .slideDown('slow');
+```
+`.animate()`第二个参数(即选项对象)包含了 queue 选项,把该选项设置为 false 即可让当前动画与前
+一个动画同时开始.
+
+最后排队不能自动应用到其他的非效果方法,如 .css() 。
+```js
+$switcher
+  .css({position: 'relative'})
+  .fadeTo('fast', 0.5)
+  .animate({
+    left: paraWidth - switcherWidth
+  }, {
+    duration: 'slow',
+    queue: false
+  })
+  .fadeTo('slow', 1.0)
+  .slideUp('slow')
+  .css({backgroundColor: '#f00'}) //即使把修改背景颜色的代码放在连缀序列中正确的位置上,它也会在单击后立即执行
+  .slideDown('slow');
+```
 .queue() 方法把非效果方法添加到队列中的一种方式.
+```js
+$switcher
+  .css({position: 'relative'})
+  .fadeTo('fast', 0.5)
+  .animate({
+    left: paraWidth - switcherWidth
+  }, {
+    duration: 'slow',
+    queue: false
+  })
+  .fadeTo('slow', 1.0)
+  .slideUp('slow')
+  .queue(function(next) {
+    $switcher.css({backgroundColor: '#f00'});
+    next(); //添加的这个 next () 方法可以让队列在中断的地方再接续起来,然后再与后续的效果连缀在一起。如果在此不使用 next() 方法,动画就会中断
+  })
+  .slideDown('slow');
+```
+### 处理多组元素
+为了对不同元素上的效果实现排队,jQuery为每个效果方法都提供了回调函数。
+```js
+$('p').eq(2).css('border', '1px solid #333').click(function() {
+  var $clickedItem = $(this);
+  $clickedItem.next().slideDown('slow',
+  function() {
+    $clickedItem.slideUp('slow');
+  });
+});
+$('p').eq(3).css('backgroundColor', '#ccc').hide();
+```
+既然知道了回调函数,那么就可以回过头来解决在接近一系列效果结束时改变背景颜色的问题了:
+```js
+$switcher
+  .css({position: 'relative'})
+  .fadeTo('fast', 0.5)
+  .animate({
+    left: paraWidth - switcherWidth
+  }, {
+    duration: 'slow',
+    queue: false
+  })
+  .fadeTo('slow', 1.0)
+  .slideUp('slow', function() {
+    $switcher.css({backgroundColor: '#f00'});
+  })
+  .slideDown('slow');
+```
+总结:
+1. 一组元素上的效果:
+ - 当在一个.animate()方法中以多个属性的方式应用时,是同时发生的;
+ - 当以方法连缀的形式应用时,是按顺序发生的(排队效果)——除非queue选项值为false。
+2. 多组元素上的效果:
+ - 默认情况下是同时发生的;
+ - 当在另一个效果方法或者在 .queue() 方法的回调函数中应用时,是按顺序发生的(排队效果)
+
+# 操作DOM
+## 操作属性
+当需为每个元素添加或修改的属性都必须具有不同的值时,可以使用jQuery的 .css() 和 .each() 方法的一个特性:**值回调**.值回调其实就是给参数传入一个函数,而不是传入具体的值。这个函数会针对匹配的元素集中的每个元素都调用一次,调用后的返回值将作为属性的值。
+```js
+$('div.chapter a').attr({
+  rel: 'external',
+  title: 'Learn more at Wikipedia',
+  id: function(index, oldValue) {
+    return 'wikilink-' + index;
+  }
+});
+```
+HTML属性与DOM属性有一点区别。HTML属性是指页面标记中放在引号中的值,而DOM属性则是指通过JavaScript能够存取的值。如图5-2所示,通过Chrome的开发人员工具可以看到HTML属性和DOM属性值。使用.prop()处理DOM元素的属性;使用.attr()处理HTML属性.**根据官方的建议：具有 true 和 false 两个属性的属性，如 checked, selected 或者 disabled 使用prop()，其他的使用 attr()**.
+
+>大多数情况下,HTML属性与对应的DOM属性的作用都是一样的,jQuery可以帮我们处理名字不一致的问题。可是,有时候我们的确需要留意这两种属性的差异。某些DOM属性,例如nodeName 、 nodeType 、 selectedIndex 和 childNodes ,在HTML中没有对应的属性,因此通过 .attr() 方法就没有办法操作它们。此外,数据类型方面也存在差异,比如HTML中的 checked属性是一个字符串,而DOM中的 checked 属性则是一个布尔值。对于布尔值属性,最后是测试DOM属性而不是HTML属性,以确保跨浏览器的一致行为。
+
+HTML属性与DOM属性差别最大的地方,恐怕就要数表单控件的值了。比如,文本输入框的value 属性在DOM中的属性叫 defaultValue ,DOM中就没有 value 属性。而选项列表( select )元素呢,其选项的值在DOM中通常是通过 selectedIndex 属性,或者通过其选项元素的selected 属性来取得。
+
+由于存在这些差异,在取得和设置表单控件的值时,最好不要使用 .attr() 方法。而对于选项列表呢,最好连 .prop() 方法也不要使用,建议使用jQuery提供的 .val().
+```js
+//取得文本输入框的当前值
+var inputValue = $('#my-input').val();
+//取得选项列表的当前值
+var selectValue = $('#my-select').val();
+//设置单选列表的值
+$('#my-single-select').val('value3');
+//设置多选列表的值
+$('#my-multi-select').val(['value1', 'value2']);
+```
+## DOM树操作
+`$()` 函数除了选择元素之外,更能改变页面中实际的内容。
+
+`.insertBefore()` 在现有元素外部、之前添加内容;
+`.prependTo()` 在现有元素内部、之前添加内容;
+`.appendTo()` 在现有元素内部、之后添加内容;
+`.insertAfter()` 在现有元素外部、之后添加内容。
+
+### 创建元素
+```js
+$(document).ready(function() {
+  $('<a href="#top">back to top</a>').insertAfter('div.chapter p');
+  $('<a id="top"></a>').prependTo('body'); //插到body开头
+});
+```
+### 移动元素
+```js
+$(document).ready(function() {
+  $('span.footnote').insertBefore('#footer');
+});
+```
+### 包装元素
+```js
+$(document).ready(function() {
+  $('span.footnote')
+    .insertBefore('#footer')
+    .wrapAll('<ol id="notes"></ol>')
+    .wrap('<li></li>');
+});
+```
+把脚注插入到页脚前面后,我们使用 .wrapAll() 把所有脚注都包含在一个 `<ol>` 中。然后再使用 .wrap() 将每一个脚注分别包装在自己的 `<li>` 中
+```js
+var $notes = $('<ol id="notes"></ol>').insertBefore('#footer');
+$('span.footnote').each(function(index) { //.each() 方法就是一个显式迭代器,其接受一个回调函数,这个函数会针对匹配的元素集中的每个元素都调用一次
+  $('<sup>' + (index + 1) + '</sup>').insertBefore(this); //提取脚注的位置加标记和编号
+  $(this).appendTo($notes).wrap('<li></li>');
+});
+```
+当在jQuery中操作元素时,利用连缀方法更简洁也更有效。可是我们发现上面的code没有办法这样做,因为 this 是.insertBefore() 的目标,是 .appendTo() 的内容。此时,利用反向插入方法.
+
+像 .insertBefore() 和 .appendTo() 这样的插入方法,一般都有一个对应的反向方法。反向方法也执行相同的操作,只不过“目标”和“内容”正好相反。.append()代替.appendTo();.before() 代替 .insertBefore()等.
+```js
+$(document).ready(function() {
+    var $notes = $('<ol id="notes"></ol>').insertBefore('#footer');
+    $('span.footnote').each(function(index) {
+        $(this).before('<sup>' + (index + 1) + '</sup>').appendTo($notes).wrap('<li></li>');
+    });
+});
+```
