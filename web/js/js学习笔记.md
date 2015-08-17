@@ -5,7 +5,7 @@
 - [ECMAScript 6 入门](http://es6.ruanyifeng.com/)
 
 工具:
-- [caniuse # 了解各个浏览器以及它们的不同版本对HTML5、CSS3,JS等特性的支持情况](http://caniuse.com/)
+- [caniuse # 了解各个浏览器以及它们的不同版本对HTML5、CSS3特性的支持情况](http://caniuse.com/)
 - [ECMAScript兼容性(ES6)](http://kangax.github.io/compat-table/es6/)
 
 ## 基础
@@ -496,7 +496,7 @@ if (true) {
 
 **总之，在代码块内，使用let命令声明变量之前，该变量都是不可用的**。这在语法上，称为“暂时性死区”（temporal dead zone，简称TDZ）。
 
-chrome 44支持`let`(需'use strict'),firefox最新版已支持.
+chrome 44还不支持`let`,firefox最新版已支持.
 #### 常量
 由于var和let申明的是变量，如果要申明一个常量，在ES6之前是不行的，我们通常用全部大写的变量来表示“这是一个常量，不要修改它的值”：
 
