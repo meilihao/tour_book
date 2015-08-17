@@ -1,6 +1,12 @@
 # js学习笔记
 
-参考：[JavaScript教程](http://www.liaoxuefeng.com/wiki/001434446689867b27157e896e74d51a89c25cc8b43bdb3000)
+参考：
+- [JavaScript教程](http://www.liaoxuefeng.com/wiki/001434446689867b27157e896e74d51a89c25cc8b43bdb3000)
+- [ECMAScript 6 入门](http://es6.ruanyifeng.com/)
+
+工具:
+- [caniuse # 了解各个浏览器以及它们的不同版本对HTML5、CSS3,JS等特性的支持情况](http://caniuse.com/)
+- [ECMAScript兼容性(ES6)](http://kangax.github.io/compat-table/es6/)
 
 ## 基础
 
@@ -166,13 +172,19 @@ s.substring(7);     // 从索引7开始到结束，返回'world!中'
 Method    描述
 charAt()    返回指定索引位置的字符
 charCodeAt()    返回指定索引位置字符的 Unicode 值
+codePointAt 会正确返回四字节的UTF-16字符的码点。对于那些两个字节储存的常规字符，它的返回结果与charCodeAt方法相同。
 concat()    连接两个或多个字符串，返回连接后的字符串
-fromCharCode()    将字符转换为 Unicode 值
+fromCharCode()    将字符转换为 Unicode 值(\u0000——\uFFFF)
+fromCodePoint() 可以识别0xFFFF的字符，弥补了String.fromCharCode方法的不足.
 indexOf()    返回字符串中检索指定字符第一次出现的位置
+includes() 返回布尔值，表示是否找到了参数字符串。
+startsWith() 返回布尔值，表示参数字符串是否在源字符串的头部。
+endsWith() 返回布尔值，表示参数字符串是否在源字符串的尾部。
 lastIndexOf()    返回字符串中检索指定字符最后一次出现的位置
 localeCompare()    用本地特定的顺序来比较两个字符串
 match()    找到一个或多个正则表达式的匹配
 replace()    替换与正则表达式匹配的子串
+repeat() 返回一个新字符串，表示将原字符串重复n次
 search()    检索与正则表达式相匹配的值
 slice()    提取字符串的片断，并在新的字符串中返回被提取的部分
 split()    把字符串分割为子字符串数组
@@ -416,6 +428,11 @@ function foo() {
 
 >JavaScript实际上只有一个全局作用域。任何变量（函数也视为变量），如果没有在当前函数作用域中找到，就会继续往上查找，最后如果在全局作用域中也没有找到，则报ReferenceError错误。
 
+>ES6规定，var命令和function命令声明的全局变量，属于全局对象的属性；let命令、const命令、class命令声明的全局变量，不属于全局对象的属性。
+>
+>     let b = 1;
+>     window.b // undefined
+
 #### 命名空间
 全局变量会绑定到window上，不同的JavaScript文件如果使用了相同的全局变量，或者定义了相同名字的顶层函数，都会造成命名冲突，并且很难被发现。
 
@@ -431,7 +448,7 @@ function foo() {
     i += 100; // 仍然可以引用变量i
 }
 ```
-为了解决块级作用域，ES6引入了新的关键字let，用let替代var可以申明一个块级作用域的变量：
+为了解决块级作用域，ES6引入了新的关键字let，用let替代var可以申明一个块级作用域的变量,但let不允许在相同作用域内，重复声明同一个变量否则会报错：
 ```js
 'use strict';
 function foo() {
@@ -441,18 +458,55 @@ function foo() {
     }
     i += 1; // SyntaxError
 }
+
+//let不像var那样，会发生“变量提升”现象
+function do_something() {
+  console.log(foo); // ReferenceError
+  let foo = 2;
+}
+//---
+var a = [];
+for (var i = 0; i < 10; i++) {
+  a[i] = function () {
+    console.log(i);
+  };
+}
+a[6](); // 10
+
+//---使用let，声明的变量仅在块级作用域内有效
+var a = [];
+for (let i = 0; i < 10; i++) {
+  a[i] = function () {
+    console.log(i);
+  };
+}
+a[6](); // 6
 ```
-chrome 44还未支持`let`,firefox最新版已支持.
+只要块级作用域内存在let命令，它所声明的变量就“绑定”（binding）这个区域，不再受外部的影响。
+```js
+var tmp = 123;
+if (true) {
+  tmp = 'abc'; // ReferenceError
+  let tmp;
+}
+```
+上面代码中，存在全局变量tmp，但是块级作用域内let又声明了一个局部变量tmp，导致后者绑定这个块级作用域，所以在let声明变量前，对tmp赋值会报错。
+
+**ES6明确规定，如果区块中存在let和const命令，这个区块对这些命令声明的变量，从一开始就形成了封闭作用域。凡是在声明之前就使用这些命令，就会报错。**
+
+**总之，在代码块内，使用let命令声明变量之前，该变量都是不可用的**。这在语法上，称为“暂时性死区”（temporal dead zone，简称TDZ）。
+
+chrome 44支持`let`(需'use strict'),firefox最新版已支持.
 #### 常量
 由于var和let申明的是变量，如果要申明一个常量，在ES6之前是不行的，我们通常用全部大写的变量来表示“这是一个常量，不要修改它的值”：
 
     var PI = 3.14;
-ES6标准引入了新的关键字`const`来定义常量，**const与let都具有块级作用域**：
+ES6标准引入了新的关键字`const`来定义常量，const也不存在提升，只能在声明的位置后面使用,与let一样不可重复声明.**const与let都具有块级作用域**：
 ```js
 'use strict';
 
 const PI = 3.14;
-PI = 3; // chrome 44不报错,但有效果,firefox最新版报错.
+PI = 3; // chrome 44不报错,但没有效果,firefox最新版报错.
 PI; // 3.14
 ```
 ### 方法
@@ -1738,3 +1792,79 @@ Access-Control-Max-Age: 86400
 由于以POST、PUT方式传送JSON格式的数据在REST中很常见，所以要跨域正确处理POST和PUT请求，服务器端必须正确响应OPTIONS请求。
 
 ### Promise
+这种“承诺将来会执行”的对象在JavaScript中称为Promise对象,在ES6中被统一规范，由浏览器直接支持。
+```js
+function test(resolve, reject) {
+    var timeOut = Math.random() * 2;
+    log('set timeout to: ' + timeOut + ' seconds.');
+    setTimeout(function () {
+        if (timeOut &lt; 1) {
+            log('call resolve()...');
+            resolve('200 OK');
+        }
+        else {
+            log('call reject()...');
+            reject('timeout in ' + timeOut + ' seconds.');
+        }
+    }, timeOut * 1000);
+}
+
+new Promise(test).then(function (result) {
+    console.log('成功：' + result);
+}).catch(function (reason) {
+    console.log('失败：' + reason);
+});
+//下面代码等价于上面的Promise对象的连缀写法
+var p1 = new Promise(test);
+var p2 = p1.then(function (result) {
+    console.log('成功：' + result);
+});
+var p3 = p2.catch(function (reason) {
+    console.log('失败：' + reason);
+});
+```
+可见Promise最大的好处是在异步执行的流程中，把执行代码和处理结果的代码清晰地分离了.
+
+romise还可以做更多的事情，比如，有若干个异步任务，需要先做任务1，如果成功后再做任务2，任何任务失败则不再继续并执行错误处理函数。
+
+要串行执行这样的异步任务，不用Promise需要写一层一层的嵌套代码。有了Promise，我们只需要简单地写：
+
+    job1.then(job2).then(job3).catch(handleError);
+
+了串行执行若干异步任务外，Promise还可以并行执行异步任务,用`Promise.all()`实现:
+```js
+var p1 = new Promise(function (resolve, reject) {
+    setTimeout(resolve, 500, 'P1');
+});
+var p2 = new Promise(function (resolve, reject) {
+    setTimeout(resolve, 600, 'P2');
+});
+// 同时执行p1和p2，并在它们都完成后执行then:
+Promise.all([p1, p2]).then(function (results) {
+    console.log(results); // 获得一个Array: ['P1', 'P2']
+});
+```
+有些时候，多个异步任务是为了容错。比如，同时向两个URL读取用户的个人信息，只需要获得先返回的结果即可。这种情况下，用`Promise.race()`实现：
+```js
+var p1 = new Promise(function (resolve, reject) {
+    setTimeout(resolve, 500, 'P1');
+});
+var p2 = new Promise(function (resolve, reject) {
+    setTimeout(resolve, 600, 'P2');
+});
+Promise.race([p1, p2]).then(function (result) {
+    console.log(result); // 'P1'
+});
+```
+由于p1执行较快，Promise的then()将获得结果'P1'。p2仍在继续执行，但执行结果将被丢弃。
+
+如果我们组合使用Promise，就可以把很多异步任务以并行和串行的方式组合起来执行。
+
+### canvas
+Canvas是HTML5新增的组件，它就像一块幕布，可以用JavaScript在上面绘制各种图表、动画等。
+
+Canvas除了能绘制基本的形状和文本，还可以实现动画、缩放、各种滤镜和像素转换等高级操作。如果要实现非常复杂的操作，考虑以下优化方案：
+- 通过创建一个不可见的Canvas来绘图，然后将最终绘制结果复制到页面的可见Canvas中；
+- 尽量使用整数坐标而不是浮点数；
+- 可以创建多个重叠的Canvas绘制不同的层，而不是在一个Canvas中绘制非常复杂的图；
+- 背景图片如果不变可以直接用`<img>`标签并放到最底层。
