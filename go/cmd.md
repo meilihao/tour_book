@@ -8,7 +8,12 @@
 #### 调试
 编译时,如果编译的结果需要gdb调试则使用参数-gcflags "-N -l",这样可以忽略Go内部做的一些优化，比如聚合变量和函数等优化.
 
-    go build -gcflags "-N -l"
+    $ go build -gcflags "-N -l"
+    $ gdb  ./httprouter
+    (gdb) source /opt/go/src/runtime/runtime-gdb.py
+    (gdb) ...
+>进入gdb环境后需先运行`source /opt/go/src/runtime/runtime-gdb.py`命令以加载Go Runtime的支持，否则gdb中goroutine相关命令将无法运行,参考[官方文档](golang.org/doc/gdb).
+
 #### 优化
 如果编译的结果需要发布.则使用-ldflags "-s -w",可以去掉调试信息,减小大约一半的大小:
 - `-s`: 去掉符号信息。
