@@ -337,6 +337,44 @@ func main() {
 	fmt.Printf("UnsafeHeader: %#v\n", unsafeHdr)
 }
 ```
+```go
+package main
+
+import (
+	"fmt"
+	"unsafe"
+)
+
+type (
+	Router struct {
+		Level int
+		*Route
+	}
+
+	Route struct {
+		Path string
+	}
+)
+
+func main() {
+	route := new(Route)
+	route.Path = "/hello"
+	r := Router{Level: 1, Route: route}
+
+	t := new(int)
+	p := unsafe.Pointer(uintptr(unsafe.Pointer(&r)) + uintptr(unsafe.Sizeof(*t)))
+
+	m := *(**Route)(p) //p是指向*Route的指针
+	fmt.Printf("%#v\n", m)
+
+	m0 := *(*Route)(m)
+	fmt.Printf("%#v\n", m0)
+
+	p1 := unsafe.Pointer(uintptr(unsafe.Pointer(&r)) + 0)//将实际地址转换为指向该地址的指针
+	m1 := *(*int)(p1) //p1是指向Router.Level的指针
+	fmt.Println(m1)
+}
+```
 
 ### 方法
 
