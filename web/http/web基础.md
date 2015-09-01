@@ -48,7 +48,7 @@ urn:oasis:names:specification:docbook:dtd:xml:4.1.2
 
 统一资源定位符是对可以从互联网上得到的资源的位置和访问方法的一种简洁的表示，是互联网上标准资源的地址.
 
-URL是URI的子集.
+URI由URL和URN构成.URL是通过描述资源的位置来标识资源;URN是通过名称来标识资源,与它们当前所处位置无关.
 
 URI抽象结构:
 
@@ -59,3 +59,4 @@ URI抽象结构:
 
 其中authority为[user-info@]host[:port]
 ```
+- scheme : 规定如何访问指定资源的主要标识符.
