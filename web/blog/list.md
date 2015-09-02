@@ -15,6 +15,7 @@
 - [前端工程精粹（一）：静态资源版本更新与缓存](http://www.infoq.com/cn/articles/front-end-engineering-and-performance-optimization-part1)
 - [前端工程精粹（二）：静态资源管理与模板框架](http://www.infoq.com/cn/articles/front-end-engineering-and-performance-optimization-part2)
 - [你必须了解的Session的本质](http://netsecurity.51cto.com/art/201402/428721.htm)
+- [fouber/blog # 前端博客](github.com/fouber/blog)
 
 ## css
  - [CSS动画简介](http://www.ruanyifeng.com/blog/2014/02/css_transition_and_animation.html)
