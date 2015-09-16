@@ -29,6 +29,7 @@
  - [如何编写高扩展且可维护的 JavaScript系列三：模块](http://zhuanlan.zhihu.com/FrontendMagazine/19884662)
  - [如何编写高扩展且可维护的 JavaScript系列四：耦合](http://zhuanlan.zhihu.com/FrontendMagazine/19886391)
  - [新的 JavaScript 模块系统](http://zhuanlan.zhihu.com/FrontendMagazine/19850058)
+ - [JavaScript闭包的底层运行机制](http://blog.leapoahead.com/2015/09/15/js-closure/)
 
 ## 静态资源
  - [静态资源（js以及css）发布对比](2015_05_26_001.md)
@@ -40,6 +41,8 @@
  - [身份验证中Cookies与 Tokens比较](2015_07_21_001.md)
  - [OAuth 2.0 笔记](https://blog.yorkxin.org)
  - [OAuth 2.0安全案例回顾](http://drops.wooyun.org/papers/598)
+ - [JSON Web Token - 在Web应用间安全地传递信息](http://blog.leapoahead.com/2015/09/06/understanding-jwt/)
+ - [八幅漫画理解使用JSON Web Token设计单点登录系统](http://blog.leapoahead.com/2015/09/07/user-authentication-with-jwt/)
 
 ## git
 - [如何用简单的语言解释 Git 的基础命令？](http://zhuanlan.zhihu.com/FrontendMagazine/19845650)
