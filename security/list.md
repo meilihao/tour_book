@@ -16,6 +16,7 @@
  - [SSL/TLS原理详解](http://segmentfault.com/a/1190000002554673)
  - [大型网站的 HTTPS 实践(共3篇)](http://op.baidu.com/2015/04/https-s01a01/)
  - [SSL/TLS部署最佳实践v1.4](http://hardenedlinux.org/jekyll/update/2015/07/28/ssl-tls-deployment-1.4.html)
+ - [**TLS协议分析 与 现代加密通信协议设计**](https://blog.helong.info/blog/2015/09/06/tls-protocol-analysis-and-crypto-protocol-design/)
 
 ## 证书
  - [数字证书及 CA 的扫盲介绍](2015_05_23_004.md)
@@ -25,3 +26,6 @@
 
 ## 校验
  - [扫盲文件完整性校验——关于散列值和数字签名](2015_05_23_006.md)
+
+## 加盐
+ - [加盐hash保存密码的正确方式](http://drops.wooyun.org/papers/1066)

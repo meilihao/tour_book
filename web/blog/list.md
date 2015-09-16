@@ -49,6 +49,7 @@
 
 ## nginx
 - [深入NGINX：我们如何设计它的性能和扩展性](https://linux.cn/article-5681-1.html)
+- [Nginx下配置高性能，高安全性的https TLS服务](https://blog.helong.info/blog/2015/05/08/https-config-optimize-in-nginx/)
 
 ## 架构
 - [构建需求响应式亿级商品详情页](http://blog.jobbole.com/90359/)
