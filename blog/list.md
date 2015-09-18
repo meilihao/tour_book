@@ -16,3 +16,6 @@
 ## 随思
 - [知道创宇研发技能表v3.0](http://blog.knownsec.com/Knownsec_RD_Checklist/v3.0.html)
 - [影响一生的职业建议 - Nicholas C. Zakas](https://linux.cn/article-6250-1.html)
+
+## 编辑器
+- [Sublime Text 全程指南](http://www.techug.com/sublime-text-complete-guide)
