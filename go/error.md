@@ -32,3 +32,20 @@ json的key没有引号导致,更正为:
 ```json
 [{"Album": 1,"Description": "cf"}]
 ```
+
+### 自定义类型实现json.Marshaler
+```go
+type Filename struct {
+	Md5           string
+	Width, Height uint
+	Ext           string
+}
+func (f Filename) MarshalJSON() ([]byte, error) {
+	if f == zeroFilename {
+                // 不能使用"return nil,nil",必须有值,否则报json: error calling MarshalJSON for type datatype.Filename: unexpected end of JSON input
+		return []byte(`""`), nil
+	}
+        // return 字符串必须带双引号,否则报json: error calling MarshalJSON for type datatype.Filename: invalid character 'f' after top-level value
+	return []byte(fmt.Sprintf(`"%s-%dx%d.%s"`, f.Md5, f.Width, f.Height, f.Ext)), nil
+}
+```
