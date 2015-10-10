@@ -172,9 +172,14 @@ mysql:
 
 2. 使用NOT EXISTS和相关子查询.
 
-       select d.deptno from dept d where not exists (select null from emp e wher
-e d.deptno=e.deptno);
+       select d.deptno from dept d where not exists (select null from emp e where d.deptno=e.deptno);
 
 >补充:
 >exists : 强调的是是否返回结果集，不要求知道返回什么.exists(sql 返回结果集为真);not exists(sql 不返回结果集为真)
 >exists 与 in 最大的区别在于 in引导的子句只能返回一个字段.
+
+### 在一个表中查询与其他表不匹配的记录
+
+查询没有职员的部门信息.
+
+    select d.* from dept d left outer join emp e on d.deptno=e.deptno where e.deptno is null;

@@ -9,6 +9,7 @@
 ## base
  - [互联网协议入门（一）](http://www.ruanyifeng.com/blog/2012/05/internet_protocol_suite_part_i.html)
  - [MVC，MVP 和 MVVM 的图示](http://www.ruanyifeng.com/blog/2015/02/mvcmvp_mvvm.html)
+ - [HTTP/2 资料汇总](https://imququ.com/post/http2-resource.html)
 
 ## web
 - [已支持http2的软件](https://github.com/http2/http2-spec/wiki/Implementations)
@@ -16,11 +17,13 @@
 - [前端工程精粹（二）：静态资源管理与模板框架](http://www.infoq.com/cn/articles/front-end-engineering-and-performance-optimization-part2)
 - [你必须了解的Session的本质](http://netsecurity.51cto.com/art/201402/428721.htm)
 - [fouber/blog # 前端博客](github.com/fouber/blog)
+- [75份开发者、设计师必备的速查表](http://info.9iphp.com/75-best-cheat-sheets-for-designers-and-programmers/)
 
 ## css
  - [CSS动画简介](http://www.ruanyifeng.com/blog/2014/02/css_transition_and_animation.html)
  - [浏览器内建支持的响应式图像](http://zhuanlan.zhihu.com/FrontendMagazine/19858945)
  - [CSS参考手册](https://github.com/doyoe/css-handbook)
+- [15个来自Codepen的令人赞叹的CSS动画例子](http://info.9iphp.com/15-inspiring-examples-of-css-animation-on-codepen/)
 
 ## javascript
  - [React 入门实例教程](http://www.ruanyifeng.com/blog/2015/03/react.html)
@@ -30,6 +33,7 @@
  - [如何编写高扩展且可维护的 JavaScript系列四：耦合](http://zhuanlan.zhihu.com/FrontendMagazine/19886391)
  - [新的 JavaScript 模块系统](http://zhuanlan.zhihu.com/FrontendMagazine/19850058)
  - [JavaScript闭包的底层运行机制](http://blog.leapoahead.com/2015/09/15/js-closure/)
+ - [深入浅出ES6](http://www.infoq.com/cn/author/Jason-Orendorff)
 
 ## 静态资源
  - [静态资源（js以及css）发布对比](2015_05_26_001.md)
@@ -53,9 +57,31 @@
 ## nginx
 - [深入NGINX：我们如何设计它的性能和扩展性](https://linux.cn/article-5681-1.html)
 - [Nginx下配置高性能，高安全性的https TLS服务](https://blog.helong.info/blog/2015/05/08/https-config-optimize-in-nginx/)
+- [Nginx 服务器安装及配置文件详解](http://info.9iphp.com/nginx-install-and-config/)
+- [Nginx 配置文件总结](http://info.9iphp.com/nginx-config-summary/)
+- [NGINX缓存使用官方指南](https://linux.cn/article-5945-1-rel.html)
+- [如何监控 NGINX（第一篇）](https://linux.cn/article-5970-1-rel.html)
+- [如何收集 NGINX 指标（第二篇）](https://linux.cn/article-5985-1-rel.html)
+- [Nginx+Keepalived实现站点高可用](https://linux.cn/article-5715-1-rel.html)
+- [nginx 配置 location 总结及 rewrite 规则写法](https://linux.cn/article-5714-1-rel.html)
+- [NGINX Plus 现在完全支持 HTTP/2](https://linux.cn/article-6368-1.html)
+- [为最佳性能调优 Nginx](http://blog.jobbole.com/87531/)
+- [agentzh 的 Nginx 教程](http://openresty.org/download/agentzh-nginx-tutorials-zhcn.html)
+
+- [NGINX源码阅读](http://www.cnblogs.com/ourroad/p/4863758.html)
 
 ## 架构
 - [构建需求响应式亿级商品详情页](http://blog.jobbole.com/90359/)
 
 ## 交互
 - [网站优化指南与用户体验五要素](http://www.shejidaren.com/web-user-experience.html?utm_source=tuicool)
+
+## Rustful API
+- [来自HeroKu的HTTP API 设计指南(中文版)](http://get.jobdeer.com/343.get)
+- [理解RESTFul架构](http://blog.jobbole.com/88989/)
+
+## 负载均衡
+- [负载均衡原理与技术实现](http://network.51cto.com/art/201509/492457_all.htm)
+
+## 优化
+- [京东首页前端技术剖析与对比](http://www.barretlee.com/blog/2015/09/09/jd-architecture-analysis/)

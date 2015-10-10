@@ -2,6 +2,8 @@
 
 为了代码美观.
 
+[官方参考](http://ilovers.sinaapp.com/doc/golang-specification.html)
+
 ## 格式化规范
 go默认已经有了gofmt工具，但是我们强烈建议使用**goimport**工具，这个在gofmt的基础上增加了自动删除和引入包.
 

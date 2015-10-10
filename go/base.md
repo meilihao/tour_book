@@ -450,3 +450,37 @@ func main() {
 	fmt.Println(b) //b=1，和实际期望3不符。
 }
 ```
+
+```go
+// 接口和指针
+package main
+
+import (
+	"fmt"
+	"reflect"
+)
+
+type MyErr struct{}
+
+func (m MyErr) Error() string {
+	return "123"
+}
+
+func main() {
+	v := new(error) //已分配接口存储位置
+	*v = MyErr{}
+	fmt.Printf("%#v\n", v)
+	fmt.Println(reflect.TypeOf(v), (*v).Error())
+
+	//x := (*error)(nil) //未分配接口存储位置
+	//*x =&MyErr{} //因为没有存储位置而报错
+
+	z := (*error)(nil)
+	var e error
+	e = MyErr{}
+	z = &e
+	fmt.Printf("%#v\n", z)
+	fmt.Println(reflect.TypeOf(z), (*z).Error())
+}
+```
+

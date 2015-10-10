@@ -2,6 +2,8 @@
 
 参考:[ImageMagick简介、GraphicsMagick、命令行使用示例](http://elf8848.iteye.com/blog/382528),[PHP ImageMagick扩展API](http://php.net/manual/zh/class.imagick.php)
 
+[magickwand 中文函数翻译](http://blog.sina.com.cn/s/blog_632e0c7b0100pep8.html)
+
 ### ImageMagick
 
 ImageMagick是一个免费的创建、编辑、合成图片的软件。它可以读取、转换、写入多种格式的图片。图片切割、颜色替换、各种效果的应用，图片的旋转、组合，文本，直线，多边形，椭圆，曲线，附加到图片伸展旋转。其全部源码开放，可以自由使用，复制，修改，发布。它遵守GPL许可协议。它可以运行于大多数的操作系统。
@@ -20,7 +22,7 @@ imagick 类
 imagick ::adaptiveblurimage 向图像中添加 adaptive 模糊滤镜
 imagick ::adaptiveresizeimage 自适应调整图像数据依赖关系
 imagick ::adaptivesharpenimage自适应锐化图像
-imagick ::adaptivethresholdimage 基于范围的选择为每个像素的亮度
+imagick ::adaptivethresholdimage (根据每个像素上邻近像素的强度范围)选择一个特定阈值,让图片的全局灰度直方图不包含特定的峰值
 imagick ::addimage 图像列表中添加新图像 imagick 对象.
 imagick ::addnoiseimage 给图像添加随机噪声
 imagick ::affinetransformimage变换图像
@@ -487,11 +489,38 @@ imagickpixeliterator ::setiteratorrow 设置像素的 iterator
 imagickpixeliterator ::synciteratorsyncs 同步的像素迭代器
 ```
 
-常用:
-
-- cropimage : 提取/截取区域的图像
-- readimage : 载入图像
-- writeimage : 保存图像到指定位置
+常用(golang):
+### MagickWand
+- func NewMagickWand() *MagickWand : 创建魔术棒
+- func (mw *MagickWand) NewImage(cols uint, rows uint, background *PixelWand) error : 创建指定大小和背景颜色的空白图片 # (width,height,背景颜色);background为none且mw图片格式设置为png时,则新创建的图片背景为透明.
+- func (mw *MagickWand) SetImageFormat(format string) error : 设置图像格式
+- func (mw *MagickWand) CropImage(width, height uint, x, y int) error : 提取/截取区域的图像 # (截取图片width,截取图片height,截取x轴起点,截取y轴起点)
+- func (mw *MagickWand) ReadImage(filename string) error : 载入图像 # (filename图片路径)
+- func (mw *MagickWand) ReadImageBlob(blob []byte) error : 载入图像二进制数据
+- func (mw *MagickWand) ReadImageFile(img *os.File) error : 载入图像 # (图像文件句柄img)
+- func (mw *MagickWand) WriteImage(filename string) error : 保存图像到指定位置
+- func (mw *MagickWand) WriteImageFile(out *os.File) error : 保存图片到out
+- func (mw *MagickWand) BorderImage(borderColor *PixelWand, width, height uint) error :图片四周添加边框 # width==LeftWidth==RightWidth,height类试;png背景色会变成borderColor而导致不透明.
+- func (mw *MagickWand) ThumbnailImage(cols, rows uint) error : 创建缩略图 # (width,height);应与原图像等比缩放,否则图像变形
+- func (mw *MagickWand) DrawImage(drawingWand *DrawingWand) error : 将drawingWand绘制到mw上,以mw左上角为原点
+- func (mw *MagickWand) Clone() *MagickWand : 复制mw对象
+- func (mw *MagickWand) SetImageBackgroundColor(background *PixelWand) error : 设置mw里图片的背景色
+- func (mw *MagickWand) ShadowImage(opacity, sigma float64, x, y int) error : 模拟图片阴影 # (百分制的阴影不透明度,正太(高斯)分布的标准偏差用于模糊阴影, X轴偏移量,Y轴偏移量),**参数取值范围未知**
+- func (mw *MagickWand) CompositeImage(source *MagickWand, compose CompositeOperator, x, y int) error : 使用指定偏移(x,y)将source复合到mw上,compose复合方式.
+- func (mw *MagickWand) SetImageGravity(gravity GravityType) error : 设置mw的坐标系统,常在CompositeImage时使用.NorthWest(左上角为原点,x:左->右;y:上->下),North(上边缘中间为原点,x:左->右;y:上->下),NorthEast(右上角为原点,x:右->左;y:上->下),West(左边缘中间为原点,x:左->右;y:上->下),Center(正中间为原点,x:左->右;y:上->下),East(右边缘中间为原点,x:右->左;y:上->下),SouthWest(左下角为原点,x:左->右;y:下->上),South(下边缘中间为原点,x:左->右;y:下->上),SouthEast(右下角为原点,x:右->左;y:下->上)
+- func (mw *MagickWand) NegateImage(gray bool) error : 设置图像反色(使用FF减去相应的值即可得到颜色的反色).灰度选项意味着只能取消图像中的灰度值.也可减少特定通道伽马值的影响.gray=true,只取消图像中的灰度像素.
+- func (mw *MagickWand) GaussianBlurImageChannel(channel ChannelType, radius, sigma float64) error : 模糊图像 : (应用到channel,无效值radius,高斯sigma)
+---unkown
+- BlurImage(radius, sigma float64) error : 模糊图像 # 
+### DrawingWand
+- func NewDrawingWand() *DrawingWand : 创建绘图棒
+- func (dw *DrawingWand) Annotation(x, y float64, text string) : 在图像上绘制文字 # (dw绘制到图像上时,文字最左边到图片y轴举例,文本基线到图片x轴距离,文字内容)
+- func (dw *DrawingWand) SetFillColor(fillWand *PixelWand) : 设置用于填充dw对象的颜色
+- func (dw *DrawingWand) SetFontSize(pointSize float64) : 设置字体大小,配合func (dw *DrawingWand) Annotation()使用.
+- func (dw *DrawingWand) Circle(ox, oy, px, py float64) : 绘制一个圆 # (ox,oy)是圆心坐标,(px,py)是圆上任意一点坐标)
+### PixelWand
+- func NewPixelWand() *PixelWand : 创建像素棒
+- func (pw *PixelWand) SetColor(color string) bool : 设置颜色(e.g. "blue", "#0000ff", "rgb(0,0,255)", "cmyk(100,100,100,10)", etc.)
 
 ## 开发包
 
@@ -504,3 +533,16 @@ Ubuntu安装见官方README,下面是Fedora的安装方式:
     yum install ImageMagick-devel
 
 32bit OS安装碰到错误:"github.com/gographics/imagick/imagick/draw_info.go:17:19: unexpected: 12-byte float type - long double",待官方解决(issues#19).
+
+参考: 
+http://www.soso.io/article/33321.html
+http://www.111cn.net/phper/php-image/51986.htm
+http://bbs.gxsd.com.cn/forum.php?mod=viewthread&tid=253184&page=1&authorid=11518
+[IMAGEMAGICK 中文手册](http://www.pooy.net/imagemagick-chinese-manual.html)
+[ImageMagick v6 Examples -- Color Modifications](http://www.imagemagick.org/Usage/color_mods/)
+
+## cmd
+
+### convert
+
+- xc: prefix specifies an X11 color string.前缀,指定一种X11颜色的字符串

@@ -12,6 +12,9 @@
 
 ## 架构
 - [支撑Github的开源技术](http://www.infoq.com/cn/news/2014/03/projects-power-github/)
+- [Reddit: 从扩展到每月10亿页面浏览量的过程中的各种失误中学到的经验教训](http://www.oschina.net/translate/reddit-lessons-learned-from-mistakes-made-scaling-to-1-billion)
+- [微信、陌陌等著名IM软件设计架构详解](http://blog.csdn.net/justinjing0612/article/details/38322353)
+- [关于大型网站技术演进的思考（1~21）](http://www.cnblogs.com/sharpxiajun/category/325369.html)
 
 ## 随思
 - [知道创宇研发技能表v3.0](http://blog.knownsec.com/Knownsec_RD_Checklist/v3.0.html)
@@ -19,3 +22,28 @@
 
 ## 编辑器
 - [Sublime Text 全程指南](http://www.techug.com/sublime-text-complete-guide)
+
+## docker
+- [docker registry_v2 部署及错误总结](http://dockone.io/article/684)
+
+## 测试
+- [持续集成是什么？](http://www.ruanyifeng.com/blog/2015/09/continuous-integration.html)
+
+# linux
+## 性能优化和故障排除
+- [如何知道进程运行在哪个CPU内核上](https://linux.cn/article-6307-1.html)
+
+## English
+- [程序员英语学习指引](https://linux.cn/article-6358-1.html)
+
+## 招聘
+- [大牛在谷歌这样面试产品经理](http://lagou.baijia.baidu.com/article/182090)
+
+## rpc
+- [你应该知道的RPC原理](http://www.cnblogs.com/LBSer/p/4853234.html)
+
+## 经验
+- [如何用好 Google 等搜索引擎？](http://www.zhihu.com/question/20161362)
+
+## 监控
+- [小米运维—互联网企业级监控系统实践](http://www.jianshu.com/p/b2f77285266c)
