@@ -4,3 +4,7 @@
 
 ## 性能
 - [Go程序调试、分析与优化](http://tonybai.com/2015/08/25/go-debugging-profiling-optimization/)
+
+## 反射
+- [Go语法简略 － 反射](http://www.zddhub.com/memo/2015/07/03/go-reflect/)
+- [Go语法简略 － 依赖注入](http://www.zddhub.com/memo/2015/07/05/go-dependency-inject/)
