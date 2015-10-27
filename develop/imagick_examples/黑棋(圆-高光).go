@@ -35,7 +35,7 @@ func main(){
 	hl.NewImage(70, 70, p_hl)
 	hl.SetImageFormat("png")
 	
-	//高光
+	//高光区域
 	draw_hl:= imagick.NewDrawingWand()
 	draw_hl.Circle(35,35,35,24)
 	hl.DrawImage(draw_hl)

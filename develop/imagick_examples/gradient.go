@@ -14,6 +14,7 @@ func main() {
 	p := imagick.NewPixelWand()
 	p.SetColor("none")
 	//bg.RotateImage(p, -60) //旋转
+        //bg.SetImageOpacity(0.5) //透明
 
 	bg.SetImageFormat("png")
 	bg.WriteImage("/home/chen/bg.png")

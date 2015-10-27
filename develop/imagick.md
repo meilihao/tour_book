@@ -27,14 +27,14 @@ imagick ::addimage 图像列表中添加新图像 imagick 对象.
 imagick ::addnoiseimage 给图像添加随机噪声
 imagick ::affinetransformimage变换图像
 imagick ::animateimages 动画图像或图像
-imagick ::annotateimage annotates 图像的文本
+imagick ::annotateimage 添加图像的文本
 imagick ::appendimages 追加一组图像
 imagick ::averageimages 平均一组图像
 imagick ::blackthresholdimage 强制所有的像素低于阈值分为黑色
 imagick ::blurimage 向图像中添加模糊滤镜
 imagick ::borderimage 四周带有边框的图像
 imagick ::charcoalimage模拟一个炭笔绘图
-imagick ::chopimage 删除图像和用到的区域
+imagick ::chopimage 删除图像区域
 imagick ::clear 清除所有 imagick 对象相关联的资源
 imagick ::clipImage 从 8bim profile clipimage 剪辑沿路径
 imagick ::clipPathImage 沿 clippathimage 剪辑命名路径从 8bim profile
@@ -76,9 +76,9 @@ imagick ::evaluateimage 应用图像的表达式
 imagick ::exportimagepixels将原始图像像素
 imagick ::extentimage设置图像大小
 imagick ::flattenimages 合并图像序列的
-imagick ::flipimage 创建垂直镜像
+imagick ::flipimage 创建垂直镜像即垂直翻转(按照水平中心线上下镜像)
 imagick ::floodfillpaintimage 更改任何像素的颜色值相匹配的目标
-imagick ::flopimage 创建水平镜像
+imagick ::flopimage 创建水平镜像即水平翻转(按照垂直中心线左右镜像)
 imagick ::frameimage 添加一个模拟特性的边框.
 imagick ::functionimage 在图像上应用了一个函数
 imagick ::fximage 评估表达式的每个像素在图像
@@ -312,7 +312,7 @@ imagick ::settype 设置属性的图像类型.
 imagick ::shadeimage创建三维效果
 imagick ::shadowimage模拟图像的阴影
 imagick ::sharpenimage增强图像
-imagick ::shaveimage shaves 从图像边缘的像素
+imagick ::shaveimage 删除(剃除)图像边缘指定宽度(左右)和高度(上下)的像素,图像大小相应变化
 imagick ::shearimage创建一个平行四边形
 imagick ::sigmoidalcontrastimage 调整图像的对比度
 imagick ::sketchimage模拟一个素描
@@ -326,7 +326,7 @@ imagick ::stripimage 停车图像的所有概要信息和注释
 imagick ::swirlimage 漩涡中心的像素的图像
 imagick ::textureImage 反复平铺纹理.
 imagick ::thresholdimage 改变单个像素的值基于一个阈值
-imagick ::thumbnailimage 段更改图像的大小
+imagick ::thumbnailimage 生成指定大小的缩略图
 imagick ::tintimage 颜色矢量图像中的每个像素
 imagick ::transformimage 设置裁剪尺寸图像对象的便捷方法
 imagick ::transparentpaintimage若要像素透明
@@ -410,11 +410,11 @@ imagickdraw ::pathStart 声明的路径绘制列表
 imagickdraw ::point 绘制一个点
 imagickdraw ::polygon 多边形画一个多边形
 imagickdraw ::polyline 折线绘制折线
-imagickdraw ::pop 的代替当前 imagickdraw 堆栈中,并返回到以前推入 imagickdraw
+imagickdraw ::pop 销毁当前 imagickdraw,并返回以前推入堆栈的历史 imagickdraw
 imagickdraw ::popclippath 终止一个剪辑路径定义
 imagickdraw ::popdefs终止一个定义列表中的
 imagickdraw ::poppattern终止图案定义
-imagickdraw ::push 克隆当前ImagickDraw并将它推到堆栈
+imagickdraw ::push 克隆当前ImagickDraw并将它推到堆栈(暂存),历史ImagickDraw可通过调用imagickdraw ::pop来得到.这里存入堆栈的是指ImagickDraw的配置信息,调用ImagickDraw ::circle时绘制的图形是存于其他位置.
 imagickdraw ::pushclippath 开始一个剪辑路径定义
 imagickdraw ::pushdefs 指示以下命令创建名为元素用于后期处理的
 imagickdraw ::pushpattern 表示后续命令达 imagickdraw ::oppattern()命令包含一个命名的定义图案
@@ -439,14 +439,14 @@ imagickdraw ::setfontstyle 设置时要使用的字体样式使用文字注释
 imagickdraw ::setfontweight设置该字体 weight
 imagickdraw ::setgravity 设置的位置 gravity
 imagickdraw ::setstrokealpha 指定要描画对象的轮廓
-imagickdraw ::setstrokeantialias 控制是否较高质量描画轮廓
-imagickdraw ::setstrokecolor 设置用于勾画对象的颜色了
+imagickdraw ::setstrokeantialias 控制是否较高质量描画轮廓(即反锯齿)
+imagickdraw ::setstrokecolor 设置用于勾画对象轮廓的颜色(设置后imagickdraw ::getstrokeopacity==1)
 imagickdraw ::setstrokedasharray 指定虚线和间隙用于勾画路径的图案
 imagickdraw ::setstrokedashoffset 划线指定偏移到虚线图案来启动
 imagickdraw ::setstrokelinecap 描画后会打开网络访问可远程访问的注册表路径的末尾时,用于指定的形状.
 imagickdraw ::setstrokelinejoin 指定角的路径描画时要使用的形状.
 imagickdraw ::setstrokemiterlimit指定斜角限制
-imagickdraw ::setstrokeopacity 指定要描画对象的轮廓
+imagickdraw ::setstrokeopacity 指定要描画对象轮廓的不透明度
 imagickdraw ::setstrokepatternurl 设置用于勾画对象填充图案
 imagickdraw ::setstrokewidth 笔触的宽度不用于绘制对象的轮廓
 imagickdraw ::settextalignment指定文字对齐
@@ -502,14 +502,16 @@ imagickpixeliterator ::synciteratorsyncs 同步的像素迭代器
 - func (mw *MagickWand) WriteImageFile(out *os.File) error : 保存图片到out
 - func (mw *MagickWand) BorderImage(borderColor *PixelWand, width, height uint) error :图片四周添加边框 # width==LeftWidth==RightWidth,height类试;png背景色会变成borderColor而导致不透明.
 - func (mw *MagickWand) ThumbnailImage(cols, rows uint) error : 创建缩略图 # (width,height);应与原图像等比缩放,否则图像变形
-- func (mw *MagickWand) DrawImage(drawingWand *DrawingWand) error : 将drawingWand绘制到mw上,以mw左上角为原点
+- func (mw *MagickWand) DrawImage(drawingWand *DrawingWand) error : 将drawingWand对象绘制到mw上,以mw左上角为原点
 - func (mw *MagickWand) Clone() *MagickWand : 复制mw对象
 - func (mw *MagickWand) SetImageBackgroundColor(background *PixelWand) error : 设置mw里图片的背景色
 - func (mw *MagickWand) ShadowImage(opacity, sigma float64, x, y int) error : 模拟图片阴影 # (百分制的阴影不透明度,正太(高斯)分布的标准偏差用于模糊阴影, X轴偏移量,Y轴偏移量),**参数取值范围未知**
-- func (mw *MagickWand) CompositeImage(source *MagickWand, compose CompositeOperator, x, y int) error : 使用指定偏移(x,y)将source复合到mw上,compose复合方式.
+- func (mw *MagickWand) CompositeImage(source *MagickWand, compose CompositeOperator, x, y int) error : 使用指定偏移(x,y)将source复合到mw上,compose复合方式(http://ju.outofmemory.cn/entry/146098).
 - func (mw *MagickWand) SetImageGravity(gravity GravityType) error : 设置mw的坐标系统,常在CompositeImage时使用.NorthWest(左上角为原点,x:左->右;y:上->下),North(上边缘中间为原点,x:左->右;y:上->下),NorthEast(右上角为原点,x:右->左;y:上->下),West(左边缘中间为原点,x:左->右;y:上->下),Center(正中间为原点,x:左->右;y:上->下),East(右边缘中间为原点,x:右->左;y:上->下),SouthWest(左下角为原点,x:左->右;y:下->上),South(下边缘中间为原点,x:左->右;y:下->上),SouthEast(右下角为原点,x:右->左;y:下->上)
 - func (mw *MagickWand) NegateImage(gray bool) error : 设置图像反色(使用FF减去相应的值即可得到颜色的反色).灰度选项意味着只能取消图像中的灰度值.也可减少特定通道伽马值的影响.gray=true,只取消图像中的灰度像素.
 - func (mw *MagickWand) GaussianBlurImageChannel(channel ChannelType, radius, sigma float64) error : 模糊图像 : (应用到channel,无效值radius,高斯sigma)
+- func (mw *MagickWand) ChopImage(width, height uint, x, y int) error : 删除图像区域 :(x,y)是删除起点;默认情况下要删除的区域是从起点向右选取指定width及图片高度的矩形+向下选取指定hight及图片宽度的矩形;删除指定区域后会收缩(拼接)剩余图片.
+- func (mw *MagickWand) ResizeImage(cols, rows uint, filter FilterType, blur float64) error :缩放图片 : cols(宽);rows(高);filter,用于图片的filter(缩放算法);blur(模糊因子), > 1为模糊, < 1为锐化(为了使图像的边缘、轮廓线以及图像的细节变得清晰).
 ---unkown
 - BlurImage(radius, sigma float64) error : 模糊图像 # 
 ### DrawingWand
@@ -540,7 +542,9 @@ http://www.111cn.net/phper/php-image/51986.htm
 http://bbs.gxsd.com.cn/forum.php?mod=viewthread&tid=253184&page=1&authorid=11518
 [IMAGEMAGICK 中文手册](http://www.pooy.net/imagemagick-chinese-manual.html)
 [ImageMagick v6 Examples -- Color Modifications](http://www.imagemagick.org/Usage/color_mods/)
-
+[参照Android绘图API来推测Imagick API的使用(Android画图Path的使用)](http://www.cnblogs.com/tt_mc/archive/2012/12/07/2807518.html)
+[http://im.snibgo.com/](http://im.snibgo.com/)
+[imagick遮罩层](http://www.imagemagick.org/Usage/masking/#masks_)
 ## cmd
 
 ### convert
