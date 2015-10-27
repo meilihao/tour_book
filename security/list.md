@@ -20,6 +20,7 @@
 - [扒一扒HTTPS网站的内幕](http://segmentfault.com/a/1190000003801450)
 - [HTTPS证书生成原理和部署细节](http://www.barretlee.com/blog/2015/10/05/how-to-build-a-https-server/)
 - [SSL/TLS 协议简介与实例分析](http://segmentfault.com/a/1190000002963044)
+- [使用 BoringSSL 优化 HTTPS 加密算法选择](https://imququ.com/post/optimize-ssl-ciphers-with-boringssl.html)
 
 ## 证书
  - [数字证书及 CA 的扫盲介绍](2015_05_23_004.md)
@@ -30,6 +31,7 @@
 ## 校验
 - [扫盲文件完整性校验——关于散列值和数字签名](2015_05_23_006.md)
 - [使用两步验证提高账号安全性](https://imququ.com/post/about-two-factor-authentication.html)
+- [谷歌两步验证系统的工作原理](http://www.infoq.com/cn/news/2014/09/system-verification)
 
 ## 加盐
 - [加盐hash保存密码的正确方式](http://drops.wooyun.org/papers/1066)

@@ -12,3 +12,6 @@
 
 ## RESTful
 - [RESTful教程](http://www.yiibai.com/restful/)
+
+## base
+- [浅谈 JS 创建对象的 8 种模式](http://segmentfault.com/a/1190000003862596)
