@@ -10,7 +10,8 @@ func main() {
 	//PrintExifInfo()
 	//Base()
 	//createUserCard()
-	BaseOther()
+	//BaseOther()
+	Mark()
 }
 
 //获取图片属性
@@ -202,7 +203,7 @@ func createUserCard() {
 	canvas.WriteImage("/home/chen/canvas")
 }
 
-//
+//其他
 func BaseOther() {
 	p := imagick.NewPixelWand()
 	defer p.Destroy()
@@ -258,5 +259,68 @@ func BaseOther() {
 	//模拟油画滤镜
 	//im.OilPaintImage(10)
 	im.WriteImage("/home/chen/t.jpg")
+}
+
+//打水印
+func Mark() {
+	image := imagick.NewMagickWand()
+	defer image.Destroy()
+	image.ReadImage("http://c.hiphotos.baidu.com/image/pic/item/d01373f082025aaf56f1b11affedab64024f1a24.jpg")
+	width := image.GetImageWidth()
+	height := image.GetImageHeight()
+
+	waterMark := imagick.NewMagickWand()
+	defer waterMark.Destroy()
+
+	mask := waterMark.Clone()
+	defer mask.Destroy()
+
+	draw := imagick.NewDrawingWand()
+	defer draw.Destroy()
+
+	p1 := imagick.NewPixelWand()
+	defer p1.Destroy()
+	p1.SetColor("grey30")
+
+	p2 := p1.Clone()
+	defer p2.Destroy()
+	p2.SetColor("black")
+
+	p3 := p1.Clone()
+	defer p3.Destroy()
+	p3.SetColor("grey70")
+
+	p4 := p1.Clone()
+	defer p4.Destroy()
+	p4.SetColor("white")
+
+	waterMark.NewImage(width, height, p1)
+	mask.NewImage(width, height, p2)
+
+	text := "Copyright"
+	draw.SetFont("Arial")
+	draw.SetFontSize(70)
+	draw.SetFillColor(p3)
+	draw.SetGravity(imagick.GRAVITY_SOUTH_EAST)
+	waterMark.AnnotateImage(draw, 10, 12, 0, text)
+	//waterMark.WriteImage("/home/chen/waterMark0.png")
+
+	draw.SetFillColor(p4)
+	//mask多绘制几次产生立体效果
+	mask.AnnotateImage(draw, 11, 13, 0, text)
+	//mask.WriteImage("/home/chen/mask0.png")
+	mask.AnnotateImage(draw, 10, 12, 0, text)
+	//mask.WriteImage("/home/chen/mask1.png")
+	draw.SetFillColor(p2)
+	mask.AnnotateImage(draw, 9, 11, 0, text)
+	//mask.WriteImage("/home/chen/mask2.png")
+
+	mask.SetImageMatte(false)
+
+	waterMark.CompositeImage(mask, imagick.COMPOSITE_OP_COPY_OPACITY, 0, 0)
+	//waterMark.WriteImage("/home/chen/waterMark1.png")
+
+	image.CompositeImage(waterMark, imagick.COMPOSITE_OP_DISSOLVE, 0, 0)
+	image.WriteImage("/home/chen/image.png")
 }
 
