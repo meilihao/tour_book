@@ -1,0 +1,1 @@
+- [在自己的网站上实现QQ授权登录](http://www.cnblogs.com/xjpz/p/4901072.html)
