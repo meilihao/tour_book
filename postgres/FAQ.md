@@ -58,3 +58,6 @@ postgres日志是在`${PGDATA}/pg_log`文件夹中.
 ### 执行计划
 
 使用explain,如`explain select * from table_name`.
+
+### pgAdmin3显示NULL值
+`File->Options->Query tool->Results grid->Show NULL values as <NULL>`

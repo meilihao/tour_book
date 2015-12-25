@@ -2,6 +2,8 @@
  - [扫盲 DNS 原理,兼谈"域名劫持"和"域名欺骗/域名污染"](2015_05_23_001.md)
  - [DNS劫持和DNS污染的区别](2015_05_23_007.md)
  - [全局精确流量调度新思路-HttpDNS服务详解](http://www.zmke.com/i/8705.html)
+- [从理论到实践，全方位认识DNS（理论篇）](http://selfboot.cn/2015/11/05/dns_theory/)
+- [从理论到实践，全方位认识DNS（实践篇）](http://selfboot.cn/2015/11/05/dns_theory/)
 
 ## 硬件
  - [为什么寄存器比内存快？](2015_05_23_012.md)
@@ -10,6 +12,7 @@
  - [互联网协议入门（一）](http://www.ruanyifeng.com/blog/2012/05/internet_protocol_suite_part_i.html)
  - [MVC，MVP 和 MVVM 的图示](http://www.ruanyifeng.com/blog/2015/02/mvcmvp_mvvm.html)
  - [HTTP/2 资料汇总](https://imququ.com/post/http2-resource.html)
+- [浏览器HTTP缓存原理分析](http://www.cnblogs.com/tzyy/p/4908165.html)
 
 ## web
 - [已支持http2的软件](https://github.com/http2/http2-spec/wiki/Implementations)
@@ -48,9 +51,6 @@
  - [JSON Web Token - 在Web应用间安全地传递信息](http://blog.leapoahead.com/2015/09/06/understanding-jwt/)
  - [八幅漫画理解使用JSON Web Token设计单点登录系统](http://blog.leapoahead.com/2015/09/07/user-authentication-with-jwt/)
 
-## git
-- [如何用简单的语言解释 Git 的基础命令？](http://zhuanlan.zhihu.com/FrontendMagazine/19845650)
-
 ## 经验
 - [TJ Holowaychuk是怎样学习编程的？](http://zhuanlan.zhihu.com/FrontendMagazine/19572823)
 
@@ -67,8 +67,10 @@
 - [NGINX Plus 现在完全支持 HTTP/2](https://linux.cn/article-6368-1.html)
 - [为最佳性能调优 Nginx](http://blog.jobbole.com/87531/)
 - [agentzh 的 Nginx 教程](http://openresty.org/download/agentzh-nginx-tutorials-zhcn.html)
+- [Nginx下流量拦截算法](http://homeway.me/2015/10/21/nginx-lua-traffic-limit-algorithm/)
 
 - [NGINX源码阅读](http://www.cnblogs.com/ourroad/p/4863758.html)
+- [Nginx源码分析之启动过程](http://www.rowkey.me/blog/2014/09/24/nginx-bootstrap/)
 
 ## 架构
 - [构建需求响应式亿级商品详情页](http://blog.jobbole.com/90359/)

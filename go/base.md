@@ -151,6 +151,38 @@ func f() (i int) {
 	return 3
 }
 ```
+- [defer表达式中变量的值在defer表达式被定义时就已经明确](http://www.xiaozhou.net/something-about-defer-2014-05-25.html)
+```
+func a() {
+    i := 0
+    defer fmt.Println(i) //i==0
+    i++
+    return
+}
+```
+- [Golang中defer、return、返回值之间执行顺序](https://xiequan.info/golang%E4%B8%ADdefer%E3%80%81return%E3%80%81%E8%BF%94%E5%9B%9E%E5%80%BC%E4%B9%8B%E9%97%B4%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/)
+```
+func main() {
+	fmt.Println("a return:", a()) // 打印结果为 a return: 0
+}
+ 
+func a() int {
+	var i int
+	defer func() {
+		i++
+		fmt.Println("a defer2:", i) // 打印结果为 a defer2: 2
+	}()
+	defer func() {
+		i++
+		fmt.Println("a defer1:", i) // 打印结果为 a defer1: 1
+	}()
+	return i
+}
+/*
+a()int 函数的返回值没有被提前声名，其值来自于其他变量的赋值，而defer中修改的也是其他变量（其实该defer根本无法直接访问到返回值），因此函数退出时返回值并没有被修改。
+其实此时的`return i`可以理解为"x:=i;return x;//x是隐藏的实际返回值",后续的defer只影响了`i`,而非`x`.
+*/
+```
 
 ### init函数
 

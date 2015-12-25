@@ -35,3 +35,6 @@
 
 ## 加盐
 - [加盐hash保存密码的正确方式](http://drops.wooyun.org/papers/1066)
+
+## 编码
+- [从原理上搞定编码-- Base64编码](http://www.cnblogs.com/chengxiaohui/articles/3951129.html)

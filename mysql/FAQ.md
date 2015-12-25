@@ -22,6 +22,10 @@ set global general_log_file='/var/log/mysql/mysql.log';
 mysqladmin -u 用户名 -p password "新密码"
 ```
 
+#### 查询sql_mdoe
+```sql
+select @@sql_mode,@@GLOBAL.SQL_MODE;
+```
 ### 查看warning信息
 
     show warnings;
@@ -64,11 +68,11 @@ mysqladmin -u 用户名 -p password "新密码"
     mysqldump -u user_name -p database_name table_name > outfile_name.sql
 
 3) 导出一个数据库结构
-    mysqldump -u user_name -p -d –add-drop-table database_name > outfile_name.sql
+    mysqldump -u user_name -p -d --add-drop-table database_name > outfile_name.sql
     -d 没有数据 –add-drop-table 在每个create语句之前增加一个drop table
 
 4) 带语言参数导出
-    mysqldump -uroot -p –default-character-set=latin1 –set-charset=gbk –skip-opt database_name > outfile_name.sql
+    mysqldump -uroot -p --default-character-set=latin1 --set-charset=gbk --skip-opt database_name > outfile_name.sql
 
 ps:
 
@@ -108,7 +112,7 @@ MySQL在Linux下数据库名、表名、列名、别名大小写规则是这样�
 
     show character set;
 
-查看mysql当前使用的编码
+查看mysql当前使用的编码(注意要在未use db时查看，否则看到的是当前db使用的编码)
 
     status;
 
@@ -193,4 +197,8 @@ update重复执行相同语句(即同一语句多次执行),返回mysql_affected
 
 ### 插入空值出错
 
-mysql sql-mode包含"STRICT_TRANS_TABLES"时(严格模式),db不允许插入空值.在建表时该字段添加default即可解决.
+mysql sql_mode包含"STRICT_TRANS_TABLES"时(严格模式),db不允许插入空值.在建表时该字段添加default即可解决.
+
+### 插入时间"0000-00-00"报错
+
+mysq的sql_mode使用了"NO_ZERO_DATE".文档:[mariadb](https://mariadb.com/kb/en/mariadb/datetime/),[mysql5.7](http://dev.mysql.com/doc/refman/5.7/en/sql-mode.html#sqlmode_no_zero_date)

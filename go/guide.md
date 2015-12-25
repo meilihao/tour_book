@@ -5,62 +5,17 @@ go 环境变量配置
 #golang
 export GOROOT=/opt/go
 export GOPATH=/home/chen/git/go
-export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+export GOBIN=/home/chen/gobin
+export PATH=$PATH:$GOROOT/bin:$GOPATH/GOBIN
 ```
+>### go的环境变量
+>- GOROOT：⽤于设定Go语⾔的根⽬录；标准命令的可执⾏⽂件在`$GOROOT/bin`中，标准库的源码⽂件在`$GOROOT/src`中，标准库的归档⽂件在`$GOROOT/pkg`中。
+- GOPATH：⽤于设定⼯作区⽬录；可以包含⼀个或多个⼯作区⽬录的路径，每个⼯作区⽬录都应有src⼦⽬录。
+- GOBIN：⽤于设定放置可执⾏⽂件的⽬录；我们使⽤`go install`命令安装的命令源码⽂件都会被放置于此。
 
-## Go编码规范指南
-参考: http://golanghome.com/post/550
-### 格式化规范
-
-go默认已经有了gofmt工具，但是我们强烈建议使用goimport工具，这个在gofmt的基础上增加了自动删除和引入包.
-
-    go get golang.org/x/tools/cmd/goimports
-不同的编辑器有不同的配置, sublime的配置教程：http://michaelwhatcott.com/gosublime-goimports/
-LiteIDE默认已经支持了goimports，如果你的不支持请点击属性配置->golangfmt->勾选goimports
-保存之前自动fmt你的代码。
-
-### go vet
-
-vet工具可以帮我们静态分析我们的源码存在的各种问题，例如多余的代码，提前return的逻辑，struct的tag是否符合标准等。
-
-    go get golang.org/x/tools/cmd/vet
-使用如下：
-
-    go vet .
-
-### import 规范
-
-import在多行的情况下，goimports会自动帮你格式化，但是我们这里还是规范一下import的一些规范，如果你在一个文件里面引入了一个package，还是建议采用如下格式：
-```go
-import (
-    "fmt"
-)
-```
-如果你的包引入了三种类型的包，标准库包，程序内部包，第三方包，建议采用如下方式进行组织你的包：
-```go
-import (
-    "encoding/json"
-    "strings"
-
-    "myproject/models"
-    "myproject/controller"
-    "myproject/utils"
-
-    "github.com/astaxie/beego"
-    "github.com/go-sql-driver/mysql"
-)
-```
-有顺序的引入包，不同的类型采用空格分离，第一种实标准库，第二是项目包，第三是第三方包。
-
-在项目中不要使用相对路径引入包：
-```go
-// 这是不好的导入
-import "../net"
-
-// 这是正确的做法
-import "github.com/repo/proj/src/net"
-```
-### 注释规范
-
-注释可以帮我们很好的完成文档的工作，写得好的注释可以方便我们以后的维护。详细的如何写注释可以
-参考：http://golang.org/doc/effective_go.html#commentary
+>#### 环境变量说明
+>- 当Go语⾔发现我们用import 语句导⼊了⼀个代码包时，会到以下⽬录查找该代码包的归档⽂件：
+ 1. `$GOROOT/pkg`⽬录
+ 2. `$GOPATH`包含的所有⼯作区⽬录的`pkg`⼦⽬录
+- `$GOPATH[i]/src` ⽬录中的库源码⽂件总会被`go install`命令安装到`GOPATH[i]/pkg`中
+- `$GOPATH[i]/src` ⽬录中的命令源码⽂件会被`go install`命令安装到 $GOBIN ⽬录中

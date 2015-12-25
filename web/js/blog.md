@@ -15,3 +15,11 @@
 
 ## base
 - [浅谈 JS 创建对象的 8 种模式](http://segmentfault.com/a/1190000003862596)
+
+## ajax
+- [传统 Ajax 已死，Fetch 永生](github.com/camsong/blog/issues/2)
+- [深入浅出Fetch API 带你入解应用场景及适用问题](http://www.tuicool.com/articles/iuym6f)
+
+## 进阶
+- [图解javascript this指向什么？](http://www.tuicool.com/articles/iaMnqi)
+- [彻底理解JavaScript原型](http://www.cnblogs.com/wilber2013/p/4924309.html)

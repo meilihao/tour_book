@@ -1,5 +1,6 @@
 ## 整理
 - [如何清洗 Git Repo 代码仓库](2015_07_07_001.md)
+- [如何用简单的语言解释 Git 的基础命令？](http://zhuanlan.zhihu.com/FrontendMagazine/19845650)
 
 ## github
 - [关于Git和Github你不知道的十件事](http://segmentfault.com/a/1190000003830252)

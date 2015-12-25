@@ -15,6 +15,7 @@
 - [Reddit: 从扩展到每月10亿页面浏览量的过程中的各种失误中学到的经验教训](http://www.oschina.net/translate/reddit-lessons-learned-from-mistakes-made-scaling-to-1-billion)
 - [微信、陌陌等著名IM软件设计架构详解](http://blog.csdn.net/justinjing0612/article/details/38322353)
 - [关于大型网站技术演进的思考（1~21）](http://www.cnblogs.com/sharpxiajun/category/325369.html)
+- [系统负载能力浅析](http://www.rowkey.me/blog/2015/09/09/load-analysis/)
 
 ## 随思
 - [知道创宇研发技能表v3.0](http://blog.knownsec.com/Knownsec_RD_Checklist/v3.0.html)
@@ -25,6 +26,7 @@
 
 ## docker
 - [docker registry_v2 部署及错误总结](http://dockone.io/article/684)
+- [FIT2CLOUD徐桂林：容器云之Kubernetes应用与实践](http://www.csdn.net/article/2015-11-04/2826119)
 
 ## 测试
 - [持续集成是什么？](http://www.ruanyifeng.com/blog/2015/09/continuous-integration.html)
@@ -47,3 +49,9 @@
 
 ## 监控
 - [小米运维—互联网企业级监控系统实践](http://www.jianshu.com/p/b2f77285266c)
+
+## webapp
+- [百度母婴技术团队—基于Reactjs实现webapp](https://github.com/my-fe/wiki/issues/1)
+
+## UED
+- [如何提高移动端注册登录体验](http://www.tuicool.com/articles/qyIVZvQ)
