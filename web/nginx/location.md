@@ -1,7 +1,7 @@
 ## NGINX location 在配置中的优先级
 
 [原文](http://www.bo56.com/nginx-location%E5%9C%A8%E9%85%8D%E7%BD%AE%E4%B8%AD%E7%9A%84%E4%BC%98%E5%85%88%E7%BA%A7/)
-
+**nginx有多个`server{...}`时需注意server_name指令和error.log中请求信息的`server: xxx`是否匹配,否则可能将请求匹配到其他server的location上而导致错误**
 ### location表达式类型
 
 - ~ 表示执行一个正则匹配，区分大小写
@@ -67,4 +67,17 @@ location ~* \.(gif|jpg|jpeg)$ {
 /images/1.gif -> configuration D
 /documents/1.jpg -> configuration E
 ```
-注意，以上的匹配和在配置文件中定义的顺序无关。
+注意，以上的匹配和在配置文件中定义的顺序无关
+
+## 其他
+
+### 
+```
+location / {
+        return 200 '123';
+	# because nginx default content-type is application/octet-stream,
+    	# browser will offer to "save the file"...
+    	# if you want to see reply in browser, uncomment next line 
+        add_header Content-Type text/plain;
+}
+```

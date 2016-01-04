@@ -21,3 +21,7 @@ export LD_LIBRARY_PATH=NEW_DIRS: $LD_LIBRARY_PATH
 # PS1
 
 sh的提示字符串.可扩展的参数:`\u`:用户名;`\h`:主机名;`\w`:当前工作目录.ubuntu下直接修改无效,需修改.bash_profile等配置文件来生效.
+
+# IFS(内部字段分隔符，Internal Field Separator)
+
+存储定界符,FS默认为空白字符（换行符，制表符，空格）

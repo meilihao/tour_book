@@ -21,3 +21,8 @@ sudo dnf -y install  openssl-devel
 可能情况:
 
 `proxy_pass`指定的地址不可用.
+
+### error.log出现`failed (13: Permission denied)`
+
+查看`ps aux | grep "nginx: worker process" | awk '{print $1}'`(即nginx.conf的user指令)显示的用户是否对该请求路径(绝对路径)有无访问权限.
+我这里是因将WebRoot放在了主目录下导致用户nginx无权限访问的原因.
