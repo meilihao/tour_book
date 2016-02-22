@@ -107,3 +107,9 @@ echo $out  #保留换行符
 ## 子shell
 
 子shell本身是独立进程, 不会对当前shell有任何影响,可用`()`来定义一个子shell.
+
+xargs只能以有限的几种方式来提供参数,而且它也不能为多组命令提供参数.要执行一些包含来自标准输入的多个参数的命令时可用子shell来处理.
+```shell
+cat file | ( while read arg; do cat $arg; done ) <==> cat file | xargs -I {} cat {}
+```
+在上述while循环中,可将`cat $arg`替换成任意数量的命令,这样我们就可以对同一个参数执行多项命令,同时也可以不借助管道,将参数传递给其他命令.

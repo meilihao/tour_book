@@ -235,3 +235,8 @@ Runlevel 6 : 关闭并重启机器(runlevel6.target, reboot.target)
 1. systemctl命令通常都能被用来管理远程主机(用ssh通讯),只需将远程主机和用户名添加到systemctl命令后
 
        # systemctl status sshd -H root@1.2.3.4
+
+
+## 参考
+
+- [最简明扼要的 Systemd 教程，只需十分钟](https://linux.cn/article-6888-1.html)

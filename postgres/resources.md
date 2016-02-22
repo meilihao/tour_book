@@ -1,3 +1,6 @@
+## 进阶
+- [PostgreSQL黑科技大集会](https://yq.aliyun.com/articles/2727)
+
 ### 相关主页
 
 - [开源知识库](http://code.csdn.net/openkb/p-PostgreSQL)

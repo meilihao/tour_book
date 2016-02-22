@@ -1,0 +1,14 @@
+# GOROOT环境变量是godoc必须的,缺失会导致godoc.service无法启动
+# GOPATH为空是排除第三方package文档的干扰
+
+[Unit]
+Description=Go Documentation
+After=network.target
+
+[Service]
+Environment=GOPATH= GOROOT=/opt/go
+ExecStart=/opt/go/bin/godoc -http=:6060
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

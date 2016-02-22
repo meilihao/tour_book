@@ -62,3 +62,6 @@ sudo dpkg-reconfigure xserver-xorg-lts-quantal
 sudo reboot
 ```
 
+### 添加sougou拼音
+安装sougoupinyin -> 打开Fcitx Configuration -> 左下角的按钮"+" -> 先取消"OnlyShowCurrentLanguage",再查找sougou pinyin,最后添加即可.
+

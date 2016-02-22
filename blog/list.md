@@ -16,6 +16,7 @@
 - [微信、陌陌等著名IM软件设计架构详解](http://blog.csdn.net/justinjing0612/article/details/38322353)
 - [关于大型网站技术演进的思考（1~21）](http://www.cnblogs.com/sharpxiajun/category/325369.html)
 - [系统负载能力浅析](http://www.rowkey.me/blog/2015/09/09/load-analysis/)
+- [各大互联网公司架构演进之路汇总](http://www.hollischuang.com/archives/1036)
 
 ## 随思
 - [知道创宇研发技能表v3.0](http://blog.knownsec.com/Knownsec_RD_Checklist/v3.0.html)

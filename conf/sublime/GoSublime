@@ -1,0 +1,7 @@
+{
+	"env":{
+		"GOROOT":"/opt/go",
+		"GOPATH":"/home/chen/git/go"
+	},
+	"fmt_cmd": ["goimports"]
+}

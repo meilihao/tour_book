@@ -30,4 +30,5 @@ sed 's/要替换的字符串/新的字符串/g'（要替换的字符串可以用
 ## 例
 
     # sed -i "s:/static:/blog/static:" `grep /static -rl ./` # 检索当前目录下的文件,将其包含的字符串"/static"替换为"/blog/static".
-    #sed -i  "s:"action='"'":"action='"'/blog":" `grep action= -rl ./` 将`action="/comment/{{.Content.Id}}/"`替换为`action="/blog/comment/{{.Content.Id}}/"`
+    # sed -i  "s:"action='"'":"action='"'/blog":" `grep action= -rl ./` 将`action="/comment/{{.Content.Id}}/"`替换为`action="/blog/comment/{{.Content.Id}}/"`
+    # sed -i '1,nd' 2016.txt # 删除前n行

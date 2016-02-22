@@ -21,12 +21,14 @@
 - [HTTPS证书生成原理和部署细节](http://www.barretlee.com/blog/2015/10/05/how-to-build-a-https-server/)
 - [SSL/TLS 协议简介与实例分析](http://segmentfault.com/a/1190000002963044)
 - [使用 BoringSSL 优化 HTTPS 加密算法选择](https://imququ.com/post/optimize-ssl-ciphers-with-boringssl.html)
+- [Let's Encrypt，免费好用的 HTTPS 证书](https://imququ.com/post/letsencrypt-certificate.html)
 
 ## 证书
  - [数字证书及 CA 的扫盲介绍](2015_05_23_004.md)
  - [CNNIC 证书的危害及各种清除方法](2015_05_23_005.md)
  - [数字签名是什么？](2015_05_23_008.md)
 - [密码学笔记](2015_05_23_009.md)
+- [CA和证书那些事](https://yq.aliyun.com/articles/3164)
 
 ## 校验
 - [扫盲文件完整性校验——关于散列值和数字签名](2015_05_23_006.md)
@@ -38,3 +40,6 @@
 
 ## 编码
 - [从原理上搞定编码-- Base64编码](http://www.cnblogs.com/chengxiaohui/articles/3951129.html)
+
+## 机制
+- [银行的动态口令令牌是什么原理](http://www.tuicool.com/articles/bIVzuyN)
