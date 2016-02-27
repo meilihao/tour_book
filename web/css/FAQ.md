@@ -30,3 +30,27 @@
 ### box-sizing
 - border-box,指定宽度和高度确定元素边框box(即content+padding+border),是web design的趋势,**推荐**.
 - content-box,指定元素的宽度和高度适用于box的宽度和高度(即content).
+
+## 布局(layout)
+
+### 百分比
+
+- 两列布局 : 当布局很窄时， 左列就会被挤扁.更糟糕的是，你不能在左列上使用 min-width 来修复这个问题，因为右边的那列是不会遵守它的.解决方法:响应式设计（Responsive Design）.
+
+### inline-block
+- vertical-align 属性会影响到 inline-block 元素，你可能要把它的值设置为 top(某些元素的margin会撑开容器导致元素上边缘不对齐).
+- 你需要设置**每一列的宽度**
+- 如果HTML源代码中元素之间不相连(即有空格,换行等字符)，那么列与列之间会产生空隙
+
+### 多列布局
+- position
+- float
+- inline-block
+- column
+- flex(**推荐**),设为Flex布局以后，子元素的float、clear和vertical-align属性将失效
+
+## 工具
+
+### chrome
+- chrome窗口缩放到一定大小时就无法再缩小 : chrome窗口的其他Tab页有写min-width的限制而导致该问题,用新窗口单独打开就可解决.
+

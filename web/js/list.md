@@ -24,3 +24,7 @@
 - [图解javascript this指向什么？](http://www.tuicool.com/articles/iaMnqi)
 - [彻底理解JavaScript原型](http://www.cnblogs.com/wilber2013/p/4924309.html)
 - [JavaScript Promise迷你书（中文版）](http://liubin.org/promises-book/)
+
+## 框架
+### AngularJS
+- [【Angular2开发指南】- 翻译系列总览](https://github.com/gf-rd/blog/issues/21)
