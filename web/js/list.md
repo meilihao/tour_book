@@ -28,3 +28,4 @@
 ## 框架
 ### AngularJS
 - [【Angular2开发指南】- 翻译系列总览](https://github.com/gf-rd/blog/issues/21)
+- [编写你的第一个Angular2 Web应用](https://github.com/kittencup/angular2-ama-cn/issues/24)

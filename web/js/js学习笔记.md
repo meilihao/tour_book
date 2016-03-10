@@ -8,13 +8,47 @@
 - [caniuse # 了解各个浏览器以及它们的不同版本对HTML5、CSS3特性的支持情况](http://caniuse.com/)
 - [ECMAScript兼容性(ES6)](http://kangax.github.io/compat-table/es6/)
 
-## 基础
+# 基础
 
-## 数据类型和变量
+## 数据类型
+
+JavaScript语言的每一个值，都属于某一种数据类型。JavaScript的数据类型，共有五种(ES6又新增了第六种Symbol类型的值)
+
+- 数值（number）：整数和小数（比如1和3.14）
+- 字符串（string）：字符组成的文本（比如”Hello World”）
+- 布尔值（boolean）：true（真）和false（假）两个特定值
+- undefined：表示“未定义”或不存在，即此处目前没有任何值
+- null：表示空缺，即此处应该有一个值，但目前为空
+
+对象（object）：各种值组成的集合,不是数据类型
+通常将数值、字符串、布尔值称为原始类型（primitive type）的值，即它们是最基本的数据类型，不能再细分了.
+
 
 ### null和undefined
 
-JavaScript的设计者希望用null表示一个空的值，而undefined表示值未定义。事实证明，区分两者的意义不大。**大多数情况下，我们都应该用null。undefined仅仅在判断函数参数是否传递的情况下有用**。
+JavaScript的设计者希望用null表示一个空的值，而undefined表示值未定义。事实证明，区分两者的意义不大。**大多数情况下，我们都应该用null。undefined仅仅在判断函数参数是否传递的情况下有用**。null的特殊之处在于，JavaScript把它包含在对象类型（object）之中.
+
+null表示空值，即该处的值现在为空。典型用法是：
+- 作为函数的参数，表示该函数的参数是一个没有任何内容的对象。
+- 作为对象原型链的终点。
+
+undefined表示不存在值，就是此处目前不存在任何值。典型用法是：
+- 变量被声明了，但没有赋值时，就等于undefined。
+- 调用函数时，应该提供的参数没有提供，该参数等于undefined。
+- 对象没有赋值的属性，该属性的值为undefined。
+- 函数没有返回值时，默认返回undefined。
+
+### boolean
+
+除了下面六个值被转为false，其他值都视为true:
+```
+undefined
+null
+false
+0
+NaN
+""（空字符串）
+```
 
 ### 数组
 
@@ -385,7 +419,7 @@ foo(1);
 
 #### 变量提升
 
-**JavaScript的函数定义有个特点，它会先扫描整个函数体的语句，把所有申明的变量“提升”到函数顶部**：
+**JavaScript的函数定义有个特点，它会先扫描整个函数体的语句，把所有申明的变量“提升”到函数顶部(提升只对var声明有效,否则仅将其视为对顶层对象的属性的赋值)**：
 
 ```js
 'use strict';
