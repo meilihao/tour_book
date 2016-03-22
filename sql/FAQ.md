@@ -183,3 +183,7 @@ mysql:
 查询没有职员的部门信息.
 
     select d.* from dept d left outer join emp e on d.deptno=e.deptno where e.deptno is null;
+
+### 查找重复的记录
+select * from VAT2User a
+where (a.UserId,a.TNo) in (select UserId,TNo from VAT2User group by UserId,TNo having count(*) > 1)
