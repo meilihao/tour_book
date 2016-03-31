@@ -20,7 +20,7 @@ sed [OPTIONS] [FILE...]
 - -e∶直接在指令列模式上进行 sed 的动作编辑；
 - -f∶直接将 sed 的动作写在一个档案内， -f filename 则可以执行 filename 内的sed 动作；
 - -r∶sed 的动作支援的是延伸型正规表示法的语法.(预设是基础正规表示法语法)
-- -i∶直接修改读取的档案内容，而不是由萤幕输出
+- -i∶直接修改读取的档案内容，而不在屏幕输出
 
 sed 's/要替换的字符串/新的字符串/g'（要替换的字符串可以用正则表达式）,末端的g表示在行内进行全局替换.替换时sed默认使用反斜杠（/）分割,紧跟在s命令后的字符就是查找串和替换串之间的分隔符.分隔符默认为正斜杠，但可以改变。无论什么字符（换行符、反斜线除外），只要紧跟s命令，就成了新的串分隔符.
 
@@ -28,7 +28,15 @@ sed 's/要替换的字符串/新的字符串/g'（要替换的字符串可以用
 - [sed命令详解](http://www.cnblogs.com/edwardlost/archive/2010/09/17/1829145.html)
 
 ## 例
-
-    # sed -i "s:/static:/blog/static:" `grep /static -rl ./` # 检索当前目录下的文件,将其包含的字符串"/static"替换为"/blog/static".
-    # sed -i  "s:"action='"'":"action='"'/blog":" `grep action= -rl ./` 将`action="/comment/{{.Content.Id}}/"`替换为`action="/blog/comment/{{.Content.Id}}/"`
-    # sed -i '1,nd' 2016.txt # 删除前n行
+```
+$ sed -i "s:/static:/blog/static:" `grep /static -rl ./` # 检索当前目录下的文件,将其包含的字符串"/static"替换为"/blog/static".
+$ sed -i  "s:"action='"'":"action='"'/blog":" `grep action= -rl ./` 将`action="/comment/{{.Content.Id}}/"`替换为`action="/blog/comment/{{.Content.Id}}/"`
+$ sed -i '1,nd' 2016.txt # 删除前n行
+$ sed 's/text/replace_text/' file  # 替换每一行的第一处匹配的text
+$ sed 's/text/replace_text/g' file  # 全局替换
+$ sed '/^$/d' file # 移除空白行
+$ echo this is en example | sed 's/\w+/[&]/g' # 已匹配的字符串通过标记&来引用
+$ p=patten
+$ r=replaced
+$ echo "line con a patten" | sed "s/$p/$r/g" # 双引号会对表达式求值
+```

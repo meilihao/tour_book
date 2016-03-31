@@ -46,6 +46,7 @@ echo -e "\e[1;42m Green Background \e[0m"
 ```
 
 ## 例
-
-    # echo $HOME #输出当前用户的home目录
-    # echo test #输出字符串
+```sh
+$echo $HOME #输出当前用户的home目录
+$echo test #输出字符串
+```

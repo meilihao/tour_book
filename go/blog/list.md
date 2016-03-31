@@ -19,3 +19,6 @@
 ## 反射
 - [Go语法简略 － 反射](http://www.zddhub.com/memo/2015/07/03/go-reflect/)
 - [Go语法简略 － 依赖注入](http://www.zddhub.com/memo/2015/07/05/go-dependency-inject/)
+
+## 测试
+- [如何测试 Go 代码 - 单元测试](http://codethoughts.info/go/2015/04/05/how-to-test-go-code/)

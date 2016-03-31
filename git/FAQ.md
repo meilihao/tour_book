@@ -80,16 +80,21 @@ core.autocrlf:
 
 git reset --mixed id,是将git的HEAD变了（也就是提交记录变了），且文件变动回到工作目录.
 git reset --soft id,实际上，是git reset –mixed id 后，又做了一次git add
-git reset --herd id,是将git的HEAD变了,抛弃文件变动.
+git reset --hard id,是将git的HEAD变了,抛弃文件变动.
 
 HEAD指向的版本就是当前版本,Git允许我们使用命令`git reset --hard commit_id`在版本的历史之间穿梭.
 `git reset`可修改当前HEAD指针.
 
 #### 后悔药
 
-要用git reflog查看命令历史，以便确定要回到未来的哪个版本,再用`git reset --hard commit_id`返回指定版本.
+- 要用git reflog查看命令历史，以便确定要回到未来的哪个版本,再用`git reset --hard commit_id`返回指定版本.
 
 参考: [`git寻根——^和~的区别`](http://mux.alimama.com/posts/799)
+
+- 在reset之前的提交可以参照ORIG_HEAD,Reset错误时，在ORIG_HEAD上reset 就可以还原到reset前的状态.
+```
+$ git reset --hard ORIG_HEAD
+```
 
 ### 历史
 

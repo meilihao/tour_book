@@ -14,4 +14,4 @@ alias是一个系统自建的shell命令，允许你为比较长或者经常使�
 ## 例
 
     # alias ll='ls -alF'
-    # \ll
+    # ll

@@ -41,7 +41,7 @@ tr只能通过stdin，无法通过其他命令行进行接收参数.
     # cat text | tr '\t' ' ' # 字符替换
     # echo "hello 123 world 456"| tr -d '0-9' # 删除数字
     hello  world
-    # echo "hello 1 char 2" | tr -d -c '0-9'  #删除非0-9
+    # echo "hello 1 char 2" | tr -d -c '0-9'  #删除非0-9的字符
     12
     # echo "GNU is    not UNix" | tr -s ' ' # 压缩字符(连续的重复字符)
     GNU is not UNix

@@ -6,7 +6,7 @@
 
 ## 参数
 
-- -k: 相当于apropos命令,显示所有包含匹配项的man页面的简短描述
+- -k: 相当于apropos命令,根据命令中部分关键字来查询命令,会显示所有包含匹配项的man页面的简短描述.
 
 ## man手册各章节
 
@@ -23,3 +23,8 @@
 >1，5，7这三个号码常用
 
 >重构man数据库的方法:RedHat:makewhatis命令;Ubuntu,SUSE:mandb命令.
+
+## 例
+```sh
+$man 3 printf
+```
