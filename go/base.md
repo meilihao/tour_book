@@ -137,8 +137,7 @@ unsafe.Pointer类似C的void *,即通用指针类型,可表示任意类型值的
 
 ### defer
 
-**defer在函数返回后执行，可以修改函数返回值**
-
+**defer在函数返回前执行，即可以修改函数返回值**
 ```go
 func main() {
 	fmt.Println(f()) // 返回： 15
@@ -151,7 +150,7 @@ func f() (i int) {
 	return 3
 }
 ```
-- [defer表达式中变量的值在defer表达式被定义时就已经明确](http://www.xiaozhou.net/something-about-defer-2014-05-25.html)
+- [defer表达式中变量的值在defer表达式被定义时就已经明确](http://www.xiaozhou.net/something-about-defer-2014-05-25.html),即被推迟函数的实参在defer执行时就会求值， 而不是在调用执行时才求值.这样不仅无需担心变量值在函数执行时被改变， 同时还意味着单个已推迟的调用可推迟多个函数的执行.
 ```
 func a() {
     i := 0
@@ -160,12 +159,49 @@ func a() {
     return
 }
 ```
-- [Golang中defer、return、返回值之间执行顺序](https://xiequan.info/golang%E4%B8%ADdefer%E3%80%81return%E3%80%81%E8%BF%94%E5%9B%9E%E5%80%BC%E4%B9%8B%E9%97%B4%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/)
+```
+for i := 0; i < 5; i++ {
+	defer fmt.Printf("%d ", i) //4 3 2 1 0
+}
+```
+```
+func trace(s string) string {
+	fmt.Println("entering:", s)
+	return s
+}
+
+func un(s string) {
+	fmt.Println("leaving:", s)
+}
+
+func a() {
+	defer un(trace("a"))
+	fmt.Println("in a")
+}
+
+func b() {
+	defer un(trace("b"))
+	fmt.Println("in b")
+	a()
+}
+
+func main() {
+	b()
+}
+//---output:
+entering: b
+in b
+entering: a
+in a
+leaving: a
+leaving: b
+```
+- [Golang中defer、return、返回值之间执行顺序](https://xiequan.info/golang%E4%B8%ADdefer%E3%80%81return%E3%80%81%E8%BF%94%E5%9B%9E%E5%80%BC%E4%B9%8B%E9%97%B4%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/),即return最先给返回值赋值；接着defer开始执行一些收尾工作；最后return指令携带返回值退出函数.
 ```
 func main() {
 	fmt.Println("a return:", a()) // 打印结果为 a return: 0
 }
- 
+
 func a() int {
 	var i int
 	defer func() {
@@ -515,4 +551,3 @@ func main() {
 	fmt.Println(reflect.TypeOf(z), (*z).Error())
 }
 ```
-

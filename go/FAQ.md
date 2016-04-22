@@ -18,3 +18,58 @@ p := person[0]
 p.id = 2
 person[0] = p
 ```
+
+## interface{}
+
+### 接口断言
+```
+package main
+
+import "fmt"
+
+func main() {
+	var t T1 = 10
+	var i1 I1 = t
+	i1.Speak()
+
+	var i2 I2
+	i2 = i1
+	i2.Speak()
+
+	i1 = i2.(I1) // i2接口里的实际值是否实现了(I1)接口
+	i1.Step()
+}
+
+type T1 int
+type T2 int
+type T3 int
+
+func (t T1) Speak() {
+	fmt.Println("sk", t)
+}
+
+func (t T2) Speak() {
+	fmt.Println("sk", t)
+}
+
+func (t T3) Speak() {
+	fmt.Println("sk", t)
+}
+
+func (t T1) Step() {
+	fmt.Println("sp", t)
+}
+
+func (t T3) Step() {
+	fmt.Println("sp", t)
+}
+
+type I1 interface {
+	Speak()
+	Step()
+}
+
+type I2 interface {
+	Speak()
+}
+```

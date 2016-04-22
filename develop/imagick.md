@@ -3,6 +3,7 @@
 参考:[ImageMagick简介、GraphicsMagick、命令行使用示例](http://elf8848.iteye.com/blog/382528),[PHP ImageMagick扩展API](http://php.net/manual/zh/class.imagick.php)
 
 [magickwand 中文函数翻译](http://blog.sina.com.cn/s/blog_632e0c7b0100pep8.html)
+- [ImageMagick命令行使用方法](http://www.zouyesheng.com/imagemagick.html)
 
 ### ImageMagick
 
@@ -494,7 +495,7 @@ imagickpixeliterator ::synciteratorsyncs 同步的像素迭代器
 - func NewMagickWand() *MagickWand : 创建魔术棒
 - func (mw *MagickWand) NewImage(cols uint, rows uint, background *PixelWand) error : 创建指定大小和背景颜色的空白图片 # (width,height,背景颜色);background为none且mw图片格式设置为png时,则新创建的图片背景为透明.
 - func (mw *MagickWand) SetImageFormat(format string) error : 设置图像格式
-- func (mw *MagickWand) CropImage(width, height uint, x, y int) error : 提取/截取区域的图像 # (截取图片width,截取图片height,截取x轴起点,截取y轴起点)
+- func (mw *MagickWand) CropImage(width, height uint, x, y int) error : 提取/截取区域的图像 # (截取图片width,截取图片height,截取x轴起点,截取y轴起点,当(width|height)=0时,截取的实际长度(前提:截取的范围内有图像)=图片对应边的原始长度-相应的(x|y)的绝对值)
 - func (mw *MagickWand) ReadImage(filename string) error : 载入图像 # (filename图片路径)
 - func (mw *MagickWand) ReadImageBlob(blob []byte) error : 载入图像二进制数据
 - func (mw *MagickWand) ReadImageFile(img *os.File) error : 载入图像 # (图像文件句柄img)
@@ -513,7 +514,7 @@ imagickpixeliterator ::synciteratorsyncs 同步的像素迭代器
 - func (mw *MagickWand) ChopImage(width, height uint, x, y int) error : 删除图像区域 :(x,y)是删除起点;默认情况下要删除的区域是从起点向右选取指定width及图片高度的矩形+向下选取指定hight及图片宽度的矩形;删除指定区域后会收缩(拼接)剩余图片.
 - func (mw *MagickWand) ResizeImage(cols, rows uint, filter FilterType, blur float64) error :缩放图片 : cols(宽);rows(高);filter,用于图片的filter(缩放算法);blur(模糊因子), > 1为模糊, < 1为锐化(为了使图像的边缘、轮廓线以及图像的细节变得清晰).
 ---unkown
-- BlurImage(radius, sigma float64) error : 模糊图像 # 
+- BlurImage(radius, sigma float64) error : 模糊图像 #
 ### DrawingWand
 - func NewDrawingWand() *DrawingWand : 创建绘图棒
 - func (dw *DrawingWand) Annotation(x, y float64, text string) : 在图像上绘制文字 # (dw绘制到图像上时,文字最左边到图片y轴举例,文本基线到图片x轴距离,文字内容)
@@ -536,7 +537,7 @@ Ubuntu安装见官方README,下面是Fedora的安装方式:
 
 32bit OS安装碰到错误:"github.com/gographics/imagick/imagick/draw_info.go:17:19: unexpected: 12-byte float type - long double",待官方解决(issues#19).
 
-参考: 
+参考:
 http://www.soso.io/article/33321.html
 http://www.111cn.net/phper/php-image/51986.htm
 http://bbs.gxsd.com.cn/forum.php?mod=viewthread&tid=253184&page=1&authorid=11518

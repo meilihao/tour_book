@@ -6,6 +6,7 @@
 
 ## 分布式
 - [学习笔记：The Log（我所读过的最好的一篇分布式技术文章）](http://www.cnblogs.com/foreach-break/p/notes_about_distributed_system_and_The_log.html)
+- [etcd：从应用场景到实现原理的全方位解读](http://www.infoq.com/cn/articles/etcd-interpretation-application-scenario-implement-principle/)
 
 ## 序列化
 - [Google FlatBuffers——开源、跨平台的新一代序列化工具](http://itindex.net/detail/50777-google-flatbuffers-%E5%BC%80%E6%BA%90)
