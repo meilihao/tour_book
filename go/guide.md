@@ -27,7 +27,7 @@ godef: go get -u -v github.com/rogpeppe/godef
 golint: go get -u -v github.com/golang/lint/golint
 go-find-references: go get -u -v github.com/lukehoban/go-find-references
 go-outline: go get -u -v github.com/lukehoban/go-outline
-goreturns: go get -u -v sourcegraph.com/sqs/goreturns
+goreturns: go get -u -v github.com/sqs/goreturns
 gorename: go get -u -v golang.org/x/tools/cmd/gorename
 gooracle: go get -u -v golang.org/x/tools/cmd/oracle
 go debug: go get -u -v github.com/derekparker/delve/cmd/dlv
