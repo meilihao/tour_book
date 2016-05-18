@@ -21,6 +21,8 @@
 - [ralateUid] 关联账号,在分享文字后追加分享来源(`（分享自 @XXX）`)
 - [content] 设置页面编码gb2312|utf-8
 
+[微博分享的卡片效果](http://travel.sohu.com/20160503/n447372910.shtml),该功能需要单独申请linkcard解析,申请该功能需要应用授权人数达到1000人以上.
+
 ### qq空间分享(可支持转播到腾讯微博)
 
 [Qzone分享组件文档](http://connect.qq.com/intro/share/),其会自动在参数url上抓图及提取summary并显示在分享页面上.

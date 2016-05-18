@@ -23,6 +23,7 @@
 - [使用 BoringSSL 优化 HTTPS 加密算法选择](https://imququ.com/post/optimize-ssl-ciphers-with-boringssl.html)
 - [Let's Encrypt，免费好用的 HTTPS 证书](https://imququ.com/post/letsencrypt-certificate.html)
 - [在nginx 使用Let’s Encrypt 免费的SSL/TLS 证书](http://www.tuicool.com/articles/m6fU7ry)
+- [HTTPS 理论详解与实践*](https://segmentfault.com/a/1190000004985253)
 
 ## 证书
 - [数字证书及 CA 的扫盲介绍](2015_05_23_004.md)

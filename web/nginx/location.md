@@ -2,29 +2,35 @@
 
 [原文](http://www.bo56.com/nginx-location%E5%9C%A8%E9%85%8D%E7%BD%AE%E4%B8%AD%E7%9A%84%E4%BC%98%E5%85%88%E7%BA%A7/)
 **nginx有多个`server{...}`时需注意server_name指令和error.log中请求信息的`server: xxx`是否匹配,否则可能将请求匹配到其他server的location上而导致错误**
+
 ### location表达式类型
 
+```
+语法:	 location [ = | ~ | ~* | ^~ ] uri { ... }
+      location @name { ... }
+```
+
+- = 表示精确匹配,也就是完全匹配(即不支持正则)
+- ^~ 表示前缀匹配.果匹配成功，则不再匹配其他location
 - ~ 表示执行一个正则匹配，区分大小写
 - ~* 表示执行一个正则匹配，不区分大小写
-- ^~ 表示普通字符匹配。使用前缀匹配。如果匹配成功，则不再匹配其他location。
-- = 进行普通字符精确匹配。也就是完全匹配（即不支持正则）。
-- @ 它定义一个命名的 location，使用在内部定向时，例如 error_page, try_files
+- @ 它定义一个命名的 location，内部重定向请求时使用，例如 error_page, try_files
+- uri 常规字符串匹配
 
+**路径匹配在URI规范化以后进行**.所谓**规范化**，就是先将URI中形如“%XX”的编码字符进行解码， 再解析URI中的相对路径“.”和“..”部分， 另外还可能会压缩相邻的两个或多个斜线成为一个斜线.
+
+在nginx的location和配置中location的顺序没有太大关系,和location表达式的类型有关.相同类型的表达式，字符串长的会优先匹配.
+
+不包含正则的location在配置文件中的顺序不会影响匹配顺序,而包含正则表达式的location会按照配置文件中定义的顺序进行匹配.
 
 #### location优先级说明
 
-在nginx的location和配置中location的顺序没有太大关系。和location表达式的类型有关。相同类型的表达式，字符串长的会优先匹配。
+优先级说明(高->低)：
 
-以下是按优先级排列说明（[官方](http://wiki.nginx.org/HttpCoreModuleChs#location)）：
-
-1. 等号类型（=）的优先级最高。一旦匹配成功，则不再查找其他匹配项。
-1. 常规字符串匹配类型（按前缀匹配）。
-1. ^~类型表达式。一旦匹配成功，则不再查找其他匹配项。
-1. 正则表达式类型（`~ ~*`）的优先级次之。如果有多个location的正则能匹配的话，则使用正则表达式最长的那个。当`~ ~*`表达式相同时，以先后顺序来匹配。
-
-**总结:**
-
-- 不包含正则的 location 在配置文件中的顺序不会影响匹配顺序。而包含正则表达式的 location 会按照配置文件中定义的顺序进行匹配
+1. 等号类型（=）的优先级最高,一旦匹配成功，则不再查找其他匹配项
+1. ^~类型表达式.一旦匹配成功，则不再查找其他匹配项.
+1. 正则表达式类型（`~ ~*`）的优先级次之.如果有多个location的正则能匹配的话，则使用正则表达式最长的那个.当`~ ~*`表达式相同时，以先后顺序来匹配.
+1. 常规字符串匹配类型(按前缀最长字符串匹配)
 
 ### location优先级示例
 
@@ -71,13 +77,13 @@ location ~* \.(gif|jpg|jpeg)$ {
 
 ## 其他
 
-### 
+###
 ```
 location / {
         return 200 '123';
-	# because nginx default content-type is application/octet-stream,
-    	# browser will offer to "save the file"...
-    	# if you want to see reply in browser, uncomment next line 
-        add_header Content-Type text/plain;
+        # because nginx default content-type is application/octet-stream,
+        # browser will offer to "save the file"...
+        # if you want to see reply in browser, uncomment next line
+        # add_header Content-Type text/plain;
 }
 ```
