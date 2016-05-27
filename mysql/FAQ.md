@@ -202,3 +202,7 @@ mysql sql_mode包含"STRICT_TRANS_TABLES"时(严格模式),db不允许插入空�
 ### 插入时间"0000-00-00"报错
 
 mysq的sql_mode使用了"NO_ZERO_DATE".文档:[mariadb](https://mariadb.com/kb/en/mariadb/datetime/),[mysql5.7](http://dev.mysql.com/doc/refman/5.7/en/sql-mode.html#sqlmode_no_zero_date)
+
+### int(M) 含义
+
+int(M) 表示使用integer数据类型，而M表示**最大显示宽度**,与存储空间无关.

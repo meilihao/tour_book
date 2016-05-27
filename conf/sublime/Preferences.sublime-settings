@@ -1,0 +1,12 @@
+{
+  // 默认使用unix换行符
+	"default_line_ending": "unix",
+  // 在编辑窗口下方的状态栏显示文件使用的换行符
+  "show_line_endings": true,
+	"font_size": 13,
+  // 忽略插件
+	"ignored_packages":
+	[
+		"Vintage" // 编辑使用 vim 模式
+	]
+}

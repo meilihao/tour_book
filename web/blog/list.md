@@ -1,7 +1,7 @@
 ## DNS
- - [扫盲 DNS 原理,兼谈"域名劫持"和"域名欺骗/域名污染"](2015_05_23_001.md)
- - [DNS劫持和DNS污染的区别](2015_05_23_007.md)
- - [全局精确流量调度新思路-HttpDNS服务详解](http://www.zmke.com/i/8705.html)
+- [扫盲 DNS 原理,兼谈"域名劫持"和"域名欺骗/域名污染"](2015_05_23_001.md)
+- [DNS劫持和DNS污染的区别](2015_05_23_007.md)
+- [全局精确流量调度新思路-HttpDNS服务详解](http://www.zmke.com/i/8705.html)
 - [从理论到实践，全方位认识DNS（理论篇）](http://selfboot.cn/2015/11/05/dns_theory/)
 - [从理论到实践，全方位认识DNS（实践篇）](http://selfboot.cn/2015/11/05/dns_theory/)
 
@@ -83,6 +83,7 @@
 ## Rustful API
 - [来自HeroKu的HTTP API 设计指南(中文版)](http://get.jobdeer.com/343.get)
 - [理解RESTFul架构](http://blog.jobbole.com/88989/)
+- [一个工作中用得到的RESTful API规范*](2016_05_27_001.md)
 
 ## 负载均衡
 - [负载均衡原理与技术实现](http://network.51cto.com/art/201509/492457_all.htm)

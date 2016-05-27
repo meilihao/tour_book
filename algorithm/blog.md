@@ -18,3 +18,7 @@
 
 ## 编码
 - [Base64编码原理与应用*](http://blog.xiayf.cn/2016/01/24/base64-encoding/)
+
+## 一致性
+
+- [raft动画](http://thesecretlivesofdata.com/raft/)
