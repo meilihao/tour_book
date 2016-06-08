@@ -19,9 +19,10 @@
 - [系统负载能力浅析](http://www.rowkey.me/blog/2015/09/09/load-analysis/)
 - [各大互联网公司架构演进之路汇总](http://www.hollischuang.com/archives/1036)
 - [每秒处理10万订单乐视集团支付架构](http://geek.csdn.net/news/detail/72973)
+- [阿里管控系统靠什么扛住全球最大规模的流量洪峰](http://jm.taobao.org/2016/05/19/how-to-withstand-the-world-s-largest-traffic/)
 
 ## 随思
-- [知道创宇研发技能表v3.0](http://blog.knownsec.com/Knownsec_RD_Checklist/v3.0.html)
+- [知道创宇研发技能表](http://blog.knownsec.com/Knownsec_RD_Checklist/index.html)
 - [影响一生的职业建议 - Nicholas C. Zakas](https://linux.cn/article-6250-1.html)
 
 ## 编辑器

@@ -23,6 +23,17 @@ protoc --proto_path=IMPORT_PATH --go_out=plugins=grpc:OUT_DIR path/to/file.proto
 
 更多见[protobuf的官方文档](https://github.com/golang/protobuf).
 
+### 示例
+
+- [sikang99/grpc-example](https://github.com/sikang99/grpc-example)
+- [gRPC 官方文档中文版: Go](http://doc.oschina.net/grpc?t=60133)
+
+### tls
+
+- [官方文档/示例(github)]
+- [grpc加密TLS初体验](http://studygolang.com/articles/3220)
+- [etcd使用](https://github.com/coreos/etcd/blob/340df26883b8604b574bef32e3b31a396cdb3bad/etcdserver/api/v3rpc/grpc.go)
+
 ## 错误
 
 ### error while loading shared libraries: libprotoc.so.xx

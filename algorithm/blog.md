@@ -15,6 +15,7 @@
 ## 限制
 - [使用 SSDB 来实现操作频率限制](http://www.ideawu.net/blog/archives/864.html)
 - [如何限制接口调用者对接口的调用频率](http://segmentfault.com/q/1010000002938194)
+- [API 调用次数限制实现](https://zhuanlan.zhihu.com/p/20872901)
 
 ## 编码
 - [Base64编码原理与应用*](http://blog.xiayf.cn/2016/01/24/base64-encoding/)
@@ -22,3 +23,7 @@
 ## 一致性
 
 - [raft动画](http://thesecretlivesofdata.com/raft/)
+
+## 可视化
+
+- [算法可视化 - AlgorithmVisualizer](github.com/parkjs814/AlgorithmVisualizer)

@@ -55,6 +55,7 @@
 ## 经验
 - [TJ Holowaychuk是怎样学习编程的？](http://zhuanlan.zhihu.com/FrontendMagazine/19572823)
 - [将 Web 应用性能提高十倍的10条建议](https://linux.cn/article-7206-1.html)
+- [最全前端资源汇集](github.com/nicejade/Front-end-tutorial)
 
 ## nginx
 - [深入NGINX：我们如何设计它的性能和扩展性](https://linux.cn/article-5681-1.html)

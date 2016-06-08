@@ -26,3 +26,21 @@ sudo dnf -y install  openssl-devel
 
 查看`ps aux | grep "nginx: worker process" | awk '{print $1}'`(即nginx.conf的user指令)显示的用户是否对该请求路径(绝对路径)有无访问权限.
 我这里是因将WebRoot放在了主目录下导致用户nginx无权限访问的原因.
+
+### fetch patch method return 400
+
+chrome : 51.0.2704.84 (64-bit)
+nginx : 1.10.1
+
+```js
+fetch('/topics/' + id, {
+    method: 'patch', // 这里的"patch"应改为"PATCH"
+    credentials: 'include',
+    body: data
+})
+```
+
+将method属性的值转化为大写即可.
+
+原因: 此时chrome产生的请求行(`patch /topics/2016060000000007 HTTP/1.1`)的方法是小写,会被nginx拒绝;
+而奇怪的是,如果是`method: 'post'`,chrome生成的请求行的方法又会自动转成大写.

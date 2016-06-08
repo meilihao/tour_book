@@ -24,6 +24,7 @@
 - [Let's Encrypt，免费好用的 HTTPS 证书](https://imququ.com/post/letsencrypt-certificate.html)
 - [在nginx 使用Let’s Encrypt 免费的SSL/TLS 证书](http://www.tuicool.com/articles/m6fU7ry)
 - [HTTPS 理论详解与实践*](https://segmentfault.com/a/1190000004985253)
+- [HTTPS与SSL（下篇）*](http://www.jianshu.com/p/c03f47e7b9de)
 
 ## 证书
 - [数字证书及 CA 的扫盲介绍](2015_05_23_004.md)

@@ -25,7 +25,7 @@
     # ps aux
     # ps -ef
 
-### 扩展
+## 扩展
 
 - [session leaders](http://www.win.tue.nl/~aeb/linux/lk/lk-10.html#ss10.3)
 
@@ -41,3 +41,21 @@ This is just the PID of the process group leader. If PID == PGID, then this proc
 Session ID (SID)
 
 This is just the PID of the session leader. **If PID == SID, then this process is a session leader**.
+
+### 进程状态
+
+linux上进程有5种状态:
+
+- 运行(正在运行或在运行队列中等待)
+- 中断(休眠中, 受阻, 在等待某个条件的形成或接受到信号)
+- 不可中断(休眠中,收到信号不唤醒和不可运行, 进程必须等待直到有中断发生)
+- 僵死(进程已终止, 但进程描述符存在, 直到父进程调用wait4()系统调用后释放)
+- 停止(进程收到SIGSTOP, SIGSTP, SIGTIN, SIGTOU信号后停止运行运行)
+
+ps工具标识进程的5种状态码:
+
+- D 不可中断 uninterruptible sleep (usually IO)
+- R 运行 runnable (on run queue)
+- S 中断 sleeping
+- T 停止 traced or stopped
+- Z 僵死 a defunct (”zombie”) process

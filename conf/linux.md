@@ -103,21 +103,6 @@ $ sudo ln -s  /usr/lib/samba/wbclient/libwbclient.so.0.12 /usr/lib/libwbclient.s
 
 ### 硬件信息
 
-#### cpu
-
-	#cpu信息
-	cat /proc/cpuinfo
-    #cpu当前运行模式:32/64
-    getconf LONG_BIT
-
-#### 内存
-
-	cat /proc/meminfo
-
-#### linux发行版本
-
-	cat /etc/issue
-
 #### 获取有关硬件方面的信息
 
 **DMI (Desktop Management Interface)**就是帮助收集电脑系统信息的管理系统，DMI信息的收集必须在严格遵照SMBIOS规范的前提下进行。
@@ -189,39 +174,12 @@ export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
 
 #### 程序链接的动态库
 
-一个可执行文件链接了哪些动态库呢？在遇到“error while loading shared libraries”时，我们难免会对此产生好奇。
-
-查看该信息的方法是通过ldd，如
-
-```shell
-$ ldd chrome
-   linux-vdso.so.1 =>  (0x00007fff52dff000)
-   libX11.so.6 => /usr/lib/libX11.so.6 (0x00007f0caebe4000)
-   libdl.so.2 => /lib/libdl.so.2 (0x00007f0cae9e0000)
-   libXrender.so.1 => /usr/lib/libXrender.so.1 (0x00007f0cae7d6000)
-   libXss.so.1 => /usr/lib/libXss.so.1 (0x00007f0cae5d3000)
-   libXext.so.6 => /usr/lib/libXext.so.6 (0x00007f0cae3c1000)
-   librt.so.1 => /lib/librt.so.1 (0x00007f0cae1b9000)
-   ....（略）
-```
-
-要想看系统还没找到的动态库，可以借用grep：
-
-```shell
-$ldd chrome | grep 'not found'
-  libnss3.so.1d => not found
-   libnssutil3.so.1d => not found
-   libsmime3.so.1d => not found
-   libplc4.so.0d => not found
-   libnspr4.so.0d => not found
-```
-
->Linux下查看so动态链接库的常用命令:
-nm用来列出目标文件的符号清单.
-ar命令可以用来创建、修改库，也可以从库中提出单个模块。
-objdump：显示目标文件中的详细信息(`objdump -d <command>`，可以查看这些工具究竟如何完成这项任务)
-ldd  查看可执行文件链接(依赖)了哪些系统动态链接库
->readelf 显示关于 ELF 目标文件的信息(`readelf -d libffmpeg.so | grep NEEDED`)
+Linux下查看so动态链接库的常用命令:
+- ldd  查看可执行文件链接(依赖)了哪些系统动态链接库,**推荐**
+- nm用来列出目标文件的符号清单.
+- ar命令可以用来创建、修改库，也可以从库中提出单个模块。
+- objdump：显示目标文件中的详细信息(`objdump -d <command>`，可以查看这些工具究竟如何完成这项任务)
+- readelf 显示关于 ELF 目标文件的信息(`readelf -d libffmpeg.so | grep NEEDED`)
 
 #### 版本
 
@@ -296,4 +254,3 @@ tpm资料,[TPM安全芯片](http://baike.baidu.com/view/687208.htm),[Trusted Pla
 ## dnf
 
 - [27 个 Linux 下软件包管理工具 DNF 命令例子](https://linux.cn/article-5718-1.html)
-
