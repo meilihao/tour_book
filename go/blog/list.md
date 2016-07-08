@@ -22,3 +22,6 @@
 
 ## 测试
 - [如何测试 Go 代码 - 单元测试](http://codethoughts.info/go/2015/04/05/how-to-test-go-code/)
+
+## 扩展
+- [Go net/http 超时指南](http://www.oschina.net/translate/the-complete-guide-to-golang-net-http-timeouts)

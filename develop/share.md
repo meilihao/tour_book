@@ -19,7 +19,10 @@
 - [pic] 预设要分享的图片(必须带扩展名)
 - [searchPic] 抓图服务,true时会抓取参数url网页中的图片追加为要分享的图片
 - [ralateUid] 关联账号,在分享文字后追加分享来源(`（分享自 @XXX）`)
-- [content] 设置页面编码gb2312|utf-8
+- [content] 设置页面编码[gb2312|utf-8,推荐]
+
+在title中分享url时,如果出现中文参数,分享后该参数会被识别成文本,除非该参数被重复编码3次及以上,不推荐.
+因此建议(**推荐**):不论title中的url是否含非ASCII字符都先将title中的url转成[短链](http://open.weibo.com/wiki/Short_url/shorten)再分享,如果url含非ASCII字符时,先urlencode该参数,再生成短链.
 
 [微博分享的卡片效果](http://travel.sohu.com/20160503/n447372910.shtml),该功能需要单独申请linkcard解析,申请该功能需要应用授权人数达到1000人以上.
 

@@ -49,6 +49,8 @@ dport：表示过滤目标端口、相反的有sport
 
 ## 例
 
-    # ss -a # 查看这台服务器上所有的socket连接
-    # ss -pl |grep 8000 #查询本机打开8000端口的进程信息
-    # ss -o state established '( dport = :http or sport = :http )' #ss列出所有http连接中的连接,包含对外提供的80，以及访问外部的80,用于获取http并发连接数，监控中常用到
+```shell
+# ss -a # 查看这台服务器上所有的socket连接
+# ss -pln |grep 8000 #查询本机打开8000端口的进程信息
+# ss -o state established '( dport = :http or sport = :http )' #ss列出所有http连接中的连接,包含对外提供的80，以及访问外部的80,用于获取http并发连接数，监控中常用到
+```

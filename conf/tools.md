@@ -64,6 +64,7 @@ Unity Tweak Tool 是一个专为Ubuntu Unity 桌面环境的配置工具，允�
 
 # 梯子
 
+- [shadowsocks-libev](github.com/shadowsocks/shadowsocks-libev)
 - [goagent](https://github.com/goagent/goagent),可行
 - [greatagent](https://github.com/greatagent/greatagent/wiki),未测试
 - [lantern](https://getlantern.org/),未测试
@@ -187,3 +188,9 @@ REGEDIT4
     sudo dnf install flash-plugin
 
 前提:设置adobe的repo,即到[官网](https://get.adobe.com/flashplayer/?loc=cn)下载yum文件(rpm文件)再安装即可.
+
+### 字符浏览器
+
+- w3m
+	- `w3m -I GBK  www.baidu.com`,解决中文乱码
+- lynx

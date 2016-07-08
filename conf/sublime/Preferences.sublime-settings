@@ -1,12 +1,17 @@
 {
-  // 默认使用unix换行符
+	// 默认使用unix换行符
 	"default_line_ending": "unix",
-  // 在编辑窗口下方的状态栏显示文件使用的换行符
-  "show_line_endings": true,
+	// 在编辑窗口下方的状态栏显示文件使用的换行符
+	"show_line_endings": true,
 	"font_size": 13,
-  // 忽略插件
+	// 忽略插件
 	"ignored_packages":
 	[
 		"Vintage" // 编辑使用 vim 模式
-	]
+	],
+
+	// 保存文件时自动在末尾添加空行
+	"ensure_newline_at_eof_on_save": false,
+	// 使用空格填充tab键
+	"translate_tabs_to_spaces": false
 }

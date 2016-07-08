@@ -13,3 +13,6 @@
 - [评论设计](http://michael-j.xyz/2016/01/05/%E8%AF%84%E8%AE%BA%E8%AE%BE%E8%AE%A1/),推荐文中的场景B,可参照知乎,即邻接表的模式.
 - [在数据库中存储层级结构](http://qinxuye.me/article/storing-hierachical-data-in-database/)
 - [树形结构 数据库表设计](http://blog.csdn.net/tiantiandjava/article/details/45390859)
+
+## license
+- [如何为你的开源项目选择一个合适的开源协议？](http://www.oschina.net/news/74999/how-to-choose-a-license)

@@ -1,3 +1,7 @@
+### 包管理
+
+参考 : http://wiki.ubuntu.org.cn/UbuntuHelp:AptGet/Howto/zh
+
 ### FAQ
 
 #### 查看cpu/硬盘温度,风扇转速

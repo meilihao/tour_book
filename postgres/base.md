@@ -178,3 +178,29 @@ ALTER DATABASE mytest
 ALTER DATABASE mytest2
   OWNER TO qor; --修改数据库的所有者
 ```
+
+## explain
+
+[PostgreSQL执行计划的解释](http://blog.csdn.net/ls3648098/article/details/7602136)
+执行计划运算类型	操作说明	是否有启动时间
+Seq Scan	扫描表	无启动时间
+Index Scan	索引扫描	无启动时间
+Bitmap Index Scan	索引扫描	有启动时间
+Bitmap Heap Scan	索引扫描	有启动时间
+Subquery Scan	子查询	无启动时间
+Tid Scan	ctid = …条件	无启动时间
+Function Scan	函数扫描	无启动时间
+Nested Loop	循环结合	无启动时间
+Merge Join	合并结合	有启动时间
+Hash Join	哈希结合	有启动时间
+Sort	排序，ORDER BY操作	有启动时间
+Hash	哈希运算	有启动时间
+Result	函数扫描，和具体的表无关	无启动时间
+Unique	DISTINCT，UNION操作	有启动时间
+Limit	LIMIT，OFFSET操作	有启动时间
+Aggregate	count, sum,avg, stddev集约函数	有启动时间
+Group	GROUP BY分组操作	有启动时间
+Append	UNION操作	无启动时间
+Materialize	子查询	有启动时间
+SetOp	INTERCECT，EXCEPT	
+有启动时

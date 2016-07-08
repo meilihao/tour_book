@@ -65,3 +65,7 @@ postgres日志是在`${PGDATA}/pg_log`文件夹中.
 ### 获取主键
 
 使用["INSERT...RETURNING"](http://postgres.cn/docs/9.4/sql-insert.html),RETURNING后加想要返回的列名,加"*"表示返回所有列.
+
+### Application Stack Builder 目标pg的配置
+
+/etc/postgres-reg.ini
