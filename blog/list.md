@@ -20,6 +20,7 @@
 - [各大互联网公司架构演进之路汇总](http://www.hollischuang.com/archives/1036)
 - [每秒处理10万订单乐视集团支付架构](http://geek.csdn.net/news/detail/72973)
 - [阿里管控系统靠什么扛住全球最大规模的流量洪峰](http://jm.taobao.org/2016/05/19/how-to-withstand-the-world-s-largest-traffic/)
+- [不止于思路，谈高性能服务器架构之道](http://dbaplus.cn/news-21-504-1.html)
 
 ## 随思
 - [知道创宇研发技能表](http://blog.knownsec.com/Knownsec_RD_Checklist/index.html)

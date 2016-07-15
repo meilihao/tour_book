@@ -15,6 +15,7 @@
 ## 性能
 - [Go程序调试、分析与优化](http://tonybai.com/2015/08/25/go-debugging-profiling-optimization/)
 - [CockroachDB GC优化总结](http://studygolang.com/articles/5420)
+- [从Baa开发中总结Go语言性能渐进优化](https://segmentfault.com/a/1190000005690821)
 
 ## 反射
 - [Go语法简略 － 反射](http://www.zddhub.com/memo/2015/07/03/go-reflect/)

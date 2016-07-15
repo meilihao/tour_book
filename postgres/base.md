@@ -202,5 +202,5 @@ Aggregate	count, sum,avg, stddev集约函数	有启动时间
 Group	GROUP BY分组操作	有启动时间
 Append	UNION操作	无启动时间
 Materialize	子查询	有启动时间
-SetOp	INTERCECT，EXCEPT	
+SetOp	INTERCECT，EXCEPT
 有启动时

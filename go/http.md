@@ -162,3 +162,9 @@ func main() {
 	http.ListenAndServe(":8081", nil)
 }
 ```
+
+### tls
+
+- http://colobu.com/2016/06/07/simple-golang-tls-examples/
+- http://tonybai.com/2015/04/30/go-and-https/
+- https://github.com/nareix/blog/blob/master/posts/golang-tls-guide.md

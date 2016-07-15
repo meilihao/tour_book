@@ -102,3 +102,6 @@ flat  flat%   sum%        cum   cum%
 - col4 : 累计运行时间,即当前函数以及当前函数直接或间接调用的函数运行所占的时间.
 - col5 : 累计运行时间占总时间的百分比(col4/总时间)
 - col6 : 函数名
+
+## GC
+- [如何监控 golang 程序的垃圾回收](https://holys.im/2016/07/01/monitor-golang-gc/)

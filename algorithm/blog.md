@@ -23,7 +23,11 @@
 ## 一致性
 
 - [raft动画](http://thesecretlivesofdata.com/raft/)
+- [微信自研生产级paxos类库PhxPaxos实现原理介绍](http://mp.weixin.qq.com/s?__biz=MzI4NDMyNTU2Mw==&mid=2247483695&idx=1&sn=91ea422913fc62579e020e941d1d059e)
 
 ## 可视化
 
 - [算法可视化 - AlgorithmVisualizer](github.com/parkjs814/AlgorithmVisualizer)
+
+## 数据结构
+- [Trie树结构](http://mp.weixin.qq.com/s?__biz=MjM5ODczNTkwMA==&mid=2650107126&idx=1&sn=cd28e9637693f60613c4453090016aa6#rd)
