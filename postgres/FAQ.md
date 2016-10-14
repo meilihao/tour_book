@@ -69,3 +69,10 @@ postgres日志是在`${PGDATA}/pg_log`文件夹中.
 ### Application Stack Builder 目标pg的配置
 
 /etc/postgres-reg.ini
+
+### sql日志
+
+$PGDATA/postgresql.conf
+```
+log_statement = "all"
+```

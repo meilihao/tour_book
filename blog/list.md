@@ -21,6 +21,7 @@
 - [每秒处理10万订单乐视集团支付架构](http://geek.csdn.net/news/detail/72973)
 - [阿里管控系统靠什么扛住全球最大规模的流量洪峰](http://jm.taobao.org/2016/05/19/how-to-withstand-the-world-s-largest-traffic/)
 - [不止于思路，谈高性能服务器架构之道](http://dbaplus.cn/news-21-504-1.html)
+- [微服务系统中的服务发现机制](https://blog.maxleap.cn/archives/524)
 
 ## 随思
 - [知道创宇研发技能表](http://blog.knownsec.com/Knownsec_RD_Checklist/index.html)
@@ -60,3 +61,6 @@
 
 ## UED
 - [如何提高移动端注册登录体验](http://www.tuicool.com/articles/qyIVZvQ)
+
+## 订阅
+- [国内知名技术博客总结](http://asteam.cc/index.php/archives/10/)

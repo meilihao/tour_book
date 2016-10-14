@@ -310,6 +310,22 @@ func make_fn() func(i int) {
 ---*/
 ```
 
+```go
+func main() {
+	// 
+	for i := 0; i < 3; i++ {
+		defer fmt.Println(i)                    // 2,1,0
+		defer func() { fmt.Println(i) }()       // 3,3,3
+		defer func(i int) { fmt.Println(i) }(i) // 2,1,0
+		defer print(&i)                         // 3,3,3
+		go fmt.Println(i)                       // 0,1,2 # 顺序未知
+		go func() { fmt.Println(i) }()          // 3,3,3 # 顺序未知
+	}
+}
+
+func print(pi *int) { fmt.Println(*pi) }
+```
+
 ## 其他
 
 ```go
@@ -549,5 +565,59 @@ func main() {
 	z = &e
 	fmt.Printf("%#v\n", z)
 	fmt.Println(reflect.TypeOf(z), (*z).Error())
+}
+```
+
+### 作用域
+
+```go
+func main() {
+	DoTheThing()
+}
+
+func DoTheThing() (err error) {
+	fmt.Printf("%p", &err)
+
+	if true {
+		// 两个err作用域不同,会重新定义
+		result, err := tryTheThing()
+		fmt.Printf("%p", &err)
+		if err != nil {
+			err = errors.New("b")
+		}
+
+		fmt.Println(result)
+	}
+
+	return err
+}
+
+func tryTheThing() (string, error) {
+	return "", errors.New("b")
+}
+```
+
+```go
+func main() {
+	DoTheThing()
+}
+
+func DoTheThing() (err error) {
+	fmt.Printf("%p", &err)
+
+	// 相同作用域,已定义过的不再重新定义
+	result, err := tryTheThing()
+	fmt.Printf("%p", &err)
+	if err != nil {
+		err = errors.New("b")
+	}
+
+	fmt.Println(result)
+
+	return err
+}
+
+func tryTheThing() (string, error) {
+	return "", errors.New("b")
 }
 ```

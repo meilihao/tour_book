@@ -22,3 +22,8 @@ $ sudo sysctl fs.inotify.max_user_watches=8192 # 临时修改
 $ vim /etc/sysctl.conf # 添加max_user_watches=8192，然后sysctl -p生效,永久生效
 ```
 
+### vscode : Run VS Code with admin privileges so the changes can be applied.
+
+```shell
+sudo code --user-data-dir=/home/chen/.vscode .
+```

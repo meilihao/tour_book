@@ -7,6 +7,8 @@
 - [Go语言错误处理](http://www.tuicool.com/articles/fqEr2mf)
 - [Golang中defer、return、返回值之间执行顺序](https://xiequan.info/golang%E4%B8%ADdefer%E3%80%81return%E3%80%81%E8%BF%94%E5%9B%9E%E5%80%BC%E4%B9%8B%E9%97%B4%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F/)
 - [go语言的http-中间件实现](https://xiequan.info/go%E8%AF%AD%E8%A8%80%E7%9A%84http-%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%AE%9E%E7%8E%B0/)
+- [Golang连接数据库](http://www.tomshine.xyz/2016/04/07/Golang%E8%BF%9E%E6%8E%A5%E6%95%B0%E6%8D%AE%E5%BA%93/)
+- [Go文件操作大全](http://colobu.com/2016/10/12/go-file-operations/)
 
 ## RPC
  - [Thrift RPC 使用指南实战(附golang&PHP代码)](http://blog.csdn.net/liuxinmingcode/article/details/45696237)

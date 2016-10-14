@@ -65,6 +65,10 @@ RENAME TABLE tbl_name TO new_tbl_name
 - `DELETE`只能使用`WHERE`子句.
 - Postgres和MySQL支持`TRUNCATE <表名>`来清空表,速度比`DELETE`快.
 
+### UPDATE
+
+- Postgres的`UPDATE`不支持`LIMIT`,但可将`LIMIT`放在`From`或`WHERE`的子句里.
+
 ### 事务
 - 事务是需要在同一个处理单元中执行的一系列操作的集合.
 - 事务特性ACID:原子性(Atomicity),一致性(Consistency),隔离性(Isolation)和持久性(Durability).

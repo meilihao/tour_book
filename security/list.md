@@ -51,3 +51,6 @@
 
 ## 机制
 - [银行的动态口令令牌是什么原理](http://www.tuicool.com/articles/bIVzuyN)
+
+## 书籍
+- [白帽子讲Web安全-读书笔记](2016_07_22_001.md)

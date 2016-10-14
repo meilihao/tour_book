@@ -499,6 +499,13 @@ Cookie 的工作机制是用户识别及状态管理．
 Set-Cookie	开始状态管理所使用的Cookie信息	响应首部字段,Header允许包含多个Set-Cookie
 Cookie	服务器接收到的Cookie信息	请求首部字段,用`; `分隔
 
+Cookie 分为以下两类(按来源)：
+- 第一方 Cookie(First-party cookie) 是由地址栏中显示的网站所设置
+- 第三方 Cookie(Third-party cookie) 则来自在您所访问的网页上嵌入广告或图片等内容的其他网站
+
+览器所持有的cookie分为两种(按存储)：
+- "临时cookie"(session cookie)，存放在内存里，浏览器一关闭，cookie就失效
+- "本地cookie"(persistent cookie)，存放在本地，它是服务器set-cookie时**指定了一个过期时间**，只有到那个时间cookie才会失效.
 
 ### Set-Cookie 字段的属性
 
@@ -509,6 +516,8 @@ path=PATH	将服务器上的文件目录作为Cookie的适用对象（若不指�
 domain=域名	作为 Cookie 适用对象的域名 （若不指定则默认为创建 Cookie 的服务器的域名）
 Secure	仅在 HTTPS 安全通信时才会发送 Cookie
 HttpOnly	加以限制，使 Cookie 不能被 JavaScript 脚本访问
+
+修改/删除`cookie`时，名称、路径和域名必须相同
 
 #### expires 属性
 

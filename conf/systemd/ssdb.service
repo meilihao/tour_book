@@ -1,0 +1,22 @@
+# /usr/lib/systemd/system/ssdb.service
+
+[Unit]
+Description=SSDB
+After=network.target
+
+[Service]
+LimitCORE=infinity
+LimitNOFILE=100000
+LimitNPROC=100000
+PIDFile=/usr/local/ssdb/var/ssdb.pid
+WorkingDirectory=/usr/local/ssdb
+ExecStart=/usr/local/ssdb/ssdb-server /usr/local/ssdb/ssdb.conf -s restart -d
+ExecStop=/usr/local/ssdb/ssdb-server /usr/local/ssdb/ssdb.conf -s stop -d
+Type=forking
+KillMode=none
+Restart=on-failure
+RestartSec=10s
+User=root
+
+[Install]
+WantedBy=multi-user.target
