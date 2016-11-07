@@ -21,6 +21,8 @@ $ git config -l
 ## 其他
 - `git show <$id>` : 显示最近或某次提交的内容
 - `git help <command>` :  显示command的help
+- `git clone <url>` : clone远程版本库
+- `git init` : init本地版本库
 
 ## add
 - `git add -u <file>` : 将文件修改提交到暂存区,"-u"表示仅添加修改和删除的文件,不包括新增.
@@ -36,6 +38,9 @@ $ git config -l
 - `git commit --amend` : 修改最近一次的commit message
 
 ## reset
+
+## revert
+- `git revert <commit>` : 撤销指定的提交
 
 ## diff
 ```shell
@@ -72,17 +77,29 @@ git checkout . # .表示撤销当前目录及其子目录内所有文件的修�
 - `git branch <new_branch>` : 创建新分支new_branch,但不会立即切换到new_branch分支
 - `git branch -d <branch>` : 删除分支branch
 
+## tag
+- `git tag` : 列出所有本地标签
+- `git tag <tagname>` : 基于最新提交创建标签
+- `git tag -d <tagname>` : 删除标签
+
 ## fetch
+- `git fetch <remote>` : 从远程库获取代码
 
 ## pull
 - `git pull` : 抓取远程仓库所有分支更新并合并到本地
+- `git pull <remote> <branch>` : 下载代码并快速合并
 
 ## push
 - `git push` : push所有分支
-- `git push origin master` : 将本地主分支推到远程主分支
-- `git push -u origin master` : 将本地主分支推到远程(如无远程主分支则创建，用于初始化远程仓库)
-- `git push origin <local_branch>:<remote_branch>` : 创建远程分支
-- `git push origin :<remote_branch>` : 先删除本地分支，然后再push删除远程分支
+- `git push <remote> <branch>` : 将本地主分支推到远程主分支
+- `git push -u <remote> <branch>` : 将本地主分支推到远程(如无远程主分支则创建，用于初始化远程仓库)
+- `git push <remote> <local_branch>:<remote_branch>` : 创建远程分支
+- `git push <remote> :<remote_branch>` : 先删除本地分支，然后再push删除远程分支
+- `git push --tags` : 上传所有标签
+
+## merge
+- `git merge <branch>` : 合并指定分支到当前分支(解决冲突后,将合并内容作为一个新的commit)
+- `git rebase <branch>` : 衍合指定分支到当前分支
 
 ## stash
 ```shell
@@ -103,7 +120,7 @@ $ git stash clear
 ## remote
 - `git remote` : 列出已经存在的远程分支
 - `git remote -v` :  列出远程分支的详细信息(显示对应的克隆地址)
-- `git remote show remote-name` : 查看某个远程仓库的详细信息
+- `git remote show <remote-name>` : 查看某个远程仓库的详细信息
 - `git remote add <name> <url>` : 添加一个新的远程仓库
 - `git remote rename <old-name> <new-name>` : 重命名某个远程仓库在本地的简称
 - `git remote rm <remote-name>` : 删除某个远端仓库
@@ -111,3 +128,4 @@ $ git stash clear
 
 ## log
 - `git log [--stat] [-n] [-p] <file>` : 查看提交记录,"--stat"表示会显示提交的统计信息,"-n"表示选择显示前n条记录,"-p"表示按补丁格式显示commit的变更,"file"表示指定文件
+- `git blame <file>` : 以列表方式查看指定文件的提交历史

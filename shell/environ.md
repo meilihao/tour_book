@@ -38,16 +38,23 @@ sh的提示字符串.可扩展的参数:`\u`:用户名;`\h`:主机名;`\w`:当�
 
 ## 流程
 
+参考:[理解 Linux/Unix 登录脚本](https://www.sdk.cn/news/5585)
+
 ### login shell
 
 1. login
 2. `/etc/profile`,根据其内容读取额外的文档，如/etc/profile.d和/etc/inputrc等
 3. 个人配置文件(`~/.bash_profile`,`/.bash_login`和`~/.profile`,主要是获取与用户有关的环境、别名和函数等)
-    - 如果`~/.bash_profile`存在，那么bash就不会理睬其他两个文件.
-    - 如果`~/.bash_profile`不存在，bash才会读取`~/.bash_login`.
-    - 而前两个文件都不存在的话，bash才会读取`~/.profile`文件.
-4. 如果`~/.bashrc`存在的话，`~/.bash_profile`还会调用它
+    - 在列出的顺序中第一个被找到的文件会被作为配置文件，其余的都会被忽略
+4. 如果`~/.bashrc`(其会调用`~/.bash_alias`)存在的话，`~/.bash_profile`还会调用它
 5. bash启动
+6. `~/.bash_logout`
+
+ps :
+
+其他的shell，例如Dash，支持相似的东西，但是只会查找~/.profile文件。这允许用户为Bash特定的应用场景配置单独的.bash_profile文件，如果在某些时候需要切换到Dash或其他shell作为登录shell（例如通过chsh -s dash命令）。可以保留~/.profile作为这些shell的配置文件。
+
+需要牢记的一点是，默认的Debian框架目录（/etc/skel，用于存放要复制到新用户账户主目录的文件和目录）包含.profile文件，但不包含.bash_profile和.bash_login文件。此外Debian使用Bash作为默认的shell，因此，许多Debian用户习惯于将他们的Bash 登录shell设置放在.profile文件中。
 
 ### non-login shell
 
@@ -61,3 +68,7 @@ sh的提示字符串.可扩展的参数:`\u`:用户名;`\h`:主机名;`\w`:当�
 
 - `~/.profile`可以设定本用户专有的路径，环境变量等，它只能登入的时候执行一次
 - `~/.bashrc`也是某用户专有设定文档，可以设定路径，命令别名，每次shell script的执行都会使用它一次.
+
+## X11
+
+见`/etc/X11/Xsession`

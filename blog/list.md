@@ -22,6 +22,7 @@
 - [阿里管控系统靠什么扛住全球最大规模的流量洪峰](http://jm.taobao.org/2016/05/19/how-to-withstand-the-world-s-largest-traffic/)
 - [不止于思路，谈高性能服务器架构之道](http://dbaplus.cn/news-21-504-1.html)
 - [微服务系统中的服务发现机制](https://blog.maxleap.cn/archives/524)
+- [跟着毛老师学高可用](https://xiequan.info/ha-%EF%BC%88high-availability%EF%BC%89/)
 
 ## 随思
 - [知道创宇研发技能表](http://blog.knownsec.com/Knownsec_RD_Checklist/index.html)
