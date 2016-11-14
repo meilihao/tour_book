@@ -1,6 +1,9 @@
 # webpack
 
-[参考](https://zy108830.gitbooks.io/webpack-doc/content/index.html)
+参考:
+
+- [webpack中文](https://webpack.vuefe.cn/index/)
+- [webpack](https://zy108830.gitbooks.io/webpack-doc/content/index.html)
 
 如何调用webpack
 

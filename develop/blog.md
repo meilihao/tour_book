@@ -16,3 +16,7 @@
 
 ## license
 - [如何为你的开源项目选择一个合适的开源协议？](http://www.oschina.net/news/74999/how-to-choose-a-license)
+
+## 支付
+
+-[支付宝/微信支付解析](http://www.jianshu.com/p/59341ea9d86d)

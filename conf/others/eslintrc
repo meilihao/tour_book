@@ -1,0 +1,21 @@
+{
+  "extends": "standard",
+  "globals": {
+    "_": false,
+    "clearInterval": false,
+    "clearTimeout": false,
+    "layer": fasle,
+    "lazySizes": false,
+    "request": false,
+    "setInterval": false,
+    "setTimeout": false,
+    "Vue": false,
+    "VueRouter": false
+  },
+  "plugins": ["html"],
+  "root": true,
+  "rules": {
+    "space-before-function-paren": [2, "never"]
+  }
+}
+

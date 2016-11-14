@@ -1,0 +1,13 @@
+// eslint PATH must be written in "Settings - User", because "Settings - Default" is ignored.
+// install eslint to global
+{
+    "user": {
+        "paths": {
+            "linux": [
+                "/home/chen/.nvm/versions/node/v7.0.0/bin"
+            ],
+            "osx": [],
+            "windows": []
+        }
+    }
+}
