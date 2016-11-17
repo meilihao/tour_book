@@ -32,7 +32,8 @@ postgres:
 - 使用postgres账户登入即可(pg9.4 默认规则是`local all all peer`)，即`sudo -u postgres psql`.
 - 修改数据库实例的认证文件，比如`/var/lib/pgsql/data/pg_hba.conf`,再重启pg，根据新规则进行登入即可.
 
->[postgres认证相关文档](http://postgres.cn/docs/9.3/auth-methods.html#AUTH-PASSWORD)
+>[postgres认证相关文档](http://postgres.cn/docs/9.5/auth-methods.html#AUTH-PASSWORD)
+>[pg_hba.conf文件](http://www.postgres.cn/docs/9.5/auth-pg-hba-conf.html)
 >postgres会根据pg_hba.conf中规则出现的位置，从上到下依次匹配.规则中的METHOD是指定如何处理客户端的认证,常用的有ident，md5，password，trust，reject，pam:
 >- ident是Linux下PostgreSQL默认的local认证方式，凡是能正确登录服务器的操作系统用户（注：不是数据库用户）就能使用本用户映射的数据库用户不需密码登录数据库。用户映射文件为pg_ident.conf，这个文件记录着与操作系统用户匹配的数据库用户，如果某操作系统用户在本文件中没有映射用户，则默认的映射数据库用户与操作系统用户同名。比如，服务器上有名为user1的操作系统用户，同时数据库上也有同名的数据库用户，user1登录操作系统后可以直接输入psql，以user1数据库用户身份登录数据库且不需密码。很多初学者都会遇到psql -U username登录数据库却出现“username ident 认证失败”的错误，明明数据库用户已经createuser。原因就在于此，使用了ident认证方式，却没有同名的操作系统用户或没有相应的映射用户。解决方案：1、在pg_ident.conf中添加映射用户；2、改变认证方式。
 >- md5是常用的密码认证方式，如果你不使用ident，最好使用md5.密码是以md5形式传送给数据库，较安全，且不需建立同名的操作系统用户
@@ -40,6 +41,12 @@ postgres:
 >- trust是只要知道数据库用户名就不需要密码或ident就能登录，建议不要在生产环境中使用
 >- reject是拒绝认证
 >- pam 	使用操作系统提供的可插入认证模块服务(PAM)来认证
+
+```
+// DATABASE指定多个数据库时以逗号分隔.`all`只有在没有其他的符合条目时才代表“所有”，因为`all`的优先级最低.
+local   all             postgres                                peer
+local   all             all                                     md5
+```
 
 ### `sudo systemctl status postgresql.service` failed
 
@@ -75,4 +82,13 @@ postgres日志是在`${PGDATA}/pg_log`文件夹中.
 $PGDATA/postgresql.conf
 ```
 log_statement = "all"
+```
+
+### 导出/导入
+
+```
+// 导出到文件xxx.sql
+pg_dump -h localhost -U postgres -f xxx.sql
+// 导入到newdatabase
+psql -d newdatabase -U postgres -f mydatabase.sql
 ```

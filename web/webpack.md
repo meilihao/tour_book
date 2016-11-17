@@ -2,6 +2,7 @@
 
 参考:
 
+- [WebPack 常用功能介绍](http://gold.xitu.io/entry/567a108c00b0e902c0717751)
 - [webpack中文](https://webpack.vuefe.cn/index/)
 - [webpack](https://zy108830.gitbooks.io/webpack-doc/content/index.html)
 
@@ -59,13 +60,13 @@
 
 ### entry
 
-打包入口
+打包入口,通常是一个;有多个即表示多页面站点.
 
 ### output
 
 - path : 打包的目录
 - `__dirname` : 当前目录
-- filename : 打包后输出的文件名
+- filename : 打包后输出的文件名;多入口时,filename使用了name变量
 
 ### module
 
@@ -74,14 +75,23 @@
 Webpack 本身只能处理 JavaScript 模块，如果要处理其他类型的文件，就需要使用 loader 进行转换。
 Loader 可以理解为是模块和资源的转换器，它本身是一个函数，接受源文件作为参数，返回转换的结果。
 
-Loader 可以通过管道方式链式调用，每个 loader 可以把资源转换成任意格式并传递给下一个 loader ，但是最后一个 loader 必须返回 JavaScript.
+Loader 可以通过管道方式链式调用，每个 loader 可以把资源转换成任意格式并传递给下一个 loader ，但是**最后一个 loader 必须返回 JavaScript**,要使用的loader，"-loader"可以省略.
 
 - loader: 'style!css!sass' : 需要注意loader的顺序，意为先使用sass加载器处理，解析为普通的css文件，再处理css文件，最后处理样式，类似于pipe的概念.
 - loader: 'url-loader?limit=8192' : 内联的base64的图片地址，图片要小于8k，直接的url的地址则不解析
 
+```
+module: {
+    preLoaders: [...],
+    loaders: [...]
+}
+
+preLoaders:[{test: /\.(js|vue)$/, loader: 'eslint'}] == loaders: [{ enforce: 'pre', test: /\.(js|vue)$/, loader: 'eslint' }
+```
+
 ### resolve
 
-- extensions ['', '.js', '.json', '.coffee'] : require文件时省略文件的扩展名,现在你require文件的时候可以直接使用require('file')，不用使用require('file.coffee')
+- extensions ['', '.js', '.json', '.coffee'] : require文件时省略文件的扩展名,现在你require文件的时候可以直接使用require('file')，不用使用require('file.coffee'),即当requrie的模块找不到时，添加这些后缀后再找
 
 ## 其他
 
@@ -140,6 +150,10 @@ webpack-dev-server通过sockjs实现实时变化监测，当文件变化时，�
 
 ### 自动刷新
 
+参考:
+- [Webpack Hot Module ReplaceMent原理](https://github.com/niuben/niuben.github.io/wiki/Webpack-Hot-Module-ReplaceMent%E4%BB%8B%E7%BB%8D)
+- [探究Webpack中的HMR](https://blog.oyyd.net/post/how_does_react_hot_loader_works) 
+
 webpack-dev-server提供了两种自动刷新的模式
 
 1. iframe模式
@@ -175,4 +189,5 @@ devServer: { inline: true }
 $ webpack-dev-server --hot
 ```
 
+`--hot`表示增加HotModuleReplacementPlugin插件，且将服务器切换到热模式中,注意:不要再额外添加HotModuleReplacementPlugin. 
 打开页面可以在Console控制台看到启动内容，说明热加载配置成功。其中HMS表示热加载模块，WDS表示webpack-dev-server.

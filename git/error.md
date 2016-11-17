@@ -15,3 +15,7 @@
 ### `remote: fatal: Unable to create temporary file '/xxx.git/./objects/pack/tmp_pack_XXXXXX': Permission denied`
 
 git remote url中的账户无权写入远程库目录，方法就是修改远程库目录的所属用户和所属用户组或在remote url中使用有权限的账户,通常时是`git`
+
+### `Permission denied (publickey,gssapi-keyex,gssapi-with-mic).`
+
+今天迁移gogs,`/home/git/.ssh/authorized_keys`不存在,在gogs上重新添加公钥即可.
