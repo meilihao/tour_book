@@ -15,6 +15,7 @@
 
 ## base
 - [浅谈 JS 创建对象的 8 种模式](http://segmentfault.com/a/1190000003862596)
+- [this 的值到底是什么？一次说清楚](https://zhuanlan.zhihu.com/p/23804247)
 
 ## ajax
 - [传统 Ajax 已死，Fetch 永生](github.com/camsong/blog/issues/2)

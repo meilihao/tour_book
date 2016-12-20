@@ -1,5 +1,6 @@
 ## 进阶
 - [PostgreSQL黑科技大集会](https://yq.aliyun.com/articles/2727)
+- [PostgreSQL on Linux 最佳部署手册](http://mp.weixin.qq.com/s/FR65pyRmpEFFVvoJ28uBUg)
 
 ### 相关主页
 

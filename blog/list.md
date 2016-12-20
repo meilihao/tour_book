@@ -7,6 +7,7 @@
 ## 分布式
 - [学习笔记：The Log（我所读过的最好的一篇分布式技术文章）](http://www.cnblogs.com/foreach-break/p/notes_about_distributed_system_and_The_log.html)
 - [etcd：从应用场景到实现原理的全方位解读](http://www.infoq.com/cn/articles/etcd-interpretation-application-scenario-implement-principle/)
+- [架构师需要了解的Paxos原理、历程及实战](http://h2ex.com/719)
 
 ## 序列化
 - [Google FlatBuffers——开源、跨平台的新一代序列化工具](http://itindex.net/detail/50777-google-flatbuffers-%E5%BC%80%E6%BA%90)
@@ -23,6 +24,9 @@
 - [不止于思路，谈高性能服务器架构之道](http://dbaplus.cn/news-21-504-1.html)
 - [微服务系统中的服务发现机制](https://blog.maxleap.cn/archives/524)
 - [跟着毛老师学高可用](https://xiequan.info/ha-%EF%BC%88high-availability%EF%BC%89/)
+- [分布式会话跟踪系统架构设计与实践](http://tech.meituan.com/mt-mtrace.html)
+- [流动的推荐系统——兴趣Feed技术架构与实现](http://mp.weixin.qq.com/s/aQ5O_Bj34UOz69iohCdrpg)
+- [日均数十亿请求！京东评价系统海量数据存储高可用设计](http://dbaplus.cn/news-21-613-1.html)
 
 ## 随思
 - [知道创宇研发技能表](http://blog.knownsec.com/Knownsec_RD_Checklist/index.html)
@@ -65,3 +69,6 @@
 
 ## 订阅
 - [国内知名技术博客总结](http://asteam.cc/index.php/archives/10/)
+
+## 源码
+- [Elasticsearch 架构以及源码概览](http://mp.weixin.qq.com/s?__biz=MzA4NjgwMDQ0OA==&mid=2652445487&idx=1&sn=fb99fac1db2ad8120e98f00165323b2a)

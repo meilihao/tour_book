@@ -9,10 +9,12 @@
 - [go语言的http-中间件实现](https://xiequan.info/go%E8%AF%AD%E8%A8%80%E7%9A%84http-%E4%B8%AD%E9%97%B4%E4%BB%B6%E5%AE%9E%E7%8E%B0/)
 - [Golang连接数据库](http://www.tomshine.xyz/2016/04/07/Golang%E8%BF%9E%E6%8E%A5%E6%95%B0%E6%8D%AE%E5%BA%93/)
 - [Go文件操作大全](http://colobu.com/2016/10/12/go-file-operations/)
+- [深入Go UDP编程](http://colobu.com/2016/10/19/Go-UDP-Programming/)
 
 ## RPC
  - [Thrift RPC 使用指南实战(附golang&PHP代码)](http://blog.csdn.net/liuxinmingcode/article/details/45696237)
  - [Golang通过Thrift框架完美实现跨语言调用](http://blog.csdn.net/pkueecser/article/details/48004631)
+- [Go使用gRPC与Protocol Buffers构建高性能API 服务](https://xiequan.info/go%E4%BD%BF%E7%94%A8grpc%E4%B8%8Eprotocol-buffers%E6%9E%84%E5%BB%BA%E9%AB%98%E6%80%A7%E8%83%BDapi-%E6%9C%8D%E5%8A%A1/)
 
 ## 性能
 - [Go程序调试、分析与优化](http://tonybai.com/2015/08/25/go-debugging-profiling-optimization/)
@@ -28,3 +30,4 @@
 
 ## 扩展
 - [Go net/http 超时指南](http://www.oschina.net/translate/the-complete-guide-to-golang-net-http-timeouts)
+- [Go 调度器跟踪](http://colobu.com/2016/04/19/Scheduler-Tracing-In-Go/)

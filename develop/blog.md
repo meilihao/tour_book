@@ -19,4 +19,5 @@
 
 ## 支付
 
--[支付宝/微信支付解析](http://www.jianshu.com/p/59341ea9d86d)
+- [支付宝/微信支付解析](http://www.jianshu.com/p/59341ea9d86d)
+- [解析支付](http://blog.lixf.cn/essay/2016/10/12/account-3-bank)
