@@ -17,7 +17,8 @@ sudo apt-get install libevent-dev
 直接`apt install asciidoc`安装需要下载几十个依赖不可取.
 因此先安装xmlto,再用`apt -f install`补全依赖,最后安装asciidoc.xxx.deb
 
-deepin 15.3 下载 [ubuntu 16.04的版本](packages.ubuntu.com)的asciidoc.deb
+- [deepin 15.3](http://packages.deepin.com/deepin/pool/main)
+- [ubuntu 16.04](packages.ubuntu.com)
 
 ### no space left on device
 
