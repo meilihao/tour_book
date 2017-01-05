@@ -14,3 +14,6 @@ fonts.useso.com fonts.googleapis.com
 # 方法2: 直接屏蔽,缺点是看不到Google字体的真正效果
 127.0.0.1       fonts.googleapis.com
 ```
+
+类似:
+- [ReplaceGoogleCDN](https://github.com/justjavac/ReplaceGoogleCDN)

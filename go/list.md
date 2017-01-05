@@ -4,3 +4,4 @@
 
 ## 进阶
 - [Go 1.6中值得关注的几个变化](http://tonybai.com/)
+- [Go,Makefile与自动程序版本号的实现](https://xiaozhou.net/go-makefile-and-auto-version-2016-06-13.html)

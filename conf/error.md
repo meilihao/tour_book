@@ -37,3 +37,33 @@ sudo code --user-data-dir=/home/chen/.vscode .
 使用sudo sealert -a /var/log/audit/audit.log查看具体日志，里面有解决方案.
 
 > [参考](http://www.tuicool.com/articles/myYv6v)
+
+### chrome 55 没有flash
+
+`chrome://plugins`里的Adobe Flash Player显示: 
+
+Location:  internal-not-yet-present // 即flash并没有下载
+
+运行:
+```
+google-chrome-stable --proxy-server="socks5://127.0.0.1:1080" // 需梯子
+```
+
+再在`chrome://components/`下载`Adobe Flash Player`,重启即可.
+
+> 其实就是在`~/.config/google-chrome/PepperFlash`下载了一个flash的版本(文件夹名是flash对应的版本号)和latest-component-updated-flash校验文件.
+> 相应的命令行:`/usr/bin/google-chrome-stable %U --ppapi-flash-path=/home/chen/.config/google-chrome/PepperFlash/24.0.0.186/libpepflashplayer.so --ppapi-flash-version=24.0.0.186`
+
+### socks5转http
+
+```
+apt install privoxy
+vim /etc/privoxy/config
+systemctl restart privoxy
+```
+
+config变动:
+listen-address  127.0.0.1:6060 // 6060也就是你需要的http输出的端口
+forward-socks5   /   127.0.0.1:1080  . // 1080也就是socks5输入的端口
+
+其他类似软件: Polipo

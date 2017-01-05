@@ -69,6 +69,10 @@ Unity Tweak Tool 是一个专为Ubuntu Unity 桌面环境的配置工具，允�
 - [greatagent](https://github.com/greatagent/greatagent/wiki),未测试
 - [lantern](https://getlantern.org/),未测试
 
+## shadowsocks
+
+- [linux-ubuntu使用shadowsocks客户端配置](https://aitanlu.com/ubuntu-shadowsocks-ke-hu-duan-pei-zhi.html)
+
 # 翻译
 
 ## 有道词典

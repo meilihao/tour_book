@@ -1,4 +1,4 @@
-## 官方文档
+# npm
 
 [npm官方文档](https://docs.npmjs.com/)
 
@@ -28,3 +28,11 @@
 `npm root -g`  查看全局的包的安装路径
 
 `npm help`  帮助，如果要单独查看install命令的帮助，可以使用的npm help install
+
+## yarn
+
+```sh
+# 实际是在`~/.yarnrc`添加配置信息,与npm配置(`~/.npmrc`)方式一样
+yarn config get registry
+yarn config set registry 'https://registry.npm.taobao.org'  
+```
