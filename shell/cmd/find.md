@@ -81,3 +81,4 @@
     # find . -type f -name "*.txt" -exec printf "File: %s\n" {} \; # `-exec`和`-printf`结合来格式化输出
     # find . -name ".git" -prune -o -name "*.txt" -print # 找出不在'.git'文件夹内的所有txt文件
     # find . -type f -name "*.swp" -delete <=> find . type f -name "*.swp" | xargs rm
+    # find . -type f|xargs file|grep "CRLF" # 查找所有使用`CRLF`换行的文件

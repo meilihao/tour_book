@@ -14,7 +14,7 @@ grep [OPTIONS] 关键词 [FILE...]
 
 - -c : 统计文件中包含文本的次数
 - -e : 使用模式匹配
-- -E : 使用extended regular expression模式进行匹配
+- -E : 使用extended regular expression(ERE,扩展的正则表达式)模式进行匹配,默认是使用基本正则表达式(BRE)
 - -i : 忽略大小写
 - -l : 只打印文件名
 - -n : 打印匹配的行号

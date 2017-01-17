@@ -5,6 +5,7 @@
 - [揭开正则表达式的神秘面纱](http://www.regexlab.com/zh/regref.htm)
 - [正则表达式教程](http://c.biancheng.net/cpp/u/zhengze/)
 - [*Golang-Regex-Tutorial](https://github.com/StefanSchroeder/Golang-Regex-Tutorial)
+- [Regular Expression](https://www.ntu.edu.sg/home/ehchua/programming/howto/Regexe.html)
 
 ## 测试/可视化
 - [Regulex](https://jex.im/regulex)

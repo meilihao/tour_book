@@ -12,10 +12,12 @@
 ## 缓存
 - [缓存算法](http://www.leexiang.com/cache-algorithm)
 
-## 限制
+## 限制/限速/限流/流控
 - [使用 SSDB 来实现操作频率限制](http://www.ideawu.net/blog/archives/864.html)
 - [如何限制接口调用者对接口的调用频率](http://segmentfault.com/q/1010000002938194)
 - [API 调用次数限制实现](https://zhuanlan.zhihu.com/p/20872901)
+- [限流技术](https://github.com/nereuschen/blog/issues/37)
+- [高并发系统之限流特技](http://dbaplus.cn/news-21-491-1.html)
 
 ## 编码
 - [Base64编码原理与应用*](http://blog.xiayf.cn/2016/01/24/base64-encoding/)

@@ -12,6 +12,7 @@
 是强制性的，无法通过apply或call方法改变其上下文**
 
 > 由于在严格模式中，函数内部的this不能指向全局对象，默认等于undefined，导致不加new调用会报错（JavaScript不允许对undefined添加属性）
+> this 的绑定只受最靠近的成员引用的影响.
 
 ## 绑定 this 的方法
 
