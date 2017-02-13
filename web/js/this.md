@@ -1,5 +1,8 @@
 # this
 
+参考:
+- [JavaScript This 的六道坎](http://blog.crimx.com/2016/05/12/understanding-this/)
+
 ## this指向
 1. 函数在被直接调用的时候，其中的this指针永远指向全局对象
 2. 匿名函数this总是指向全局对象
