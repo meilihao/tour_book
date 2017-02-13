@@ -10,6 +10,7 @@
 - [Golang连接数据库](http://www.tomshine.xyz/2016/04/07/Golang%E8%BF%9E%E6%8E%A5%E6%95%B0%E6%8D%AE%E5%BA%93/)
 - [Go文件操作大全](http://colobu.com/2016/10/12/go-file-operations/)
 - [深入Go UDP编程](http://colobu.com/2016/10/19/Go-UDP-Programming/)
+- [Golang新开发者要注意的陷阱和常见错误](http://colobu.com/2015/09/07/gotchas-and-common-mistakes-in-go-golang/)
 
 ## RPC
  - [Thrift RPC 使用指南实战(附golang&PHP代码)](http://blog.csdn.net/liuxinmingcode/article/details/45696237)
