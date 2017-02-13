@@ -1,7 +1,7 @@
 # webpack
 
 参考:
-
+- [awesome-webpack-cn](https://github.com/webpack-china/awesome-webpack-cn)
 - [WebPack 常用功能介绍](http://gold.xitu.io/entry/567a108c00b0e902c0717751)
 - [webpack中文](https://webpack.vuefe.cn/index/)
 - [webpack](https://zy108830.gitbooks.io/webpack-doc/content/index.html)
