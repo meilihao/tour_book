@@ -1,3 +1,7 @@
+# cmd
+
+参考: [go_command_tutorial](github.com/hyper0x/go_command_tutorial/blob/master/SUMMARY.md)
+
 ## go build
 
 主要用于编译代码.在包的编译过程中，若有必要，会同时编译与之相关联的包.go build编译链接后的可执行程序放在源程序目录.

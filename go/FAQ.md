@@ -19,6 +19,17 @@ p.id = 2
 person[0] = p
 ```
 
+类似:
+```go
+// 接口口转型返回临时对象,只有使用用指针才能修改其状态
+u := person{1, "Tom"}
+var vi, pi interface{} = u, &u
+// vi.(person).name = "Jack" // Error: cannot assign to vi.(person).name
+pi.(*person).name = "Jack"
+fmt.Printf("%v\n", vi.(person))
+fmt.Printf("%v\n", pi.(*person))
+```
+
 ## interface{}
 
 ### 接口断言
@@ -36,8 +47,9 @@ func main() {
 	i2 = i1
 	i2.Speak()
 
-	i1 = i2.(I1) // i2接口里的实际值是否实现了(I1)接口
-	i1.Step()
+	if i1, ok := i2.(I1); ok { // i2接口里的实际值是否实现了(I1)接口, ok==true
+		i1.Step()
+	}
 }
 
 type T1 int

@@ -33,5 +33,5 @@ import "strings"
 参数列表:
 - s 原始字符串
 
-    fmt.Println(strings.ToLower("aBc")) // "ABC"
-	fmt.Println(strings.ToLower("abc")) // "ABC"
+    fmt.Println(strings.ToUpper("aBc")) // "ABC"
+	fmt.Println(strings.ToUpper("abc")) // "ABC"

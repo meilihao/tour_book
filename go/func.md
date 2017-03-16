@@ -3,16 +3,16 @@
 ### 大纲
 本文总结GoLang中常用的几种函数用法，主要包括：
 
-[0] 首先main是一个没有返回值的函数
-[1] 普通函数
-[2] 函数返回多个值
-[3] 不定参函数
-[4] 闭包函数
-[5] 递归函数
-[6] 类型方法, 类似C++中类的成员函数
-[7] 接口和多态
-[9] 错误处理, Defer接口
-[10] 错误处理, Panic/Recover
+- [0] 首先main是一个没有返回值的函数
+- [1] 普通函数
+- [2] 函数返回多个值
+- [3] 不定参函数
+- [4] 闭包函数
+- [5] 递归函数
+- [6] 类型方法, 类似C++中类的成员函数
+- [7] 接口和多态
+- [9] 错误处理, defer
+- [10] 错误处理, panic/recover
 
 ### 测试代码
 
@@ -94,7 +94,7 @@ func (c *circle) perimeter() float64 {
 }
 
 // 接口
-type shape interface {
+type shaper interface {
 	area() float64
 	perimeter() float64
 }
@@ -104,7 +104,7 @@ func interface_test() {
 	c := circle{radius: 4.3}
 
 	// 通过指针实现
-	s := []shape{&r, &c}
+	s := []shaper{&r, &c}
 
 	for _, sh := range s {
 		fmt.Println(sh)
@@ -207,21 +207,14 @@ func main() {
 		}
 	}
 
-	// [9] 错误处理, Defer接口
+	// [9] 错误处理, defer
 	if w, err := CopyFile("/data/home/gerryyang/dst_data.tmp", "/data/home/gerryyang/src_data.tmp"); err != nil {
 		fmt.Println("CopyFile failed: ", e)
 	} else {
 		fmt.Println("CopyFile success: ", w)
 	}
 
-	// 你猜下面会打印什么内容
-	fmt.Println("beg ------------")
-	for i := 0; i < 5; i++ {
-		defer fmt.Printf("%d ", i)
-	}
-	fmt.Println("end ------------")
-
-	// [10] 错误处理, Panic/Recover
+	// [10] 错误处理, panic/recover
 	// 可参考相关资料, 此处省略
 
 }
@@ -261,9 +254,6 @@ failed: -1:Bad Arguments, negtive
 success:  16 <nil>
 failed: -1:1000 - Bad Arguments, too large
 CopyFile success:  8
-------------
-------------
-4 3 2 1 0
 */
 ```
 
@@ -304,11 +294,11 @@ func test2(n *int) int {
 	return *n
 }
 
-func (f t1) PrintNum(i *int){
+func (f t1) PrintNum(i *int) {
 	f(i)
 }
 
-type P interface{
+type P interface {
 	PrintNum(*int)
 }
 
@@ -318,26 +308,27 @@ func main() {
 	//调用,test2为类型为t2的函数
 	method2(12, test2)
 
-	x:=func(i *int){
-		fmt.Println("this is ",*i)
+	x := func(i *int) {
+		fmt.Println("this is ", *i)
 	}
-	fmt.Printf("%T,%#v\n",x,x)
+	fmt.Printf("%T,%#v\n", x, x)
 
-	y:=t1(x)
-	fmt.Printf("%T,%#v\n",y,y)
-    //其实就是类似于int和type Myint int的区别
+	y := t1(x)
+	fmt.Printf("%T,%#v\n", y, y)
+	//其实就是类似于int和type Myint int的区别
 
-	method1(101,x)
-	method1(102,y)
+	method1(101, x)
+	method1(102, y)
 
-	n:=1000
+	n := 1000
 	y.PrintNum(&n)
-    //x.PrintNum(&n) //x.PrintNum undefined (type func(*int) has no field or method PrintNum)
+	//x.PrintNum(&n) //x.PrintNum undefined (type func(*int) has no field or method PrintNum)
 
 	var z P
-	z=y
+	z = y
 	z.PrintNum(&n)
 }
+
 /*
 11
 12

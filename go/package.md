@@ -1,4 +1,4 @@
-###package 和func 定义使用变量的区别
+## package 和func 定义使用变量的区别
 
 package 级别可先使用自定义类型而后再定义其类型(比如下方的myint,即类似于定义和使用是分别处于同package下的不同源码文件中),func级别必须先定义再使用
 ```go

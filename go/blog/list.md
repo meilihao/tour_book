@@ -32,3 +32,13 @@
 ## 扩展
 - [Go net/http 超时指南](http://www.oschina.net/translate/the-complete-guide-to-golang-net-http-timeouts)
 - [Go 调度器跟踪](http://colobu.com/2016/04/19/Scheduler-Tracing-In-Go/)
+- [Go 1.6中值得关注的几个变化](http://tonybai.com/)
+- [Go,Makefile与自动程序版本号的实现](https://xiaozhou.net/go-makefile-and-auto-version-2016-06-13.html)
+
+## 教程
+- [Go by Example 中文](http://gobyexample.everyx.in/)
+- [Golang操作数据库](http://www.mincoder.com/article/3533.shtml)
+
+## 其他
+- [Unknwon's go-study-index](https://github.com/Unknwon/go-study-index)
+- [优姬](http://www.yougam.com/)

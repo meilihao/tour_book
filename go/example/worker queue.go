@@ -71,13 +71,15 @@ type Dispatcher struct {
 	// A pool of workers channels that are registered with the dispatcher
 	workerPool chan chan Job
 	maxWorkers int
+	jobQueue   chan Job
 }
 
-func NewDispatcher(maxWorkers int) *Dispatcher {
+func NewDispatcher(maxWorkers int, jobQueue chan Job) *Dispatcher {
 	pool := make(chan chan Job, maxWorkers)
 	return &Dispatcher{
 		workerPool: pool,
 		maxWorkers: maxWorkers,
+		jobQueue:   jobQueue,
 	}
 }
 
@@ -94,7 +96,7 @@ func (d *Dispatcher) Run() {
 func (d *Dispatcher) dispatch() {
 	for {
 		select {
-		case job := <-JobQueue:
+		case job := <-d.jobQueue:
 			// a job request has been received
 			go func(job Job) {
 				// try to obtain a worker job channel that is available.
@@ -116,11 +118,12 @@ var (
 
 // http://nesv.github.io/golang/2014/02/25/worker-queues-in-go.html
 // http://studygolang.com/articles/5846
+// refactored : https://gist.github.com/harlow/dbcd639cf8d396a2ab73
 //time for i in {1..4096}; do curl -X POST -H "Content-Type: application/json" localhost:8080/work -d '{"vsersion":"a","token":"b","data":[{"num":1},{"num":2}]}'; done
 // 不知为什么,修改MaxWorker(8|100),发现测试用例的耗时都是很接近
 func main() {
 	MaxWorker := 100
-	dispatcher := NewDispatcher(MaxWorker)
+	dispatcher := NewDispatcher(MaxWorker, JobQueue)
 	dispatcher.Run()
 
 	http.HandleFunc("/work", func(w http.ResponseWriter, r *http.Request) {
