@@ -235,6 +235,12 @@ libpam.so.0 -> libpam.so.0.83.0
 
 改成10后感觉开关机,运行都慢了许多,调为50即可.
 
+#### I/O调度器
+
+- [如何更改 Linux I/O 调度器来调整性能 for ssd](https://linux.cn/article-8179-1.html)
+
+修改后需更新grub: `sudo update-grub`.
+
 ### FAQ
 
 #### dmesg中出现`tpm_tis 00:05: A TPM error (6) occurred attempting to read a pcr value`
