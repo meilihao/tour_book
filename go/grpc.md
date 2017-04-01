@@ -2,7 +2,7 @@
 
 参考:
 - [gRPC学习笔记](https://github.com/skyao/leaning-grpc)
-- [proto3学习笔记和资料翻译](http://skyao.github.io/leaning-proto3/)
+- [proto3学习笔记和资料翻译](github.com/skyao/leaning-proto3)
 - [gRPC 官方文档中文版](http://doc.oschina.net/grpc)
 - [Protobuf3 语法指南](http://colobu.com/2017/03/16/Protobuf3-language-guide/)
 - [Go使用gRPC与Protocol Buffers构建高性能API服务](http://www.tuicool.com/articles/ve6zYnf)

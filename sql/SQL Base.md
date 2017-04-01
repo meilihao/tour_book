@@ -144,7 +144,7 @@ function (expression) OVER (
 参考 : [Postgres的GROUPING](https://www.postgresql.org/docs/devel/static/queries-table-expressions.html#QUERIES-GROUPING-SETS)
 
 ### 其他
-
+- `EXISTS`会针对基础表的每条记录进行子查询操作,**不推荐使用**(因为基础表量大时很耗资源).
 - `DISTINCT`必须紧跟在`SELECT`后(即第一个列名之前),如果其后存在多列时会将多列作为一个整体来去重.
 - `SELECT`子句中可使用表达式,比如四则运算.
 - 所有包含NULL的计算,其结果均为NULL.
