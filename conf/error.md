@@ -86,3 +86,8 @@ wget www.google.com  # 如果返回200 ，并且把google的首页下载下来�
  ```
 
 其他类似软件: Polipo
+
+### apt update 由于没有公钥，无法验证下列签名： NO_PUBKEY A1715D88E1DF1F24
+```
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A1715D88E1DF1F24
+```

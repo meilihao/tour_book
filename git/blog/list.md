@@ -4,6 +4,7 @@
 - [廖雪峰的git教程](http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000)
 - [Pro Git 2](http://git-scm.com/book/zh/v2/)
 - [图解Git](http://marklodato.github.io/visual-git-guide/index-zh-cn.html)
+- [*2016 Git 新视界](https://linux.cn/article-8419-1.html)
 
 ## 整理
 - [如何清洗 Git Repo 代码仓库](2015_07_07_001.md)

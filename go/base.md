@@ -364,6 +364,60 @@ func main() {
 func print(pi *int) { fmt.Println(*pi) }
 ```
 
+```go
+package main
+
+import (
+	"fmt"
+)
+
+type A struct {
+	Name string
+}
+
+func (a *A) GetName() {
+	fmt.Println(a.Name)
+	fmt.Printf("%p\n", a)
+}
+
+func GetName() {
+	fmt.Println("NoStruct")
+}
+
+type B struct{}
+
+func (b *B) Call(fn func()) {
+	fn() // 匿名函数会保留现场
+}
+
+func (b *B) Call2(fn func(*A), a *A) {
+	fn(a)
+}
+
+func main() {
+	a := &A{
+		Name: "sdf",
+	}
+	b := new(B)
+
+	fmt.Printf("%T\n", a.GetName)     // method value
+	fmt.Printf("%T\n", (*A).GetName)  // method expresion
+	b.Call(GetName)
+	b.Call(a.GetName)
+	b.Call2((*A).GetName, a)
+
+	/*output:
+	func()
+	func(*main.A)
+	NoStruct
+	sdf
+	0x1040c108
+	sdf
+	0x1040c108
+	*/
+}
+```
+
 ## 常量
 
 常量只有在最终被赋值给一个变量的时候才可以会出现溢出的情况,因此下面的语句是合法的:
