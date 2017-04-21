@@ -107,7 +107,7 @@ RENAME TABLE tbl_name TO new_tbl_name
 - 不推荐将连接条件写在`WHERE`中.
 - 使用`JOIN`时,`SELECT`子句中的列需按照`<表名>.<列名>`的格式来书写.
 
-参考 : ![图解SQL的JOIN操作](http://cdn.powerxing.com/imgs/sql-join.png)
+参考 : ![图解SQL的JOIN操作](http://jbcdn2.b0.upaiyun.com/2013/05/SQL-Joins.jpg)
 
 ### 窗口函数
 - 通过`PARTITION BY`分组的记录集合被称为"窗口",代表"范围".
