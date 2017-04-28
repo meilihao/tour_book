@@ -13,6 +13,8 @@
 停止容器：docker stop [OPTIONS] CONTAINER [CONTAINER...]
 启动容器：docker start [OPTIONS] CONTAINER [CONTAINER...]
 删除容器：docker rm [OPTIONS] CONTAINER [CONTAINER...]
+端口映射信息 : docker port CONTAINER [PRIVATE_PORT[/PROTO]]
+容器运行日志 : docker logs [OPTIONS] CONTAINER
 
 ### 创建镜像
 
@@ -26,8 +28,9 @@
 1. docker create [OPTIONS] IMAGE [COMMAND] [ARG...] + docker start [OPTIONS] CONTAINER [CONTAINER...]
 1. docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
 - -t : 让docker分配一个伪终端(pseudo-tty)并绑定到容器的标准输入上
-- -i : 让容器的标准输入保持打开
+- -i : 当前shell的标准输入绑定到容器的标准输出上
 - -d : 让容器在后台以守护态(daemonized)形式运行
+- -v : 本地目录必须使用绝对路径,但本地文件可以使用相对路径,**推荐使用目录**
 
 ## 删除镜像
 sudo docker rmi $(sudo docker images | awk '/^<none>/ { print $3 }')

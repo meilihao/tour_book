@@ -18,3 +18,28 @@ import/load用于导入镜像.
 ## docker stop/kill区别
 - `docker stop` : 先向容器发送SIGTERM信号,等待一段时间后(默认是10s),再发送SIGKILL信号终止容器
 - `docker kill` : 直接发送SIGKILL信号来强行终止容器
+
+## docker 退出
+容器一旦运行完启动容器时的cmd命令后就会退出
+
+## Dockerfile ADD/COPY
+区别:
+- ADD 的`<src>`可以为URL
+- ADD指令会将tar文件解压到指定位置，而COPY指令只做复制操作
+
+## Dockerfile RUN/ENTRYPOINT/CMD
+ENTRYPOINT指令有两种格式，CMD指令有三种格式：
+```
+ENTRYPOINT ["程序名", "参数1", "参数2"]
+ENTRYPOINT 命令 参数1 参数2
+
+CMD ["程序名", "参数1", "参数2"]
+CMD 命令 参数1 参数2
+CMD 参数1 参数2 # as default parameters to ENTRYPOINT
+```
+每个Dockerfile只能有一条CMD命令,有多条时,只有最后一条会被执行;用户启动容器时指定的命令会覆盖CMD指定的命令.
+每个Dockerfile只能有一条ENTRYPOINT命令,有多条时,只有最后一条会被执行;用户启动容器时指定的命令会作为参数传递给ENTRYPOINT命令.
+
+ENTRYPOINT是容器运行程序的入口.
+
+RUN是在build成镜像时就运行的，先于CMD和ENTRYPOINT的，CMD会在每次启动容器的时候运行，而RUN只在创建镜像时执行一次，固化在image中.

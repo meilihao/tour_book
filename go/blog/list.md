@@ -11,6 +11,7 @@
 - [Go文件操作大全](http://colobu.com/2016/10/12/go-file-operations/)
 - [深入Go UDP编程](http://colobu.com/2016/10/19/Go-UDP-Programming/)
 - [Golang新开发者要注意的陷阱和常见错误](http://colobu.com/2015/09/07/gotchas-and-common-mistakes-in-go-golang/)
+- [go中的并发可视化*](http://strucoder.com/2016/03/15/gozhong-de-bing-fa-ke-shi-hua/)
 
 ## RPC
  - [Thrift RPC 使用指南实战(附golang&PHP代码)](http://blog.csdn.net/liuxinmingcode/article/details/45696237)
