@@ -3,6 +3,3 @@
 
 ## cryptography
 - [ED25519, 比RSA更好的数字签名算法](http://blog.n-z.jp/blog/2016-12-04-ssh-ed25519.html)
-
-## 其他
-- [现代密码学实践指南v2015年](https://blog.helong.info/blog/2015/06/06/modern-crypto/)
