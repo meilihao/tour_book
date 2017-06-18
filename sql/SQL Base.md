@@ -107,7 +107,7 @@ RENAME TABLE tbl_name TO new_tbl_name
 - 不推荐将连接条件写在`WHERE`中.
 - 使用`JOIN`时,`SELECT`子句中的列需按照`<表名>.<列名>`的格式来书写.
 
-参考 : ![图解SQL的JOIN操作](http://cdn.powerxing.com/imgs/sql-join.png)
+参考 : ![图解SQL的JOIN操作](http://jbcdn2.b0.upaiyun.com/2013/05/SQL-Joins.jpg)
 
 ### 窗口函数
 - 通过`PARTITION BY`分组的记录集合被称为"窗口",代表"范围".
@@ -144,7 +144,7 @@ function (expression) OVER (
 参考 : [Postgres的GROUPING](https://www.postgresql.org/docs/devel/static/queries-table-expressions.html#QUERIES-GROUPING-SETS)
 
 ### 其他
-
+- `EXISTS`会针对基础表的每条记录进行子查询操作,**不推荐使用**(因为基础表量大时很耗资源).
 - `DISTINCT`必须紧跟在`SELECT`后(即第一个列名之前),如果其后存在多列时会将多列作为一个整体来去重.
 - `SELECT`子句中可使用表达式,比如四则运算.
 - 所有包含NULL的计算,其结果均为NULL.

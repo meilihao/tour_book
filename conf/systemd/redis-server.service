@@ -1,0 +1,39 @@
+[Unit]
+# from : http://mirrors.kernel.org/ubuntu/pool/universe/r/redis/redis-server_3.2.8-3_amd64.deb
+Description=Advanced key-value store
+After=network.target
+Documentation=http://redis.io/documentation, man:redis-server(1)
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/redis-server /etc/redis/redis.conf
+PIDFile=/var/run/redis/redis-server.pid
+TimeoutStopSec=0
+Restart=always
+User=redis
+Group=redis
+RuntimeDirectory=redis
+RuntimeDirectoryMode=2755
+
+ExecStop=/bin/kill -s TERM $MAINPID
+
+UMask=007
+PrivateTmp=yes
+LimitNOFILE=65535
+PrivateDevices=yes
+ProtectHome=yes
+ReadOnlyDirectories=/
+ReadWriteDirectories=-/var/lib/redis
+ReadWriteDirectories=-/var/log/redis
+ReadWriteDirectories=-/var/run/redis
+CapabilityBoundingSet=~CAP_SYS_PTRACE
+
+# redis-server can write to its own config file when in cluster mode so we
+# permit writing there by default. If you are not using this feature, it is
+# recommended that you replace the following lines with "ProtectSystem=full".
+ProtectSystem=true
+ReadWriteDirectories=-/etc/redis
+
+[Install]
+WantedBy=multi-user.target
+Alias=redis.service

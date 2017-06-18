@@ -71,7 +71,23 @@ systemctl restart privoxy
 ```
 
 config变动:
+```
 listen-address  127.0.0.1:6060 // 6060也就是你需要的http输出的端口
 forward-socks5   /   127.0.0.1:1080  . // 1080也就是socks5输入的端口
+```
+```
+//开启privoxy 服务就行
+sudo  service  privoxy start 
+// 设置http 和 https 全局代理
+export http_proxy='http://localhost:8118'
+export https_proxy='http://localhost:8118'
+test : 
+wget www.google.com  # 如果返回200 ，并且把google的首页下载下来了，那就是成功了
+ ```
 
 其他类似软件: Polipo
+
+### apt update 由于没有公钥，无法验证下列签名： NO_PUBKEY A1715D88E1DF1F24
+```
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A1715D88E1DF1F24
+```
