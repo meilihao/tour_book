@@ -1,0 +1,5 @@
+## hash
+- [BLAKE2](http://www.freebuf.com/articles/database/129260.html)
+
+## cryptography
+- [ED25519, 比RSA更好的数字签名算法](http://blog.n-z.jp/blog/2016-12-04-ssh-ed25519.html)
