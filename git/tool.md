@@ -25,3 +25,6 @@ fatal: Could not read from remote repository.
 
 添加的SSH公钥有误.
 
+## diff
+
+- [怎么使用 Diff 和 Meld 工具发现两个目录间的不同之处](https://linux.cn/article-8573-1.html)

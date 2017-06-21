@@ -1839,11 +1839,12 @@ JSONP通常以函数调用的形式返回，例如，返回JavaScript内容如�
 这样一来，我们如果在页面中先准备好foo()函数，然后给页面动态加一个`<script>`节点，相当于动态读取外域的JavaScript资源，最后就等着接收回调了。
 
 #### CORS
+> [跨域资源共享 CORS 详解](http://www.ruanyifeng.com/blog/2016/04/cors.html)
 如果浏览器支持HTML5，那么就可以一劳永逸地使用新的跨域策略：CORS了。
 
 CORS全称Cross-Origin Resource Sharing，是HTML5规范定义的如何跨域访问资源。
 
-**Origin表示本域**，也就是浏览器当前页面的域。当JavaScript向外域（如sina.com）发起请求后，浏览器收到响应后，首先检查Access-Control-Allow-Origin是否包含本域，如果是，则此次跨域请求成功，如果不是，则请求失败，JavaScript将无法获取到响应的任何数据。
+**Origin表示本域**，也就是浏览器当前页面的域。当JavaScript向外域（如sina.com）发起请求后，**浏览器收到响应后，首先检查Access-Control-Allow-Origin是否包含本域,即resp必须有该字段**，如果是，则此次跨域请求成功，如果不是，则请求失败，JavaScript将无法获取到响应的任何数据。
 
 假设本域是my.com，外域是sina.com，只要响应头Access-Control-Allow-Origin为http://my.com，或者是*，本次请求就可以成功。
 

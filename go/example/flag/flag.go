@@ -30,3 +30,7 @@ func main() {
 [./test -ver=true]
 true
 */
+
+/*
+flag包要求所有的flag参数都必须出现在尾部位置参数的前面,否则这些flag将会被当作位置参数处理.
+*/

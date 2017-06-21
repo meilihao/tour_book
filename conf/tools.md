@@ -39,6 +39,11 @@ Unity Tweak Tool 是一个专为Ubuntu Unity 桌面环境的配置工具，允�
 1. 下载Fedora分类下的最新版[LoveWallpaper](http://www.lovebizhi.com/linux_fedora)
 2. 安装LoveWallpaper4LinuxFedora.rpm即可
 
+## 屏保xscreensaver
+
+屏保位置为`/usr/lib/xscreensaver`.
+启动屏保`xscreensaver-command -select 116`,屏保的order在`~/.xscreensaver`里,这里的`116`是`flurry`.
+
 #### FAQ
 
 1 . 依赖`python-pyside`(其实python-pyside依赖qt4)
@@ -203,4 +208,3 @@ REGEDIT4
 
 - w3m
 	- `w3m -I GBK  www.baidu.com`,解决中文乱码
-- lynx

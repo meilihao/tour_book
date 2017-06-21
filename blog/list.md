@@ -72,3 +72,6 @@
 
 ## 源码
 - [Elasticsearch 架构以及源码概览](http://mp.weixin.qq.com/s?__biz=MzA4NjgwMDQ0OA==&mid=2652445487&idx=1&sn=fb99fac1db2ad8120e98f00165323b2a)
+
+## 编码
+- [*写给程序员的 Unicode 入门介绍](http://www.xuxiaobo.com/?p=3060)

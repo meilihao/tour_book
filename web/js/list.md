@@ -16,6 +16,7 @@
 ## base
 - [浅谈 JS 创建对象的 8 种模式](http://segmentfault.com/a/1190000003862596)
 - [this 的值到底是什么？一次说清楚](https://zhuanlan.zhihu.com/p/23804247)
+- [This其实不难，通过实例全面解析JS中的This](https://my.oschina.net/keysITer/blog/901601)
 
 ## ajax
 - [传统 Ajax 已死，Fetch 永生](github.com/camsong/blog/issues/2)
@@ -25,8 +26,4 @@
 - [图解javascript this指向什么？](http://www.tuicool.com/articles/iaMnqi)
 - [彻底理解JavaScript原型](http://www.cnblogs.com/wilber2013/p/4924309.html)
 - [JavaScript Promise迷你书（中文版）](http://liubin.org/promises-book/)
-
-## 框架
-### AngularJS
-- [【Angular2开发指南】- 翻译系列总览](https://github.com/gf-rd/blog/issues/21)
-- [编写你的第一个Angular2 Web应用](https://github.com/kittencup/angular2-ama-cn/issues/24)
+- [实现一个属于我们自己的简易MVVM库](https://my.oschina.net/qiangdada/blog/906220)

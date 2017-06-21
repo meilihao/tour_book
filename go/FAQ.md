@@ -33,7 +33,7 @@ fmt.Printf("%v\n", pi.(*person))
 ## interface{}
 
 ### 接口断言
-```
+```go
 package main
 
 import "fmt"

@@ -9,8 +9,14 @@ Google的字体(fonts.googleapis.com)服务被屏蔽，导致很多网站打开�
 ```shell
 # 通过修改hosts文件解决,以linux为例
 # 编辑/etc/hosts
-# 方法1: 将谷歌字体服务的链接替换成360国内CDN链接,详情见http://libs.useso.com
-fonts.useso.com fonts.googleapis.com
+# 方法1: 将谷歌字体服务的链接替换成[科大LUG](https://lug.ustc.edu.cn/wiki/mirrors/help/revproxy)
+fonts.googleapis.com         fonts.lug.ustc.edu.cn
+ajax.googleapis.com          ajax.lug.ustc.edu.cn
+themes.googleusercontent.com google-themes.lug.ustc.edu.cn
+storage.googleapis.com       storage-googleapis.lug.ustc.edu.cn
+fonts.gstatic.com            fonts-gstatic.lug.ustc.edu.cn
+gerrit.googlesource.com      gerrit-googlesource.lug.ustc.edu.cn
+secure.gravatar.com          gravatar.lug.ustc.edu.cn
 # 方法2: 直接屏蔽,缺点是看不到Google字体的真正效果
 127.0.0.1       fonts.googleapis.com
 ```
