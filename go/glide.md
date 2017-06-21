@@ -12,3 +12,18 @@ $ glide mirror set https://golang.org/x/text https://github.com/golang/text --vc
 $ glide mirror set https://golang.org/x/image https://github.com/golang/image --vcs git
 $ glide mirror set https://golang.org/x/sys https://github.com/golang/sys --vcs git
 ```
+
+## FAQ
+- Error looking for xxx: Cannot detect VCS
+    - 当前路径使用了**链接**,glide不支持
+    - 需要自己手动添加部分参数项,比如
+        ```
+        - package: git.xxx.com/base/lib
+        repo:    git@git.xxx.com:base/lib.git
+        vcs:     git
+        subpackages:
+        - log
+        - rater
+        - pager
+        ```
+> 当前golang官方的dep也不支持链接.
