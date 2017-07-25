@@ -208,3 +208,6 @@ REGEDIT4
 
 - w3m
 	- `w3m -I GBK  www.baidu.com`,解决中文乱码
+
+### 硬件
+- [硬盘监控和分析工具：Smartctl](https://linux.cn/article-4682-1.html)

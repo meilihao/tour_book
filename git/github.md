@@ -3,6 +3,7 @@
 ## 简写
 
 - LGTM : Looks Good To Me, 用于项目成员赞同pull请求或者实现计划
+- SGTM : Sounds Good to Me, 听起来不错
 - IMO : In My Opinion, 在我看来
 - AFAIK : As Far As I Know, 据我所知
 - IMHO : In My Honest Opinion, 坦率地说

@@ -43,3 +43,14 @@ CMD 参数1 参数2 # as default parameters to ENTRYPOINT
 ENTRYPOINT是容器运行程序的入口.
 
 RUN是在build成镜像时就运行的，先于CMD和ENTRYPOINT的，CMD会在每次启动容器的时候运行，而RUN只在创建镜像时执行一次，固化在image中.
+
+## alpine无法运行golang程序
+```sh
+# /app/micro
+/bin/sh: 19: /app/micro: not found # 明明存在/app/micro文件,且有执行权限
+```
+
+推测: alpine使用 musl libc取代了glibc,导致程序依赖库的缺失,因此**不推荐alpine镜像跑golang程序,推荐使用和目标服务器相同发行版的镜像作为base image**
+
+## Dockerfile的expose和docker run的-p
+`-p`，是映射宿主端口和容器端口，即将容器的对应端口服务公开给外界访问，而 `EXPOSE`仅仅是声明容器打算使用什么端口而已，并不会自动在宿主进行端口映射.

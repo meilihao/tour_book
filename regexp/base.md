@@ -138,3 +138,23 @@ pattern在匹配时，正则引擎会将小括号 "()" 包含的表达式所匹�
 - 在字符串中的最后一个字符之后，如果最后一个字符是`\w`
 - 在字符串中的两个字符之间，其中一个是`\w`，另一个不是`\w`
 
+### [Posix Character Sets](http://www.troubleshooters.com/linux/presentations/leap_regex/13.html)
+
+> [POSIX Bracket Expressions](http://www.regular-expressions.info/posixbrackets.html)
+
+- [[:alnum:]]	 	letters and digits
+- [[:alpha:]]		letters
+- [[:blank:]]		space and tab characters
+- [[:cntrl:]]		control characters
+- [[:digit:]]		decimal digits
+- [[:graph:]]		printable characters excluding space
+- [[:lower:]]		lowercase letters (all letters when 'ignorecase' is used)
+- [[:print:]]		printable characters including space
+- [[:punct:]]		punctuation characters
+- [[:space:]]		whitespace characters
+- [[:upper:]]		uppercase letters (all letters when 'ignorecase' is used)
+- [[:xdigit:]]		hexadecimal digits
+- [[:return:]]		the <CR> character
+- [[:tab:]]		the <Tab> character
+- [[:escape:]]		the <Esc> character
+- [[:backspace:]]		the <BS> character
