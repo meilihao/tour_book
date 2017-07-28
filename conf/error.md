@@ -1,5 +1,13 @@
 ## NotFound
 
+### No such file or directory
+- gli/gli.hpp : apt-get install libgli-dev
+- glm/glm.hpp : apt-get install libglm-dev
+- assimp : apt-get install libassimp-dev
+- apt-get install libx11-xcb-dev
+- Could NOT find X11_XCB : apt-get install libx11-dev
+- Could not find X11 : apt-get install libx11-dev
+
 ### zlib header files not found
 sudo apt-get install zlib1g-dev
 
