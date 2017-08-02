@@ -88,6 +88,7 @@
 - [来自HeroKu的HTTP API 设计指南(中文版)](http://get.jobdeer.com/343.get)
 - [理解RESTFul架构](http://blog.jobbole.com/88989/)
 - [一个工作中用得到的RESTful API规范*](2016_05_27_001.md)
+- [RESTful API 设计与工程实践](http://blog.m31271n.com/2017/03/02/RESTful-API-%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5/#资源排序)
 
 ## 负载均衡
 - [负载均衡原理与技术实现](http://network.51cto.com/art/201509/492457_all.htm)

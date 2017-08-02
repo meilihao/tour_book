@@ -1,12 +1,15 @@
 ## NotFound
 
 ### No such file or directory
+> [关于usr/bin/ld: cannot find -lxxx问题总结](http://eminzhang.blog.51cto.com/5292425/1285705)
 - gli/gli.hpp : apt-get install libgli-dev
 - glm/glm.hpp : apt-get install libglm-dev
 - assimp : apt-get install libassimp-dev
 - apt-get install libx11-xcb-dev
 - Could NOT find X11_XCB : apt-get install libx11-dev
 - Could not find X11 : apt-get install libx11-dev
+- Xlib:  extension "NV-GLX" missing on display : apt install mesa-vulkan-drivers # https://bbs.deepin.org/forum.php?mod=viewthread&tid=143398&page=1#pid363502
+- /usr/bin/ld: cannot find -lpng
 
 ### zlib header files not found
 sudo apt-get install zlib1g-dev
