@@ -1,16 +1,18 @@
 
 ### prompt/提示
+1. 下载git prompt
+下载`github.com/git/git/tree/master/contrib/completion`的`git-completion.bash`和`git-prompt.sh`到`~/.config`
+ 
+1. 把下面代码加入~/.bashrc中
+```
+# git
+[[ $- == *i* ]] && . /home/chen/.config/git-prompt.sh
+[[ $- == *i* ]] && . /home/chen/.config/git-completion.bash
+PS1='\[\033[1;31m\]\u \[\033[1;34m\]\W\[\033[1;31m\]$(__git_ps1 " (%s)")\[\033[1;35m\] -> \[\033[0m\]'
+```
+> [PS1中使用的函数](https://gist.github.com/richarddong/1981392)
 
-```
-# 下载git prompt
-github.com/lvv/git-prompt/git-prompt.sh
- 
-# 把下面代码加入~/.bashrc中
-[[ $- == *i* ]] && . ~/github/git-prompt/git-prompt.sh
- 
-# 使修改生效
-$ source ~/.bashrc
-```
+1. 使修改生效
 
 ### 默认参数
 

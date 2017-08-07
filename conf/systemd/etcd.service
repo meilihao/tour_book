@@ -1,0 +1,17 @@
+[Unit]
+Description=etcd key-value store
+Documentation=https://github.com/coreos/etcd
+After=network.target
+
+[Service]
+User=etcd
+Type=notify
+WorkingDirectory=/var/lib/etcd
+EnvironmentFile=-/etc/etcd/etcd.conf
+ExecStart=/usr/bin/etcd --name="${ETCD_NAME}" --data-dir="${ETCD_DATA_DIR}" --listen-client-urls="${ETCD_LISTEN_CLIENT_URLS}"
+Restart=always
+RestartSec=10s
+LimitNOFILE=40000
+
+[Install]
+WantedBy=multi-user.target

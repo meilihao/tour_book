@@ -6,3 +6,6 @@
 
 ## 客户端
 - [支持自动补全和语法高亮的 MySQL/MariaDB/Postgres 客户端](https://github.com/dbcli)
+
+## 进阶
+- [深入理解SQL事务隔离](https://tech.meituan.com/innodb-lock.html)

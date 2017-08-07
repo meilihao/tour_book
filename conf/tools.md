@@ -101,6 +101,7 @@ Unity Tweak Tool 是一个专为Ubuntu Unity 桌面环境的配置工具，允�
 
 ## terminix,推荐
 - [terminix](https://github.com/gnunn1/terminix)
+## [oh-my-fish](github.com/oh-my-fish/oh-my-fish)
 
 ## tmux
 
