@@ -212,3 +212,13 @@ REGEDIT4
 
 ### 硬件
 - [硬盘监控和分析工具：Smartctl](https://linux.cn/article-4682-1.html)
+
+### 内存盘
+```sh
+$ mkdir -p /home/chen/tmpfs
+```
+```
+# gedit /etc/fstab,加入以下内容:
+# tmpfs
+tmpfs /home/chen/tmpfs tmpfs size=256m 0 0
+```
