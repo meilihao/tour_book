@@ -8,7 +8,7 @@
 # git
 [[ $- == *i* ]] && . /home/chen/.config/git-prompt.sh
 [[ $- == *i* ]] && . /home/chen/.config/git-completion.bash
-PS1='\[\033[1;31m\]\u \[\033[1;34m\]\W\[\033[1;31m\]$(__git_ps1 " (%s)")\[\033[1;35m\] -> \[\033[0m\]'
+PS1='\[\033[1;32m\]\u \[\033[1;34m\]\W\[\033[1;33m\]$(__git_ps1 " (%s)")\[\033[0m\] \$ '
 ```
 > [PS1中使用的函数](https://gist.github.com/richarddong/1981392)
 
