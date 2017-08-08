@@ -85,3 +85,17 @@ type I2 interface {
 	Speak()
 }
 ```
+
+## http
+### 获取http.DefaultClient.Do处理30x Redirect的路径
+```go
+var DefaultClient = &http.Client{
+	CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		fmt.Println(req.URL)
+
+		via[0].Header.Set("XXX", req.URL.String())
+
+		return nil
+	},
+}
+```
