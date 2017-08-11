@@ -25,6 +25,8 @@ Curl is a **command line** tool for transferring data specified with URL syntax.
 - -X : 指定请求类型,比如POST
 - -A, --user-agent : 指定ua
 - -v : 显示一次http通信的整个过程
+- -k : 不对服务器的证书进行检查
+- --cacert : 检查服务端证书
 
 ## 例
 ```sh

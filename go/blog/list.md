@@ -37,6 +37,7 @@
 - [Go 调度器跟踪](http://colobu.com/2016/04/19/Scheduler-Tracing-In-Go/)
 - [Go 1.6中值得关注的几个变化](http://tonybai.com/)
 - [Go,Makefile与自动程序版本号的实现](https://xiaozhou.net/go-makefile-and-auto-version-2016-06-13.html)
+- [Go Styleguide](https://github.com/bahlo/go-styleguide/pull/8/commits/d706a55f5538a97b6ed65f490a5dac22efc6f71e)
 
 ## 教程
 - [Go by Example 中文](http://gobyexample.everyx.in/)

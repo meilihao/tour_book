@@ -102,3 +102,8 @@ wget www.google.com  # 如果返回200 ，并且把google的首页下载下来�
 ```
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A1715D88E1DF1F24
 ```
+
+### curl: (60) SSL certificate problem: unable to get local issuer certificate
+curl对https服务端证书的检查未通过,解决:
+1. 加`-k`跳过服务端证书的检查
+1. 时`--cacert`,检查服务端证书

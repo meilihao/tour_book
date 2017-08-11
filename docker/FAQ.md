@@ -50,7 +50,9 @@ RUN是在build成镜像时就运行的，先于CMD和ENTRYPOINT的，CMD会在�
 /bin/sh: 19: /app/micro: not found # 明明存在/app/micro文件,且有执行权限
 ```
 
-推测: alpine使用 musl libc取代了glibc,导致程序依赖库的缺失,因此**不推荐alpine镜像跑golang程序,推荐使用和目标服务器相同发行版的镜像作为base image**
+推测: alpine使用 musl libc取代了glibc,导致程序依赖库的动态链接库缺失(通过`file`,`ldd`,`readelf -d xxx`命令查看),因此**不推荐alpine镜像跑golang程序,推荐使用和目标服务器相同发行版的镜像作为base image**.同时go编译时[禁用cgo `CGO_ENABLED=0`](https://stackoverflow.com/questions/36279253/go-compiled-binary-wont-run-in-an-alpine-docker-container-on-ubuntu-host)可解决这个问题,或使用`go build -ldflags '-linkmode "external" -extldflags "-static"' server.go`进行静态编译cgo来解决(待定,测试后发现还是动态链接依赖).
+
+> [也谈Go的可移植性](http://tonybai.com/2017/06/27/an-intro-about-go-portability/)
 
 ## Dockerfile的expose和docker run的-p
 `-p`，是映射宿主端口和容器端口，即将容器的对应端口服务公开给外界访问，而 `EXPOSE`仅仅是声明容器打算使用什么端口而已，并不会自动在宿主进行端口映射.
