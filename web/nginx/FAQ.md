@@ -44,3 +44,13 @@ fetch('/topics/' + id, {
 
 原因: 此时chrome产生的请求行(`patch /topics/2016060000000007 HTTP/1.1`)的方法是小写,会被nginx拒绝;
 而奇怪的是,如果是`method: 'post'`,chrome生成的请求行的方法又会自动转成大写.
+
+### 添加模块
+> [Compiling Third-Party Dynamic Modules for NGINX and NGINX Plus](https://www.nginx.com/blog/compiling-dynamic-modules-nginx-plus/)
+```sh
+$ cd nginx-1.13.4
+$ ./configure --with-compat --add-dynamic-module=../echo-nginx-module-master
+$ make modules
+$ sudo cp objs/ngx_http_echo_module.so /etc/nginx/modules/
+$ sudo vim /etc/nginx/nginx.conf # 在文件开始处加入"load_module modules/ngx_http_echo_module.so;"
+```
