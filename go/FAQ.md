@@ -99,3 +99,7 @@ var DefaultClient = &http.Client{
 	},
 }
 ```
+
+## 其他
+### go test -bench时跑了单元测试
+go跑`go test -bench`前会跑`go test -run`保证代码的正确性,如果单元测试有错(比如调用了`t.Error()`),后面的性能测试就不会执行.

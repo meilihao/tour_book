@@ -6,6 +6,7 @@
 - [从理论到实践，全方位认识DNS（实践篇）](http://selfboot.cn/2015/11/05/dns_theory/)
 - [DNS 一站到家之记录类型](https://deepzz.com/post/dns-recording-type.html)
 - [DNS 一站到家之常用工具](https://deepzz.com/post/dns-comman-tools.html)
+- [*从理论到实践，全方位认识DNS](https://www.cloudxns.net/Index/index.html)
 
 ## 硬件
  - [为什么寄存器比内存快？](2015_05_23_012.md)
