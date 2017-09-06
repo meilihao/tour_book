@@ -54,8 +54,13 @@ linux上进程有5种状态:
 
 ps工具标识进程的5种状态码:
 
-- D 不可中断 uninterruptible sleep (usually IO)
-- R 运行 runnable (on run queue)
-- S 中断 sleeping
-- T 停止 traced or stopped
-- Z 僵死 a defunct (”zombie”) process
+- D 不可中断 uninterruptible sleep (usually IO),进程繁忙或挂起，不响应信号，例如硬盘已经崩溃，读操作无法完成
+- l	是多线程的（使用 CLONE_THREAD，例如 NPTL pthreads）
+- L	将页面锁定到内存中（用于实时和自定义 IO
+- R 运行 runnable (on run queue),进程正在执行中
+- S 中断 sleeping,例如，终端进程和 Bash 通常处于此状态，等待你键入某些内容
+- s 是会话领导。Linux 中的相关进程被视为一个单元，并具有共享会话 ID（SID）。如果进程 ID（PID）= 会话 ID（SID），则此进程将是会话领导。
+- T 停止 traced or stopped,由任务控制信号或由于被追踪
+- X	死亡（不应该看到
+- Z 僵死 a defunct (”zombie”) process,这种情况发生在错误终止的进程上
+- +	位于前台进程组,这样的处理器允许输入和输出到tty。

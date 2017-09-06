@@ -14,3 +14,9 @@
 - ETA : Estimated time of arrival, 预计完成时间
 - e.g. : for example, 例如
 - cf. : 参考
+
+
+## github enterprise
+### 进入github enterprise
+1. 用`linux单用户`模式进入再修改root密码
+2. 重启后从ctrl+alt+f2打开的终端进入

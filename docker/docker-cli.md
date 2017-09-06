@@ -17,6 +17,7 @@
 容器运行日志 : docker logs [OPTIONS] CONTAINER
 从容器拷文件 : docker cp 7229f381542a:/go/src/app .
 向容器拷文件 : docker cp ./app 7229f381542a:/go/src/app
+查看指定镜像的创建历史 : docker history
 
 ### 创建镜像
 

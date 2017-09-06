@@ -44,6 +44,44 @@ ENTRYPOINT是容器运行程序的入口.
 
 RUN是在build成镜像时就运行的，先于CMD和ENTRYPOINT的，CMD会在每次启动容器的时候运行，而RUN只在创建镜像时执行一次，固化在image中.
 
+关于ENTRYPOINT和CMD的交互，用一个官方表格可以说明：
+<table>
+<thead>
+<tr>
+<th align="left"></th>
+<th align="left"><strong>No ENTRYPOINT</strong></th>
+<th align="left"><strong>ENTRYPOINT exec_entry p1_entry</strong></th>
+<th align="left"><strong>ENTRYPOINT ["exec_entry", "p1_entry"]</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><strong>No CMD</strong></td>
+<td align="left">error, not allowed</td>
+<td align="left">/bin/sh -c exec_entry p1_entry</td>
+<td align="left">exec_entry p1_entry</td>
+</tr>
+<tr>
+<td align="left"><strong>CMD ["exec_cmd", "p1_cmd"]</strong></td>
+<td align="left">exec_cmd p1_cmd</td>
+<td align="left">/bin/sh -c exec_entry p1_entry</td>
+<td align="left">exec_entry p1_entry exec_cmd p1_cmd</td>
+</tr>
+<tr>
+<td align="left"><strong>CMD ["p1_cmd", "p2_cmd"]</strong></td>
+<td align="left">p1_cmd p2_cmd</td>
+<td align="left">/bin/sh -c exec_entry p1_entry</td>
+<td align="left">exec_entry p1_entry p1_cmd p2_cmd</td>
+</tr>
+<tr>
+<td align="left"><strong>CMD exec_cmd p1_cmd</strong></td>
+<td align="left">CMD exec_cmd p1_cmd</td>
+<td align="left">/bin/sh -c exec_entry p1_entry</td>
+<td align="left">exec_entry p1_entry /bin/sh -c exec_cmd p1_cmd</td>
+</tr></tbody></table>
+
+ps: shell 形式防止使用任何CMD或运行命令行参数，但是缺点是您的ENTRYPOINT将作/bin/sh -c的子命令启动，它不传递信号。这意味着可执行文件将不是容器的PID 1，并且不会接收Unix信号，因此您的可执行文件将不会从docker stop <container>接收到SIGTERM
+
 ## alpine无法运行golang程序
 ```sh
 # /app/micro
@@ -56,3 +94,11 @@ RUN是在build成镜像时就运行的，先于CMD和ENTRYPOINT的，CMD会在�
 
 ## Dockerfile的expose和docker run的-p
 `-p`，是映射宿主端口和容器端口，即将容器的对应端口服务公开给外界访问，而 `EXPOSE`仅仅是声明容器打算使用什么端口而已，并不会自动在宿主进行端口映射.
+
+## 去掉sudo
+将用户加入docker用户组:
+1. sudo cat /etc/group | grep docker
+1. 如果不存在docker组，可以添加sudo groupadd docker
+1. 添加当前用户到docker组，sudo gpasswd -a $USER docker
+1. 重启docker服务,sudo systemctl restart docker
+1. 如果权限不够，sudo chmod a+rw /var/run/docker.sock

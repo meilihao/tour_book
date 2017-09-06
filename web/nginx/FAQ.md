@@ -54,3 +54,8 @@ $ make modules
 $ sudo cp objs/ngx_http_echo_module.so /etc/nginx/modules/
 $ sudo vim /etc/nginx/nginx.conf # 在文件开始处加入"load_module modules/ngx_http_echo_module.so;"
 ```
+
+### 查看nginx的版本及编译参数
+```sh
+$ sudo nginx -V
+```

@@ -49,3 +49,6 @@ func (f Filename) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s-%dx%d.%s"`, f.Md5, f.Width, f.Height, f.Ext)), nil
 }
 ```
+
+### sync.WaitGroup.Wait 报"... deadlock"
+sync.WaitGroup应该使用指针传递而不是值传递.

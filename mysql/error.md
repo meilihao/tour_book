@@ -25,3 +25,8 @@ mysql>  select id,name,hex(name) from dispatcher where id in (10057,10026);
 > 査 zhā 姓氏;査，拼音chá.
 > 查看十六进制用`hex(xxx),推荐`,二进制用`bin(xxx),仅用于整数`
 
+# @@GLOBAL.GTID_PURGED can only be set when @@GLOBAL.GTID_EXECUTED is empty
+mysqldump备份db再恢复时报错,解决:
+```sql
+reset master;
+```
