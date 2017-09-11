@@ -82,7 +82,8 @@ systemd-ask-password-conso
 ```
 1. 列出所有运行中单元
 ```shell
-# systemctl list-units
+# systemctl list-units # 同systemctl
+# systemctl list-units --type service     ← 同上，只是以service为单位
 ```
 1. 列出所有失败单元
        # systemctl --failed
@@ -93,6 +94,8 @@ systemd-ask-password-conso
 1. 检查某个单元或服务是否运行
        # systemctl status firewalld.service
 
+1. 刷新systemd的配置
+        # systemctl daemon-reload
 ### 使用Systemctl控制并管理服务
 1. 列出所有服务（包括启用的和禁用的）
        # systemctl list-unit-files --type=service
@@ -236,6 +239,13 @@ Runlevel 6 : 关闭并重启机器(runlevel6.target, reboot.target)
 
        # systemctl status sshd -H root@1.2.3.4
 
+
+### 时区设置
+```sh
+# timedatectl list-timezones # 查看当前所支持的时区信息
+# timedatectl set-timezone ${zone} # 选择上述中的时区，然后设置
+# timedatectl status # 查看当前时区设置的状态
+```
 
 ## 参考
 

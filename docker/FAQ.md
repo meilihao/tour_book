@@ -97,8 +97,11 @@ ps: shell 形式防止使用任何CMD或运行命令行参数，但是缺点是�
 
 ## 去掉sudo
 将用户加入docker用户组:
-1. sudo cat /etc/group | grep docker
-1. 如果不存在docker组，可以添加sudo groupadd docker
-1. 添加当前用户到docker组，sudo gpasswd -a $USER docker
-1. 重启docker服务,sudo systemctl restart docker
-1. 如果权限不够，sudo chmod a+rw /var/run/docker.sock
+1. `sudo cat /etc/group | grep docker`
+1. 如果不存在docker组，可以添加`sudo groupadd docker`
+1. 添加当前用户到docker组，`sudo gpasswd -a $USER docker`/`sudo usermod -aG docker chen`
+1. 重启docker服务,`sudo systemctl restart docker`,用户需要重新登录系统使上一步的修改生效.
+1. 如果权限不够，`sudo chmod a+rw /var/run/docker.sock`
+
+## 安装docker
+通过[dev.aliyun.com](https://cr.console.aliyun.com/#/accelerator)安装.

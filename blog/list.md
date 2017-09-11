@@ -76,3 +76,6 @@
 
 ## 编码
 - [*写给程序员的 Unicode 入门介绍](http://www.xuxiaobo.com/?p=3060)
+
+## db
+- [时序数据库InfluxDB使用详解](http://www.jianshu.com/p/a1344ca86e9b)

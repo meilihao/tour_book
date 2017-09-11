@@ -123,3 +123,11 @@ export GIT_COMMITTER_EMAIL
 此时查看`git log`，确认名字和邮箱改好以后，`git push origin master --force`，大功告成！
 
 参考:[Git-工具-重写历史](http://git-scm.com/book/zh/v1/Git-%E5%B7%A5%E5%85%B7-%E9%87%8D%E5%86%99%E5%8E%86%E5%8F%B2)
+
+## 找回丢失的commit/stash
+1. 使用`git fsck --no-reflog`或`git fsck --unreachable`找到丢失的commit/stash
+1. 使用`git archive`导出数据:
+```
+# 不推荐使用git show fc30e953fd6cd052fcefda9129de4b1df8830be3,因为有些内容会没展示全.
+$ git archive fc30e953fd6cd052fcefda9129de4b1df8830be3 -o a.zip
+```

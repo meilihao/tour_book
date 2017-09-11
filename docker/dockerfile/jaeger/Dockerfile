@@ -62,5 +62,4 @@ CMD ["/jaeger/cmd/start_jaeger.sh"]
 # └── schema
 #     ├── create.sh
 #     ├── docker.sh
-#     ├── log
 #     └── v001.cql.tmpl

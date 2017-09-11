@@ -140,6 +140,16 @@ systemd与init进程的主要差别如下:
 - 启动脚本的位置(/etc/init.d -> /lib/systemd/system和/etc/systemd/system)
 - 配置文件的位置.init进程的配置文件是/etc/inittab，各种服务的配置文件存放在/etc/sysconfig;现在的配置文件主要存放在/lib/systemd目录，在/etc/systemd目录里面的修改可以覆盖原始设置.
 
+## 启动优化
+```sh
+# systemd-cgls                            - 启动的结构树
+# systemd-analyze                         ← 查看系统引导用时
+# systemd-analyze time                    ← 同上
+# systemd-analyze blame                   ← 查看初始化任务所消耗的时间
+# systemd-analyze plot > systemd.svg      ← 将启动过程输出为svg图
+# systemd-cgtop                           ← 查看资源的消耗状态
+```
+
 ### 参考
 - [CentOS7/RHEL7 systemd详解](http://xiaoli110.blog.51cto.com/1724/1629533)
 - [Systemd 系列中文手册](http://www.jinbuguo.com/systemd/index.html)
