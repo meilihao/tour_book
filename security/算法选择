@@ -6,7 +6,7 @@
 
 ## tls
 - 虽然tls当前定义了基于GCM(支持并行)和CCM块模式的AEAD,实际上仅使用GCM套件.
-- 在支持AES-NI扩展的设备上，AES加密的性能优势是明显的. 目前最为常用的对称加密AES-128-GCM的性能是ChaCha20-Poly1305的近5倍;在不支持AES-NI扩展的移动设备上，ChaCha20-Poly1305的性能是AES-GCM的三倍左右.
+- 在支持AES-NI扩展的设备上，AES加密的性能优势是明显的. 目前最为常用的对称加密AES-128-GCM的性能是ChaCha20-Poly1305的近5倍;在不支持AES-NI扩展的移动设备上，ChaCha20-Poly1305的性能是AES-GCM的三倍左右,但是ARM在ARMv8及以后的处理器中加入了AES指令，在这些设备上的AES加密性能反而比CHACHA20快很多.
 
 
 ps:
