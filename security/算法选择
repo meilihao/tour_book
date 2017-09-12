@@ -3,3 +3,6 @@
 
 ## cryptography
 - [ED25519, 比RSA更好的数字签名算法](http://blog.n-z.jp/blog/2016-12-04-ssh-ed25519.html)
+
+## tls
+- 虽然tls当前定义了基于GCM(支持并行)和CCM块模式的AEAD,实际上仅使用GCM套件.
