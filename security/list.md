@@ -1,3 +1,6 @@
+## books
+- [*https权威指南](#)
+
 ## crypto
 - [Nodejs开发加密货币](https://www.gitbook.com/book/imfly/bitcoin-on-nodejs/details)
 - [现代密码学实践指南v2015年](https://blog.helong.info/blog/2015/06/06/modern-crypto/)
@@ -9,7 +12,7 @@
 ## 浏览器
 - [Tor浏览器：Linux下用于匿名Web浏览的终极浏览器](https://linux.cn/article-5778-1.html)
 
-## HTTPS/TLS/SSL
+## HTTPS/TLS
 - [扫盲 HTTPS 和 SSL/TLS 协议[1]：背景知识、协议的需求、设计的难点](2015_05_23_002.md)
 - [扫盲 HTTPS 和 SSL/TLS 协议[2]：可靠密钥交换的原理](2015_05_23_003.md)
 - [HTTPS的七个误解（译文）](待定)
@@ -30,6 +33,7 @@
 - [在nginx 使用Let’s Encrypt 免费的SSL/TLS 证书](http://www.tuicool.com/articles/m6fU7ry)
 - [HTTPS 理论详解与实践*](https://segmentfault.com/a/1190000004985253)
 - [HTTPS与SSL（下篇）*](http://www.jianshu.com/p/c03f47e7b9de)
+- [修复正向保密(PFS)](https://linuxstory.org/tls-session-resumption/)
 
 ## 证书
 - [数字证书及 CA 的扫盲介绍](2015_05_23_004.md)
@@ -42,6 +46,7 @@
 - [使用openssl签发证书](http://blog.chinaunix.net/uid-311680-id-2973653.html)
 - [如何制作 SSL X.509 凭证](http://www.imacat.idv.tw/tech/sslcerts.html.zh-cn)
 - [openssl编程](read.pudn.com/downloads119/doc/comm/504076/openssl编程.doc)
+- [如何创建ECC证书 for nginx](https://www.digitalocean.com/community/tutorials/how-to-create-an-ecc-certificate-on-nginx-for-debian-8)
 
 ## 校验
 - [扫盲文件完整性校验——关于散列值和数字签名](2015_05_23_006.md)
@@ -60,5 +65,5 @@
 ## 书籍
 - [白帽子讲Web安全-读书笔记](2016_07_22_001.md)
 
-## google
+## 双因子认证
 - [linux 双因子认证登录](2017_08_21_001.md)

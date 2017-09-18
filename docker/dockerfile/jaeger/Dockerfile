@@ -1,5 +1,7 @@
 # docker build . -t "jaeger:201709"
 # docker run --name jaeger -d -p6831:6831/udp -p5778:5778 -p16686:16686 -p14268:14268 jaeger:201709
+# issue :
+# 1. sh脚本启动的进程无法收到signal
 FROM cassandra:latest
 
 # Agent zipkin.thrift compact
