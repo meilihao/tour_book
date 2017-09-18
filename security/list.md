@@ -5,6 +5,8 @@
 - [Nodejs开发加密货币](https://www.gitbook.com/book/imfly/bitcoin-on-nodejs/details)
 - [现代密码学实践指南v2015年](https://blog.helong.info/blog/2015/06/06/modern-crypto/)
 - [TLS协议分析 与 现代加密通信协议设计](https://blog.helong.info/blog/2015/09/07/tls-protocol-analysis-and-crypto-protocol-design/)
+- [DH和ECDH](2017_09_18_001.md)
+- [ECDH的设计与实现.pptx](ECDH的设计与实现.pptx)
 
 ## SSH
 - [SSH 使用密钥登录并禁止口令登录实践](2015_07_08_001.md)

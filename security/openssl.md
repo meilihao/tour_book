@@ -35,6 +35,23 @@ ps:
 ### openssl x509
 - -x509toreq             基于当前证书创建一个CSR文件
 
+## FAQ
+### 网站不支持ALPN提示"No ALPN negotiated"
+[ALPN介绍](https://imququ.com/post/enable-alpn-asap.html),检查是否支持ALPN的命令:
+```sh
+$ openssl s_client -alpn h2 -servername imququ.com -connect golang.d.openhello.net:443 < /dev/null | grep 'ALPN'
+```
+测试结果:
+- 如果提示`unknown option -alpn`，说明本地的 openSSL 版本太低，请升级到`1.0.2+`,再进行测试.
+- 如果结果包含`ALPN protocol: h2`，说明服务端支持 ALPN.
+- 如果结果包含`No ALPN negotiated`，说明服务端不支持 ALPN，浏览器无法协商到 HTTP/2，需要尽快升级openssl.
+
+本质就是**是否支持 ALPN 完全取决于服务端使用的 OpenSSL 版本**.
+
+由于 openssl 是公共基础库，大量其他软件都对它有依赖，如果直接升级系统自带的 openssl，很容易引发各种问题. 更为稳妥的做法是在编译 Web Server 时自己指定 openssl 的位置,比如[编译nginx](https://imququ.com/post/enable-tls-1-3.html).
+
+> 其实也可使用 Qualys SSL Labs's SSL Server Test 这个在线工具来测试,测试项目为`ALPN`.
+
 ## Error
 ### version `OPENSSL_XXX' not found (required by openssl)
 为使用tls1.3,手动编译openssl,运行openssl命令报该错误:
