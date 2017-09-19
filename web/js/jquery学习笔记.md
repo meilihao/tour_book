@@ -1,5 +1,7 @@
 # jquery入门
 
+**全面使用vuejs,这里不再更新**
+
 参考：[jQuery基础教程(第四版)](https://www.packtpub.com/web-development/learning-jquery-fourth-edition)
 
 ## jQuery 能做什么
