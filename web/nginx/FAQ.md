@@ -104,3 +104,11 @@ ECDHE-RSA-AES128-GCM-SHA256 ECDHE-RSA-CHACHA20-POLY1305 \ # ECDHE+RSA+AEAD
 ECDHE-ECDSA-AES128-SHA256 ECDHE-RSA-AES128-SHA256 # ECDHE+!AEAD
 ECDHE-ECDSA-AES128-SHA ECDHE-RSA-AES128-SHA # TLSv1 for win7,旧Android
 ```
+
+### 日志优化
+```sh
+    # $http_host是http(s)的Header Host值,可能为空.
+    log_format  main  '[$time_local] $remote_addr - $host - $ssl_protocol/$ssl_cipher $status $body_bytes_sent "$request" '
+                      '"$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+```
