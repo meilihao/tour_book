@@ -25,6 +25,7 @@
 - [Uber Jaeger安装与使用](http://dmdgeeker.com/post/uber_jaeger/)
 - [Take OpenTracing for a HotROD ride](https://medium.com/opentracing/take-opentracing-for-a-hotrod-ride-f6e3141f7941)
 - [Tracing HTTP request latency in Go with OpenTracing](https://medium.com/opentracing/tracing-http-request-latency-in-go-with-opentracing-7cc1282a100a)
+- [OpenTracing语义标准规范及实现](http://www.jianshu.com/p/a963ad0bbe3e)
 
 ## 微服务
 - [使用Micro构建有弹性的、高容错的应用](http://gogap.cn/2016/05/15/resiliency/)
