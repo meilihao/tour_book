@@ -34,3 +34,14 @@ secure.gravatar.com          gravatar.lug.ustc.edu.cn
 5、执行"passwd 用户名"
 6、修改完成后按ctrl + alt + del重启电脑
 ```
+
+## fish添加环境变量
+```sh
+$ vim .config/fish/conf.d/golang.fish
+```
+添加:
+```text
+set -x GOROOT /opt/go
+set -x GOPATH /home/xjm/git/go
+set -x PATH {$PATH} {$GOROOT}/bin {$GOPATH}/bin
+```
