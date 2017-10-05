@@ -39,6 +39,7 @@
 - [Go,Makefile与自动程序版本号的实现](https://xiaozhou.net/go-makefile-and-auto-version-2016-06-13.html)
 - [Go Styleguide](https://github.com/bahlo/go-styleguide/pull/8/commits/d706a55f5538a97b6ed65f490a5dac22efc6f71e)
 - [像牛人一样改进你的Go代码](http://colobu.com/2017/06/27/Lint-your-golang-code-like-a-mad-man/)
+- [理解 channels - Kavya Joshi](https://blog.lab99.org/post/golang-2017-10-04-video-understanding-channels.html#jian-dan-de-fa-song-jie-shou)
 
 ## 教程
 - [Go by Example 中文](http://gobyexample.everyx.in/)
