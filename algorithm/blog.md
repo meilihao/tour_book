@@ -3,6 +3,7 @@
 - [全局唯一ID生成方案对比](http://cenalulu.github.io/mysql/guid-generate/)
 - [分布式环境下ID生成方法总结](http://blog.ddup.us/2012/05/24/id-generation-in-distributed-environment/)
 - [分布式Unique ID的生成方法一览](http://www.tuicool.com/articles/veeIZfv)
+- [如何做一个靠谱的发号器](https://tech.youzan.com/id_generator/)
 
 ### 自增ID
 - [分布式自增ID解决方案-Twitter Snowflake : timestamp + work number + seq number](http://my.oschina.net/ihanfeng/blog/536313)
