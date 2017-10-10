@@ -68,15 +68,15 @@ CREATE TABLE `user_org` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 
 -- 用户和分组之间的对应关系
-CREATE TABLE `user_group` (
+CREATE TABLE `user_role` (
   `org_id` int NOT NULL DEFAULT '0',
   `user_id` int NOT NULL DEFAULT '0',
-  `group_id` int NOT NULL DEFAULT '0',
-  UNIQUE KEY `usergroup` (`org_id`,`user_id`,`group_id`)
+  `role_id` int NOT NULL DEFAULT '0',
+  UNIQUE KEY (`org_id`,`user_id`,`role_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
 
 -- 分组表
-CREATE TABLE `group` (
+CREATE TABLE `role` (
   `id` int NOT NULL DEFAULT '0', -- 有初始分组admin(0),不使用自增
   `org_id`int NOT NULL DEFAULT '0', 
   `name` varchar(30) NOT NULL,
@@ -89,8 +89,8 @@ CREATE TABLE `group` (
 -- 分组的权限
 CREATE TABLE `privilege` (
   `org_id`int NOT NULL DEFAULT '0', 
-  `group` int NOT NULL DEFAULT '0',
+  `role` int NOT NULL DEFAULT '0',
   `module` varchar(30) NOT NULL DEFAULT '',
   `method` varchar(30) NOT NULL DEFAULT '',
-  UNIQUE KEY `group` (`org_id`,`group`,`module`,`method`)
+  UNIQUE KEY (`org_id`,`role`,`module`,`method`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8
