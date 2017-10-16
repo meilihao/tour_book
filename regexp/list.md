@@ -6,6 +6,7 @@
 - [正则表达式教程](http://c.biancheng.net/cpp/u/zhengze/)
 - [*Golang-Regex-Tutorial](https://github.com/StefanSchroeder/Golang-Regex-Tutorial)
 - [Regular Expression](https://www.ntu.edu.sg/home/ehchua/programming/howto/Regexe.html)
+- [一张思维导图，让正则表达式不再难懂*](https://my.oschina.net/u/3080373/blog/1550653)
 
 ## 测试/可视化
 - [Regulex](https://jex.im/regulex)
