@@ -205,6 +205,13 @@ REGEDIT4
 
 前提:设置adobe的repo,即到[官网](https://get.adobe.com/flashplayer/?loc=cn)下载yum文件(rpm文件)再安装即可.
 
+### pip
+官网安装方式不可用时,可用`apt install python3-pip`.
+
+> env : python3
+
+[pip.conf](https://pip.pypa.io/en/stable/user_guide/?highlight=pip.conf#config-file)是pip的配置文件.
+
 ### 字符浏览器
 
 - w3m

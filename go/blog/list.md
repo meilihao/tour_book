@@ -13,6 +13,9 @@
 - [Golang新开发者要注意的陷阱和常见错误](http://colobu.com/2015/09/07/gotchas-and-common-mistakes-in-go-golang/)
 - [go中的并发可视化*](http://strucoder.com/2016/03/15/gozhong-de-bing-fa-ke-shi-hua/)
 
+## 进阶
+- [Go 语言之三驾马车](https://cloud.tencent.com/community/article/649192)
+
 ## RPC
  - [Thrift RPC 使用指南实战(附golang&PHP代码)](http://blog.csdn.net/liuxinmingcode/article/details/45696237)
  - [Golang通过Thrift框架完美实现跨语言调用](http://blog.csdn.net/pkueecser/article/details/48004631)
@@ -27,6 +30,7 @@
 ## 反射
 - [Go语法简略 － 反射](http://www.zddhub.com/memo/2015/07/03/go-reflect/)
 - [Go语法简略 － 依赖注入](http://www.zddhub.com/memo/2015/07/05/go-dependency-inject/)
+- [Go语言备忘录：反射的原理与使用详解](http://www.cnblogs.com/susufufu/p/7653579.html)
 
 ## 测试
 - [如何测试 Go 代码 - 单元测试](http://codethoughts.info/go/2015/04/05/how-to-test-go-code/)
@@ -48,3 +52,4 @@
 ## 其他
 - [Unknwon's go-study-index](https://github.com/Unknwon/go-study-index)
 - [优姬](http://www.yougam.com/)
+- [初窥dep](http://tonybai.com/2017/06/08/first-glimpse-of-dep/)
