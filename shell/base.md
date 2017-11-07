@@ -42,6 +42,18 @@
 - `>` : 重定向文本,但会先清空目标文件
 - `>>` : 追加文件到目标文件
 
+```shell
+cmd > &m // 将标准输出定向到文件描述符m中.
+```
+
+## 读取
+- `<` : 从标准输入中读入
+- `<<` : 从标准输入中读入, 直到遇到分隔符
+
+```
+cmd <&- // 关闭标准输入
+```
+
 ## Bash 中的特殊字符大全
 
 [Bash 中的特殊字符大全](https://linux.cn/article-5657-1.html)
@@ -125,3 +137,23 @@ Ctl-U   删除光标到行首的所有字符,在某些设置下,删除全行
 Ctl-W   删除当前光标到前边的最近一个空格之间的字符
 Ctl-H   backspace,删除光标前边的字符
 ```
+
+## Here Document
+Here Document 是在Linux Shell 中的一种特殊的重定向方式，它的基本的形式如下:
+```
+cmd << delimiter
+  Here Document Content
+delimiter
+```
+它的作用就是将两个 delimiter 之间的内容(Here Document Content 部分) 传递给cmd 作为输入参数.
+
+注意:
+- EOF 只是一个标识而已，可以替换成任意的合法字符
+- 作为结尾的delimiter一定要顶格写，前面不能有任何字符
+- 作为结尾的delimiter后面也不能有任何的字符（包括空格）
+- 作为起始的delimiter前后的空格会被省略掉
+
+## 追踪
+使用`-x`选项, 比如`#!/bin/sh -x`或`sh -x xxx.sh`,可追踪shell每个命令的执行结果.
+
+## assert函数

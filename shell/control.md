@@ -4,9 +4,14 @@
 
 if 语句通过关系运算符判断表达式的真假来决定执行哪个分支,Shell 有三种 if ... else 语句：
 
-- if condition;then ... fi 语句
-- if condition;then ... else ... fi 语句
-- if condition;then ... elif condition;then ... else ... fi 语句
+- [if](#if)
+    - [描述](#%E6%8F%8F%E8%BF%B0)
+    - [例](#%E4%BE%8B)
+- [case](#case)
+    - [描述](#%E6%8F%8F%E8%BF%B0)
+- [for](#for)
+- [while](#while)
+- [until](#until)
 
 > 注意:[]中判断条件两侧的空格不可省略
 
@@ -48,6 +53,8 @@ if 语句通过关系运算符判断表达式的真假来决定执行哪个分�
 # -o = or , -a = and , 但推荐只用 || 或者 &&
 if [[ $a > $b ]] || [[ $a < $c ]] <=>  if [ $a -gt $b -o $a -lt $c ]
 ```
+
+> `[[]]`写法是保护性写法, 保证内层的`[]`失败(比如其变量没有被赋值)相当于是表达式为假.
 
 # case
 

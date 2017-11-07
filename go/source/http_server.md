@@ -162,6 +162,45 @@ func (mux *ServeMux) handler(host, path string) (h Handler, pattern string) {
 	return
 }
 
+// Does path match pattern?
+// 前缀匹配, 因此pathMatch("/","/a")和pathMatch("/a","/a")都会返回true
+func pathMatch(pattern, path string) bool {
+	if len(pattern) == 0 {
+		// should not happen
+		return false
+	}
+	n := len(pattern)
+	if pattern[n-1] != '/' {
+		return pattern == path
+	}
+	return len(path) >= n && path[0:n] == pattern
+}
+
+// Find a handler on a handler map given a path string.
+// Most-specific (longest) pattern wins.
+// match 会遍历路由信息字典，找到所有匹配该路径最长的那个.因为使用前缀匹配,因此如果找不到但存在"/"时会返回"/"的Handler.
+func (mux *ServeMux) match(path string) (h Handler, pattern string) {
+	// Check for exact match first.
+	v, ok := mux.m[path]
+	if ok {
+		return v.h, v.pattern
+	}
+
+	// Check for longest valid match.
+	var n = 0
+	for k, v := range mux.m {
+		if !pathMatch(k, path) {
+			continue
+		}
+		if h == nil || len(k) > n {
+			n = len(k)
+			h = v.h
+			pattern = v.pattern
+		}
+	}
+	return
+}
+
 type Handler interface {
 	ServeHTTP(ResponseWriter, *Request)
 }

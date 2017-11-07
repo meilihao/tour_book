@@ -45,6 +45,10 @@
 # linux
 ## 性能优化和故障排除
 - [如何知道进程运行在哪个CPU内核上](https://linux.cn/article-6307-1.html)
+- [动态追踪技术漫谈](https://openresty.org/posts/dynamic-tracing/)
+- [eBPF 简史](https://linux.cn/article-9032-1.html)
+- [Linux 中的 DTrace ：BPF 进入 4.9 内核](https://linux.cn/article-8038-1.html)
+- [动态追踪技术：Linux喜迎DTrace](https://riboseyim.github.io/2016/11/26/DTrace/)
 
 ## English
 - [程序员英语学习指引](https://linux.cn/article-6358-1.html)

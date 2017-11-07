@@ -1,4 +1,4 @@
-# glide
+# glide(废弃, 推荐使用官方的dep)
 
 [文档](https://deepzz.com/post/glide-package-management-command.html)
 
