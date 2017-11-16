@@ -31,10 +31,18 @@ sh的提示字符串.可扩展的参数:`\u`:用户名;`\h`:主机名;`\w`:当�
 存储当前的工作目录
 
 # 配置文件
-
-`bashrc`与`profile`都用于保存用户的环境信息，`bashrc`用于交互式`non-login shell`,比如x-window下启动的终端，而profile用于交互式`login shell`.
+`bashrc`与`profile`都用于保存用户的环境信息，`bashrc`用于非交互式`no-login shell`,比如x-window下启动的终端，而profile用于交互式`login shell`.
 
 `/etc/profile，/etc/bashrc`是系统全局环境变量设定;`~/.profile，~/.bashrc`用户目录下的私有环境变量设定.
+
+> 注意: 切换sh,比如 fish -> bash, 使用`no-login`操作,仅执行`~/.bashrc`.
+
+## profile和bashrc的区别
+### profile
+profile 是某个用户唯一的用来设置环境变量的地方, 因为用户可以有多个 shell 比如 bash, sh, zsh 之类的, 但像环境变量这种其实只需要在统一的一个地方初始化就可以了, 而这就是 profile.
+### bashrc
+
+bashrc是专门用来给 bash 做初始化的比如用来初始化 bash 的设置, bash 的代码补全, bash 的别名, bash 的颜色. 以此类推也就还会有 shrc, zshrc 这样的文件存在了, 只是 bash 太常用了而已.
 
 ## 流程
 
@@ -54,7 +62,9 @@ ps :
 
 其他的shell，例如Dash，支持相似的东西，但是只会查找~/.profile文件。这允许用户为Bash特定的应用场景配置单独的.bash_profile文件，如果在某些时候需要切换到Dash或其他shell作为登录shell（例如通过chsh -s dash命令）。可以保留~/.profile作为这些shell的配置文件。
 
-需要牢记的一点是，默认的Debian框架目录（/etc/skel，用于存放要复制到新用户账户主目录的文件和目录）包含.profile文件，但不包含.bash_profile和.bash_login文件。此外Debian使用Bash作为默认的shell，因此，许多Debian用户习惯于将他们的Bash 登录shell设置放在.profile文件中。
+需要牢记的一点是，默认的Debian框架目录（/etc/skel，用于存放要复制到新用户账户主目录的文件和目录）包含.profile文件，但不包含.bash_profile和.bash_login文件。此外Debian使用Bash作为默认的shell，因此，许多Debian用户习惯于将他们的Bash 登录shell设置放在.profile文件中.
+
+> 不同的发行版可能有点不同,具体可以看其相关脚本的内容.
 
 ### non-login shell
 

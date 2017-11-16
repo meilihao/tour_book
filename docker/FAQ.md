@@ -100,8 +100,8 @@ ps: shell 形式防止使用任何CMD或运行命令行参数，但是缺点是�
 1. `sudo cat /etc/group | grep docker`
 1. 如果不存在docker组，可以添加`sudo groupadd docker`
 1. 添加当前用户到docker组，`sudo gpasswd -a $USER docker`/`sudo usermod -aG docker chen`
-1. 重启docker服务,`sudo systemctl restart docker`,用户需要重新登录系统使上一步的修改生效.
+1. 重启docker服务,`sudo systemctl restart docker`,用户需要**重新登录**系统使上一步的修改生效.
 1. 如果权限不够，`sudo chmod a+rw /var/run/docker.sock`
 
 ## 安装docker
-通过[dev.aliyun.com](https://cr.console.aliyun.com/#/accelerator)安装.
+通过[Docker CE 镜像源站](https://yq.aliyun.com/articles/110806)安装.

@@ -117,6 +117,8 @@ Content-Type: text/plain
 --AaB03x--
 ```
 
+> 上传文件过程即是将文件编码为multipart/form-data后放到http.body里进行上传.
+
 - multipart/byteranges
 
  状态码 206（Partial Content，部分内容）响应报文包含了多个范围的内容时使用.类似于 FlashGet 或者迅雷这类的 HTTP 下载工具都是使用此类响应实现断点续传或者将一个大文档分解为多个下载段同时下载.
