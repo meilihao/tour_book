@@ -36,6 +36,20 @@ ps:
 - -x509toreq             基于当前证书创建一个CSR文件
 
 ## FAQ
+### 查看Server host key即远程主机的key fingerprint
+```
+chen@xxx:/etc/ssh$ ssh-keygen  -lf ssh_host_ecdsa_key.pub
+256 SHA256:kM9uQJBdQt9JGlDkuIh4bIJSWjF5EPnTpcq5X1pMmVw root@iZuf6hftd4ce4kf92zb5ycZ (ECDSA)
+```
+
+重新生成server host key:
+逐个替换`/etc/ssh/ssh_host_xxx`或使用`dpkg-reconfigure`命令
+
+```
+# rm -v /etc/ssh/ssh_host_*
+# dpkg-reconfigure openssh-server
+```
+
 ### 网站不支持ALPN提示"No ALPN negotiated"
 [ALPN介绍](https://imququ.com/post/enable-alpn-asap.html),检查是否支持ALPN的命令:
 ```sh

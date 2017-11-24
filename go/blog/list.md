@@ -48,8 +48,12 @@
 ## 教程
 - [Go by Example 中文](http://gobyexample.everyx.in/)
 - [Golang操作数据库](http://www.mincoder.com/article/3533.shtml)
+- [gophercises](https://gophercises.com)
 
 ## 其他
 - [Unknwon's go-study-index](https://github.com/Unknwon/go-study-index)
 - [优姬](http://www.yougam.com/)
 - [初窥dep](http://tonybai.com/2017/06/08/first-glimpse-of-dep/)
+
+## 推荐源码阅读
+- [badger](https://github.com/dgraph-io)
