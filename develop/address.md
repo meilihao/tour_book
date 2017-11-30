@@ -2,6 +2,7 @@
 
  参考:
  - [最新县及县以上行政区划代码](http://www.stats.gov.cn/tjsj/tjbz/xzqhdm/)
+ - [统计用区划和城乡划分代码](http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/),比上面的`最新县及县以上行政区划代码`更细.
 
 ## 使用淘宝的收货地址
 参考:
