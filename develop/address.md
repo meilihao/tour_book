@@ -21,11 +21,18 @@ package main
 
 import (
 	"bufio"
+	"encoding/csv"
+	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/PuerkitoBio/goquery"
+	"github.com/djimenez/iconv-go"
 )
 
 type Place struct {
@@ -52,7 +59,12 @@ func main() {
 	CheckErr(err)
 	defer f.Close()
 
+	csvf, err := os.OpenFile("addr.csv", os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0666)
+	CheckErr(err)
+	defer csvf.Close()
+
 	s := bufio.NewScanner(f)
+	w := csv.NewWriter(csvf)
 
 	var parent *Place
 	var tmp string
@@ -120,13 +132,36 @@ func main() {
 
 			parent.Children = append(parent.Children, p)
 		}
+
+		CheckErr(w.Write([]string{p.Id, p.ShortName, p.ParentId, strconv.Itoa(p.LevelTrue)}))
+		if p.LevelTrue == 3 {
+			cs, err := GetTowns(p.Id)
+			if err != nil {
+				fmt.Printf("can't get %s's towns\n", p.Id)
+
+				continue
+			}
+
+			for _, v := range cs {
+				v.ParentId = p.Id
+				v.Parent = p
+				v.Level = p.Level + 1
+				v.LevelTrue = 4
+
+				p.Children = append(p.Children, v)
+
+				CheckErr(w.Write([]string{v.Id, v.ShortName, v.ParentId, strconv.Itoa(v.LevelTrue)}))
+			}
+		}
 	}
 	CheckErr(s.Err())
 
-	// data, err := json.Marshal(root)
-	// CheckErr(err)
+	w.Flush()
 
-	// fmt.Println(string(data))
+	data, err := json.Marshal(root)
+	CheckErr(err)
+
+	fmt.Println(string(data))
 }
 
 func CleanName(p *Place) string {
@@ -145,12 +180,7 @@ func CleanName(p *Place) string {
 			if len(t) > 0 {
 				p.Name = t[1]
 			}
-        }
-        
-        // n = utf8.RuneCountInString(p.Name)
-		// if n > 2 {
-		// 	fmt.Println(p.Name)
-		// }
+		}
 	case 3:
 		n := utf8.RuneCountInString(p.Name)
 		if n > 2 {
@@ -169,5 +199,33 @@ func CheckErr(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+// 具体到街道级别
+func GetTowns(id string) ([]*Place, error) {
+	doc, err := goquery.NewDocument(fmt.Sprintf(
+		"http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2016/%s/%s/%s.html",
+		id[0:2], id[2:4], id))
+	if err != nil {
+		return nil, err
+	}
+
+	var s []*Place
+	ns := doc.Find("tr.towntr")
+	ns.Each(func(index int, node *goquery.Selection) {
+		tmp, err := iconv.ConvertString(node.Text(), "gb18030", "utf-8")
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println(tmp)
+
+		s = append(s, &Place{
+			Id:        tmp[:9],
+			Name:      strings.TrimRight(tmp[12:], "办事处"),
+			ShortName: strings.TrimRight(tmp[12:], "办事处"),
+		})
+	})
+
+	return s, nil
 }
 ```
