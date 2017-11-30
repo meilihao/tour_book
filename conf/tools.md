@@ -229,3 +229,12 @@ $ mkdir -p /home/chen/tmpfs
 # tmpfs
 tmpfs /home/chen/tmpfs tmpfs size=256m 0 0
 ```
+
+## linux弹窗
+1. `zenity --info --text "要发送的消息"`
+zenity其实是GNOME项目为命令行程序以及Shell脚本程序提供的一套对话框交互工具.
+1. `notify-send ["标题"] "信息"`
+notify-send是一个可以让你发送桌面通知的命令.
+
+## vscode 格式工具
+安装插件`beautify`, 再使用格式化快捷键`Ctrl + Shift + I`即可.

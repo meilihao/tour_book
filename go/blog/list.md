@@ -54,6 +54,8 @@
 - [Unknwon's go-study-index](https://github.com/Unknwon/go-study-index)
 - [优姬](http://www.yougam.com/)
 - [初窥dep](http://tonybai.com/2017/06/08/first-glimpse-of-dep/)
+- [使用 VS Code 快速搭建你的 Golang 开发 IDE](http://toozhao.com/2017/08/23/vscode-golang/)
+- [vscode Golang开发环境配置](https://kelvin.mbioq.com/2016/11/03/golang-vscode-development-environment-configuration.html)
 
 ## 推荐源码阅读
 - [badger](https://github.com/dgraph-io)
