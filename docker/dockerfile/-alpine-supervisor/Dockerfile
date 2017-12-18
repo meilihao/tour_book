@@ -1,17 +1,15 @@
 # sudo docker build . -t="tiny-env:latest"
-# 不推荐使用,golang程序无法运行
+# golang程序请使用`CGO_ENABLED=0`
 FROM alpine:latest
 
 MAINTAINER chenz057 <chenz057@zhixubao.com>
 
-# ENV SUPERVISOR_ROOT=/etc/supervisor
-# ENV SUPERVISOR_CONF_DIR=/etc/supervisor/conf.d
-# ENV SUPERVISOR_CONF_FILE=/etc/supervisor/supervisord.conf
+ENV SUPERVISOR_CONF_FILE=/etc/supervisord.conf
+ENV SUPERVISOR_CONF_DIR=/etc/supervisor.d
 
-RUN echo -e 'https://mirrors.ustc.edu.cn/alpine/v3.6/main\nhttps://mirrors.ustc.edu.cn/alpine/v3.6/community' > /etc/apk/repositories
+RUN echo -e 'https://mirrors.ustc.edu.cn/alpine/v3.7/main\nhttps://mirrors.ustc.edu.cn/alpine/v3.7/community' > /etc/apk/repositories
+RUN apk add --no-cache ca-certificates tzdata
 RUN apk add --no-cache supervisor
-RUN rm /etc/supervisord.conf
-RUN mkdir -p /etc/supervisor/conf.d
+RUN mkdir -p $SUPERVISOR_CONF_DIR
 
-COPY supervisord.conf /etc/supervisor/supervisord.conf
-
+CMD ["supervisord", "--nodaemon", "--configuration", "/etc/supervisord.conf"]

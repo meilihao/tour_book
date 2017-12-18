@@ -15,6 +15,7 @@
 
 ## 进阶
 - [Go 语言之三驾马车](https://cloud.tencent.com/community/article/649192)
+- [golang 汇编](https://lrita.github.io/2017/12/12/golang-asm/)
 
 ## RPC
  - [Thrift RPC 使用指南实战(附golang&PHP代码)](http://blog.csdn.net/liuxinmingcode/article/details/45696237)

@@ -44,6 +44,9 @@ ENTRYPOINT是容器运行程序的入口.
 
 RUN是在build成镜像时就运行的，先于CMD和ENTRYPOINT的，CMD会在每次启动容器的时候运行，而RUN只在创建镜像时执行一次，固化在image中.
 
+ENTRYPOINT和CMD的不同点在于执行docker run时参数传递方式，**CMD指定的命令可以被docker run传递的命令覆盖**.
+ENTRYPOINT会把容器名后面的所有内容都当成参数传递给其指定的命令(**不会对命令覆盖**)
+
 关于ENTRYPOINT和CMD的交互，用一个官方表格可以说明：
 <table>
 <thead>
@@ -105,3 +108,8 @@ ps: shell 形式防止使用任何CMD或运行命令行参数，但是缺点是�
 
 ## 安装docker
 通过[Docker CE 镜像源站](https://yq.aliyun.com/articles/110806)安装.
+
+## go程序 in alpine容器 报: /usr/local/go/lib/time/zoneinfo.zip: no such file or directory
+```sh
+apk add --no-cache tzdata
+```
