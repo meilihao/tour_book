@@ -97,17 +97,26 @@ func main() {
 
 			parent = p
 		} else if strings.HasSuffix(fds[0], "00") {
-			if parent.Level != 1 {
+			// example 131082 -> 131100
+			if parent.LevelTrue != 1 {
 				parent = parent.Parent
 			}
 
 			// 挂载到省级节点
-			if p.Name == "省直辖县级行政区划" || p.Name == "自治区直辖县级行政区划" || p.Name == "县" {
+			if p.Name == "省直辖县级行政区划" || p.Name == "自治区直辖县级行政区划" {
 				continue
 			}
 
-			if p.Name == "市辖区" {
+			if p.Name == "市辖区" || p.Name == "县" { // 重庆市特别,同时有"市辖区"和"县"
 				p.Name = parent.Name
+
+				if strings.HasPrefix(p.Id, "50") {
+					if p.Id == "500100" {
+						p.Name += "城区"
+					} else {
+						p.Name += "郊县"
+					}
+				}
 			}
 
 			p.ParentId = parent.Id
@@ -173,6 +182,10 @@ func CleanName(p *Place) string {
 			p.Name = t[1]
 		}
 	case 2:
+		if strings.HasPrefix(p.Id, "50") {
+			return p.Name
+		}
+
 		n := utf8.RuneCountInString(p.Name)
 		if n > 2 {
 			r := regexp.MustCompile("(.*?)(蒙古自治.*|哈萨克.*|布依族.*|.家族.*|.族.*|自治州|市|地区|县|盟|林区)$")
