@@ -20,3 +20,6 @@
 ### 进入github enterprise
 1. 用`linux单用户`模式进入再修改root密码
 2. 重启后从ctrl+alt+f2打开的终端进入
+
+### 程序路径
+`/data/github`,比如数据库`/data/github/current/db/schema.rb`.

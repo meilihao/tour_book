@@ -130,6 +130,9 @@ Unity Tweak Tool 是一个专为Ubuntu Unity 桌面环境的配置工具，允�
 
 －　右键-> preferences -> `Profiles` tab -> `Colors` tab -> "Foreground and Background # Build-in schemes"="Ambience" && "Palette # Built-in schemes"="Ambience"
 
+其他终端:
+- [Tilix](https://gnunn1.github.io/tilix-web/),　支持同步输入,保存布局
+
 ## Bash shell对话框
 
 zenity和whiptail
