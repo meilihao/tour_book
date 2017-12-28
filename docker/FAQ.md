@@ -109,6 +109,8 @@ ps: shell 形式防止使用任何CMD或运行命令行参数，但是缺点是�
 ## 安装docker
 通过[Docker CE 镜像源站](https://yq.aliyun.com/articles/110806)安装.
 
+或[官方方式](https://docs.docker.com/engine/installation/#server).
+
 ## go程序 in alpine容器 报: /usr/local/go/lib/time/zoneinfo.zip: no such file or directory
 ```sh
 apk add --no-cache tzdata
