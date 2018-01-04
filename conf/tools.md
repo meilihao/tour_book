@@ -81,6 +81,8 @@ Unity Tweak Tool 是一个专为Ubuntu Unity 桌面环境的配置工具，允�
 - [privoxy]
 - [SwitchyOmega](github.com/FelisCatus/SwitchyOmega)
 
+> **shadowsocksr-libev的配置文件里没有`local_port`项会导致程序启动后就立即退出.**
+
 # 翻译
 
 ## 有道词典

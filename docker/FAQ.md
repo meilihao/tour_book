@@ -10,8 +10,8 @@ linux kernel没有aufs驱动,试试其他docker storage-driver,比如"docker dae
 - nsenter工具
 
 ## save/load和export/import 区别
-export命令用于持久化容器(不是镜像);save命令用于持久化镜像(不是容器).
-import/load用于导入镜像.
+export命令用于持久化容器(即容器快照);save命令用于持久化镜像(即镜像快照).
+import/load用于导入镜像,但import用于操作export导出的容器,load用于操作save导出的镜像.
 
 这两者的区别在于容器快照文件(`docker export`)将丢弃所有的历史记录和元数据信息（即仅保存容器当时的快照状态），而镜像存储文件(`docker save`)将保存完整记录，体积也要大。此外，从容器快照文件导入时可以重新指定标签等元数据信息.
 
@@ -27,6 +27,7 @@ import/load用于导入镜像.
 - ADD 的`<src>`可以为URL
 - ADD指令会将tar文件解压到指定位置，而COPY指令只做复制操作
 
+**一般优先使用 COPY,因为它比 ADD 更透明**
 ## Dockerfile RUN/ENTRYPOINT/CMD
 ENTRYPOINT指令有两种格式，CMD指令有三种格式：
 ```
@@ -112,4 +113,26 @@ ps: shell 形式防止使用任何CMD或运行命令行参数，但是缺点是�
 ## go程序 in alpine容器 报: /usr/local/go/lib/time/zoneinfo.zip: no such file or directory
 ```sh
 apk add --no-cache tzdata
+```
+
+## 多阶段构建
+Docker image的多阶段构建中, 每个From语句开启一个构建阶段，并且可以通过`as`语法为此阶段构建命名(比如下面的builder).
+
+```sh
+//Dockerfile
+
+FROM golang:alpine as builder
+
+WORKDIR /go/src
+COPY httpserver.go .
+
+RUN go build -o httpd ./httpserver.go
+
+From alpine:latest
+
+WORKDIR /root/
+COPY --from=builder /go/src/httpd . # 通过COPY命令在两个阶段构建产物之间传递数据
+RUN chmod +x /root/httpd
+
+ENTRYPOINT ["/root/httpd"]
 ```

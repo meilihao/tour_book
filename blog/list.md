@@ -76,6 +76,8 @@
 - [国内知名技术博客总结](http://asteam.cc/index.php/archives/10/)
 - [我是如何学习区块链的](https://keeganlee.me/post/full-stack/20170915)
 - [巴比特区块链论坛](http://book.8btc.com/)
+- [*区块链技术指南](https://yeasy.gitbooks.io/blockchain_guide/content/)
+- [*Node.js开发加密货币](http://bitcoin-on-nodejs.ebookchain.org/)
 
 ## 源码
 - [Elasticsearch 架构以及源码概览](http://mp.weixin.qq.com/s?__biz=MzA4NjgwMDQ0OA==&mid=2652445487&idx=1&sn=fb99fac1db2ad8120e98f00165323b2a)

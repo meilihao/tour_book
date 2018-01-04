@@ -45,6 +45,7 @@
 - [Go Styleguide](https://github.com/bahlo/go-styleguide/pull/8/commits/d706a55f5538a97b6ed65f490a5dac22efc6f71e)
 - [像牛人一样改进你的Go代码](http://colobu.com/2017/06/27/Lint-your-golang-code-like-a-mad-man/)
 - [理解 channels - Kavya Joshi](https://blog.lab99.org/post/golang-2017-10-04-video-understanding-channels.html#jian-dan-de-fa-song-jie-shou)
+- [*Go性能监控/分析工具](http://johng.cn/go%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7%EF%BC%9Ago-tool-pprof/)
 
 ## 教程
 - [Go by Example 中文](http://gobyexample.everyx.in/)
@@ -57,6 +58,7 @@
 - [初窥dep](http://tonybai.com/2017/06/08/first-glimpse-of-dep/)
 - [使用 VS Code 快速搭建你的 Golang 开发 IDE](http://toozhao.com/2017/08/23/vscode-golang/)
 - [vscode Golang开发环境配置](https://kelvin.mbioq.com/2016/11/03/golang-vscode-development-environment-configuration.html)
+- [Go语言经典笔试题](https://goquiz.github.io/)
 
 ## 推荐源码阅读
 - [badger](https://github.com/dgraph-io)
