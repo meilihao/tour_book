@@ -61,6 +61,7 @@
 
 ## 经验
 - [如何用好 Google 等搜索引擎？](http://www.zhihu.com/question/20161362)
+- [架构部操作手册](https://mp.weixin.qq.com/s/vxJkUT_I-g1dWQFiz_XT_w)
 
 ## 监控
 - [小米运维—互联网企业级监控系统实践](http://www.jianshu.com/p/b2f77285266c)
