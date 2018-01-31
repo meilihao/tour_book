@@ -59,7 +59,8 @@
 - [初窥dep](http://tonybai.com/2017/06/08/first-glimpse-of-dep/)
 - [使用 VS Code 快速搭建你的 Golang 开发 IDE](http://toozhao.com/2017/08/23/vscode-golang/)
 - [vscode Golang开发环境配置](https://kelvin.mbioq.com/2016/11/03/golang-vscode-development-environment-configuration.html)
-- [Go语言经典笔试题](https://goquiz.github.io/)
+- [Go语言经典面试题](https://goquiz.github.io/)
+- [Go面试题答案与解析](https://yushuangqi.com/blog/2017/golang-mian-shi-ti-da-an-yujie-xi.html)
 
 ## 推荐源码阅读
 - [badger](https://github.com/dgraph-io)

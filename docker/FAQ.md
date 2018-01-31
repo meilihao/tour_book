@@ -138,3 +138,8 @@ RUN chmod +x /root/httpd
 
 ENTRYPOINT ["/root/httpd"]
 ```
+
+## 日志位置
+```
+/var/lib/docker/containers/${containerid}/${containerid}.log-json.log
+```
