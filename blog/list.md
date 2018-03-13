@@ -27,6 +27,7 @@
 - [分布式会话跟踪系统架构设计与实践](http://tech.meituan.com/mt-mtrace.html)
 - [流动的推荐系统——兴趣Feed技术架构与实现](http://mp.weixin.qq.com/s/aQ5O_Bj34UOz69iohCdrpg)
 - [日均数十亿请求！京东评价系统海量数据存储高可用设计](http://dbaplus.cn/news-21-613-1.html)
+- [从Elasticsearch集群及数据层架构，看分布式系统设计](https://mp.weixin.qq.com/s/jJ1LH2MLxRPAvma3Hd6-XA)
 
 ## 随思
 - [知道创宇研发技能表](http://blog.knownsec.com/Knownsec_RD_Checklist/index.html)
@@ -49,6 +50,8 @@
 - [eBPF 简史](https://linux.cn/article-9032-1.html)
 - [Linux 中的 DTrace ：BPF 进入 4.9 内核](https://linux.cn/article-8038-1.html)
 - [动态追踪技术：Linux喜迎DTrace](https://riboseyim.github.io/2016/11/26/DTrace/)
+## kernel
+- [内核如何管理内存](https://linux.cn/article-9393-1.html)
 
 ## English
 - [程序员英语学习指引](https://linux.cn/article-6358-1.html)
@@ -79,9 +82,13 @@
 - [巴比特区块链论坛](http://book.8btc.com/)
 - [*区块链技术指南](https://yeasy.gitbooks.io/blockchain_guide/content/)
 - [*Node.js开发加密货币](http://bitcoin-on-nodejs.ebookchain.org/)
+- [利用K8S技术栈打造个人私有云](https://www.jianshu.com/p/58a98e65074c)
+- [区块链和 HyperLedger 系列](https://www.ibm.com/developerworks/community/blogs/3302cc3b-074e-44da-90b1-5055f1dc0d9c/entry/opentech-blockchain?lang=zh)
 
 ## 源码
 - [Elasticsearch 架构以及源码概览](http://mp.weixin.qq.com/s?__biz=MzA4NjgwMDQ0OA==&mid=2652445487&idx=1&sn=fb99fac1db2ad8120e98f00165323b2a)
+- [TiDB 源码阅读系列文章（一）序](https://mp.weixin.qq.com/s/z3OluFqtopJUYmVib0HvSQ)
+- [我是怎么阅读kubernetes源代码的？](http://dockone.io/article/895)
 
 ## db
 - [时序数据库InfluxDB使用详解](http://www.jianshu.com/p/a1344ca86e9b)

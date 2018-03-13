@@ -141,3 +141,9 @@ $ git config --global alias.df diff
 $ git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
 $ git config --global alias.st status
 ```
+
+### 第一次上传代码时碰到"更新被拒绝，因为您当前分支的最新提交落后于其对应的远程分支..."
+这是因为git拒绝合并无关的历史纪录，解决方法是在git pull时加上–allow-unrelated-histories：
+```
+git pull origin master --allow-unrelated-histories
+```

@@ -61,6 +61,7 @@
 - [vscode Golang开发环境配置](https://kelvin.mbioq.com/2016/11/03/golang-vscode-development-environment-configuration.html)
 - [Go语言经典面试题](https://goquiz.github.io/)
 - [Go面试题答案与解析](https://yushuangqi.com/blog/2017/golang-mian-shi-ti-da-an-yujie-xi.html)
+- [在Linux中使用Go作为脚本语言](https://blog.cloudflare.com/using-go-as-a-scripting-language-in-linux/)
 
 ## 推荐源码阅读
 - [badger](https://github.com/dgraph-io)
