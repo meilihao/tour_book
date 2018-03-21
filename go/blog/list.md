@@ -52,6 +52,7 @@
 - [Go by Example 中文](http://gobyexample.everyx.in/)
 - [Golang操作数据库](http://www.mincoder.com/article/3533.shtml)
 - [gophercises](https://gophercises.com)
+- [*Go语言标准库](https://books.studygolang.com/The-Golang-Standard-Library-by-Example/)
 
 ## 其他
 - [Unknwon's go-study-index](https://github.com/Unknwon/go-study-index)

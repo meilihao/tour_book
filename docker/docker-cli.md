@@ -1,5 +1,5 @@
 ## 常用操作
-下载镜像 ： docker pull [REGISTRY_HOSTNAME/]NAME[:TAG]
+下载镜像 ： docker pull [registry_hostname/[group/]]namespace/name[:tag]
 添加镜像tag : docker tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG] # 镜像的ID相同,仅创建别名而已
 镜像/容器的详细信息 : docker inspect [OPTIONS] NAME|ID [NAME|ID...]
 镜像查找 : docker search [OPTIONS] TERM

@@ -7,6 +7,8 @@
 ## 分布式
 - [学习笔记：The Log（我所读过的最好的一篇分布式技术文章）](http://www.cnblogs.com/foreach-break/p/notes_about_distributed_system_and_The_log.html)
 - [etcd：从应用场景到实现原理的全方位解读](http://www.infoq.com/cn/articles/etcd-interpretation-application-scenario-implement-principle/)
+- [etcd入门篇-集群搭建及基本使用](https://www.addops.cn/post/etcd-01.html)
+- [Etcd3学习笔记](https://skyao.gitbooks.io/learning-etcd3/)
 - [架构师需要了解的Paxos原理、历程及实战](http://h2ex.com/719)
 
 ## 序列化
@@ -84,6 +86,7 @@
 - [*Node.js开发加密货币](http://bitcoin-on-nodejs.ebookchain.org/)
 - [利用K8S技术栈打造个人私有云](https://www.jianshu.com/p/58a98e65074c)
 - [区块链和 HyperLedger 系列](https://www.ibm.com/developerworks/community/blogs/3302cc3b-074e-44da-90b1-5055f1dc0d9c/entry/opentech-blockchain?lang=zh)
+- [区块链合集](https://gocn.io/question/1691)
 
 ## 源码
 - [Elasticsearch 架构以及源码概览](http://mp.weixin.qq.com/s?__biz=MzA4NjgwMDQ0OA==&mid=2652445487&idx=1&sn=fb99fac1db2ad8120e98f00165323b2a)
@@ -92,9 +95,11 @@
 
 ## db
 - [时序数据库InfluxDB使用详解](http://www.jianshu.com/p/a1344ca86e9b)
+- [Innodb中的事务隔离级别和锁的关系](https://tech.meituan.com/innodb-lock.html)
 
 ## 其他
--  [图解 TCMalloc](https://zhuanlan.zhihu.com/p/29216091)
+- [图解 TCMalloc](https://zhuanlan.zhihu.com/p/29216091)
+- [/etc/hostname 和 /etc/hosts 详解](https://emacsist.github.io/2015/12/09/etc-hostname-%E5%92%8C-etc-hosts-%E8%AF%A6%E8%A7%A3/)
 
 ## search
 - [Elasticsearch 5.4 中文文档](http://cwiki.apachecn.org/display/Elasticsearch/Index)

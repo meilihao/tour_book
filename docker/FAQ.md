@@ -117,6 +117,12 @@ ps: shell 形式防止使用任何CMD或运行命令行参数，但是缺点是�
 apk add --no-cache tzdata
 ```
 
+## Layer/Image ID
+镜像由一系列层组成, 每层都用64位的十六进制数来表示, 非常类似Git repo中的commit.
+镜像最上层的layer ID就是该镜像的ID, 其默认存储在`/var/lib/docker`下.
+
+官方推荐使用`dockerviz`工具来分析镜像.
+
 ## 多阶段构建
 Docker image的多阶段构建中, 每个From语句开启一个构建阶段，并且可以通过`as`语法为此阶段构建命名(比如下面的builder).
 
@@ -142,4 +148,16 @@ ENTRYPOINT ["/root/httpd"]
 ## 日志位置
 ```
 /var/lib/docker/containers/${containerid}/${containerid}.log-json.log
+```
+
+# error
+## Error response from daemon: Driver overlay2 failed to remove root filesystem
+完整错误:
+```
+Error response from daemon: Driver overlay2 failed to remove root filesystem 95ee7e853063ca485ef7ce82b17db977303280df34db4fac2f3fa0367ab50b2c: remove /var/lib/docker/overlay2/dd95ab1ff29c37f16450194f79b9876a7e34da2dfbb8ee609745f00e017cb91c/merged: device or resource busy
+```
+
+解决方法`umount /var/lib/docker/overlay2/容器id`:
+```
+sudo umount /var/lib/docker/overlay2/dd95ab1ff29c37f16450194f79b9876a7e34da2dfbb8ee609745f00e017cb91c
 ```

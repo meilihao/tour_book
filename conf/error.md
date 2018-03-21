@@ -125,3 +125,12 @@ curl对https服务端证书的检查未通过,解决:
 解决方法(两种):
 - 编辑init.lua文件的倒数第二行,`sudo vim /etc/wireshark/init.lua`,改为`--dofile("console.lua")`
 - 编辑init.lua,`sudo vim /etc/wireshark/init.lua`,直接禁用lua即`disable_lua = true`
+
+### Failed at step USER spawning /bin/etcd: No such process
+`systemctl start xxx.service`报`etcd.service: Failed at step USER spawning /bin/etcd: No such process`,原因etcd.sevice文件中使用的`User=etcd`还不存在
+```
+ sudo useradd etcd -M -s /sbin/nologin 
+```
+
+### vmware-hostd 占用 443
+vmware workstation: Edit -> Preferences -> Shared VMs -> Disable "Enable virtual machine sharing and remote access".
