@@ -1,4 +1,11 @@
 ## 部署
+使用官方的[tidb-ansible](https://github.com/pingcap/tidb-ansible)
+
+### 滚动升级
+```sh
+sudo ansible-playbook local_prepare.yml -c local
+sudo ansible-playbook rolling_update.yml -c local
+```
 
 ### Error
 1. `ansible-playbook bootstrap.yml`报错

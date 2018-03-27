@@ -3,6 +3,8 @@
 ## doc
 - [Kubernetes指南](https://feisky.gitbooks.io/kubernetes/)
 - [Kubernetes中文手册](https://www.kubernetes.org.cn/docs)
+- [k8s yaml定义](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.9/)
+- [Kubernetes网络原理及方案](http://www.youruncloud.com/blog/131.html)
 
 ## install
 ```sh

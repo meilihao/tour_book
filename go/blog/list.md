@@ -53,6 +53,7 @@
 - [Golang操作数据库](http://www.mincoder.com/article/3533.shtml)
 - [gophercises](https://gophercises.com)
 - [*Go语言标准库](https://books.studygolang.com/The-Golang-Standard-Library-by-Example/)
+- [hacking-code/golang-tutorials](https://github.com/hacking-code/golang-tutorials)
 
 ## 其他
 - [Unknwon's go-study-index](https://github.com/Unknwon/go-study-index)
@@ -66,3 +67,11 @@
 
 ## 推荐源码阅读
 - [badger](https://github.com/dgraph-io)
+- [toyorm](https://gitee.com/bigpigeon/toyorm)
+- [dotcoo/orm](https://github.com/dotcoo/orm)
+- [jmoiron/sqlx](https://github.com/jmoiron/sqlx)
+- [Hyperledger 源码分析之 Fabric](https://www.gitbook.com/book/yeasy/hyperledger_code_fabric/details)
+- [Go Hack 2017](http://gohack2017.golangfoundation.org/)
+- [volatiletech/sqlboiler](https://github.com/volatiletech/sqlboiler)
+- [0xAX/go-algorithms](https://github.com/0xAX/go-algorithms)
+- [dropbox/godropbox](https://github.com/dropbox/godropbox)

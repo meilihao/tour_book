@@ -30,6 +30,7 @@
 - [流动的推荐系统——兴趣Feed技术架构与实现](http://mp.weixin.qq.com/s/aQ5O_Bj34UOz69iohCdrpg)
 - [日均数十亿请求！京东评价系统海量数据存储高可用设计](http://dbaplus.cn/news-21-613-1.html)
 - [从Elasticsearch集群及数据层架构，看分布式系统设计](https://mp.weixin.qq.com/s/jJ1LH2MLxRPAvma3Hd6-XA)
+- [轻松筹1.6亿注册用户的Passport账户体系架构设计](http://www.sohu.com/a/154131834_467759)
 
 ## 随思
 - [知道创宇研发技能表](http://blog.knownsec.com/Knownsec_RD_Checklist/index.html)
@@ -71,6 +72,7 @@
 ## 监控
 - [小米运维—互联网企业级监控系统实践](http://www.jianshu.com/p/b2f77285266c)
 - [如何使用jaeger](2017_09_06_001.md)
+- [最佳日志实践](https://zhuanlan.zhihu.com/p/27363484)
 
 ## webapp
 - [百度母婴技术团队—基于Reactjs实现webapp](https://github.com/my-fe/wiki/issues/1)
@@ -87,6 +89,7 @@
 - [利用K8S技术栈打造个人私有云](https://www.jianshu.com/p/58a98e65074c)
 - [区块链和 HyperLedger 系列](https://www.ibm.com/developerworks/community/blogs/3302cc3b-074e-44da-90b1-5055f1dc0d9c/entry/opentech-blockchain?lang=zh)
 - [区块链合集](https://gocn.io/question/1691)
+- [k8s/docker](https://jimmysong.io/)
 
 ## 源码
 - [Elasticsearch 架构以及源码概览](http://mp.weixin.qq.com/s?__biz=MzA4NjgwMDQ0OA==&mid=2652445487&idx=1&sn=fb99fac1db2ad8120e98f00165323b2a)
@@ -103,6 +106,8 @@
 
 ## search
 - [Elasticsearch 5.4 中文文档](http://cwiki.apachecn.org/display/Elasticsearch/Index)
+- [用Golang写一个搜索引擎](https://segmentfault.com/u/wyh267/articles?page=3)
+- [go-ego/riot](https://github.com/go-ego/riot)
 
 ## net
 - [Nftables HOWTO 中文翻译](https://farkasity.gitbooks.io/nftables-howto-zh/content/)
