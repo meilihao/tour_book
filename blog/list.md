@@ -99,6 +99,7 @@
 ## db
 - [时序数据库InfluxDB使用详解](http://www.jianshu.com/p/a1344ca86e9b)
 - [Innodb中的事务隔离级别和锁的关系](https://tech.meituan.com/innodb-lock.html)
+- [时序数据库技术体系](http://hbasefly.com/2017/11/19/timeseries-database-2/)
 
 ## 其他
 - [图解 TCMalloc](https://zhuanlan.zhihu.com/p/29216091)
@@ -108,6 +109,10 @@
 - [Elasticsearch 5.4 中文文档](http://cwiki.apachecn.org/display/Elasticsearch/Index)
 - [用Golang写一个搜索引擎](https://segmentfault.com/u/wyh267/articles?page=3)
 - [go-ego/riot](https://github.com/go-ego/riot)
+- [Elasticsearch教程](https://www.bilibili.com/video/av14023803)
 
 ## net
 - [Nftables HOWTO 中文翻译](https://farkasity.gitbooks.io/nftables-howto-zh/content/)
+
+## do
+- [如何从零构建个人博客系统](https://gocn.io/article/532)

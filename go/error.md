@@ -52,3 +52,47 @@ func (f Filename) MarshalJSON() ([]byte, error) {
 
 ### sync.WaitGroup.Wait 报"... deadlock"
 sync.WaitGroup应该使用指针传递而不是值传递.
+
+
+### 类型判断
+```go
+type Student struct {
+	Name string
+}
+
+func zhoujielun(v interface{}) {
+	switch msg := v.(type) {
+	case *Student, Student:
+		fmt.Printf("%+v\n", msg.Name) // error, 有两个分支, 编译器无法知道具体类型,只能放入万能的interface{},因此这里的msg type是interface{}
+	}
+}
+```
+
+```go
+type Student struct {
+	Name string
+}
+
+func zhoujielun(v interface{}) {
+	switch msg := v.(type) {
+	case *Student:
+		fmt.Printf("%+v\n", msg.Name) // ok, 只有一个分支, 编译器知道具体类型
+	}
+}
+```
+
+### map不可寻址
+```go
+type Student struct {
+	name string
+}
+
+func main() {
+	m := map[string]Student{"people": {"zhoujielun"}}
+	m["people"].name = "wuyanzu" // error
+}
+```
+map[string]Student 中储存的Student是数值拷贝，当要修改Student里面的Name时，就发生了不可寻址的错误.
+
+更直接的理解就是:
+`m["people"].name`的意图是修改元素的属性, 而`m["people"]`获取的元素的copy, 意图和实际不符.
