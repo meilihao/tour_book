@@ -109,3 +109,17 @@ go跑`go test -bench`前会跑`go test -run`保证代码的正确性,如果单�
 
 ### goto
 如果必须使用 goto，应当**只使用正序的标签**（标签位于 goto 语句之后），且**Labal和 goto 语句之间不能定义新变量(该变量与Labal是相同的代码块级别)**，否则会导致编译失败.
+
+### internal包（内部包）
+有些时候 我们希望一些包并非能被所有外部包所导入，但却能被其“临近”的包所导入和访问. 因此Go 1.4引入了"internal"包的概念，导入这种internal包的规则约束如下:
+
+如果导入代码本身不在以"internal"目录的父目录为root的目录树中，那么 不允许其导入路径(import path)中包含internal元素。
+
+例如：
+    – `a/b/c/internal/d/e/f`只可以被以`a/b/c`为根的目录树下的代码导入，不能被`a/b/g`下的代码导入
+    – `$GOROOT/src/net/http/internal`只能被`net/http`和`net/http/*`的包所导入
+    – `$GOPATH/src/mypkg/internal/foo`只能被`$GOPATH/src/mypkg*`包的代码所导入
+
+对于Go 1.4该规则首先强制应用于$GOROOT下。Go 1.5将扩展应用到$GOPATH下.
+
+注：Go 1.4 取消了$GOROOT/src/pkg，标准库都移到$GOROOT/src下了.
