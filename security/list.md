@@ -50,6 +50,7 @@
 - [如何制作 SSL X.509 凭证](http://www.imacat.idv.tw/tech/sslcerts.html.zh-cn)
 - [openssl编程](read.pudn.com/downloads119/doc/comm/504076/openssl编程.doc)
 - [如何创建ECC证书 for nginx](https://www.digitalocean.com/community/tutorials/how-to-create-an-ecc-certificate-on-nginx-for-debian-8)
+- [*网络安全的基础 - 数字证书及签名](http://blog.kamidox.com/security-basic-cert-sign.html)
 
 ## 校验
 - [扫盲文件完整性校验——关于散列值和数字签名](2015_05_23_006.md)
