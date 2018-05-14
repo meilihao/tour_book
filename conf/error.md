@@ -23,6 +23,18 @@ sudo apt-get install libncurses5-dev
 ### libevent not found
 sudo apt-get install libevent-dev
 
+### mbed TLS libraries not found
+sudo apt-get install libmbedtls-dev
+
+### The Sodium crypto library libraries not found
+sudo apt-get install libsodium-dev
+
+### The c-ares library libraries not found
+sudo apt-get install libc-ares-dev
+
+### Couldn't find libev
+sudo apt-get install libev-dev
+
 ### Cannot find asciidoc in PATH
 
 直接`apt install asciidoc`安装需要下载几十个依赖不可取.
