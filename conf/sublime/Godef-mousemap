@@ -1,0 +1,13 @@
+[
+	{
+		"button": "button1",
+		"modifiers": ["ctrl", "alt"],
+		"press_command": "drag_select",
+		"command": "godef"
+	},
+	{
+		"button": "button2",
+		"modifiers": ["ctrl", "alt"],
+		"command": "godef_prev"
+	}
+]
