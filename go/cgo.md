@@ -172,3 +172,18 @@ func main() {
 运行`go build`正常，但执行报错`./demo: error while loading shared libraries: libdemo.so: cannot open shared object file: No such file or directory`，即`ldd demo` 报`libdemo.so => not found`，解决方法有两：
 - 设置rpath， 编译时直接指定so的位置， `cgo LDFLAGS: -L. -ldemo -Wl,-rpath=./`, `./`在这里表示当前目录，直接用`.`会报错.
 - 设置LD_LIBRARY_PATH，运行`LD_LIBRARY_PATH=. ./demo`
+
+### so依赖
+如果引入的so依赖其他so,那么先使用`ldd libai.so`查看并安装缺失的so(注意版本),否则`go build`时会报错,比如:
+```
+/usr/bin/x86_64-linux-gnu-ld: warning: libsrtp.so.2, needed by ./libai.so, not found (try using -rpath or -rpath-link)
+...
+/usr/bin/x86_64-linux-gnu-ld: warning: libzlog.so.1.2, needed by ./libai.so, not found (try using -rpath or -rpath-link)
+./libai.so：对‘virtual_factory_set_recv_send_circbuf_cb’未定义的引用
+./libai.so：对‘zlog_put_mdc’未定义的引用
+...
+./libai.so：对‘zlog’未定义的引用
+./libai.so：对‘virtual_factory_set_record_op’未定义的引用
+collect2: error: ld returned 1 exit status
+```
+当然最可靠和方便的方法是在构建引入so的电脑上运行`go build`,省事又省力.
