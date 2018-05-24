@@ -76,8 +76,8 @@ Unity Tweak Tool 是一个专为Ubuntu Unity 桌面环境的配置工具，允�
 
 ## shadowsocks
 
-- [linux-ubuntu使用shadowsocks客户端配置](https://aitanlu.com/ubuntu-shadowsocks-ke-hu-duan-pei-zhi.html)
 - [shadowsocks-rss,推荐](github.com/breakwa11/shadowsocks-rss)和[shadowsocksr-libev,支持混淆](https://github.com/shadowsocksr-backup/shadowsocksr-libev)
+- [如何在ubuntu上安装使用SSR](https://cgsss.net/help/?/article/14)
 - [privoxy]
 - [SwitchyOmega](github.com/FelisCatus/SwitchyOmega)
 

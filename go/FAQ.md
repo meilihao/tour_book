@@ -123,3 +123,8 @@ go跑`go test -bench`前会跑`go test -run`保证代码的正确性,如果单�
 对于Go 1.4该规则首先强制应用于$GOROOT下。Go 1.5将扩展应用到$GOPATH下.
 
 注：Go 1.4 取消了$GOROOT/src/pkg，标准库都移到$GOROOT/src下了.
+
+### go test 禁用cache
+```sh
+$ GOCACHE=off go test -v   util.go util_test.go
+```

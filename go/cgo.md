@@ -173,6 +173,7 @@ func main() {
 - 设置rpath， 编译时直接指定so的位置， `cgo LDFLAGS: -L. -ldemo -Wl,-rpath=./`, `./`在这里表示当前目录，直接用`.`会报错.
 - 设置LD_LIBRARY_PATH，运行`LD_LIBRARY_PATH=. ./demo`
 
+## FAQ
 ### so依赖
 如果引入的so依赖其他so,那么先使用`ldd libai.so`查看并安装缺失的so(注意版本),否则`go build`时会报错,比如:
 ```
@@ -187,3 +188,15 @@ func main() {
 collect2: error: ld returned 1 exit status
 ```
 当然最可靠和方便的方法是在构建引入so的电脑上运行`go build`,省事又省力.
+
+### could not determine kind of name for C.CString
+```
+$ go build
+../../git/go/src/pmanage/manager.go:234:12: could not determine kind of name for C.CString
+../../git/go/src/pmanage/manager.go:407:3: could not determine kind of name for C.ai_process
+../../git/go/src/pmanage/manager.go:125:10: could not determine kind of name for C.libai_init
+../../git/go/src/pmanage/manager.go:241:2: could not determine kind of name for C.sync_process
+../../git/go/src/pmanage/manager.go:237:2: could not determine kind of name for C.update_call_status
+```
+
+引入的"xxx.h"的某些定义函数缺少结尾的`;`.

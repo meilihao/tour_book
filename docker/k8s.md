@@ -1,6 +1,7 @@
 # k8s
 
 ## doc
+- [Kubernetes v1.10.x HA 全手动安装教程](https://www.kubernetes.org.cn/3814.html)
 - [Kubernetes指南](https://feisky.gitbooks.io/kubernetes/)
 - [Kubernetes中文手册](https://www.kubernetes.org.cn/docs)
 - [k8s yaml定义](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.9/)
@@ -66,6 +67,12 @@ is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*')
 
 不知rancher/agent怎么获取hostname的, 我用`hostnamectl`和`hostname`工具都修改了本机的hostname(`chen-PC`->`chen-pc`), 删除原有node的rancher/agent,重新注册就OK了.
 
+1. Runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:docker: network plugin is not ready: cni config uninitialized
+未知,rancher自行解决了.
+
+1. error: the server doesn't have a resource type "cronjobs"
+`.kube/config`应在`$HOME`下.
+
 ### Kubernetes通过yaml配置文件创建实例时总是重新pull镜像
 参考: [Kubernetes通过yaml配置文件创建实例时不使用本地镜像的原因](https://www.58jb.com/html/154.html)
 
@@ -91,6 +98,30 @@ pod是k8s的基本处理单元, 其包含一个特殊的Pause容器(即根容器
 
 ### service
 为一组具有相同功能的容器应用提供一个统一的入口, 并将请求进行负载均衡地分发到pod上, 其屏蔽了pod ip的变化, 并通过Label来关联pod.
+
+### 如何访问
+参考:
+1. [Kubernetes的三种外部访问方式：NodePort、LoadBalancer 和 Ingress](http://dockone.io/article/4884)
+1. [Publishing services - service types](https://kubernetes.io/docs/concepts/services-networking/service/)
+
+Kubernetes 暴露服务的方式目前只有三种：LoadBlancer Service、NodePort Service、Ingress.
+
+- NodePort
+NodePort 服务通过外部访问服务的最基本的方式. 在集群的每个node上暴露一个端口，然后将这个端口映射到某个具体的service来实现的，虽然每个node的端口有很多(默认的取值范围是 30000-32767)，但是由于安全性和易用性(服务多了就乱了，还有端口冲突问题)实际使用可能并不多.
+- HostPort
+它直接将容器的端口与所调度的node上的端口路由，这样用户就可以通过宿主机的IP加上来访问Pod了. 这样做有个缺点，因为Pod重新调度的时候该Pod被调度到的宿主机可能会变动，这样就变化了，用户必须自己维护一个Pod与所在宿主机的对应关系
+- ClusterIP
+ClusterIP 服务是 Kubernetes **默认**的服务类型. 如果你在集群内部创建一个服务，则**在集群内部的其他应用程序可以进行访问，但是不具备集群外部访问的能力**.
+clusterIP 是一个虚拟的IP， cluster ip 仅作用于kubernetes service 这个对象.
+在k8s上是由kubernetes proxy负责实现cluster ip路由和转发.
+- Load Balancer
+LoadBalancer 服务是暴露服务至互联网最标准的方式, 其只能在service上定义, 而且所有通往指定端口的流量都会被转发到对应的服务. 它没有过滤条件，没有路由, 这意味着你几乎可以发送任何种类的流量到该服务，像 HTTP，TCP，UDP，Websocket，gRPC 或其它任意种类.
+- Ingress
+使用nginx等开源的反向代理负载均衡器实现对外暴露服务，可以理解Ingress就是用于配置域名转发，在nginx中就类似upstream，它与ingress-controller结合使用，通过ingress-controller监控到pod及service的变化，动态地将ingress中的转发信息写到诸如nginx、apache、haproxy等组件中实现方向代理和负载均衡.
+
+Kubernetes Ingress提供了负载平衡器的典型特性：HTTP路由，粘性会话，SSL终止，SSL直通，TCP和UDP负载平衡等。目前并不是所有的Ingress controller都实现了这些功能，需要查看具体的Ingress controller文档, 而且Ingress controller直接将流量转发给后端Pod，不需再经过kube-proxy的转发，比LoadBalancer方式更高效.
+- targetPort
+targetPort 是Pod上的端口.
 
 ## cmd
 - `kubectl logs -f POD-NAME` # 获取pod日志
