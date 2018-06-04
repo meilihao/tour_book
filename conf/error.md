@@ -146,3 +146,18 @@ curl对https服务端证书的检查未通过,解决:
 
 ### vmware-hostd 占用 443
 vmware workstation: Edit -> Preferences -> Shared VMs -> Disable "Enable virtual machine sharing and remote access".
+
+### Ubuntu 无法修改 file-max
+场景:
+1. `ulimit -n 65535`报`ulimit: open files: 无法修改 limit 值: 不允许的操作`
+1. `echo "fs.file-max = 65535" >> /etc/sysctl.conf`后再运行`sysctl -p`不生效
+1. 向`/etc/security/limits.conf`添加
+```
+* soft nofile 65535
+* hard nofile 65535
+```
+重启后不生效
+
+有时候经过上面的更改后使用ulimit -n会看到默认值并没有改变，我在ubuntu 18.04中就遇到这种情况.
+
+需要在`/etc/pam.d/common-session`中加入`session required pam_limits.so`，再使用su username登录当前用户，然后 就可以使用ulimit命令了. 原因可能是gnome terminal默认是none-login的，所以我们在配置文件中的修改并没有影响到当前的terminal.
