@@ -21,6 +21,7 @@
  - [Thrift RPC 使用指南实战(附golang&PHP代码)](http://blog.csdn.net/liuxinmingcode/article/details/45696237)
  - [Golang通过Thrift框架完美实现跨语言调用](http://blog.csdn.net/pkueecser/article/details/48004631)
 - [Go使用gRPC与Protocol Buffers构建高性能API 服务](https://xiequan.info/go%E4%BD%BF%E7%94%A8grpc%E4%B8%8Eprotocol-buffers%E6%9E%84%E5%BB%BA%E9%AB%98%E6%80%A7%E8%83%BDapi-%E6%9C%8D%E5%8A%A1/)
+- [Go-gRPC 实践指南/案例](https://legacy.gitbook.com/book/jergoo/go-grpc-practice-guide/details)
 
 ## 性能
 - [Go程序调试、分析与优化](http://tonybai.com/2015/08/25/go-debugging-profiling-optimization/)

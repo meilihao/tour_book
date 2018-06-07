@@ -104,7 +104,7 @@ Unity Tweak Tool 是一个专为Ubuntu Unity 桌面环境的配置工具，允�
 
 ## terminix,推荐
 - [oh-my-fish*](https://github.com/oh-my-fish/oh-my-fish)
-- [terminix](https://github.com/gnunn1/terminix)
+- [terminix](https://github.com/gnunn1/terminix), 推荐使用配色方案`Monokai Dark`.
 
 ## tmux
 
