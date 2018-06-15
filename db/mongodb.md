@@ -18,4 +18,6 @@ mongos> db.auth("root","123456")
 1 // 输出 1 表示验证成功
 ```
 
+> aliyun mongodb的host中包含`pub`指允许在外网连接,没有则表示仅在aliyun内网使用.
+
 ## Error
