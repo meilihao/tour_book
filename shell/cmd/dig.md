@@ -65,3 +65,6 @@ $ dig # 查询root dns
 $ dig . # 查询本地DNS服务器
 $ dig @223.5.5.5 www.baidu.com A
 ```
+
+## 参考
+- [DNS 查询之 10 个 dig 详细例子](https://www.tuicool.com/articles/MvMrI36)

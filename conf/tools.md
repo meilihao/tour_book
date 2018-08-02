@@ -236,7 +236,7 @@ $ mkdir -p /home/chen/tmpfs
 tmpfs /home/chen/tmpfs tmpfs size=256m 0 0
 ```
 
-## linux弹窗
+## terminal弹窗
 1. `zenity --info --text "要发送的消息"`
 zenity其实是GNOME项目为命令行程序以及Shell脚本程序提供的一套对话框交互工具.
 1. `notify-send ["标题"] "信息"`

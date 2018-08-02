@@ -120,3 +120,7 @@ ECDHE-ECDSA-AES128-SHA # TLSv1 for win7,旧Android
                       '"$http_referer" '
                       '"$http_user_agent" "$http_x_forwarded_for"';
 ```
+
+### Nginx配置网站适配PC和手机
+- [Nginx配置网站适配PC和手机](https://blog.csdn.net/xiao__gui/article/details/46680863)
+- [detectmobilebrowsers](http://detectmobilebrowsers.com/)

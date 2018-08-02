@@ -200,3 +200,6 @@ $ go build
 ```
 
 引入的"xxx.h"的某些定义函数缺少结尾的`;`.
+
+### could not determine kind of name for C.free
+添加头文件: `#include <stdlib.h>`
