@@ -92,3 +92,15 @@ pg_dump -h localhost -U postgres -f xxx.sql
 // 导入到newdatabase
 psql -d newdatabase -U postgres -f mydatabase.sql
 ```
+
+### pgadmin 安装
+方式:
+1. 官方docker镜像
+2. Python Wheel
+
+Python Wheel方式:
+```shell
+$ sudo pip3 install ./pgadmin4-3.2-py2.py3-none-any.whl
+$ cd /usr/local/lib/python3.6/dist-packages/pgadmin4
+$ sudo python3 ./pgAdmin4.py
+```

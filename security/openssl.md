@@ -2,6 +2,10 @@
 
 参考:
 - [OpenSSL](https://netkiller.github.io/cryptography/openssl/index.html)
+- [SSL/TLS CipherSuite 介绍](https://blog.helong.info/blog/2015/01/23/ssl_tls_ciphersuite_intro/)
+- [cfssl创建证书](https://www.centos.bz/2017/09/k8s%E9%83%A8%E7%BD%B2%E4%B9%8B%E4%BD%BF%E7%94%A8cfssl%E5%88%9B%E5%BB%BA%E8%AF%81%E4%B9%A6/)
+- [Kubernetes安装之证书验证](https://jimmysong.io/posts/kubernetes-tls-certificate/)
+- [TLS 网站/API 安全评估](https://myssl.com/)
 
 ### openssl ciphers
 CipherSuite 包含多种技术，例如认证算法（Authentication）、加密算法（Encryption）、消息认证码算法（Message Authentication Code，简称为 MAC）、密钥交换算法（Key Exchange）和密钥衍生算法（Key Derivation Function）.
