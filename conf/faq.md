@@ -56,3 +56,30 @@ $ sudo apt install google-chrome-stable
 ```
 
 > 参考: https://www.ubuntuupdates.org/ppa/google_chrome?dist=stable
+
+## linux登录后应用自启动
+```sh
+$ ~/.c/autostart pwd
+/home/chen/.config/autostart
+$ ~/.c/autostart cat Zoiper5.desktop
+[Desktop Entry]
+Encoding=UTF-8
+Name=Zoiper5
+Comment=VoIP Softphone
+Exec=/home/chen/opt/Zoiper5/zoiper
+Terminal=false
+Icon=
+Type=Application
+$ ~/.c/autostart cat alarm-clock-applet.desktop
+[Desktop Entry]
+Name=Alarm Clock
+Name[zh_CN]=闹钟
+Comment=Wake up in the morning
+Comment[zh_CN]=早晨唤醒
+Icon=alarm-clock
+Exec=alarm-clock-applet --hidden
+Terminal=false
+Type=Application
+Categories=GNOME;GTK;Utility;
+X-Ubuntu-Gettext-Domain=alarm-clock
+```
