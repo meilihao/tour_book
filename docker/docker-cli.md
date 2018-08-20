@@ -20,8 +20,9 @@
 获取docker的实时事件  : docker events
 容器运行日志 : docker logs [OPTIONS] CONTAINER
 查看镜像、容器、数据卷所占用的空间: docker system df
-查看容器的存储层变化: docker diff CONTAINER
+查看容器的存储层变化: docker diff CONTAINER # 最上层(读写层)和其他层(只读层)的差异
 查看当前映射的端口配置: docker port CONTAINER
+docker环境信息: docker info
 
 ### 创建镜像
 

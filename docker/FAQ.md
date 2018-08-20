@@ -4,10 +4,15 @@ linux kernel没有aufs驱动,试试其他docker storage-driver,比如"docker dae
 
 ## 进入运行中的docker容器
 [进入容器](https://yeasy.gitbooks.io/docker_practice/content/container/enter.html):
-- `docker attach`
-使用 attach 命令有时候并不方便。当多个窗口同时 attach 到同一个容器的时候，所有窗口都会同步显示。当某个窗口因命令阻塞时,其他窗口也无法执行操作了
+- `docker attach`,通过 docker attach 可以 attach 到**容器启动命令的终端**
+使用 attach 命令有时候并不方便。当多个窗口同时 attach 到同一个容器的时候，所有窗口都会同步显示。当某个窗口因命令阻塞时,其他窗口也无法执行操作了.
+且如果你用CTRL-c或`exit xxx`来退出，同时这个信号会kill该容器,但可通过 Ctrl+p 然后 Ctrl+q 组合键退出 attach 终端
 - `docker exec`
 - nsenter工具
+
+attach 与 exec 主要区别如下:
+1. attach 直接进入容器 启动命令 的终端，不会启动新的进程;exec 则是在容器中打开新的终端，并且可以启动新的进程
+2. 如果想直接在终端中查看启动命令的输出，用 attach；其他情况使用 exec
 
 ## save/load和export/import 区别
 export命令用于持久化容器(即容器快照);save命令用于持久化镜像(即镜像快照).
