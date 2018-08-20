@@ -1,6 +1,5 @@
 [
-    { "keys": ["ctrl+left_button"], "command": "godef" },
-    { "keys": ["ctrl+w"], "command": "jump_forward"},
-    { "keys": ["ctrl+e"], "command": "jump_back"}
+    { "keys": ["ctrl+w"], "command": "godef"},
+    { "keys": ["ctrl+e"], "command": "godef_prev"}
 ]
 

@@ -8,7 +8,7 @@
 
 ## 选项
 
-- -C : 执行归档动作前变更工作目录到指定模板
+- -C : 执行归档动作前变更工作目录到指定路径
 - -c : 建立压缩档案
 - -f : 指定要操作的归档文件名
 - -p : 保留原文件的访问权限
@@ -71,4 +71,5 @@ root/anaconda-ks.cfg //释放 tar 文件中的指定文件或目录
 tar -zcpvf myarchive.tar.gz /etc/ /opt/
 tar -zcpvf myarchive.tgz /etc/ /opt/ --exclude=*.html //排除指定文件或类型后创建 tar 文件
 tar -tvf myarchive.tar.gz  | more //列出 .tar.gz 文件中的内容
+tar czf xx.tgz -C /xxx/xxx A //使用-C指定相对路径
 ```

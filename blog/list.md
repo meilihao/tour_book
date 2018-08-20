@@ -53,6 +53,7 @@
 - [eBPF 简史](https://linux.cn/article-9032-1.html)
 - [Linux 中的 DTrace ：BPF 进入 4.9 内核](https://linux.cn/article-8038-1.html)
 - [动态追踪技术：Linux喜迎DTrace](https://riboseyim.github.io/2016/11/26/DTrace/)
+- [程序员应该知道的延迟](https://people.eecs.berkeley.edu/~rcs/research/interactive_latency.html)
 ## kernel
 - [内核如何管理内存](https://linux.cn/article-9393-1.html)
 

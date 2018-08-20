@@ -5,8 +5,7 @@ go 环境变量配置
 #golang
 export GOROOT=/opt/go
 export GOPATH=/home/chen/git/go
-export GOBIN=/home/chen/gobin
-export PATH=$PATH:$GOROOT/bin:$GOPATH/GOBIN
+export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 ```
 >### go的环境变量
 >- GOROOT：⽤于设定Go语⾔的根⽬录；标准命令的可执⾏⽂件在`$GOROOT/bin`中，标准库的源码⽂件在`$GOROOT/src`中，标准库的归档⽂件在`$GOROOT/pkg`中。

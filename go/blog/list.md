@@ -21,6 +21,7 @@
  - [Thrift RPC 使用指南实战(附golang&PHP代码)](http://blog.csdn.net/liuxinmingcode/article/details/45696237)
  - [Golang通过Thrift框架完美实现跨语言调用](http://blog.csdn.net/pkueecser/article/details/48004631)
 - [Go使用gRPC与Protocol Buffers构建高性能API 服务](https://xiequan.info/go%E4%BD%BF%E7%94%A8grpc%E4%B8%8Eprotocol-buffers%E6%9E%84%E5%BB%BA%E9%AB%98%E6%80%A7%E8%83%BDapi-%E6%9C%8D%E5%8A%A1/)
+- [Go-gRPC 实践指南/案例](https://legacy.gitbook.com/book/jergoo/go-grpc-practice-guide/details)
 
 ## 性能
 - [Go程序调试、分析与优化](http://tonybai.com/2015/08/25/go-debugging-profiling-optimization/)
@@ -47,6 +48,7 @@
 - [像牛人一样改进你的Go代码](http://colobu.com/2017/06/27/Lint-your-golang-code-like-a-mad-man/)
 - [理解 channels - Kavya Joshi](https://blog.lab99.org/post/golang-2017-10-04-video-understanding-channels.html#jian-dan-de-fa-song-jie-shou)
 - [*Go性能监控/分析工具](http://johng.cn/go%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7%EF%BC%9Ago-tool-pprof/)
+- [全面总结： Golang 调用 C/C++，例子式教程](https://juejin.im/post/5a62f7cff265da3e4c07e0ab)
 
 ## 教程
 - [Go by Example 中文](http://gobyexample.everyx.in/)
@@ -75,3 +77,6 @@
 - [volatiletech/sqlboiler](https://github.com/volatiletech/sqlboiler)
 - [0xAX/go-algorithms](https://github.com/0xAX/go-algorithms)
 - [dropbox/godropbox](https://github.com/dropbox/godropbox)
+
+## tools
+- [Go数据结构完美打印](https://github.com/shivamMg/ppds)

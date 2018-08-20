@@ -285,3 +285,7 @@ tpm资料,[TPM安全芯片](http://baike.baidu.com/view/687208.htm),[Trusted Pla
 # 编辑器
 ## Ubuntu修改默认编辑器
 `sudo update-alternatives --config editor`
+
+# 快捷键
+1. `super + shift + tab`: 重启窗口管理器
+1. `sudo systemctl restart lightdm`: 注销用户

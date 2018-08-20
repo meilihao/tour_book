@@ -76,12 +76,13 @@ Unity Tweak Tool 是一个专为Ubuntu Unity 桌面环境的配置工具，允�
 
 ## shadowsocks
 
-- [linux-ubuntu使用shadowsocks客户端配置](https://aitanlu.com/ubuntu-shadowsocks-ke-hu-duan-pei-zhi.html)
 - [shadowsocks-rss,推荐](github.com/breakwa11/shadowsocks-rss)和[shadowsocksr-libev,支持混淆](https://github.com/shadowsocksr-backup/shadowsocksr-libev)
+- [如何在ubuntu上安装使用SSR](https://cgsss.net/help/?/article/14)
 - [privoxy]
 - [SwitchyOmega](github.com/FelisCatus/SwitchyOmega)
 
 > **shadowsocksr-libev的配置文件里没有`local_port`项会导致程序启动后就立即退出.**
+> systemd run(`ss-local -c /home/chen/.config/cgsss.json`) get "ERROR: Invalid config path": xxx.service's "[Service]" add "User=chen", 这里用"User=root"是没用的，这应该是systemd的问题.
 
 # 翻译
 
@@ -103,7 +104,7 @@ Unity Tweak Tool 是一个专为Ubuntu Unity 桌面环境的配置工具，允�
 
 ## terminix,推荐
 - [oh-my-fish*](https://github.com/oh-my-fish/oh-my-fish)
-- [terminix](https://github.com/gnunn1/terminix)
+- [terminix](https://github.com/gnunn1/terminix), 推荐使用配色方案`Monokai Dark`.
 
 ## tmux
 
@@ -235,7 +236,7 @@ $ mkdir -p /home/chen/tmpfs
 tmpfs /home/chen/tmpfs tmpfs size=256m 0 0
 ```
 
-## linux弹窗
+## terminal弹窗
 1. `zenity --info --text "要发送的消息"`
 zenity其实是GNOME项目为命令行程序以及Shell脚本程序提供的一套对话框交互工具.
 1. `notify-send ["标题"] "信息"`

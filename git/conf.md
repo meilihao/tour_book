@@ -1,4 +1,23 @@
 
+## git config init
+```
+# ~/.gitconfig
+[core]
+	editor = vim
+	quotepath = false
+	filemode = false
+[user]
+	name = meilihao
+	email = 563278383@qq.com
+[alias]
+	br = branch
+	ci = commit
+	co = checkout
+	df = diff
+	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+	st = status
+```
+
 ### prompt/提示
 1. 下载git prompt
 下载`github.com/git/git/tree/master/contrib/completion`的`git-completion.bash`和`git-prompt.sh`到`~/.config`
