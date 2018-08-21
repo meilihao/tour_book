@@ -96,6 +96,7 @@
 - [Elasticsearch 架构以及源码概览](http://mp.weixin.qq.com/s?__biz=MzA4NjgwMDQ0OA==&mid=2652445487&idx=1&sn=fb99fac1db2ad8120e98f00165323b2a)
 - [TiDB 源码阅读系列文章（一）序](https://mp.weixin.qq.com/s/z3OluFqtopJUYmVib0HvSQ)
 - [我是怎么阅读kubernetes源代码的？](http://dockone.io/article/895)
+- [linux kernel 4.18.3 源码阅读](https://elixir.bootlin.com/linux/v4.18.3/source)
 
 ## db
 - [时序数据库InfluxDB使用详解](http://www.jianshu.com/p/a1344ca86e9b)
