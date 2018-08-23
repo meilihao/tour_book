@@ -12,8 +12,6 @@ CipherSuite 包含多种技术，例如认证算法（Authentication）、加密
 
 SSL 的 CipherSuite 协商机制具有良好的扩展性，每个 CipherSuite 都需要在 IANA 注册，并被分配两个字节的标志。全部 CipherSuite 可以在 IANA 的 [TLS Cipher Suite Registry](https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-4) 页面查看
 
-在配置 CipherSuite 时，请务必参考权威文档，如：[Mozilla 的推荐配置](https://wiki.mozilla.org/Security/Server_Side_TLS#Recommended_configurations)、[CloudFlare 使用的配置](https://github.com/cloudflare/sslconfig/blob/master/conf)
-
 参考:
 - [The Basics of How to Work with Cipher Settings](https://drjohnstechtalk.com/blog/2011/09/the-basics-of-how-to-work-with-ciphers/)
 - [TLS协议分析 与 现代加密通信协议设计](http://ju.outofmemory.cn/entry/210548)

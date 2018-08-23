@@ -74,23 +74,96 @@ $ sudo vim /etc/nginx/nginx.conf # 在文件开始处加入"load_module modules/
 
 ### 查看nginx的版本及编译参数
 ```sh
-# 官方mainline的编译参数
+# 获取官方nginx的编译参数
 $ sudo nginx -V
-nginx version: nginx/1.13.5
-built by gcc 4.8.5 20150623 (Red Hat 4.8.5-11) (GCC) 
-built with OpenSSL 1.0.1e-fips 11 Feb 2013
-TLS SNI support enabled
-configure arguments: --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib64/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock --http-client-body-temp-path=/var/cache/nginx/client_temp --http-proxy-temp-path=/var/cache/nginx/proxy_temp --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp --http-scgi-temp-path=/var/cache/nginx/scgi_temp --user=nginx --group=nginx --with-compat --with-file-aio --with-threads --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-mail --with-mail_ssl_module --with-stream --with-stream_realip_module --with-stream_ssl_module --with-stream_ssl_preread_module --with-cc-opt='-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -fPIC' --with-ld-opt='-Wl,-z,relro -Wl,-z,now -pie'
+....
+configure arguments: --prefix=/etc/nginx ...
+...
+#编译 nginx
+$./configure --with-openssl=../openssl ...
 ```
 
-自编译追加参数:
-- 指定openssl版本,启用tls1.3
+编译过程可参考[Nginx 编译安装](https://www.dcc.cat/nginx/).
+
+问题:
+1. 官方说openssl1.1.1已默认支持tls1.3,但我用OpenSSL 1.1.1-pre9,OpenSSL 1.1.1-pre10,直接编译出来的nginx均不支持TLSv1.3,必须打上[相应的openssl-equal-preX_ciphers.patch](https://github.com/hakasenyang/openssl-patch)才可以.
+1. `nginx: [emerg] SSL_CTX_set_cipher_list("TLS13-AES-128-GCM-SHA256 TLS13-CHACHA20-POLY1305-SHA256 TLS13-AES-256-GCM-SHA384") failed (SSL:)`的错误原因: [TLS 1.3 相关的 ciphers 的名字变化](https://www.v2ex.com/t/456622).
+
+
+### 使用boringssl编译nginx
+参考:
+- [Nginx 启用 BoringSSL](https://sometimesnaive.org/article/64)
+
+编译boringssl:
 ```
-# 等nginx编译完成后,到openssl里运行`make test`,检查一下tls1.3是否确实启用了.
---with-openssl=../openssl --with-openssl-opt='enable-tls1_3'
+# 安装编译所需依赖
+# BoringSSL 需要 Golang 支持
+apt install -y build-essential make cmake golang
+
+# 把 BoringSSL 源码克隆下来
+git clone --depth=1 https://boringssl.googlesource.com/boringssl
+
+# 编译开始
+cd boringssl
+mkdir build && cd build
+env CFLAGS=-fPIC CXXFLAGS=-fPIC cmake -DCMAKE_BUILD_TYPE=Release  ..
+make
+cd ..
+mkdir -p .openssl/lib && cd .openssl && ln -s ../include .
+cd ..
+cp build/crypto/libcrypto.a build/ssl/libssl.a .openssl/lib
+cd ..
 ```
-> 注意请使用**tls1.3-draft-18分支**而不是master分支或tls1.3-draft-19分支,因为到**2017.9.19**为止浏览器还不支持tls1.3的最新草案,
-> 所以只启用tls1.3时用openssl s_client测试会成功,但真实浏览器请求却会失败报`ERR_SSL_VERSION_OR_CIPHER_MISMATCH`.
+
+编译nginx:
+```sh
+./configure  --with-openssl=../boringssl ...
+# 在 configure 后，要先 touch 一下，才能继续 make
+touch ../boringssl/.openssl/include/openssl/ssl.h
+make
+sudo make install
+```
+
+效果:
+```sh
+~/tls/nginx-1.15.2/objs$ ./nginx -V
+nginx version: nginx/1.15.2
+built by gcc 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.10) 
+built with OpenSSL 1.1.0 (compatible; BoringSSL) (running with BoringSSL)
+...
+```
+> [boringssl支持tls1.3的path, 已验证](https://github.com/S8Cloud/sslpatch/blob/master/BoringSSL-enable-TLS1.3.patch)
+
+验证:
+```
+$ env LD_LIBRARY_PATH=/home/chen/opt/openssl-OpenSSL_1_1_1-pre9 ./openssl s_client -connect openhello.net:443 -tls1_3
+...
+---
+New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384 // TLSv1.3 连接成功
+Server public key is 256 bit
+Secure Renegotiation IS NOT supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+Early data was not sent
+Verify return code: 20 (unable to get local issuer certificate)
+---
+...
+```
+
+更好的验证工具:[testssl.sh, 需要相应的openssl版本支持](https://github.com/drwetter/testssl.sh)
+
+其他问题:
+```
+$ sudo nginx -t
+nginx: [warn] "ssl_stapling" ignored, not supported
+...
+```
+
+#### boringssl/.openssl/lib/libssl.a: error adding symbols: Bad value
+```fish
+$ env CFLAGS=-fPIC CXXFLAGS=-fPIC cmake -DCMAKE_BUILD_TYPE=Release  ..
+```
 
 ### ssl_ciphers选择
 筛选命令(只包含tls1.2):
@@ -98,8 +171,8 @@ configure arguments: --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --modules-p
 $ openssl ciphers -V 'ALL'|grep "1.2"|egrep -v "Kx=DH|Kx=PSK|Kx=ECDHEPSK|RSAPSK|Camellia"|egrep -v "Enc=AESGCM\(256\)|Enc=AESCCM\(256\)|Enc=AESCCM8"|grep -v "Mac=SHA384"|egrep -v "Enc=AES\(256\)"|column  -t 
 ```
 ```
-TLS13-AES-128-GCM-SHA256 TLS13-CHACHA20-POLY1305-SHA256 TLS13-AES-128-CCM-SHA256 TLS13-AES-128-CCM-8-SHA256 TLS13-AES-256-GCM-SHA384 \ # tls1.3
-ECDHE-ECDSA-AES128-GCM-SHA256 ECDHE-ECDSA-CHACHA20-POLY1305 ECDHE-ECDSA-AES128-CCM ECDHE-ECDSA-AES128-CCM8 \ # ECDHE+ECDSA+AEAD
+TLS_AES_128_GCM_SHA256 TLS_CHACHA20_POLY1305_SHA256 TLS_AES_256_GCM_SHA384 \ # tls1.3
+ECDHE-ECDSA-AES128-GCM-SHA256 ECDHE-ECDSA-CHACHA20-POLY1305 \ # ECDHE+ECDSA+AEAD
 ECDHE-RSA-AES128-GCM-SHA256 ECDHE-RSA-CHACHA20-POLY1305 \ # ECDHE+RSA+AEAD
 ECDHE-ECDSA-AES128-SHA256 ECDHE-RSA-AES128-SHA256 # ECDHE+!AEAD
 ECDHE-ECDSA-AES128-SHA ECDHE-RSA-AES128-SHA # TLSv1 for win7,旧Android
@@ -107,11 +180,14 @@ ECDHE-ECDSA-AES128-SHA ECDHE-RSA-AES128-SHA # TLSv1 for win7,旧Android
 
 通过[ssllabs](https://www.ssllabs.com/ssltest/analyze.html)对比发现`ECDHE-ECDSA-*`和`ECDHE-RSA-*`支持的设备跨度是一样的,因此仅保留`ECDSA`即可:
 ```
-TLS13-AES-128-GCM-SHA256 TLS13-CHACHA20-POLY1305-SHA256 TLS13-AES-128-CCM-SHA256 TLS13-AES-128-CCM-8-SHA256 TLS13-AES-256-GCM-SHA384 \ # tls1.3
-ECDHE-ECDSA-AES128-GCM-SHA256 ECDHE-ECDSA-CHACHA20-POLY1305 ECDHE-ECDSA-AES128-CCM ECDHE-ECDSA-AES128-CCM8 \ # ECDHE+ECDSA+AEAD
+TLS_AES_128_GCM_SHA256 TLS_CHACHA20_POLY1305_SHA256 TLS_AES_256_GCM_SHA384 \ # tls1.3
+ECDHE-ECDSA-AES128-GCM-SHA256 ECDHE-ECDSA-CHACHA20-POLY1305 \ # ECDHE+ECDSA+AEAD
 ECDHE-ECDSA-AES128-SHA256 # ECDHE+!AEAD
 ECDHE-ECDSA-AES128-SHA # TLSv1 for win7,旧Android
 ```
+
+> 在配置 CipherSuite 时，请务必参考权威文档，如：[CloudFlare 使用的配置](https://github.com/cloudflare/sslconfig/blob/master/conf);[Mozilla 的推荐配置](https://wiki.mozilla.org/Security/Server_Side_TLS#Recommended_configurations)
+> ssl_ecdh_curve选择: `ssl_ecdh_curve   X25519:P-256:P-384:P-224:P-521;`
 
 ### 日志优化
 ```sh
