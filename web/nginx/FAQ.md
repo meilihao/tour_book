@@ -156,7 +156,7 @@ Verify return code: 20 (unable to get local issuer certificate)
 其他问题:
 ```
 $ sudo nginx -t
-nginx: [warn] "ssl_stapling" ignored, not supported
+nginx: [warn] "ssl_stapling" ignored, not supported # 可参考[从无法开启 OCSP Stapling 说起](https://toutiao.io/posts/xs1d1d/preview)
 ...
 ```
 
