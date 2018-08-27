@@ -37,6 +37,8 @@
 - [HTTPS 理论详解与实践*](https://segmentfault.com/a/1190000004985253)
 - [HTTPS与SSL（下篇）*](http://www.jianshu.com/p/c03f47e7b9de)
 - [修复正向保密(PFS)](https://linuxstory.org/tls-session-resumption/)
+- [TLS 1.3科普——新特性与协议实现](https://zhuanlan.zhihu.com/p/28850798)
+- [防止中间人攻击原理 - 证书](https://imququ.com/post/how-to-decrypt-https.html)
 
 ## 证书
 - [数字证书及 CA 的扫盲介绍](2015_05_23_004.md)
@@ -51,6 +53,7 @@
 - [openssl编程](read.pudn.com/downloads119/doc/comm/504076/openssl编程.doc)
 - [如何创建ECC证书 for nginx](https://www.digitalocean.com/community/tutorials/how-to-create-an-ecc-certificate-on-nginx-for-debian-8)
 - [*网络安全的基础 - 数字证书及签名](http://blog.kamidox.com/security-basic-cert-sign.html)
+- [证书透明度是什么？它是怎么工作的?](https://razeen.me/post/what-ct-is-and-how-it-works.html)
 
 ## 校验
 - [扫盲文件完整性校验——关于散列值和数字签名](2015_05_23_006.md)
