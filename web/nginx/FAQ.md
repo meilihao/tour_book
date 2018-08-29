@@ -94,6 +94,12 @@ $./configure --with-openssl=../openssl ...
 参考:
 - [Nginx 启用 BoringSSL](https://sometimesnaive.org/article/64)
 
+启用boringssl tls 1.3(git commit 2556f8ba60347356f078c753eed2cc65caf5e446,20180829):
+```
+vim boringssl/ssl/internal.h
+# 将两处`tls13_variant_t tls13_variant = xxx;`的值设为`tls13_all`
+```
+
 编译boringssl:
 ```
 # 安装编译所需依赖
@@ -114,6 +120,7 @@ cd ..
 cp build/crypto/libcrypto.a build/ssl/libssl.a .openssl/lib
 cd ..
 ```
+> 其他path: [boringssl支持tls1.3的path, 已验证(git commit 23849f0)](https://github.com/S8Cloud/sslpatch/blob/master/BoringSSL-enable-TLS1.3.patch)
 
 编译nginx:
 ```sh
@@ -127,12 +134,11 @@ sudo make install
 效果:
 ```sh
 ~/tls/nginx-1.15.2/objs$ ./nginx -V
-nginx version: nginx/1.15.2
+nginx version: nginx/1.15.3
 built by gcc 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.10) 
 built with OpenSSL 1.1.0 (compatible; BoringSSL) (running with BoringSSL)
 ...
 ```
-> [boringssl支持tls1.3的path, 已验证](https://github.com/S8Cloud/sslpatch/blob/master/BoringSSL-enable-TLS1.3.patch)
 
 验证:
 ```
@@ -154,10 +160,27 @@ Verify return code: 20 (unable to get local issuer certificate)
 更好的验证工具:[testssl.sh, 需要相应的openssl版本支持](https://github.com/drwetter/testssl.sh)
 
 其他问题:
+1.
 ```
 $ sudo nginx -t
 nginx: [warn] "ssl_stapling" ignored, not supported # 可参考[从无法开启 OCSP Stapling 说起](https://toutiao.io/posts/xs1d1d/preview)
 ...
+```
+2. 
+```
+nginx配置:
+```
+ssl_protocols TLSv1.3;
+ssl_ciphers 'TLS_AES_128_GCM_SHA256 TLS_CHACHA20_POLY1305_SHA256 TLS_AES_256_GCM_SHA384';
+```
+报错:
+```
+SSL_CTX_set_cipher_list("TLS_AES_128_GCM_SHA256 TLS_CHACHA20_POLY1305_SHA256 TLS_AES_256_GCM_SHA384") failed (SSL: error:100000b1:SSL routines:OPENSSL_internal:NO_CIPHER_MATCH)
+```
+
+起先一直以为是boringssl编译出了问题,偶然拷贝了以前的配置发现ok. 经测试,只要添加几个其他TLSv1.x的cipher suite即可解决, 真是奇怪的问题.比如:
+```
+ssl_ciphers 'TLS_AES_128_GCM_SHA256 TLS_CHACHA20_POLY1305_SHA256 TLS_AES_256_GCM_SHA384 ECDHE-ECDSA-AES128-GCM-SHA256';
 ```
 
 #### boringssl/.openssl/lib/libssl.a: error adding symbols: Bad value
