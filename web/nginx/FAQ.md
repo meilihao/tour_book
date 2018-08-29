@@ -122,7 +122,7 @@ cd ..
 ```
 > 其他path: [boringssl支持tls1.3的path, 已验证(git commit 23849f0)](https://github.com/S8Cloud/sslpatch/blob/master/BoringSSL-enable-TLS1.3.patch)
 
-编译nginx:
+编译nginx 1.15.3:
 ```sh
 ./configure  --with-openssl=../boringssl ...
 # 在 configure 后，要先 touch 一下，才能继续 make
@@ -133,7 +133,7 @@ sudo make install
 
 效果:
 ```sh
-~/tls/nginx-1.15.2/objs$ ./nginx -V
+~/tls/nginx-1.15.3/objs$ ./nginx -V
 nginx version: nginx/1.15.3
 built by gcc 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.10) 
 built with OpenSSL 1.1.0 (compatible; BoringSSL) (running with BoringSSL)
