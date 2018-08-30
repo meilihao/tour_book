@@ -182,6 +182,7 @@ SSL_CTX_set_cipher_list("TLS_AES_128_GCM_SHA256 TLS_CHACHA20_POLY1305_SHA256 TLS
 ```
 ssl_ciphers 'TLS_AES_128_GCM_SHA256 TLS_CHACHA20_POLY1305_SHA256 TLS_AES_256_GCM_SHA384 ECDHE-ECDSA-AES128-GCM-SHA256';
 ```
+ps: `2018.8.29`收到boringssl team的反馈邮件`TLS 1.3 ciphers in BoringSSL aren't configurable. The "ssl_ciphers" list only configures TLS 1.2.`.
 
 #### boringssl/.openssl/lib/libssl.a: error adding symbols: Bad value
 ```fish

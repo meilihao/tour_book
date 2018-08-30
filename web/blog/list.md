@@ -32,6 +32,7 @@
  - [CSS参考手册](https://github.com/doyoe/css-handbook)
 - [15个来自Codepen的令人赞叹的CSS动画例子](http://info.9iphp.com/15-inspiring-examples-of-css-animation-on-codepen/)
 - [微博移动样式框架Marvel.css开发心得](http://uxfan.com/fe/css/2016/01/19/marvel.html)
+- [实现canvas里图形的拖拽](https://github.com/smileyby/canvasDrag)
 
 ## javascript
  - [React 入门实例教程](http://www.ruanyifeng.com/blog/2015/03/react.html)
