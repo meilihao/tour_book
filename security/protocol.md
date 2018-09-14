@@ -6,6 +6,14 @@
 - rsa握手: 解密client 生成的encrypted premaster secret
 - dh握手: 签名server dh parameter(x25519是其pub key)
 
-> tls 1.3 握手过程被加密待解密(wireshark2.6.2还不行)
-
 ## ssh v2
+
+## FAQ
+### 查看tls 1.3流量
+wireshark:
+打开【编辑】-【首选项】-【Protocols】->【SSL】，然后设置 【(Pre)-Master-Secret log filename】, 重启wireshark.
+
+浏览器(设置SSLKEYLOGFILE):
+```sh
+$ env SSLKEYLOGFILE=/home/chen/.config/tls.log ./firefox
+```

@@ -107,3 +107,6 @@
 
 ## 安全
 - [understanding-csrf](https://github.com/pillarjs/understanding-csrf/blob/master/README_zh.md)
+
+## canvas
+- [canvas图案拖动](http://www.hangge.com/blog/cache/detail_1057.html)

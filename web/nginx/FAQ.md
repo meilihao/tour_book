@@ -86,7 +86,7 @@ $./configure --with-openssl=../openssl ...
 编译过程可参考[Nginx 编译安装](https://www.dcc.cat/nginx/).
 
 问题:
-1. 官方说openssl1.1.1已默认支持tls1.3,但我用OpenSSL 1.1.1-pre9,OpenSSL 1.1.1-pre10,直接编译出来的nginx均不支持TLSv1.3,必须打上[相应的openssl-equal-preX_ciphers.patch](https://github.com/hakasenyang/openssl-patch)才可以.
+1. 官方说openssl1.1.1已默认支持tls1.3,但我用OpenSSL 1.1.1-pre9,OpenSSL 1.1.1-pre10,直接编译出来的nginx均不支持TLSv1.3,必须打上[相应的openssl-equal-preX_ciphers.patch](https://github.com/hakasenyang/openssl-patch)才可以. 这是[网上找到的解释: 在OpenSSL 1.1.1-preX中，除TLS1.3最终版本之外的所有Draft版本都已删除, 但是浏览器仅支持Draft版本](https://serverfault.com/questions/927601/tls1-3-not-working-on-nginx-1-15-2-with-openssl-1-1-1-pre9).
 1. `nginx: [emerg] SSL_CTX_set_cipher_list("TLS13-AES-128-GCM-SHA256 TLS13-CHACHA20-POLY1305-SHA256 TLS13-AES-256-GCM-SHA384") failed (SSL:)`的错误原因: [TLS 1.3 相关的 ciphers 的名字变化](https://www.v2ex.com/t/456622).
 
 
@@ -157,7 +157,7 @@ Verify return code: 20 (unable to get local issuer certificate)
 ...
 ```
 
-更好的验证工具:[testssl.sh, 需要相应的openssl版本支持](https://github.com/drwetter/testssl.sh)
+更好的验证工具:[testssl.sh, 需要相应的openssl版本支持](https://github.com/drwetter/testssl.sh)或MySSL.com,https://www.ssllabs.com/ssltest/.
 
 其他问题:
 1.

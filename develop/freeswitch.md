@@ -1,6 +1,8 @@
 # freeswitch
 v1.8
 
+[安装文档](https://freeswitch.org/confluence/display/FREESWITCH/Installation)
+
 ## error
 > 安装缺失lib后需要清理`make clean && ./configure && make`
 
@@ -43,3 +45,6 @@ $ make clean && ./configure && make # 需要清理
 $ sudo apt install  libsndfile-dev
 $ make clean && ./configure && make # 需要清理
 ```
+
+## 中文语音下载地址
+https://files.freeswitch.org/releases/sounds/

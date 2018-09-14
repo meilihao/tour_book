@@ -29,6 +29,8 @@
 
 `npm help`  帮助，如果要单独查看install命令的帮助，可以使用的npm help install
 
+`npm bin -g`  # npm全局 二进制命令PATH
+
 ## yarn
 
 ```sh
@@ -36,3 +38,5 @@
 yarn config get registry
 yarn config set registry 'https://registry.npm.taobao.org'  
 ```
+
+`yarn global bin` # yarn全局 二进制命令PATH
