@@ -17,3 +17,12 @@ location / {
 }
 ...
 ```
+
+## vscode格式化vue文件时会自动把单引号转为双引号
+vscode使用[vetur](https://github.com/vuejs/vetur)格式化代码, 而其默认使用`"vetur.format.defaultFormatter.js": "prettier"`格式化代码导致[这个问题](https://github.com/vuejs/vetur/issues/807).
+
+解决方法,使用其他格式化插件或安装prettier并配置其参数. 我选择vscode自带的js格式化插件,只要修改vscode的用户设置即可:
+```json
+"vetur.format.defaultFormatter.js": "vscode-typescript",
+"javascript.format.insertSpaceBeforeFunctionParenthesis": true # 使用vscode-typescript时js function的小括号前的空格被省略, 该行配置使其保留.
+```
