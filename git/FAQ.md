@@ -147,3 +147,9 @@ $ git config --global alias.st status
 ```
 git pull origin master --allow-unrelated-histories
 ```
+
+### 如何将一个裸GIT仓库(本地)转换成一个正常的
+
+```bash
+git clone -l <path_to_bare_repo> <new_normal_repo>
+```
