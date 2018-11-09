@@ -13,10 +13,10 @@
 
 ### FAQ
 1. redirect_uri域名与后台配置不一致，错误码10003
-订阅号没有权限, 权限位置: 接口权限 - 网页授权 - 网页授权获取用户基本信息, 填入域名(仅域名, 没有http schema).
-解决方法: 
-1. 通过"微信认证"
-1. 开通测试账号(仅测试): 开发者工具 - 公众平台测试账号
+订阅号没有权限, 权限位置: 接口权限 - 网页授权 - 网页授权获取用户基本信息 - 网页授权域名, 填入域名(仅域名, 没有http schema); 同时检查程序里RedirectURL里的域名是否与填入域名一致.
+<!-- 解决方法: 
+		1. 通过"微信认证"
+		1. 开通测试账号(仅测试): 开发者工具 - 公众平台测试账号 -->
 
 1. 接口配置信息
 [接入概述](https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1421135319)
@@ -42,3 +42,14 @@ func _VerifyWeixin(c echo.Context) error {
 ```
 1. weixin如何关联code和openid
 推测: 微信中的用户访问`https://open.weixin.qq.com/connect/qrconnect`时会将其session相关信息放入该请求的header或cookie中,从而关联openid和回调的code.
+
+### 微信公众号基本设置 token验证失败
+验证token失败, nginx access.log显示http status = 499, 原因:
+阿里云拦截了未在其上备案的请求`curl "http://xxx.com/callback/wechat/mp?signature=8019d9af0be83b3febe982c96b44184dcf52f1c0&echostr=4646699353577078623&timestamp=1539256159&nonce=1709717818"`,返回了备案提示的html.
+
+### 扫二维码即关注并登录
+想推送必须关注公众号, 普通流程是:
+1. 关注二维码
+1. 通过`网页授权获取用户基本信息`绑定uid
+
+其实上面两个步骤可以合二为一, 即通过[生成带参数的二维码](https://mp.weixin.qq.com/wiki?action=doc&id=mp1443433542&t=0.376179226179156)实现, 可参考[微信带参二维码](https://www.jianshu.com/p/084d49ea16bb).

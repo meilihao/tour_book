@@ -42,6 +42,7 @@
 ## docker
 - [docker registry_v2 部署及错误总结](http://dockone.io/article/684)
 - [FIT2CLOUD徐桂林：容器云之Kubernetes应用与实践](http://www.csdn.net/article/2015-11-04/2826119)
+- [kubernetes-handbook](https://github.com/rootsongjc/kubernetes-handbook)
 
 ## 测试
 - [持续集成是什么？](http://www.ruanyifeng.com/blog/2015/09/continuous-integration.html)

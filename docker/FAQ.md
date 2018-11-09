@@ -166,3 +166,12 @@ Error response from daemon: Driver overlay2 failed to remove root filesystem 95e
 ```
 sudo umount /var/lib/docker/overlay2/dd95ab1ff29c37f16450194f79b9876a7e34da2dfbb8ee609745f00e017cb91c
 ```
+
+## Error response from daemon: driver failed programming external connectivity on endpoint seafile 
+```sh
+# docker start c2f56bcd3b32
+Error response from daemon: driver failed programming external connectivity on endpoint seafile (c4e6c105b6c080b91895576eedcf2b94adfa34fe081d147e98d417fd20c7761f):  (iptables failed: iptables --wait -t nat -A DOCKER -p tcp -d 127.0.0.1 --dport 9090 -j DNAT --to-destination 172.17.0.2:80 ! -i docker0: iptables: No chain/target/match by that name.
+ (exit status 1))
+```
+
+docker服务启动时定义的自定义链DOCKER由于某种原因被清掉,重启docker服务即可重新生成自定义链DOCKER.
