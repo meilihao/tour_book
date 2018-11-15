@@ -34,3 +34,9 @@ $ldd chrome | grep 'not found'
   libplc4.so.0d => not found
   libnspr4.so.0d => not found
 ```
+
+## FAQ
+1. libxxx => not found
+解决方法:
+1. 对应的so库是否存在,不存在则安装
+1. 已存在对应的so库, 则使用`sudo ldconfig -v`刷新so缓存

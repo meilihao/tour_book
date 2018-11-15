@@ -57,6 +57,12 @@ https://files.freeswitch.org/releases/sounds/
 - linux: Zoiper5
 - window: xlite
 
+## fs_cli
+```
+show codec # 查看支持的编码
+sofia status profile internal reg # 当前注册的用户
+```
+
 ### FAQ
 1. dialpan添加自定义变量
 ```xml
@@ -64,6 +70,7 @@ https://files.freeswitch.org/releases/sounds/
       <condition field="destination_number" expression="^666$">
 	      <action application="set" data="template_id=5469499f-b434-42af-8852-e89898b4c14f"/> // 自定义变量, 必须在`application="socket"`之前.
 	      <action application="set" data="call_type=in_call"/>
+        <action application="export" data="RECORD_STEREO=false"/> // 使用单声道(默认是两个, A/B-leg各一)
 	      <action application="socket" data="127.0.0.1:8080 async full"/>
       </condition>
     </extension>
@@ -147,4 +154,96 @@ BEGIN EXCLUSIVE
 # /var/lib
 # chown -R freeswitch:freeswitch freeswitch
 # systemctl restart freeswitch
+```
+
+### 编译生成的libfreeswitch.so在哪
+```sh
+$ make
+$ cd .libs
+$ ll |grep libfreeswitch.so
+lrwxrwxrwx 1 chen chen   22 11月  9 18:28 libfreeswitch.so -> libfreeswitch.so.1.0.0
+lrwxrwxrwx 1 chen chen   22 11月  9 18:28 libfreeswitch.so.1 -> libfreeswitch.so.1.0.0
+-rwxr-xr-x 1 chen chen  12M 11月  9 18:28 libfreeswitch.so.1.0.0
+```
+
+### 编译mod_iblc
+由于其依赖的libilbc-dev没找到, 只好到[官方下载代码](https://freeswitch.org/stash/scm/sd/libilbc.git)手工编译.
+
+在`cd src/mod/codecs/mod_ilbc`,`vim Makefile.am`, 把 if HAVE_ILBC 及 else 后面的相关逻辑去掉, Makefile.am变成下面的样子:
+```
+include $(top_srcdir)/build/modmake.rulesam
+MODNAME=mod_ilbc
+
+ILBC_CFLAGS = -I/usr/local/include
+ILBC_LIBS = -L/usr/local/lib -lilbc
+
+mod_LTLIBRARIES = mod_ilbc.la
+...
+mod_ilbc_la_LDFLAGS  = -avoid-version -module -no-undefined -shared
+```
+
+然后再执行 make, 系统就会重新生成 Makefile 并编译, 生成的so在`.libs`里.
+
+### 编译mod_bcg729
+```
+cd freeswitch-1.8.2/src/mod/endpoints
+git clone  https://github.com/xadhoom/mod_bcg729.git
+cd mod_bcg729
+make
+cp mod_bcg729.so /usr/lib/freeswitch/mod
+```
+
+再编辑`autoload_configs/modules.conf.xml`: 注释`mod_g729`并添加`mod_bcg729`.
+
+修改var.xml,启用G729:
+```xml
+  <X-PRE-PROCESS cmd="set" data="global_codec_prefs=OPUS,G729,G722,PCMU,PCMA,VP8"/> # 设置FreeSWITCH支持的媒体编码，包括语音和视频(默认仅支持音频编码)
+  <X-PRE-PROCESS cmd="set" data="outbound_codec_prefs=OPUS,G729,G722,PCMU,PCMA,VP8"/>
+```
+
+最后重启fs即可.
+
+ps:
+1. 在vars.xml配置文件中加入`<X-PRE-PROCESScmd="set"data="media_mix_inbound_outbound_codecs=true"/>`,使得B-leg的编解码器列表跟A-LEG一样, 这样操作可以提高系统效率，尽量不转码，可以很大程度上增大系统效率.
+1. 注意过长的global_codec_prefs列表可能会超出UDP的MTU(最大传输单元),那将引起呼叫建立失败
+
+### sip.js 报 "unable to acquire streams" + "DOMException: Requested device not found"
+```js
+let options = {
+                media: {
+                    local: {
+                        audio: document.getElementById('localVideo')
+                    },
+                    remote: {
+                        video: document.getElementById('remoteVideo') // 电脑本身没有摄像头, 注释掉并删除页面中相应的vedio tag即可
+                        // This is necessary to do an audio/video call as opposed to just **a video call**
+                        audio: document.getElementById('remoteVideo')
+                    }
+                },
+                ua: {
+                    uri: _that.form.name + '@' + _that.form.ip
+                    wsServers: 'wss://' + _that.form.ip + ':7443'
+                    authorizationUser: _that.form.name
+
+                    // FreeSWITCH Default Password
+                    password: _that.form.password
+                    displayName: _that.form.name
+                }
+            };
+            _that.ua = new SIP.Web.Simple(options)
+```
+
+ps:
+要根据实际情况决定options.media,并在页面添加相应的audio/video tag.
+
+### internal user之间不能相呼
+网络NAT问题.
+
+### sip clinet 呼叫sip.js报"no suitablecandidates found...INCOMPATIBLE_DESTINATION"
+`vim sudo deepin-editor sip_profiles/internal.xml`,在`<settings>`节添加如下内容:
+```xml
+<param name="apply-candidate-acl" value="localnet.auto"/>
+<param name="apply-candidate-acl" value="wan_v4.auto"/>
+<param name="apply-candidate-acl" value="rfc1918.auto"/>
+<param name="apply-candidate-acl" value="any_v4.auto"/>
 ```
