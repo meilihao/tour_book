@@ -47,3 +47,11 @@ yarn config set registry 'https://registry.npm.taobao.org'
 export PATH="$(npm bin -g):$PATH"
 export PATH="$(yarn global bin):$PATH"
 ```
+
+## FAQ
+1. 更新package.json的依赖
+```
+$ yarn upgrade-interactive --latest
+$ npm install -g npm-check-updates
+$ ncu
+```

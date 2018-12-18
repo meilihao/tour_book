@@ -36,4 +36,8 @@ redis.Pool参数：
 	Wait        = true
 ```
 
+#### redis-server.service: PID file /var/run/redis/redis-server.pid not readable (yet?) after start: No such file or directory
+开始以为是`/var/run/redis/redis-server.pid`需要手动创建, 重启`redis-server.service`后发现还是提示该问题且`/var/run/redis/redis-server.pid`已被删除.
+
+通过查查`redis-server.log`发现错误`Creating Server TCP listening socket ::1:6379: bind: Cannot assign requested address`, 考虑到是使用阿里云 ECS默认ipv6是关闭的, 修改redis.conf的bind参数,取消`::1`即可.
 

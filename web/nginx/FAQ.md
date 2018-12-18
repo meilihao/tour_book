@@ -224,3 +224,29 @@ ECDHE-ECDSA-AES128-SHA # TLSv1 for win7,旧Android
 ### Nginx配置网站适配PC和手机
 - [Nginx配置网站适配PC和手机](https://blog.csdn.net/xiao__gui/article/details/46680863)
 - [detectmobilebrowsers](http://detectmobilebrowsers.com/)
+
+### auth_basic_user_file
+auth_basic_user_file格式:
+```
+username:crypted_password
+```
+
+密码生成:
+```
+openssl passwd [-crypt] xxx
+```
+
+### `expires`/缓存不起作用
+```
+location ^~ /static {
+    root /var/www/files; # 静态文件目录
+    expires 30d;
+}
+```
+
+明明nginx使用了`expires`, 且返回的respone header里也有`Cache-Control: max-age=2592000`和`Expires: xxx`,但浏览器还是重新获取资源而不是使用缓存.
+
+原因:
+chrome开发者工具`Network-Disable cache(while DevTools is open)`选项被启用了, 而当时该工具又恰好开着, 结果就是该请求被缓存了.
+
+> firefox的类似选项是`高级设置-禁用HTTP缓存(工具箱打开时)`

@@ -6,6 +6,7 @@ v1.8
 参考:
 - [FreeSWITCH中文文档](http://wiki.freeswitch.org.cn/wiki/Mod_Commands.html)
 - [FreeSWITCH Event Socket library](https://freeswitch.org/confluence/display/FREESWITCH/mod_event_socket)
+- [闲聊语音编解码](http://www.ctiforum.com/news/guandian/369686.html)
 
 ## error
 > 安装缺失lib后需要清理`make clean && ./configure && make`
@@ -246,4 +247,52 @@ ps:
 <param name="apply-candidate-acl" value="wan_v4.auto"/>
 <param name="apply-candidate-acl" value="rfc1918.auto"/>
 <param name="apply-candidate-acl" value="any_v4.auto"/>
+```
+
+### systemd freeswitch无法启动
+由于systemctl 启动一直失败, 复制`freeswitch.service`的命令在terminal运行:
+```
+# /usr/bin/freeswitch -u freeswitch -g freeswitch -ncwait
+15944 Backgrounding.
+FreeSWITCH[15943] Error starting system! pid:15944
+```
+原因未知, 无法找到错误日志.
+
+解决方法:
+删除`-u freeswitch -g freeswitch`参数即可.
+
+### Send("api uuid_break xxx") get error "no reply"
+```go
+// 测试 uuid_break
+// "github.com/fiorix/go-eventsocket/eventsocket"
+func main() {
+	eventsocket.ListenAndServe(":8690", handler)
+}
+
+func handler(c *eventsocket.Connection) {
+	ev, err := c.Send("connect")
+	c.Send("myevents")
+    c.Execute("answer", "", false)
+    // 播放长音乐
+	if _, err = c.Execute("playback", "/home/chen/tmpfs/media/music.wav", false); err != nil {
+		log.Fatal(err)
+	}
+
+	uuid := ev.Get("Caller-Unique-Id")
+	time.Sleep(time.Second * 5)
+ 
+	if _, err := c.Send("api uuid_break " + uuid); err != nil { // api uuid_break xxx 原本没有返回值且fs_cli也不会有相关执行记录,这里是eventsocket库错误报错
+		log.Printf("Got error while uuid_break: %s", err)
+	} else {
+		log.Println("uuid_break is ok")
+	}
+
+	//发送app playback  播放开场音频（不支持mp3）
+	ev, err = c.Execute("playback", "/home/chen/tmpfs/media/再见.wav", false)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	time.Sleep(time.Second * 3)
+}
 ```

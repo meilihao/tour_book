@@ -31,6 +31,7 @@
 - [日均数十亿请求！京东评价系统海量数据存储高可用设计](http://dbaplus.cn/news-21-613-1.html)
 - [从Elasticsearch集群及数据层架构，看分布式系统设计](https://mp.weixin.qq.com/s/jJ1LH2MLxRPAvma3Hd6-XA)
 - [轻松筹1.6亿注册用户的Passport账户体系架构设计](http://www.sohu.com/a/154131834_467759)
+- [新手入门一篇就够：从零开发移动端IM](https://link.jianshu.com/?t=http://www.52im.net/thread-464-1-1.html)
 
 ## 随思
 - [知道创宇研发技能表](http://blog.knownsec.com/Knownsec_RD_Checklist/index.html)
@@ -55,6 +56,8 @@
 - [Linux 中的 DTrace ：BPF 进入 4.9 内核](https://linux.cn/article-8038-1.html)
 - [动态追踪技术：Linux喜迎DTrace](https://riboseyim.github.io/2016/11/26/DTrace/)
 - [程序员应该知道的延迟](https://people.eecs.berkeley.edu/~rcs/research/interactive_latency.html)
+- [Linux 性能工具图谱](http://www.brendangregg.com/linuxperf.html)
+
 ## kernel
 - [内核如何管理内存](https://linux.cn/article-9393-1.html)
 
@@ -74,6 +77,7 @@
 ## 监控
 - [小米运维—互联网企业级监控系统实践](http://www.jianshu.com/p/b2f77285266c)
 - [如何使用jaeger](2017_09_06_001.md)
+- [分布式跟踪系统Jaeger(一)：Jaeger简介和示例应用HotROD](https://blog.frognew.com/2017/11/opentracing-jaeger-1.html)
 - [最佳日志实践](https://zhuanlan.zhihu.com/p/27363484)
 
 ## webapp
@@ -116,6 +120,7 @@
 
 ## net
 - [Nftables HOWTO 中文翻译](https://farkasity.gitbooks.io/nftables-howto-zh/content/)
+- [全面了解移动端DNS域名劫持等杂症：原理、根源、HttpDNS解决方案等](https://www.tuicool.com/articles/zmaYviI)
 
 ## do
 - [如何从零构建个人博客系统](https://gocn.io/article/532)
