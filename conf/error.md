@@ -161,3 +161,26 @@ vmware workstation: Edit -> Preferences -> Shared VMs -> Disable "Enable virtual
 有时候经过上面的更改后使用ulimit -n会看到默认值并没有改变，我在ubuntu 18.04中就遇到这种情况.
 
 需要在`/etc/pam.d/common-session`中加入`session required pam_limits.so`，再使用su username登录当前用户，然后 就可以使用ulimit命令了. 原因可能是gnome terminal默认是none-login的，所以我们在配置文件中的修改并没有影响到当前的terminal.
+
+## syslog.socket: Socket service syslog.service not loaded, refusing
+启动freeswith.service报错:
+```
+$ sudo systemctl restart freeswitch.service
+...
+12月 25 13:25:04 chen-pc systemd[1]: syslog.socket: Socket service syslog.service not loaded, refusing.
+12月 25 13:25:04 chen-pc systemd[1]: Failed to listen on Syslog Socket.
+...
+$ sudo systemctl start syslog.socket
+...
+12月 25 13:25:04 chen-pc systemd[1]: syslog.socket: Socket service syslog.service not loaded, refusing.
+12月 25 13:25:04 chen-pc systemd[1]: Failed to listen on Syslog Socket.
+...
+```
+
+原因是系统的log服务不见了, 解决方法:
+```
+$ sudo apt-get install rsyslog
+$ sudo systemctl status rsyslog
+```
+
+rsyslog启动后, syslog.socket也会自行起来.

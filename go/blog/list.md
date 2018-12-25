@@ -29,6 +29,7 @@
 - [从Baa开发中总结Go语言性能渐进优化](https://segmentfault.com/a/1190000005690821)
 - [golang 内存分析/动态追踪](https://lrita.github.io/)
 - [Go应用性能优化实战 - Golang profiling and optimizing](http://yangxikun.com/golang/2017/12/24/golang-profiling-optimizing.html)
+- [性能优化：优化一个已经很快了的Go程序](https://boyter.org/posts/sloc-cloc-code-performance/)
 
 ## 反射
 - [Go语法简略 － 反射](http://www.zddhub.com/memo/2015/07/03/go-reflect/)

@@ -19,3 +19,8 @@ ES6 模块的设计思想，是尽量的静态化，使得编译时就能确定�
 ## Error
 ### `SyntaxError: Unexpected token import`或`SyntaxError: Unexpected token export`
 [node8.5.0开始支持ESM](https://nodejs.org/api/esm.html),但需要使用`--experimental-modules`flag来开启,且文件的扩展名必须是`mjs`.
+
+### self signed certificate in certificate chain 
+```
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0' // 禁用检查tls证书
+```

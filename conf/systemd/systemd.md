@@ -16,7 +16,7 @@ systemd配置文件被称为unit单元，根据类型不同，以不同的扩展
 - `.snapshot` Systemd 快照，可以切回某个快照；
 - `.socket` 进程间通信的 socket；
 - `.swap` swap 文件；
-- `.timer`	定时器。
+- `.timer`	定时器
 
 systemd单元文件放置位置:
 - `/lib/systemd/system/` <=> `/usr/lib/systemd/system/` systemd默认单元文件安装目录,**推荐**使用`/lib/systemd/system/`
@@ -150,6 +150,33 @@ systemd与init进程的主要差别如下:
 # systemd-cgtop                           ← 查看资源的消耗状态
 ```
 
+## [socket](http://www.jinbuguo.com/systemd/systemd.socket.html)
+每个socket单元都必须有一个与其匹配的服务单元(详见 systemd.service(5) 手册)， 以处理该套接字上的接入流量. 匹配的 .service 单元名称默认与对应的 .socket 单元相同， 但是也可以通过 Service= 选项(见下文)明确指定
+
 ### 参考
 - [CentOS7/RHEL7 systemd详解](http://xiaoli110.blog.51cto.com/1724/1629533)
 - [Systemd 系列中文手册](http://www.jinbuguo.com/systemd/index.html)
+
+### log
+system-journal服务通过监听`socket /dev/log`(`/dev/log -> /run/systemd/journal/dev-log=`)来获取日志并保存到内存里, 再间隙性写入到`/var/log/journal`目录中.
+
+rsyslog 服务启动后监听`socket /run/systemd/journal/syslog`筛选分类, 并写入`/var/log/messages`文件中.
+
+> systemd-journald是一种改进的日志管理服务，是 syslog 的补充，收集来自内核、启动过程早期阶段、标准输出、系统日志，守护进程启动和运行期间错误的信息
+> 默认情况下，systemd 的日志保存在 /run/log/journal 中，系统重启就会清除，这是RHEL7的新特性. 通过新建 /var/log/journal 目录，日志会自动记录到这个目录中，并永久存储.
+
+日志流转: 应用进程将日志通过/run/systemd/journal/dev-log发送到systemd， 然后systemd 再将日志通过/run/systemd/journal/syslog发送到rsyslogd, 具体如下:
+```
+[log management with systemd](https://unix.stackexchange.com/questions/205883/understand-logging-in-linux)
+systemd has a single monolithic log management program, systemd-journald. This runs as a service managed by systemd.
+
+It reads /dev/kmsg for kernel log data.
+It reads /dev/log (a symbolic link to /run/systemd/journal/dev-log) for application log data from the GNU C library's syslog() function.
+It listens on the AF_LOCAL stream socket at /run/systemd/journal/stdout for log data coming from systemd-managed services.
+It listens on the AF_LOCAL datagram socket at /run/systemd/journal/socket for log data coming from programs that speak the systemd-specific journal protocol (i.e. sd_journal_sendv() et al.).
+It mixes these all together.
+It writes to a set of system-wide and per-user journal files, in /run/log/journal/ or /var/log/journal/.
+If it can connect (as a client) to an AF_LOCAL datagram socket at /run/systemd/journal/syslog it writes journal data there, if forwarding to syslog is configured.
+If configured, it writes journal data to the kernel buffer using the writable /dev/kmsg mechanism.
+If configured, it writes journal data to terminals and the console device as well.
+```

@@ -26,3 +26,5 @@ vscode使用[vetur](https://github.com/vuejs/vetur)格式化代码, 而其默认
 "vetur.format.defaultFormatter.js": "vscode-typescript",
 "javascript.format.insertSpaceBeforeFunctionParenthesis": true # 使用vscode-typescript时js function的小括号前的空格被省略, 该行配置使其保留.
 ```
+
+> [vetur格式化](https://vuejs.github.io/vetur/formatting.html#formatters)
