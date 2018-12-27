@@ -12,3 +12,6 @@
 
 ps:
 Firefox 和 Chrome 浏览器对SSL证书拒绝的错误提示是不一样的,Firefox报`Firefox 无法建立到 wss://www.wss.com/ 服务器的连接`,但是解决步骤完全一样样
+
+### https证书的extendedKeyUsage
+在生成 HTTPS 服务器端证书时，注意要加上秘钥扩展 extendedKeyUsage = serverAuth,1.3.6.1.5.5.7.3.1, 这样生成的秘钥才可以用来在服务器和客户端之间进行认证，不然会提示鉴权失败. 在生成 HTTPS 服务器端证书时，需要填写 Common Name (e.g. server FQDN or YOUR name), 即访问服务的域名信息，如果有很多子域名，可以用`*`代替，如`*.test.com`. 如果需要客户端和服务器端双向认证， 在生成客户端证书时， 注意要加上秘钥扩展 extendedKeyUsage = clientAuth,1.3.6.1.5.5.7.3.2.
