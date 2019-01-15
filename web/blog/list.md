@@ -111,3 +111,8 @@
 
 ## canvas
 - [canvas图案拖动](http://www.hangge.com/blog/cache/detail_1057.html)
+
+## web audio api
+- [HTML5-Audio- The most useful filter nodes](http://masf-html5.blogspot.com/2016/04/html5-audio-most-useful-filter-nodes.html)
+- [Web Audio API samples](https://webaudioapi.com/samples/)
+- [standardized-audio-context](https://github.com/chrisguttandin/standardized-audio-context)

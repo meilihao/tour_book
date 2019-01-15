@@ -14,3 +14,6 @@
 ## FAQ
 ### Import declarations are not supported by current JavaScript version
 prefrences-->Languages & Frameworks -->JavaScript,修改`JavaScript language version`为`ECMAScript6`即可.
+
+## seo
+- [Prerender预渲染优化SEO(no ssr)](https://prerender.io/documentation/install-middleware#nginx)

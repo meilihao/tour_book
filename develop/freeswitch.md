@@ -2,6 +2,7 @@
 v1.8
 
 [安装文档](https://freeswitch.org/confluence/display/FREESWITCH/Installation)
+[源码编译](https://freeswitch.org/confluence/display/FREESWITCH/Debian+9+Stretch)
 
 参考:
 - [FreeSWITCH中文文档](http://wiki.freeswitch.org.cn/wiki/Mod_Commands.html)
@@ -29,7 +30,7 @@ libtool=${LIBTOOL:-`${LIBDIR}/apr/build/PrintPath glibtool libtool libtool22 lib
 1. mod_lua.cpp:37:10: fatal error: lua.h: 没有那个文件或目录
 ```
 $ sudo apt install liblua5.3-dev 
-$ cp /usr/include/lua5.3/*.h    src/mod/languages/mod_lua 
+$ cp /usr/include/lua5.3/*.h    src/mod/languages/mod_lua
 ```
 
 1. /usr/bin/ld: cannot find -llua
@@ -51,6 +52,11 @@ $ sudo apt install  libsndfile-dev
 $ make clean && ./configure && make # 需要清理
 ```
 
+1. [You must install libks to build mod_signalwire](https://freeswitch.org/jira/browse/FS-11579),官方暂无修复方法,先注释该mod
+```
+vim modules.conf # 注释`applications/mod_signalwire`
+```
+
 ## 中文语音下载地址
 https://files.freeswitch.org/releases/sounds/
 
@@ -62,6 +68,8 @@ https://files.freeswitch.org/releases/sounds/
 ```
 show codec # 查看支持的编码
 sofia status profile internal reg # 当前注册的用户
+module_exists mod_fy_tools # 检查模块是否存在
+load mod_fy_tools # 加载模块
 ```
 
 ### FAQ
@@ -296,3 +304,10 @@ func handler(c *eventsocket.Connection) {
 	time.Sleep(time.Second * 3)
 }
 ```
+
+### mod_sndfile.c:204 Error Opening File [xxx] [No Error.]
+通常是权限错误, 因为freeswith.service的`ExecStart=/usr/bin/freeswitch -u root -g root -ncwait $DAEMON_OPTS`包含了用户信息, 修正即可.
+
+## 备注
+- `conn.Execute("playback", record_file, true)`不是等freeswith播放完录音后执行完毕, 它会在file的PLAYBACK_STOP事件来之前就会完成.
+- 播放多录音:　`conn.Execute("playback", "file_string://"+strings.Join(record_files,"!"), true)`
