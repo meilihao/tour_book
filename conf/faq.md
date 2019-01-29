@@ -92,3 +92,13 @@ X-Ubuntu-Gettext-Domain=alarm-clock
 调整位置: /etc/apt/preferences.d/deepin 文件.
 
 如果想修改此方案，可以在同级目录下按照deepin文件格式编辑其他第三方源优先策略. Pin-Priority 值越大，优先级越高;如果不想使用此方案，可以删除/etc/apt/preferences.d/deepin 文件.
+
+## ssh config 添加别名
+```
+Host speak scriptRepo
+    HostName 192.168.11.80
+    Port 22
+    User root
+    IdentityFile    /home/chen/.ssh/my_rsa
+```
+`scriptRepo`就是别名

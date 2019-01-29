@@ -308,6 +308,14 @@ func handler(c *eventsocket.Connection) {
 ### mod_sndfile.c:204 Error Opening File [xxx] [No Error.]
 通常是权限错误, 因为freeswith.service的`ExecStart=/usr/bin/freeswitch -u root -g root -ncwait $DAEMON_OPTS`包含了用户信息, 修正即可.
 
+### ESL 连接被拒绝
+1. 检查`conf/autoload_configs/event_socket.conf.xml`将`<param name="listen-ip" value="127.0.0.1"/>`修改为`<param name="listen-ip" value="0.0.0.0"/>`(ipv4)或者`<param name="listen-ip" value="::"/>`(ipv6)，这样就允许远程ESL控制了.
+
+1. fs_cli日志: `mod_event_socket.c:2659 IP ::ffff:192.168.11.134 Rejected by acl "loopback.auto"`
+出现这个问题是因为被服务器拒绝，可以使用添加`<param name="apply-inbound-acl" value="lan"/>`, 其实就是启用了`conf/autoload_configs/acl.conf.xml`里的`<list name="lan" default="allow">`配置.
+
+> `<param name="listen-ip" value="::"/>`,此时如果esl client的host是ipv4时话,系统会自动转成ipv6, 比如`192.168.11.134` -> `::ffff:192.168.11.134`
+
 ## 备注
 - `conn.Execute("playback", record_file, true)`不是等freeswith播放完录音后执行完毕, 它会在file的PLAYBACK_STOP事件来之前就会完成.
 - 播放多录音:　`conn.Execute("playback", "file_string://"+strings.Join(record_files,"!"), true)`

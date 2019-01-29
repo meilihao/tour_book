@@ -70,3 +70,16 @@ methods不带缓存, vm.$data中任何值变化都会被重新调用.
 
 ### name
 父组件的`name`属性可在子组件用`this.$parent.$options.name`访问到(即**子组件可通过`this.$parent`访问/修改父组件, 但不推荐, 因为会导致逻辑混乱**).
+
+### provide 和 inject
+父/祖组件提供`provide`并再在子组件里使用`inject`, 即可在子组件里访问到父/祖组件, 但父/祖组件传递的provide内容不是响应式的.
+
+## vue-router
+### props属性
+在route里启用`props`则会将route params(也可自行定义参数, 具体见api)作为props传入对应的route component, 这样就便于解耦,增强复用性: 无需在组件里调用`this.$route`而耦合vue-router(**推荐**).
+
+## vuex
+原因: 多个组件共享状态
+
+异步请求数据用`action`.
+modules声明`namespaced: true`, 用于区分同名变量或函数.
