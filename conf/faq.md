@@ -39,14 +39,16 @@ secure.gravatar.com          gravatar.lug.ustc.edu.cn
 6、修改完成后按ctrl + alt + del重启电脑
 ```
 
-## fish添加环境变量
+## [fish添加环境变量](https://github.com/fish-shell/fish-shell/issues/527)
+将相应的fish配置文件放入`/home/chen/.config/fish/conf.d`即可, fish的`conf.d`类似于nginx的`conf.d`.
+
 ```sh
 $ vim .config/fish/conf.d/golang.fish
 ```
 添加:
 ```text
 set -x GOROOT /opt/go
-set -x GOPATH /home/xjm/git/go
+set -x GOPATH /home/chen/git/go
 set -x PATH {$PATH} {$GOROOT}/bin {$GOPATH}/bin
 ```
 
