@@ -127,3 +127,6 @@
 
 ## ai
 - [让机器说话不难，怎么让机器“会说话”？](https://36kr.com/p/5130990.html)
+
+## secure
+- [记一次微信数据库解密过程](https://www.freebuf.com/articles/rookie/195107.html?utm_source=tuicool&utm_medium=referral)

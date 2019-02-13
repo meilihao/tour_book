@@ -104,3 +104,21 @@ Host speak scriptRepo
     IdentityFile    /home/chen/.ssh/my_rsa
 ```
 `scriptRepo`就是别名
+
+## glxinfo
+```
+$ sudo apt-get install mesa-utils
+```
+
+## X11/Xlib.h not found
+```
+$ sudo apt install libx11-dev
+```
+
+## cmake用法
+```
+$ cd ${project} # 该目录需包含`CMakeLists.txt`
+$ mkdir build && cd build
+$ cmake ..
+$ make -j
+```

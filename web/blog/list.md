@@ -44,6 +44,7 @@
  - [新的 JavaScript 模块系统](http://zhuanlan.zhihu.com/FrontendMagazine/19850058)
  - [JavaScript闭包的底层运行机制](http://blog.leapoahead.com/2015/09/15/js-closure/)
  - [深入浅出ES6](http://www.infoq.com/cn/author/Jason-Orendorff)
+ - [**近一万字的ES6语法知识点补充**](https://juejin.im/post/5c6234f16fb9a049a81fcca5)
 
 ## 静态资源
  - [静态资源（js以及css）发布对比](2015_05_26_001.md)
