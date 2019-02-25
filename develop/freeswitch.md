@@ -3,11 +3,16 @@ v1.8
 
 [安装文档](https://freeswitch.org/confluence/display/FREESWITCH/Installation)
 [源码编译](https://freeswitch.org/confluence/display/FREESWITCH/Debian+9+Stretch)
+[release note(可下载源码)](https://freeswitch.org/confluence/display/FREESWITCH/FreeSWITCH+1.8.x+Release+notes)
 
 参考:
 - [FreeSWITCH中文文档](http://wiki.freeswitch.org.cn/wiki/Mod_Commands.html)
 - [FreeSWITCH Event Socket library](https://freeswitch.org/confluence/display/FREESWITCH/mod_event_socket)
 - [闲聊语音编解码](http://www.ctiforum.com/news/guandian/369686.html)
+
+## client
+- mobile client推荐: linphone
+- pc client: zoiper5
 
 ## error
 > 安装缺失lib后需要清理`make clean && ./configure && make`
@@ -33,6 +38,11 @@ $ sudo apt install liblua5.3-dev
 $ cp /usr/include/lua5.3/*.h    src/mod/languages/mod_lua
 ```
 
+1. fatal error: uuid/uuid.h
+```bash
+sudo apt install uuid-dev
+```
+
 1. /usr/bin/ld: cannot find -llua
 ```
 $ sudo find -name "liblua.so"
@@ -52,10 +62,15 @@ $ sudo apt install  libsndfile-dev
 $ make clean && ./configure && make # 需要清理
 ```
 
-1. [You must install libks to build mod_signalwire](https://freeswitch.org/jira/browse/FS-11579),官方暂无修复方法,先注释该mod
+1. ~~[You must install libks to build mod_signalwire](https://freeswitch.org/jira/browse/FS-11579),官方暂无修复方法,先注释该mod~~
 ```
 vim modules.conf # 注释`applications/mod_signalwire`
 ```
+
+>　已在v1.8.5修复
+
+ps:
+make好的lib在`${freeswitch_root}/.libs`里
 
 ## 中文语音下载地址
 https://files.freeswitch.org/releases/sounds/
@@ -312,10 +327,33 @@ func handler(c *eventsocket.Connection) {
 1. 检查`conf/autoload_configs/event_socket.conf.xml`将`<param name="listen-ip" value="127.0.0.1"/>`修改为`<param name="listen-ip" value="0.0.0.0"/>`(ipv4)或者`<param name="listen-ip" value="::"/>`(ipv6)，这样就允许远程ESL控制了.
 
 1. fs_cli日志: `mod_event_socket.c:2659 IP ::ffff:192.168.11.134 Rejected by acl "loopback.auto"`
-出现这个问题是因为被服务器拒绝，可以使用添加`<param name="apply-inbound-acl" value="lan"/>`, 其实就是启用了`conf/autoload_configs/acl.conf.xml`里的`<list name="lan" default="allow">`配置.
+出现这个问题是因为被服务器拒绝，可以使用添加`<param name="apply-inbound-acl" value="lan"/>`, 其实就是启用了`conf/autoload_configs/acl.conf.xml`里的`<list name="lan" default="allow">`配置(记得要修改其网段).
 
 > `<param name="listen-ip" value="::"/>`,此时如果esl client的host是ipv4时话,系统会自动转成ipv6, 比如`192.168.11.134` -> `::ffff:192.168.11.134`
+
+### freeswitch查看注册用户
+```
+> sofia status profile internal reg
+```
+
+### sip client不能互呼
+网络NAT问题 
+
+### esl : invalid session id []
+```go
+conn.Send("myevents " + ev.Get("Caller-Unique-Id"))
+...
+conn.Execute() # myevents已指定uuid,推荐
+```
+或
+```go
+conn.ExecuteUUID() # 需要指定uuid
+```
+
+### openvox gsm网关返回603(不兼容)
+[fs1.8.5 openvox无法呼通sip 603(fs1.6 is ok)](https://freeswitch.org/jira/projects/FS/issues/FS-9756?filter=allopenissues)
 
 ## 备注
 - `conn.Execute("playback", record_file, true)`不是等freeswith播放完录音后执行完毕, 它会在file的PLAYBACK_STOP事件来之前就会完成.
 - 播放多录音:　`conn.Execute("playback", "file_string://"+strings.Join(record_files,"!"), true)`
+- 直接用gsm网关ip(`192.168.11.81`)发起呼叫: `originate sofia/external/sip:18858xxx@192.168.11.81 &echo`

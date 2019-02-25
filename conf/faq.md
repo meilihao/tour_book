@@ -122,3 +122,25 @@ $ mkdir build && cd build
 $ cmake ..
 $ make -j
 ```
+## 添加sudo
+```sh
+# visudo # 添加`%sudo	ALL=(ALL:ALL) ALL`, 即属于sudo用户组的用户均可使用sudo命令
+```
+
+`tidb ALL=(ALL) NOPASSWD: ALL`表示使用sudo命令时无需密码.
+
+## proxy curl https 卡住
+```bash
+$ env https_proxy="https://127.0.0.1:1081" curl https://www.google.com -v # 卡住, 原因未知
+$ env https_proxy="http://127.0.0.1:1081" curl https://www.google.com -v # ok
+$ env https_proxy=127.0.0.1:1081 curl https://www.google.com -v # ok, 推荐
+```
+
+## 显示器分辨率被固定
+```bash
+$ xrandr # 获取 `xxx connected`项的名称`xxx`, 其实就是`xrandr --listmonitors`的列表项,我这里是`DP-1`
+$ cvt 1920 1440 60 # 生成配置参数
+$ xrandr --newmode "1920x1440_60.00"  233.50  1920 2064 2264 2608  1440 1443 1447 1493 -hsync +vsync
+$ xrandr --addmode DP-1 "1920x1440_60.00"
+$ xrandr --output DP-1 --mode "1920x1440_60.00"
+```

@@ -57,13 +57,13 @@ methods不带缓存, vm.$data中任何值变化都会被重新调用.
 - `errorCaptured()`用于收集错误, 包括子组件.
 
 ## 指令
-**dom的属性默认都是字符串, 除非使用v-bind表示该属性才能反映出其原始类型**, 比如整数.
+**dom的属性默认都是字符串, 除非使用v-bind表示该属性才能反映出其原始类型(比如整数)**, 比如[传递静态或动态 Prop](https://cn.vuejs.org/v2/guide/components-props.html).
 
 - `v-cloak`: 仅页面直接使用vue.js库时需要, webpack打包时就不需要了.
 
 ## 组件
 ### props
-- 属性`type`: Boolean,String,Array...
+- 属性`type`: [Boolean,String,Array,Object,Function...](https://cn.vuejs.org/v2/guide/components-props.html), 或者他们的组合, 比如`type: [String, Number]`
 - 属性`required`与`default`是互斥的, 二选一即可
 - **default返回对象时应与组件data一样返回function**.
 - 属性`validator`支持更复杂的校验.

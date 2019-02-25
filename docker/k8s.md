@@ -6,6 +6,7 @@
 - [Kubernetes中文手册](https://www.kubernetes.org.cn/docs)
 - [k8s yaml定义](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.9/)
 - [Kubernetes网络原理及方案](http://www.youruncloud.com/blog/131.html)
+- [详解 Kubernetes Deployment 的实现原理](https://www.tuicool.com/articles/bQZnYjA)
 
 ## install
 ```sh

@@ -61,3 +61,6 @@ flutter gradle通常使用在`${my_flutter_app}/android/gradle/wrapper/gradle-wr
 
 ### flutter命令卡住 & Android Studio 创建flutter(start a new Flutter project)卡住
 [国内访问Flutter有时可能会受到限制，Flutter官方为中国开发者搭建了临时镜像](https://flutter.io/community/china)
+
+## 参考
+- [Flutter 实现上拉加载更多、下拉刷新](https://www.tuicool.com/articles/YVrEbqY)

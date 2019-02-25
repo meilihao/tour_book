@@ -34,6 +34,7 @@
 - [微博移动样式框架Marvel.css开发心得](http://uxfan.com/fe/css/2016/01/19/marvel.html)
 - [实现canvas里图形的拖拽](https://github.com/smileyby/canvasDrag)
 - [CSS网格（CSS Grid）布局入门](https://segmentfault.com/a/1190000010923572)
+- [如何迁移 Sass 到 PostCSS](https://imweb.io/topic/5b422d444d378e703a4f4468)
 
 ## javascript
  - [React 入门实例教程](http://www.ruanyifeng.com/blog/2015/03/react.html)
@@ -65,6 +66,7 @@
 - [最全前端资源汇集](github.com/nicejade/Front-end-tutorial)
 
 ## nginx
+- [Nginx 性能优化整理](https://github.com/trimstray/nginx-quick-reference)
 - [深入NGINX：我们如何设计它的性能和扩展性](https://linux.cn/article-5681-1.html)
 - [Nginx下配置高性能，高安全性的https TLS服务](https://blog.helong.info/blog/2015/05/08/https-config-optimize-in-nginx/)
 - [Nginx 服务器安装及配置文件详解](http://info.9iphp.com/nginx-install-and-config/)
