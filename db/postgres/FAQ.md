@@ -104,3 +104,9 @@ $ sudo pip3 install ./pgadmin4-3.2-py2.py3-none-any.whl
 $ cd /usr/local/lib/python3.6/dist-packages/pgadmin4
 $ sudo python3 ./pgAdmin4.py
 ```
+
+### jsonb数组追加
+```sql
+-- log : '[]'::jsonb
+UPDATE "logs" SET "log" = log || '{"kind":1,"text":"xxx"}'
+```

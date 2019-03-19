@@ -357,3 +357,5 @@ conn.ExecuteUUID() # 需要指定uuid
 - `conn.Execute("playback", record_file, true)`不是等freeswith播放完录音后执行完毕, 它会在file的PLAYBACK_STOP事件来之前就会完成.
 - 播放多录音:　`conn.Execute("playback", "file_string://"+strings.Join(record_files,"!"), true)`
 - 直接用gsm网关ip(`192.168.11.81`)发起呼叫: `originate sofia/external/sip:18858xxx@192.168.11.81 &echo`
+
+### [播放静音](https://freeswitch.org/confluence/display/FREESWITCH/Silence+Stream)

@@ -35,6 +35,8 @@ Android开发者选项-打开`USB安装`
 
 [flutter issue](https://github.com/flutter/flutter/issues/14991)
 
+> 原因未知, 使用flutter 1.2后正常.
+
 ### Android Studio: /dev/kvm device permission denied
 ```
 $ sudo apt install qemu-kvm.
@@ -62,5 +64,21 @@ flutter gradle通常使用在`${my_flutter_app}/android/gradle/wrapper/gradle-wr
 ### flutter命令卡住 & Android Studio 创建flutter(start a new Flutter project)卡住
 [国内访问Flutter有时可能会受到限制，Flutter官方为中国开发者搭建了临时镜像](https://flutter.io/community/china)
 
+### target of uri doesnt exist
+- 在项目下运行`flutter packages get`, 再重新加载项目即可(**常见**).
+- 检查对应import资源的pubspec.yaml, 当前开发环境是否满足其中的`environment`
+
+> 项目依赖体现在`Android Studio`的`External Libraries`里.
+
+### MissingPluginException(No implementation found for method ${canLaunch on channel plugins.flutter.io/url_launcher})
+使用`url_launcher`时碰到该错误.
+
+原因: `url_launcher`为新增依赖, 由于Flutter必须将插件依赖项注入应用程序的特定平台部分, 但在`Hot Reload/Restart`下无法注入.
+
+解决方法: 关闭应用程序,再重新运行`flutter run`即可.
+
+> [官方issue](https://github.com/flutter/flutter/issues/10912)
+
 ## 参考
 - [Flutter 实现上拉加载更多、下拉刷新](https://www.tuicool.com/articles/YVrEbqY)
+- [**不要一知半解，深入理解flutter的编译原理，好吗**](https://zhuanlan.zhihu.com/p/38025807)

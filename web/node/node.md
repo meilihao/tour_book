@@ -24,3 +24,8 @@ ES6 模块的设计思想，是尽量的静态化，使得编译时就能确定�
 ```
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0' // 禁用检查tls证书
 ```
+
+### Unexpected end of JSON input while parsing near '...int-staged":"^7.0.0",'
+```
+npm cache clean --force
+```

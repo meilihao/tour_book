@@ -187,3 +187,24 @@ mysql:
 ### 查找重复的记录
 select * from VAT2User a
 where (a.UserId,a.TNo) in (select UserId,TNo from VAT2User group by UserId,TNo having count(*) > 1)
+
+### on 与 where 的区别
+数据库在通过连接两张或多张表来返回记录时，都会生成一张中间的临时表，然后再将这张临时表返回给用户.
+在使用`left jion`时，on和where条件的区别如下:
+1. on条件是在生成临时表时使用的条件，它不管on中的条件是否为真，都会返回左边表中的记录。
+1. where条件是在临时表生成好后，再对临时表进行过滤的条件。这时已经没有left join的含义（必须返回左边表的记录）了，条件不为真的就全部过滤掉
+
+### limit offset
+```sql
+selete * from testtable limit 2,1; # A
+selete * from testtable limit 2 offset 1; # B
+```
+
+注意：
+1. 数据库数据计算是从`0`开始的
+1. offset X是跳过X个数据，limit Y是选取Y个数据
+1. limit X,Y  中X表示跳过X个数据，读取Y个数据
+
+这两个都是能完成需要，但是他们之间是有区别的：
+1. A是从数据库中第三条开始查询，取一条数据，即第三条数据读取，一二条跳过
+1. B是从数据库中的第二条数据开始查询两条数据，即第二条和第三条。

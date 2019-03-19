@@ -15,6 +15,10 @@ $ sudo apt install mesa-vulkan-drivers
 ```
 
 > mesa是软件实现的OpenGL. 安装了NVidia或AMD的专有驱动程序(会自带vulkan驱动)，则不需要Mesa; 如果想使用开源驱动（nouveau，radeon，radeonhd，intel）就需要 Mesa.
+> `sudo apt install vulkan-utils libvulkan1`, vulkan工具.
+
+参考:
+- [Install And Test Vulkan On Linux](https://linuxconfig.org/install-and-test-vulkan-on-linux)
 
 ### Could NOT find xcb (missing: XCB_INCLUDE_DIR XCB_LIBRARY)
 ```
