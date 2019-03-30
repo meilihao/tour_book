@@ -128,3 +128,15 @@ go跑`go test -bench`前会跑`go test -run`保证代码的正确性,如果单�
 ```sh
 $ GOCACHE=off go test -v   util.go util_test.go
 ```
+
+### exec.Command 报错: signal: interrupt
+新创建的进程将与发起`exec.Command`的进程位于同一进程组中.这意味着默认情况下， signal将广播到`exec.Command`创建的进程中.
+
+解决方法:
+1. 使用类型SysProcAttr属性在命令之前强制新创建的进程位于其自己的进程组中.
+
+```
+cmd := exec.Command("sh","-c","xxx")
+cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid:true}
+err := cmd.Run()
+```

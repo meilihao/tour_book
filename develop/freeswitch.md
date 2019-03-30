@@ -350,8 +350,14 @@ conn.Execute() # myevents已指定uuid,推荐
 conn.ExecuteUUID() # 需要指定uuid
 ```
 
+### Execute(hangup)阻塞60s
+Execute(hangup)在用户挂断之后调用会因为fs无响应而阻塞60s,见[github.com/meilihao/go-eventsocket/eventsocket Execute源码]()
+
 ### openvox gsm网关返回603(不兼容)
 [fs1.8.5 openvox无法呼通sip 603(fs1.6 is ok)](https://freeswitch.org/jira/projects/FS/issues/FS-9756?filter=allopenissues)
+
+### esl 报错 errors.New("no reply\n")
+由`conn.Send("api uuid_break " + sessionId + " all")`触发, 无论当前fs是否在playing, 均会返回该错误.
 
 ## 备注
 - `conn.Execute("playback", record_file, true)`不是等freeswith播放完录音后执行完毕, 它会在file的PLAYBACK_STOP事件来之前就会完成.
@@ -359,3 +365,21 @@ conn.ExecuteUUID() # 需要指定uuid
 - 直接用gsm网关ip(`192.168.11.81`)发起呼叫: `originate sofia/external/sip:18858xxx@192.168.11.81 &echo`
 
 ### [播放静音](https://freeswitch.org/confluence/display/FREESWITCH/Silence+Stream)
+```
+c.Execute("playback", "file_string:///home/chen/work/91.1.wav!silence_stream://5000,1400!file_string:///home/chen/work/91.1.wav", true)
+```
+
+### 级联外呼
+```
+bgapi originate {origination_uuid=a8c678ec-4ba8-11e9-bb7b-107b44b13378,origination_caller_id_number=1800102xxxx,origination_caller_id_name=1800102xxxx}sofia/external/sip:188xxxxxxxx@47.96.xxx.xxx &park()
+```
+
+其中:
+- 188xxxxxxxx : 被叫
+- 47.96.xxx.xxx 出口freeswith
+
+###＃　级联时能呼通, 但esl无法收到挂机事件
+NAT问题
+
+参考:
+- [No hangup messages for external SIP client](https://freeswitch.org/jira/si/jira.issueviews:issue-html/FS-3592/FS-3592.html) 

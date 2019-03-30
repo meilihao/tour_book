@@ -110,3 +110,8 @@ $ sudo python3 ./pgAdmin4.py
 -- log : '[]'::jsonb
 UPDATE "logs" SET "log" = log || '{"kind":1,"text":"xxx"}'
 ```
+
+### 修改serial起始值
+```sql
+alter sequence channel_id_seq restart with 5;
+```
