@@ -115,3 +115,7 @@ UPDATE "logs" SET "log" = log || '{"kind":1,"text":"xxx"}'
 ```sql
 alter sequence channel_id_seq restart with 5;
 ```
+
+### 位操作
+```sql
+```

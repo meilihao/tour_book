@@ -359,6 +359,14 @@ Execute(hangup)在用户挂断之后调用会因为fs无响应而阻塞60s,见[g
 ### esl 报错 errors.New("no reply\n")
 由`conn.Send("api uuid_break " + sessionId + " all")`触发, 无论当前fs是否在playing, 均会返回该错误.
 
+### esl 调高用户输入音量
+```go
+conn.Execute("set_audio_level", "read 2", false)
+```
+
+> [mod_dptools: set audio level](https://freeswitch.org/confluence/display/FREESWITCH/mod_dptools%3A+set+audio+level)
+> uuid_audio是在fs_cli里使用, 不适合esl. 即esl应使用[mod_dptools](https://freeswitch.org/confluence/display/FREESWITCH/mod_dptools)里的命令
+
 ## 备注
 - `conn.Execute("playback", record_file, true)`不是等freeswith播放完录音后执行完毕, 它会在file的PLAYBACK_STOP事件来之前就会完成.
 - 播放多录音:　`conn.Execute("playback", "file_string://"+strings.Join(record_files,"!"), true)`
@@ -382,4 +390,4 @@ bgapi originate {origination_uuid=a8c678ec-4ba8-11e9-bb7b-107b44b13378,originati
 NAT问题
 
 参考:
-- [No hangup messages for external SIP client](https://freeswitch.org/jira/si/jira.issueviews:issue-html/FS-3592/FS-3592.html) 
+- [No hangup messages for external SIP client](https://freeswitch.org/jira/si/jira.issueviews:issue-html/FS-3592/FS-3592.html)

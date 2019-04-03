@@ -140,3 +140,51 @@ cmd := exec.Command("sh","-c","xxx")
 cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid:true}
 err := cmd.Run()
 ```
+
+### exec.Command和nohup
+node_server:
+```go
+func main() {
+	for {
+		log.Println(os.Getenv("uid"))
+
+		time.Sleep(2*time.Second)
+	}
+}
+```
+
+原有代码
+```go
+for ... {
+detailCmd = fmt.Sprintf("cd %s && env uid=%d nohup ./node_server > %s 2>&1 &",
+				"/home/chen/tmpfs",
+				0,
+				"0.log",
+			)
+
+			cmd := exec.Command("/bin/bash", "-c", detailCmd)
+			cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+			out, err := cmd.CombinedOutput() // 阻塞
+}
+```
+执行的命令是`/bin/bash -c "cd /home/chen/tmpfs && env uid=0 nohup ./node_server > 0.log 2>&1 &"`, 原因未知.
+```bash
+$ ps -ef|grep node_server
+chen     11005     1  0 15:42 pts/6    00:00:00 /bin/bash -c cd /home/chen/tmpfs && env uid=0 nohup ./node_server > 0.log 2>&1 &
+chen     11006 11005  0 15:42 pts/6    00:00:00 ./node_server
+```
+
+改进
+```go
+for ... {
+detailCmd := fmt.Sprintf("env uid=%d nohup ./node_server > %s 2>&1 &", // 这里必须要重定向,否则cmd无法退出
+			0,
+			"0.log",
+		)
+cmd := exec.Command("/bin/bash","-c",detailCmd) // 命令推荐使用绝对路径. 因为nohup启动进程时再执行exec.Command会因为$PATH为空, 而报`executable file not found in $PATH`
+		cmd.Dir="/home/chen/tmpfs" // 设置 working directory
+		// cmd.Env=[]string{"uid=0"} // 设置env, 不推荐. 因为自行设置导致不会继承父进程的env, 从而导致某些命令出错, 比如`lame`.
+		cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+		out, err := cmd.CombinedOutput()
+}
+```
