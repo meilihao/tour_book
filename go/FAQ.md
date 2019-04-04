@@ -188,3 +188,76 @@ cmd := exec.Command("/bin/bash","-c",detailCmd) // 命令推荐使用绝对路�
 		out, err := cmd.CombinedOutput()
 }
 ```
+
+### hash of unhashable type model.CustomerProfile
+```go
+{
+	...
+	se := e.NewSession() //xorm
+	defer se.Close()
+
+	err = se.Begin()
+	if err != nil {
+		sugar.Fatal(err)
+	}
+
+	cp := Profile{
+		GroupId: 10,
+		Phone:   "111",
+		Name:    "test1",
+		Belong:  "test1",
+		Expand: KVExpand{
+			Keys:   make([]string, 0),
+			Values: make([]string, 0),
+		},
+
+		Status:  1,
+	}
+	_, err = se.Insert(cp)
+	if err != nil {
+		sugar.Fatal(err) // 报错: panic: runtime error: hash of unhashable type model.CustomerProfile
+	}
+
+	sugar.Debug(se.Commit())
+}
+
+
+type Profile struct {
+	GroupId int    `xorm:"pk"` // 主账号id
+	Phone   string `xorm:"pk"`    // 客户phone
+	Name    string                // 客户名称
+	Belong  string              // 客户所属公司
+	Expand    KVExpand  `xorm:"json" json:"expand"` // 客户资料, kv对形式
+	Status    int
+	CreatedAt time.Time `xorm:"created"`
+	UpdatedAt time.Time `xorm:"updated"`
+}
+
+type KVExpand struct{
+	Keys []string `json:"keys"`
+	Values []string `json:"values"`
+}
+```
+
+错误信息:
+```log
+panic: runtime error: hash of unhashable type model.CustomerProfile
+
+goroutine 15 [running]:
+github.com/go-xorm/xorm.(*Session).innerInsert.func1(0xd32b00, 0xc0002ca140)
+	/home/chen/git/go/src/github.com/go-xorm/xorm/session_insert.go:411 +0x1b9
+github.com/go-xorm/xorm.(*Session).innerInsert(0xc0000cf8f8, 0xd32b00, 0xc0002ca140, 0x1, 0x0, 0x0)
+	/home/chen/git/go/src/github.com/go-xorm/xorm/session_insert.go:532 +0x195d
+github.com/go-xorm/xorm.(*Session).Insert(0xc0000cf8f8, 0xc0000cf6a8, 0x1, 0x1, 0x0, 0x0, 0x0)
+	/home/chen/git/go/src/github.com/go-xorm/xorm/session_insert.go:83 +0x5bc
+```
+
+当把一个 interface{} 类型值作为键添加到一个字典值的时候，Go语言会先获取这个 interface{} 类型值的实际类型（即动态类型），
+然后再使用与之对应的 hash 函数对该值进行 hash 运算，也就是说，interface{} 类型值总是能够被正确地计算出 hash 值.
+但是字典类型的键不能是函数类型、字典类型或切片类型，否则会引发一个运行时恐慌，并提示如下：
+`panic: runtime error: hash of unhashable type <某个函数类型、字典类型或切片类型的名称>`
+
+解决方法:
+将Profile.Expand定义为`*KVExpand`即可正确计算hash值.
+
+> 参考: [Go语言之自定义集合Set](https://www.jb51.net/article/89736.htm)
