@@ -377,6 +377,28 @@ conn.Execute("set_audio_level", "read 2", false)
 c.Execute("playback", "file_string:///home/chen/work/91.1.wav!silence_stream://5000,1400!file_string:///home/chen/work/91.1.wav", true)
 ```
 
+### dialplan originate
+```go
+// 呼叫fs 内部user
+dialStr = fmt.Sprintf(
+			"bgapi originate {absolute_codec_string=^^:PCMU:PCMA:G729:G722:OPUS,record_sample_rate=8000,origination_uuid=%s}user/%s %s",
+			plan.Uuid,
+			plan.Phone,
+			"&park()")
+```
+或者
+```go
+// 通过网关外呼
+dialStr := fmt.Sprintf(
+		"bgapi originate {absolute_codec_string=^^:PCMU:PCMA:G722:G729,record_sample_rate=8000,origination_uuid=%s,origination_caller_id_number=%s,origination_caller_id_name=%s}sofia/gateway/%s/%s %s",
+		plan.Uuid,
+		FSConfig.Number, // 主叫
+		FSConfig.Number,
+		FSConfig.Number,
+		plan.Phone, // 被叫
+		"&park()")
+```
+
 ### 级联外呼
 ```
 bgapi originate {origination_uuid=a8c678ec-4ba8-11e9-bb7b-107b44b13378,origination_caller_id_number=1800102xxxx,origination_caller_id_name=1800102xxxx}sofia/external/sip:188xxxxxxxx@47.96.xxx.xxx &park()
