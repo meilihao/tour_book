@@ -286,3 +286,22 @@ func main() {
 	fmt.Println(i2)
 }
 ```
+```go
+package main
+
+import "fmt"
+
+type User struct {
+}
+
+type MyUser2 = User // 因为MyUser2完全等价于User，所以具有其所有的方法，并且其中一个新增了方法，另外一个也会有
+
+func (i User) m2() {
+	fmt.Println("User.m2")
+}
+
+func main() {
+	var i2 MyUser2
+	i2.m2()
+}
+```
