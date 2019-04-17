@@ -261,3 +261,6 @@ github.com/go-xorm/xorm.(*Session).Insert(0xc0000cf8f8, 0xc0000cf6a8, 0x1, 0x1, 
 将Profile.Expand定义为`*KVExpand`即可正确计算hash值.
 
 > 参考: [Go语言之自定义集合Set](https://www.jb51.net/article/89736.htm)
+
+### struct 比较
+进行结构体比较时候，只有相同类型的结构体才可以比较，结构体是否相同不但与属性类型个数有关，还与**属性顺序**相关
