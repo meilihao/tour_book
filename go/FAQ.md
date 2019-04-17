@@ -305,3 +305,29 @@ func main() {
 	i2.m2()
 }
 ```
+
+```go
+package main
+
+import "fmt"
+
+type T1 struct {
+}
+func (t T1) m1(){
+    fmt.Println("T1.m1")
+}
+type T2 = T1
+type MyStruct struct {
+    T1
+    T2
+}
+func main() {
+    my:=MyStruct{}
+    my.m1() // ambiguous selector my.m1
+}
+```
+MyStruct没有m1方法, 且T1,T2有重复的方法, 编译器不知道该选择哪个. 改为:
+```go
+my.T1.m1()
+my.T2.m1()
+```
