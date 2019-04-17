@@ -264,3 +264,16 @@ github.com/go-xorm/xorm.(*Session).Insert(0xc0000cf8f8, 0xc0000cf6a8, 0x1, 0x1, 
 
 ### struct 比较
 进行结构体比较时候，只有相同类型的结构体才可以比较，结构体是否相同不但与属性类型个数有关，还与**属性顺序**相关
+
+### cannot take the address of 常量
+```go
+package main
+
+const cl = 100
+var bl = 123
+
+func main() {
+	println(&bl, bl)
+	println(&cl, cl)
+}
+```
