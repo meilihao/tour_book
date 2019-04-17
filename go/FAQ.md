@@ -277,3 +277,12 @@ func main() {
 	println(&cl, cl)
 }
 ```
+### Go 1.9 新特性 Type Alias
+```go
+func main() {
+	type MyInt2 = int
+	var i int = 9
+	var i2 MyInt2 = i
+	fmt.Println(i2)
+}
+```
