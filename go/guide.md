@@ -1,3 +1,6 @@
+## 版本
+- [golang发展历史](https://studygolang.com/topics/6369)
+
 ## install
 go 环境变量配置
 ```bash
