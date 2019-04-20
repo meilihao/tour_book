@@ -64,7 +64,7 @@ socket.connect() 是通信双方交换控制信息.
 MTU(Maximum Transmission Unit) 表示一个网络包的最大长度， 在以太网中一般是 1500 字节。 MTU 是**包含头部的总长度**， 因此需要从MTU 减去头部的长度， 然后得到的长度就是一个网络包中所能容纳的最大数据长度， 这一长度叫作 MSS(Maximum Segment Size).
 
 ## frame
-- [frame](/asset/img/frame.png)
+- [frame](/misc/img/frame.png)
 
 每个包的前面都有报头和起始帧分界符（SFD），报头用来测定时机，SFD 用来确定帧的起始位置.
 
@@ -76,15 +76,15 @@ MTU(Maximum Transmission Unit) 表示一个网络包的最大长度， 在以太
 - [TCP](http://liuxiang.github.io/2017/07/05/%E7%BD%91%E7%BB%9C%E7%9B%B8%E5%85%B3%EF%BC%88tcp%E6%8F%A1%E6%89%8B%E9%87%8D%E4%BC%A0,http%E9%95%BF%E7%9F%AD%E9%93%BE%E6%8E%A5,Header%E5%88%86%E7%B1%BB%EF%BC%89/)
 
 ### 分层结构
-[OSI(Open System Interconnect, 开放系统互连参考模型) vs TCP/IP model](/asset/img/OSI-vs-TCP-IP-model.jpg)
-[OSI, TCP/IP, protocol](/asset/img/tcp_ip_layers.png)
+[OSI(Open System Interconnect, 开放系统互连参考模型) vs TCP/IP model](/misc/img/OSI-vs-TCP-IP-model.jpg)
+[OSI, TCP/IP, protocol](/misc/img/tcp_ip_layers.png)
 
 ### 数据封装
-[数据封装](/asset/img/package_layers.png)
+[数据封装](/misc/img/package_layers.png)
 
 ### tcp握手/分手/状态
-[tcp握手/挥手/状态](/asset/img/tcp_status.jpg)
-[tcp状态转换](/asset/img/tcp_status_change.jpg)
+[tcp握手/挥手/状态](/misc/img/tcp_status.jpg)
+[tcp状态转换](/misc/img/tcp_status_change.jpg)
 
 实验环境:
 ```bash
