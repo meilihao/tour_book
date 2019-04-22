@@ -19,10 +19,11 @@
 
 ```sql
 select ename,sal,
-         case when sal <=2000 then 'under' 
-         when sal>=4000 then 'over' 
-         else 'mid' 
-       end as status 
+         case
+            when sal <=2000 then 'under' 
+            when sal>=4000 then 'over' 
+            else 'mid' 
+         end as status 
 from emp;
 ```
 **注意:在这里是用单引号表示字符序列.因为psql中会将双引号内容当做一个表的名字或者字段名字来对待.**
