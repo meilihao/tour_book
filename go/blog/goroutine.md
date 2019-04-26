@@ -18,6 +18,8 @@ GMP的可视化方法:
 1. `go tool trace`
 1. Debug trace
 
+> G-P-M模型的定义放在src/runtime/runtime2.go里面，而调度过程则放在了src/runtime/proc.go里
+
 ### 队列
 Go调度器有两个不同的运行队列：
 - GRQ : 全局运行队列，尚未分配给P的G
