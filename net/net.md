@@ -94,16 +94,23 @@ $ nc localhost 9000
 使用wireshare或tcpdump截包.
 
 #### 三次握手
+![TCP连接的建立](https://img-blog.csdn.net/20170605110405666?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXpjc3U=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
+
 1. 第一次握手：建立连接。客户端发送连接请求报文段，将SYN位置为1，Sequence Number为x；然后，客户端进入SYN_SEND状态，等待服务器的确认；
 2. 第二次握手：服务器收到SYN报文段。服务器收到客户端的SYN报文段，需要对这个SYN报文段进行确认，设置Acknowledgment Number为x+1(Sequence Number+1)；同时，自己自己还要发送SYN请求信息，将SYN位置为1，Sequence Number为y；服务器端将上述所有信息放到一个报文段（即SYN+ACK报文段）中，一并发送给客户端，此时服务器进入SYN_RECV状态；
 第三次握手：客户端收到服务器的SYN+ACK报文段。然后将Acknowledgment Number设置为y+1，向服务器发送ACK报文段，这个报文段发送完毕以后，客户端和服务器端都进入ESTABLISHED状态，完成TCP三次握手。
 完成了三次握手，客户端和服务器端就可以开始传送数据.
 
 > tcp每个package均带有win.
+> TCP Windows Update: 发送者传输数据比接收者读取快, 因此接收者需告诉发送者应以多大的速度发送数据, 从而使得数据传输与接受恢复正常.
+> TCP规定，SYN报文段（SYN=1的报文段）不能携带数据，但需要消耗掉一个序号
+> TCP规定，ACK报文段可以携带数据，但是如果不携带数据则不消耗序号
 
 为什么是三次: 防止了服务器端的一直等待而浪费资源. 假设握手是两次, 客户端发送连接请求因某些原因滞留, 客户端在等待超时后重新发送,服务端收到并响应,最后关闭连接通信(比如短请求像http请求之类的). 之后那个失效的连接请求抵达了服务端，由于只有两次握手，服务端会认为是新请求, 收到请求就会进入ESTABLISHED状态，等待发送数据或主动发送数据. 但此时的客户端早已进入CLOSED状态，服务端将会一直等待下去，这样浪费服务端连接资源.
 
 #### 四次分手
+![TCP连接的释放](https://img-blog.csdn.net/20170606084851272?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvcXpjc3U=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
+
 1. 第一次分手：主机1（可以使客户端，也可以是服务器端），设置Sequence Number和Acknowledgment Number，向主机2发送一个FIN报文段；此时，主机1进入FIN_WAIT_1状态；这表示主机1没有数据要发送给主机2了；
 2. 第二次分手：主机2收到了主机1发送的FIN报文段，再向主机1回一个ACK报文段，Acknowledgment Number为Sequence Number加1, 之后进入CLOSE_WAIT状态；主机1收到ACK进入FIN_WAIT_2状态；主机2告诉主机1，我“同意”你的关闭请求；
 3. 第三次分手：主机2向主机1发送FIN报文段，请求关闭连接，同时主机2进入LAST_ACK状态；
@@ -111,8 +118,9 @@ $ nc localhost 9000
 至此，TCP的四次分手就这么愉快的完成了
 
 > 在Linux上报文段的最大生存时间通常是30秒，两倍的MSL就是一分钟
+> TCP规定，FIN报文段即使不携带数据，也要消耗一个序号
 
-为什么建立连接协议是三次握手，而关闭连接却是四次握手呢? tcp是全双工, 双方都要相互确认终止发送数据, 这也是主机2的FIN和响应主机1的FIN的ACK不能同时发送的原因.
+为什么建立连接协议是三次握手，而关闭连接却是四次握手呢? **tcp是全双工, 双方都要相互确认终止发送数据**, 这也是主机2的FIN和响应主机1的FIN的ACK不能同时发送的原因.
 这是因为服务端的LISTEN状态下的SOCKET当收到SYN报文的建连请求后，它可以把ACK和SYN（ACK起应答作用，而SYN起同步作用）放在一个报文里来发送。但关闭连接时，当收到对方的FIN报文通知时，它仅仅表示对方没有数据发送给你了；但未必你所有的数据都全部发送给对方了，所以你可以未必会马上会关闭SOCKET,也即你可能还需要发送一些数据给对方之后，再发送FIN报文给对方来表示你同意现在可以关闭连接了，所以它这里的ACK报文和FIN报文多数情况下都是分开发送的.
 
 为什么要有一个 TIME_WAIT 状态？为什么不能直接到达 CLOSED 状态？
