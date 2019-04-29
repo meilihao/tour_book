@@ -377,3 +377,23 @@ Go里面有Mutex和RWMutex两种锁，RWMutex除了支持互斥的Lock/Unlock，
 once.Do中执行的操作，Happens Before 任何一个once.Do调用的返回
 
 > 如果是前端或者使用node的程序员，那么你压根就不需要清楚这些，毕竟目前js始终只有一个线程在跑
+
+### Golang中实现典型的fork调用
+https://github.com/moby/moby/tree/master/pkg/reexec
+
+Golang中没有提供 fork 调用，只有
+
+syscall.ForkExec
+os.StartProcess
+exec.Cmd
+
+这三个都类似于 fork + exec，但是没有类似C中的fork调用，在fork之后根据返回的pid 然后进入不同的函数。原因在：
+
+https://stackoverflow.com/questions/28370646/how-do-i-fork-a-go-process/28371586#28371586
+
+简要翻译一下：
+- fork 早出现在只有进程，没有线程的年代
+- C中是自行控制线程，这样fork之后才不会发生紊乱。一般都是单线程fork之后，才会开始多线程执行。
+- Go中多线程是runtime自行决定的，所以Go中没有提供单纯的fork，而是fork之后立即就exec执行新的二进制文件
+
+> C fork结果: 父进程fork后返回子进程的pid, 子进程在fork成功后返回0.
