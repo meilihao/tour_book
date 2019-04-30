@@ -123,6 +123,7 @@
 - [全面了解移动端DNS域名劫持等杂症：原理、根源、HttpDNS解决方案等](https://www.tuicool.com/articles/zmaYviI)
 - [TCP的状态转换及生产问题实操](https://www.tuicool.com/articles/uYbaUzu)
 - [百万并发下的Nginx优化，看这一篇就够了！](https://www.tuicool.com/articles/ZZRrqmY)
+- [浅谈几种常用负载均衡架构](https://www.tuicool.com/articles/qUjEBrF)
 
 ## do
 - [如何从零构建个人博客系统](https://gocn.io/article/532)
