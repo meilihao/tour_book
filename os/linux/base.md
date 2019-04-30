@@ -64,6 +64,12 @@ chmod o+t xxx
 举例: /tmp目录
 
 ## 调度器
+参考:
+- [如何更改 Linux I/O 调度器来调整性能](https://linux.cn/article-8179-1.html)
+- [Linux进程和线程的调度与优先级](https://vaqeteart.github.io/categories/study/os/linux_schedule_priority.html)
+- [深入 Linux 的进程优先级](https://linux.cn/article-7325-1.html)
+- [linux进程调度](https://peterpan980927.cn/2017/12/18/Linux%E8%BF%9B%E7%A8%8B%E8%B0%83%E5%BA%A6/)
+
 ###　IO
 Linux I/O 调度器Linux I/O scheduler控制内核提交读写请求给磁盘的方式. 自从 2.6 内核以来，管理员已经能够更改这个调度器，所以他们可以自定义他们的平台以完全适合他们的需要.
 
@@ -71,10 +77,6 @@ Linux I/O 调度器Linux I/O scheduler控制内核提交读写请求给磁盘的
 1. CFQ （Completely Fair Scheduler完全公平调度器）（cfq） : 它是许多 Linux 发行版的默认调度器；它将由进程提交的同步请求放到多个进程队列中，然后为每个队列分配时间片以访问磁盘
 1. Noop 调度器（noop） ： 基于先入先出（FIFO）队列概念的 Linux 内核里最简单的 I/O 调度器. 此调度程序**最适合于 SSD**
 1. 截止时间调度器（deadline） ： 尝试保证请求的开始服务时间
-
-> [如何更改 Linux I/O 调度器来调整性能](https://linux.cn/article-8179-1.html)
-> [Linux进程和线程的调度与优先级](https://vaqeteart.github.io/categories/study/os/linux_schedule_priority.html)
-> [深入 Linux 的进程优先级](https://linux.cn/article-7325-1.html)
 
 ### 进程
 进程可以分为CPU密集型和I/O密集型两种. I/O密集型的进程大部分时间都在用来提交I/O请求和等待I/O请求; CPU密集型进程大部分时间都花在执行代码上.
