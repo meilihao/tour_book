@@ -74,6 +74,7 @@
 - [Go语言经典面试题](https://goquiz.github.io/)
 - [Go面试题答案与解析](https://yushuangqi.com/blog/2017/golang-mian-shi-ti-da-an-yujie-xi.html)
 - [在Linux中使用Go作为脚本语言](https://blog.cloudflare.com/using-go-as-a-scripting-language-in-linux/)
+- [Go项目收藏](http://php-note.com/article/detail/d5d8d5a3518840a7af4e4c6ae5b49a48)
 
 ## 推荐源码阅读
 - [badger](https://github.com/dgraph-io)
