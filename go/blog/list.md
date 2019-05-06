@@ -20,6 +20,7 @@
 - [Golang之轻松化解defer的温柔陷阱](http://www.cnblogs.com/qcrao-2018/p/10367346.html)
 - [Go 程序到机器码的编译之旅](https://studygolang.com/articles/15648)
 - [+Go并发编程的分享](https://colobu.com/2019/04/28/gopher-2019-concurrent-in-action/)
+- [go语言调度器源代码情景分析之一](https://www.cnblogs.com/abozhang/p/10766628.html)
 
 ## RPC
  - [Thrift RPC 使用指南实战(附golang&PHP代码)](http://blog.csdn.net/liuxinmingcode/article/details/45696237)
