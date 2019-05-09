@@ -32,6 +32,7 @@ postgres:
 - 使用postgres账户登入即可(pg9.4 默认规则是`local all all peer`)，即`sudo -u postgres psql`.
 - 修改数据库实例的认证文件，比如`/var/lib/pgsql/data/pg_hba.conf`,再重启pg，根据新规则进行登入即可.
 
+>[PostgreSQL 中的客户端认证](https://scarletsky.github.io/2017/04/26/client-authentication-in-postgresql/)
 >[postgres认证相关文档](http://postgres.cn/docs/9.5/auth-methods.html#AUTH-PASSWORD)
 >[pg_hba.conf文件](http://www.postgres.cn/docs/9.5/auth-pg-hba-conf.html)
 >postgres会根据pg_hba.conf中规则出现的位置，从上到下依次匹配.规则中的METHOD是指定如何处理客户端的认证,常用的有ident，md5，password，trust，reject，pam:
@@ -48,10 +49,24 @@ local   all             postgres                                peer
 local   all             all                                     md5
 ```
 
+> 可在psql中用`SHOW hba_file;`查找pg_hba.conf, 该文件有可能不存在需自行创建.
+> pg11的pg_hba.conf在`/etc/postgresql/11/main/pg_hba.conf`
+> pg11的数据在`/var/lib/postgresql/11/main`
+
 ### `sudo systemctl status postgresql.service` failed
 
 使用`dnf install postgresql-server`安装了Fedora22 repo默认提供的postgres9.4,但无法启动.
 原因：postgres未初始化,启动前运行`postgresql-setup initdb`即可.
+
+### psql: fe_sendauth: no password supplied
+新安装的pg, 其postgres用户没有密码
+
+解决:
+```
+> sudo -u postgres psql # 进入psql
+> alter user postgres with password 'postgres' # 为postgres创建密码
+> psql -h localhost -p 5432 -U postgres -W # 使用密码登录
+```
 
 ### postgres日志
 
