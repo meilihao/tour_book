@@ -2,6 +2,19 @@
 参考:
 - [GIS基本概念](https://blog.csdn.net/alinshen/article/details/78503333)
 - [GeoJSON对象](https://www.jianshu.com/p/5c6c6e76d4df)
+- [PostGIS中的常用函数](https://my.oschina.net/weiwubunengxiao/blog/101290)
+
+## 类型
+- geometry: 几何类型, 平面. 两个点之间的最短路径是一条直线
+- geography: 地理类型, 球体. 在球体上两点之间的最短路径是一段圆弧
+
+Geometry的几种类型：
+- POINT：点
+- LINESTRING：线
+- POLYGON：面
+- MULTIPOINT：多点
+- MULTILINESTRING：多线
+- MULTIPOLYGON：多面
 
 ## install
 ```
@@ -89,6 +102,26 @@ a1f7c610001c5e400000000000804140 00000000000024400000000000003e40 00000000000024
 
 04000000
 a1f7c610001c5e400000000000003440 00000000000034400000000000002e40 00000000000034400000000000003940 a1f7c610001c5e400000000000003440
+```
+
+其他操作:
+```sql
+-- 插入
+INSERT INTO geog_point
+VALUES (ST_GeomFromText('POINT(120.437504 30.045546)', 4326),
+        'SRID=4326;MULTIPOLYGON(((120.151344 30.260626,120.125252 30.240829,120.146452 30.228668, 120.163361 30.245093,120.151344 30.260626)))');
+
+-- 返回格式
+SELECT st_asgeojson(geog_point), st_asewkt(geog_point), st_asbinary(geog_point) FROM geog_point;
+
+-- 距离
+-- ST_Distance 计算的结果单位是度, 需要乘111319（地球半径6378137*PI/180）将其转化为米
+-- [地球半径6378137的来源(高德,google一致,百度不同是6371000)](https://webapi.amap.com/maps?v=1.4.14)
+SELECT ST_Distance(ST_SetSRID(ST_GeomFromGeoJSON('{"type":"Point","coordinates":[120.151344,30.260626]}'), 4326), geog_point)*111319
+FROM geog_point;
+
+-- 是否在区域内
+SELECT ST_Contains(geog_area, ST_GeomFromText('POINT(120.14671 30.240904)', 4326)) FROM geog_point;
 ```
 
 > WKT(Well-known text)是开放地理空间联盟OGC（Open GIS Consortium ）制定的一种文本标记语言，用于表示矢量几何对象、空间参照系统及空间参照系统之间的转换
