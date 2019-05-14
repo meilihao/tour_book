@@ -16,6 +16,9 @@ Geometry的几种类型：
 - MULTILINESTRING：多线
 - MULTIPOLYGON：多面
 
+## 纠偏
+gps是基于wgs84, 因政策的原因普遍存在纠偏,比如`百度坐标 = wgs84 + 国家偏移 + 百度偏移`
+
 ## install
 ```
 $ sudo apt install postgresql-11-postgis-2.5
