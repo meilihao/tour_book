@@ -144,3 +144,19 @@ $ xrandr --newmode "1920x1440_60.00"  233.50  1920 2064 2264 2608  1440 1443 144
 $ xrandr --addmode DP-1 "1920x1440_60.00"
 $ xrandr --output DP-1 --mode "1920x1440_60.00"
 ```
+
+## ssh
+### ssh-add无法添加ed25519 key
+```
+$ ssh-add ~/.ssh/my_ed25519
+Enter passphrase for /home/chen/.ssh/my_ed25519:
+Bad passphrase, try again for /home/chen/.ssh/my_ed25519:
+Could not add identity "/home/chen/.ssh/my_ed25519": communication with agent failed
+
+$ ssh -V
+OpenSSH_7.5p1 Debian-5, OpenSSL 1.0.2l  25 May 2017
+$ echo $SSH_AUTH_SOCK
+/run/user/1000/keyring/ssh
+```
+
+虽然ssh-add无法添加, 但`ssh xxx`还是可正常使用
