@@ -5,13 +5,15 @@
 $ ssh -p 22 root@127.0.0.1
 ```
 
-1. [禁用内核更新](https://help.aliyun.com/knowledge_detail/41199.html)
+1. [禁用内核更新](https://help.aliyun.com/knowledge_detail/52869.html)
 ```
 # /etc/yum.conf
 exclude=kernel* centos-release*
 ```
 
 再更新系统并重启.
+
+> [如何避免升级 Linux 实例内核后无法启动](https://help.aliyun.com/knowledge_detail/59360.html)
 
 1. 新建用户
 ```

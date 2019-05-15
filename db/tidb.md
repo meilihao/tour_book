@@ -12,7 +12,7 @@ ansible-playbook rolling_update.yml -c local
 fatal: [127.0.0.1]: UNREACHABLE! => {"changed": false, "msg": "Failed to connect to the host via ssh: Permission denied (publickey).\r\n", "unreachable": true}
 
 ```
-$ sudo ansible-playbook bootstrap.yml -c local 
+$ sudo ansible-playbook bootstrap.yml -c local
 ```
 
 1. fail when NTP service is not running or ntpstat is not synchronised to NTP server
@@ -43,3 +43,9 @@ $ sudo vim /etc/security/limits.conf # 账号需重新登录
 解决方法:
     - 修改`group_vars/pd_servers.yml`里的pd_client_port和pd_peer_port
     - [如何自定义端口](https://pingcap.com/docs-cn/dev/how-to/deploy/orchestrated/ansible/)
+
+1. Check if the operating system supports EPOLLEXCLUSIVE : epollexclusive is not available
+EPOLLEXCLUSIVE是4.5+内核新添加的一个 epoll 的标识, 需内核支持
+
+> [惊群效应](https://mcgrady-forever.github.io/2018/03/19/network-thundering-herd/)
+> [Ngnix 是如何解决 epoll 惊群的](https://simpleyyt.com/2017/06/25/how-ngnix-solve-thundering-herd/)
