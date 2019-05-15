@@ -1,5 +1,39 @@
 # k8s
 
+## 概念
+### cluster
+cluster是计算,存储和网络资源的集合. k8s使用这些资源运行各种基于容器的服务.
+
+### master
+master是cluster的大脑, 主要职责是调度. 为了高可用, 通常会运行多个master
+
+### controller
+k8s通常不直接创建pod, 而是通过controller来运行管理pod.
+
+controller分类:
+- Deployment : 管理pod的多副本(通过ReplicaSet), 确保pod按照期望的状态运行
+- ReplicaSet : 实现了Pod的多副本管理. 使用Deployment时会自动创建ReplicaSet, 因此我们通常不直接使用它
+- DaemonSet : 用于node最多只运行一个pod副本的场景
+- StatefuleSet : 保证pod的每个副本在整个生命周期中的名称是不变的(因故障需删除并重启除外), 同时会保证副本按照固定的顺序启动,更新或删除
+
+### node
+node是具体负责运行容器的应用, 会监控并汇报容器状态, 同时会根据master的要求管理容器的生命周期. node由master管理.
+
+### pod
+pod是k8s最小的工作(调度,扩展,共享资源,管理生命周期)单位. 每个pod包含一个或多个容器, 它们会作为一个整体被master进行管理, 其原因是:
+1. 可管理性: 某些容器的应用间存在紧密联系
+1. 共享通信和存储: pod中的容器使用同一个网络namespace.
+
+### service
+定义了外界访问一组特定pod的方法.
+
+### Namespace
+Namespace将一个物理cluster逻辑上划分为多个虚拟的cluster, 不同Namespace间的资源是完全隔离的.
+
+k8s默认会创建两个Namespace:
+- default : 创建资源时如果不指定Namespace则会放入这里
+- kube-system : k8s自己创建的系统资源会放入这里
+
 ## doc
 - [Kubernetes v1.10.x HA 全手动安装教程](https://www.kubernetes.org.cn/3814.html)
 - [Kubernetes指南](https://feisky.gitbooks.io/kubernetes/)
@@ -11,9 +45,9 @@
 ## install
 ```sh
 apt-get update && apt-get install -y apt-transport-https
-curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add - 
+curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add -
 cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
-deb http://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
+deb http://mirrors.aliyun.com/kubernetes/apt/ kubernetes-stretch main
 EOF  
 apt-get update
 apt-get install -y kubelet kubeadm kubectl
@@ -37,7 +71,7 @@ apt-get install -y kubelet kubeadm kubectl
 
 ```
 $ cd server
-$ tar zxvf kubernetes-server-linux-amd64.tar.gz 
+$ tar zxvf kubernetes-server-linux-amd64.tar.gz
 $ cd kubernetes/server/bin
 $ mkdir log
 # on master
