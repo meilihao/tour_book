@@ -263,6 +263,9 @@ sudo sysctl net.ipv4.tcp_congestion_control
 lsmod | grep bbr
 ```
 
+#### 文件监控限制
+[fs.inotify.max_user_watches=524288](https://code.visualstudio.com/docs/setup/linux#_visual-studio-code-is-unable-to-watch-for-file-changes-in-this-large-workspace-error-enospc)
+
 ### FAQ
 
 #### dmesg中出现`tpm_tis 00:05: A TPM error (6) occurred attempting to read a pcr value`

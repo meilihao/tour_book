@@ -3,9 +3,7 @@
 1. apt/dnf
 1. nginx.conf/备份DB/gogs
 1. 浏览器配置
+1. ssr
 
 ## ResetOS
-sudo vim /etc/sysctl.conf
-vm.swappiness=10
-
 SwitchyOmega
