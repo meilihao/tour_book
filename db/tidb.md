@@ -29,8 +29,8 @@ $ sudo vim /etc/security/limits.conf # 账号需重新登录
 
 1. This machine does not have sufficient CPU to run TiDB, at least 8 cores.
 解决方法:
-1. 将`group_vars/all.yml`里的`dev_mode`设为`True`, 这样bootstrap.yml 阶段会跳过磁盘检测、CPU、内存容量检测, **开发阶段推荐此配置**
-1. 修改`roles/check_system_optional/defaults/main.yml`里的`tidb_min_cpu`
+    - 将`group_vars/all.yml`里的`dev_mode`设为`True`, 这样bootstrap.yml 阶段会跳过磁盘检测、CPU、内存容量检测, **开发阶段推荐此配置**
+    - 修改`roles/check_system_optional/defaults/main.yml`里的`tidb_min_cpu`
 
 参考:
 - [Deploy 2.0GA failed #6423](https://github.com/pingcap/tidb/issues/6423)
@@ -38,3 +38,8 @@ $ sudo vim /etc/security/limits.conf # 账号需重新登录
 
 1. 卡在`wait xxx up`
 通常是权限问题, 即`/home/tidb`下的文件不是tidb所有引起, 通过`sudo chown -R tidb:tidb *`进行修正即可.
+
+1. TiDB-Ansible部署的pd_server 端口和 rancher 部署etcd的端口存在冲突, 比如2380
+解决方法:
+    - 修改`group_vars/pd_servers.yml`里的pd_client_port和pd_peer_port
+    - [如何自定义端口](https://pingcap.com/docs-cn/dev/how-to/deploy/orchestrated/ansible/)
