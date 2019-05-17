@@ -15,6 +15,7 @@ controller分类:
 - ReplicaSet : 实现了Pod的多副本管理. 使用Deployment时会自动创建ReplicaSet, 因此我们通常不直接使用它
 - DaemonSet : 用于node最多只运行一个pod副本的场景
 - StatefuleSet : 保证pod的每个副本在整个生命周期中的名称是不变的(因故障需删除并重启除外), 同时会保证副本按照固定的顺序启动,更新或删除
+- Job
 
 ### node
 node是具体负责运行容器的应用, 会监控并汇报容器状态, 同时会根据master的要求管理容器的生命周期. node由master管理.
@@ -33,6 +34,48 @@ Namespace将一个物理cluster逻辑上划分为多个虚拟的cluster, 不同N
 k8s默认会创建两个Namespace:
 - default : 创建资源时如果不指定Namespace则会放入这里
 - kube-system : k8s自己创建的系统资源会放入这里
+
+## 架构
+k8s cluster 由 master 和 node 组成. master运行着kube-apiserver,
+kube-scheduler, kube-controller-manager, etcd和pod网络.
+
+### kube-dns
+为cluster提供dns服务
+
+### kube-apiserver
+提供k8s api(RESTFul API), 是k8s cluster的前端接口.
+
+### kube-scheduler
+负责将pod放到哪个node上.
+
+scheduler 考虑维度: cluster的拓扑结构, 节点负载, 应用对高可用,性能,数据亲和性等
+
+### kube-controller-manager
+管理 cluster的各种资源, 保证资源处于预期状态
+
+controller分类:
+- replication controller : 管理 deployment, statefulset, daemonset
+- endpoints controller
+- namespace controller : 管理namespace
+- serviceaccounts controller
+
+### etcd
+保持 k8s cluster的配置信息和各种资源的状态
+
+### pod网络
+负责pod间的通信, 比如flannel, canal, calico, weave
+
+### node
+pod运行的地方, 其上运行的相关组件有kubelet,kube-proxy和pod网络.
+
+#### kubelet
+是node的agent. scheduler选中该node后会将pod的具体配置信息(image,volume等)发送到kubelet, 由kubelet依据这些信息创建和运行容器, 并向master报告运行状态
+
+#### kube-proxy
+负责将访问service的tcp/udp数据流转发到具体的容器上. 有多个容器副本时, 它还能实现负载均衡
+
+> k8s对象命名方式: 父对象名 + "-" + 随机字符串(字母+数字)
+> 出于安全考虑, 默认下k8s不会将pod调度到master节点,可使用[`kubectl taint`修改](https://kubernetes.io/zh/docs/concepts/configuration/taint-and-toleration/)
 
 ## doc
 - [Kubernetes v1.10.x HA 全手动安装教程](https://www.kubernetes.org.cn/3814.html)
@@ -123,6 +166,12 @@ imagePullPolicy:
 - IfNotPresent ：如果本地存在镜像就优先使用本地镜像。
 - Never：直接不再去拉取镜像了，使用本地的；如果本地不存在就报异常了
 
+### 命令 vs 配置文件(yaml)
+- 命令 : 简单, 直观, 快捷. 适用于临时环境(测试,实验)
+- 配置文件:
+    1. 正式, 丰富. 适合正式的, 规模化部署
+    1. 可以像管理代码一样进行管理
+
 ## 术语
 ### pod
 pod是k8s的基本处理单元, 其包含一个特殊的Pause容器(即根容器)和一个或多个紧密相关的用户业务容器.
@@ -161,7 +210,14 @@ targetPort 是Pod上的端口.
 ## cmd
 - `kubectl logs -f POD-NAME` # 获取pod日志
 - `kubectl exec -it POD-NAME sh` # 进入pod的容器
-- `kubectl describe pods/POD-NAME` # 获取pod的描述信息(简单), 生命周期事件
+- `kubectl describe pod POD-NAME` # 获取pod的描述信息(简单), 生命周期事件
+- `kubectl describe deployment DeploymentName` # 获取deployment的描述信息(简单), 生命周期事件
+- `kubectl describe replicaset ReplicasetName` # 获取replicaset的描述信息(简单), 生命周期事件
+- `kubectl describe pod nginx-ingress-controller-hv2n6 --namespace=ingress-nginx` # 查看指定namespace的指定pod的状态
 - `kubectl get pod myweb-fnncj --output json/yaml` # 获取pod的详细信息, 有状态信息
+- `kubectl get pods --all-namespaces [-o wide]` # 获取所有pod的状态,加`-o wide`时还会输出更多信息, 比如ip和node host
 - `kubectl get event` # 查询所有事件
+- `kubectl get deployment` # 获取所有deployment
+- `kubectl get nodes` # 获取所有node
+- `kubectl get replicaset` # 获取所有replicaset
 - `kubectl logs POD-NAME Container-NAME [-p]` # 查询pod中容器的日志,`-p`允许查询`Container-NAME`重建前的日志
