@@ -236,6 +236,13 @@ libpam.so.0 -> libpam.so.0.83.0
 
 改成10后感觉开关机,运行都慢了许多,调为50即可.
 
+swap分区:
+- `<=4G`: 内存的2倍
+- `>4G&&<=16G`: 内存大小
+- `>16G`: 不设置swap
+
+> db server建议使用大内存且关闭swap
+
 #### I/O调度器
 
 - [如何更改 Linux I/O 调度器来调整性能 for ssd](https://linux.cn/article-8179-1.html)

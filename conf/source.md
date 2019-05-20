@@ -34,5 +34,8 @@ java -version
 javac -version
 ```
 
+#### 安装openjdk
+sudo apt install  openjdk-8-jdk
+
 #### 参考
 1. [Ubuntu 安装 JDK 7 / JDK8 的两种方式](http://www.cnblogs.com/a2211009/p/4265225.html)

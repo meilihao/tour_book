@@ -71,6 +71,9 @@ MTU(Maximum Transmission Unit) 表示一个网络包的最大长度， 在以太
 > 制定以太网标准的组织 IEEE 出于历史原因使用了“帧”而不是“包”，因此在以太网术语中都是说“帧”,可以认为两者等价.
 
 ## TCP/IP 协议
+TCP/IP协议族是一组协议的集合, 用来实现互联网上主机之间的相互通信.
+分层(是计算机领域的常用技巧)是为了隔离，通过分层划分职能，拆解问题，层与层之间约定接口，屏蔽实现细节
+
 参考:
 - [TCP/IP 知识点整理](http://strawhatfy.github.io/2015/07/30/TCP-IP-Protocol/)
 - [TCP](http://liuxiang.github.io/2017/07/05/%E7%BD%91%E7%BB%9C%E7%9B%B8%E5%85%B3%EF%BC%88tcp%E6%8F%A1%E6%89%8B%E9%87%8D%E4%BC%A0,http%E9%95%BF%E7%9F%AD%E9%93%BE%E6%8E%A5,Header%E5%88%86%E7%B1%BB%EF%BC%89/)
