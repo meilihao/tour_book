@@ -5,6 +5,9 @@ sudo add-apt-repository ppa:webupd8team/java
 sudo apt-get update
 ```
 1. 安装oracle-java-installer
+参考:
+  - [Ubuntu 安装 JDK 7 / JDK8 的两种方式](http://www.cnblogs.com/a2211009/p/4265225.html)
+
 ```
 # jdk7
 sudo apt-get install oracle-java7-installer
@@ -38,4 +41,4 @@ javac -version
 sudo apt install  openjdk-8-jdk
 
 #### 参考
-1. [Ubuntu 安装 JDK 7 / JDK8 的两种方式](http://www.cnblogs.com/a2211009/p/4265225.html)
+1. 
