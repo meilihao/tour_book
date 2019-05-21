@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS scenic_resort
 (
     id            serial,
     name          VARCHAR(200) NOT NULL,                            -- 景区名称
-    geog_point    GEOMETRY(Point, 4326),        DEFAULT 'POINT EMPTY'                    -- 坐标点
+    geog_point    GEOMETRY(Point, 4326),        DEFAULT 'POINT EMPTY'                    -- 坐标点 // DEFAULT 'POINT(120.123364 30.224589)',
     geog_area     GEOMETRY(MULTIPOLYGON, 4326), DEFAULT 'MULTIPOLYGON EMPTY'                    -- 坐标区域
     voice         INTEGER[]    NOT NULL                            --语音id
 );
