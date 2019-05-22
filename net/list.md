@@ -1,5 +1,6 @@
 ## socket
 - [Unix网络编程(Unix Network Programming)](http://dirlt.com/unp.html)
+- [epoll 的本质是什么？](https://my.oschina.net/editorial-story/blog/3052308)
 
 ## 路由
 - [VMware中三种网络连接的区别](http://www.cnblogs.com/rainman/archive/2013/05/06/3063925.html)
