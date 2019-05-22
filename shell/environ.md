@@ -20,7 +20,10 @@ export LD_LIBRARY_PATH=NEW_DIRS: $LD_LIBRARY_PATH
 
 # PS1
 
-sh的提示字符串.可扩展的参数:`\u`:用户名;`\h`:主机名;`\w`:当前工作目录.ubuntu下直接修改无效,需修改.bash_profile等配置文件来生效.
+sh的提示字符串.可扩展的参数:`\u`:用户名;`\h`:主机名;`\w`:当前工作目录.
+
+> 可通过全局配置文件`/etc/bash.bashrc`或`/etc/profile`进行调整
+> ubuntu下直接修改无效,需修改.bash_profile等配置文件来生效
 
 # IFS(内部字段分隔符，Internal Field Separator)
 
@@ -29,6 +32,10 @@ sh的提示字符串.可扩展的参数:`\u`:用户名;`\h`:主机名;`\w`:当�
 # PWD
 
 存储当前的工作目录
+
+# LANG
+当前系统使用的字符集, 在`/etc/default/locale`里.
+可通过`locale -a`查看可用的字符集.
 
 # 配置文件
 `bashrc`与`profile`都用于保存用户的环境信息，`bashrc`用于非交互式`no-login shell`,比如x-window下启动的终端，而profile用于交互式`login shell`.
