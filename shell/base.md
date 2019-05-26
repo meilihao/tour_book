@@ -157,3 +157,26 @@ delimiter
 使用`-x`选项, 比如`#!/bin/sh -x`或`sh -x xxx.sh`,可追踪shell每个命令的执行结果.
 
 ## assert函数
+
+## {}的特殊用法
+```bash
+$ echo a{a,b}
+aa ab
+$ echo a{,b}
+a ab
+$ echo a{a..c}
+aa ab ac
+```
+
+## 屏蔽别名
+1. 使用绝对路径
+1. 使用`\`屏蔽系统别名, 比如`\mv`
+
+查找别名:
+```bash
+$ alias ll
+alias ll='ls -l'
+```
+
+## bash命令中的反引号
+将反引号内容作为子命令并优先执行, 比如"mv `find . -name ".txt"` dir"
