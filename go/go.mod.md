@@ -31,3 +31,7 @@ replace (
 ```sh
 export GOPROXY=https://goproxy.io
 ```
+
+## FAQ
+### go: cannot determine module path for source directory
+在 $GOPATH 之外使用 go modules, 如果是现有项目的话可以直接 go mod init, 现有项目会根据 git remote 自动识别 module 名, 但是新项目的话就会报`go: cannot determine module path for source directory`, 此时需要带上 module 名即可.
