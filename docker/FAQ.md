@@ -91,6 +91,8 @@ ENTRYPOINT会把容器名后面的所有内容都当成参数传递给其指定�
 
 ps: shell 形式防止使用任何CMD或运行命令行参数，但是缺点是您的ENTRYPOINT将作/bin/sh -c的子命令启动，它不传递信号。这意味着可执行文件将不是容器的PID 1，并且不会接收Unix信号，因此您的可执行文件将不会从docker stop <container>接收到SIGTERM
 
+> 默认情况下，Docker 会提供一个隐含的 ENTRYPOINT:`/bin/sh -c`. 所以在不指定 ENTRYPOINT 时，实际上运行容器里的在完整进程是`/bin/sh -c ${CMD}`，即 CMD 的内容就是 ENTRYPOINT 的参数. 因此我们会统一称 Docker 容器的启动进程为 ENTRYPOINT，而不是 CMD.
+
 ## alpine无法运行golang程序
 ```sh
 # /app/micro
@@ -121,6 +123,11 @@ ps: shell 形式防止使用任何CMD或运行命令行参数，但是缺点是�
 ```sh
 apk add --no-cache tzdata
 ```
+
+## Dockerfile
+Dockerfile 中的每个原语执行后都会生成一个对应的镜像层. 即使原语本身并没有明显地修改文件的操作（比如，ENV 原语），它对应的层也会存在. 只不过在外界看来，这个层是空的.
+
+有时docker run后面不加命令是因为在 Dockerfile 中已经指定了 CMD, 否则就需要将进程的启动命令加在`docker run`后面.
 
 ## Layer/Image ID
 镜像由一系列层组成, 每层都用64位的十六进制数来表示, 非常类似Git repo中的commit.

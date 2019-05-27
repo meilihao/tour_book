@@ -1,4 +1,8 @@
 # docker实现
+参考:
+- [Docker背后的内核知识：命名空间资源隔离](https://linux.cn/article-5057-1.html)
+- [容器核心技术详解](https://blog.fliaping.com/container-core-technical-details/)
+
 Docker 容器实际上是在创建容器进程时，指定了这个进程所需要启用的一组 Namespace和Cgroups 参数. 所以说，容器其实是一种追加了特定参数的进程而已.
 
 对 Docker 来说，它最核心的原理就是为待创建的用户进程：
@@ -202,6 +206,92 @@ init 层是 Docker 项目单独生成的一个内部层，专门用来存放 /et
 
 参考:
 - [overlayfs技术探究以及docker的使用](https://www.jianshu.com/p/959e8e3da4b2)
+
+## docker exec原理
+```bash
+$ docker inspect --format '{{ .State.Pid }}'  fdcef525207f # 获取容器在宿主机的pid
+8432
+$ sudo ls -l /proc/8432/ns # 看到这个 8432 进程的所有 Namespace 对应的文件
+总用量 0
+lrwxrwxrwx 1 root root 0 5月  27 22:45 cgroup -> cgroup:[4026531835]
+lrwxrwxrwx 1 root root 0 5月  27 22:45 ipc -> ipc:[4026532547]
+lrwxrwxrwx 1 root root 0 5月  27 22:45 mnt -> mnt:[4026532545]
+lrwxrwxrwx 1 root root 0 5月  27 22:40 net -> net:[4026532550]
+lrwxrwxrwx 1 root root 0 5月  27 22:45 pid -> pid:[4026532548]
+lrwxrwxrwx 1 root root 0 5月  27 22:45 pid_for_children -> pid:[4026532548]
+lrwxrwxrwx 1 root root 0 5月  27 22:45 user -> user:[4026531837]
+lrwxrwxrwx 1 root root 0 5月  27 22:45 uts -> uts:[4026532546]
+```
+
+可以看到: 一个进程的每种 Linux Namespace，都在它对应的 /proc/[进程号]/ns 下有一个对应的虚拟文件，并且链接到一个真实的 Namespace 文件上. 有了这些信息我们就可以做一些有趣的事情了，比如加入到一个已经存在的 Namespace 当中.
+
+这也就意味着：一个进程可以选择加入到某个进程已有的 Namespace 当中，从而达到“进入”这个进程所在容器的目的，这正是 docker exec 的实现原理, 而这个操作所依赖系统调用setns().
+
+演示demo:
+```c
+#define _GNU_SOURCE
+#include <fcntl.h>
+#include <sched.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+ 
+// 它需要两个参数: argv[1]是当前进程要加入的 Namespace 文件的路径, 而argv[1]是将要在这个 Namespace 里运行的进程
+// 这段代码的的核心操作是通过 open() 系统调用打开了指定的 Namespace 文件，并把这个文件的描述符 fd 交给 setns() 使用. 
+// 在 setns() 执行后，当前进程就加入了这个文件对应的 Linux Namespace 中.
+int main(int argc, char *argv[]) {
+    int fd;
+    
+    fprintf(stdout, "argv1: %s, argv2\n", argv[1],argv[2]);
+
+    fd = open(argv[1], O_RDONLY);
+    if (setns(fd, 0) == -1) {
+        fprintf(stderr, "setns failed: %s\n", strerror(errno));
+    	return -1;
+    }
+    
+    if (execvp(argv[2], &argv[2]) != 0 ) {
+    	fprintf(stderr, "failed to execvp argments %s\n", strerror(errno));
+    	return -1;
+  	}
+
+  	printf("all done!\n");
+  	return 0;
+}
+```
+
+运行:
+```bash
+$ gcc -o setns setns.c 
+$ sudo ./setns /proc/25686/ns/net /bin/bash
+$ sudo ps -ef|grep /bin/bash
+root       441 32530  0 23:32 pts/2    00:00:00 sudo ./setns /proc/8432/ns/pid /bin/bash
+root       442   441  0 23:32 pts/2    00:00:00 /bin/bash # 找到进程
+chen       625   477  0 23:32 pts/4    00:00:00 grep --color=auto /bin/bash
+chen      4084     1  0 22:17 ?        00:00:00 /bin/bash /usr/lib/x86_64-linux-gnu/bamf/bamfdaemon-dbus-runner
+$ sudo ls -al /proc/727/ns/
+总用量 0
+dr-x--x--x 2 root root 0 5月  27 23:34 .
+dr-xr-xr-x 9 root root 0 5月  27 23:34 ..
+lrwxrwxrwx 1 root root 0 5月  27 23:34 cgroup -> cgroup:[4026531835]
+lrwxrwxrwx 1 root root 0 5月  27 23:34 ipc -> ipc:[4026531839]
+lrwxrwxrwx 1 root root 0 5月  27 23:34 mnt -> mnt:[4026531840]
+lrwxrwxrwx 1 root root 0 5月  27 23:34 net -> net:[4026532550] # 与上面进程8432的ns比较, 发现一致, 因此它们的ifconfig结果也会一致
+lrwxrwxrwx 1 root root 0 5月  27 23:34 pid -> pid:[4026531836]
+lrwxrwxrwx 1 root root 0 5月  27 23:34 pid_for_children -> pid:[4026531836]
+lrwxrwxrwx 1 root root 0 5月  27 23:34 user -> user:[4026531837]
+lrwxrwxrwx 1 root root 0 5月  27 23:34 uts -> uts:[4026531838]
+```
+
+> 此外，Docker 还专门提供了`-net`参数，可以让我们启动一个容器时加入到另一个容器的 Network Namespace 里，比如`docker run -it --net container:${容器id} busybox ifconfig`
+> 同时如果指定`–net=host`就意味着这个容器不会为进程启用 Network Namespace. 即这个容器拆除了 Network Namespace 的“隔离墙”，它会和宿主机上的其他普通进程一样，直接共享宿主机的网络栈. 这就为容器直接操作和使用宿主机网络提供了一个渠道.
+
+## docker commit
+实际上就是在容器运行起来后，把最上层的“可读写层”加上原先容器镜像的只读层，打包组成了一个新的镜像, 下面这些只读层在宿主机上是共享的，不会占用额外的空间.
+而由于使用了联合文件系统，你在容器里对镜像 rootfs 所做的任何修改，都会被操作系统先复制到这个可读写层，然后再修改, 这就是所谓的`Copy-on-Write`.
+而正如前所说init 层的存在，就是为了避免你执行 docker commit 时，把 Docker 自己对 /etc/hosts 等文件做的修改也一起提交掉.
 
 ## 扩展
 ### clone demo
