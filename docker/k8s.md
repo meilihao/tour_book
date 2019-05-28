@@ -1,6 +1,7 @@
 # k8s
 参考:
 - [Kubernetes核心概念总结](http://dockone.io/article/8866)
+- [Kubernetes架构为什么是这样的？](https://www.tuicool.com/articles/J7Rbimu)
 
 ## 概念
 

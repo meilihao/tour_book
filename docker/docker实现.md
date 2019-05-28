@@ -19,12 +19,7 @@ Namespace包括PID、Mount、UTS、IPC、Network 和 User.
 - setns() : 把某进程加入到某个namespace
 
 ### PID
-让被隔离进程只看到当前 PID Namespace 里的进程
-
-linux创建进程的system call:
-```c
-int pid = clone(main_function, stack_size, SIGCHLD, NULL); 
-```
+让被隔离进程只看到当前 PID Namespace 里的进程, 也使得不同 PID namespace 里的进程 PID 可以重复且互不影响. PID namesapce 对容器类应用特别重要， 可以实现容器内进程的暂停/恢复等功能，还可以支持容器在跨主机的迁移前后保持内部进程的 PID 不发生变化.
 
 使用 PID Namespace即指定 CLONE_NEWPID 参数:
 ```c
@@ -43,6 +38,40 @@ flag : CLONE_NEWNS
 
 ### Network
 让被隔离进程看到当前 Namespace 里的网络设备和配置
+
+### UTS
+提供了主机名和域名的隔离，这样每个容器就可以拥有了独立的主机名和域名，在网络上可以被视作一个独立的节点而非宿主机上的一个进程.
+
+演示:
+```c
+...
+int child_main(void* arg) {
+  printf("在子进程中!\n");
+  sethostname("NewNamespace", 12);
+  execv(child_args[0], child_args);
+  return 1;
+}
+
+int main() {
+...
+int child_pid = clone(child_main, child_stack+STACK_SIZE, CLONE_NEWUTS | SIGCHLD, NULL);
+...
+}
+```
+
+### IPC
+
+演示:
+```
+...
+int child_pid = clone(child_main, child_stack+STACK_SIZE, CLONE_NEWIPC | SIGCHLD, NULL);
+...
+```
+> 目前使用IPC namespace机制的软件不多, 比较有名的有PostgreSQL. Docker本身通过socket或tcp进行通信
+
+### User
+隔离了安全相关的标识符（identifiers）和属性（attributes）, 包括用户ID、用户组ID、root目录、key（指密钥）以及特殊权限
+
 
 ## Linux Cgroups (Linux Control Group)
 限制一个进程组能够使用的资源上限，包括 CPU、内存、磁盘、网络带宽等等. 此外，Cgroups 还能够对进程进行优先级设置、审计，以及将进程挂起和恢复等操作.
@@ -286,6 +315,11 @@ lrwxrwxrwx 1 root root 0 5月  27 23:34 uts -> uts:[4026531838]
 > 此外，Docker 还专门提供了`-net`参数，可以让我们启动一个容器时加入到另一个容器的 Network Namespace 里，比如`docker run -it --net container:${容器id} busybox ifconfig`
 > 同时如果指定`–net=host`就意味着这个容器不会为进程启用 Network Namespace. 即这个容器拆除了 Network Namespace 的“隔离墙”，它会和宿主机上的其他普通进程一样，直接共享宿主机的网络栈. 这就为容器直接操作和使用宿主机网络提供了一个渠道.
 
+PID namespace 比较特殊, 因为它本身的限制，进程所属的pid namespace在它创建的时候就确定了，不能更改. 所以`sudo ./setns /proc/8432/ns/pid /bin/bash`是无效的. 原因???
+
+> [Namespaces in operation, part 4: more on PID namespaces](https://lwn.net/Articles/532748/)
+> 在`/proc/[pid]/ns`下如果两个进程指向的namespace编号相同，就说明他们在同一个namespace下，否则就在不同namespace里面. `/proc/[pid]/ns`的另外一个作用是: 一旦文件被打开，只要打开的文件描述符（fd）存在，那么就算PID所属的所有进程都已经结束，创建的namespace也会一直存在.
+
 ## docker commit
 实际上就是在容器运行起来后，把最上层的“可读写层”加上原先容器镜像的只读层，打包组成了一个新的镜像, 下面这些只读层在宿主机上是共享的，不会占用额外的空间.
 而由于使用了联合文件系统，你在容器里对镜像 rootfs 所做的任何修改，都会被操作系统先复制到这个可读写层，然后再修改, 这就是所谓的`Copy-on-Write`.
@@ -329,7 +363,7 @@ int container_main(void* arg)
 int main()
 {
   printf("Parent - start a container!\n");
-  int container_pid = clone(container_main, container_stack+STACK_SIZE, SIGCHLD , NULL);
+  int container_pid = clone(container_main, container_stack+STACK_SIZE, SIGCHLD , NULL); // clone 是 linux创建进程的system call
   if (container_pid < 0) {
     fprintf(stderr, "clone failed: %s\n", strerror(errno));
     return -1;
@@ -342,3 +376,30 @@ int main()
   return 0;
 }
 ```
+
+### fork 系统调用
+当程序调用fork（）函数时，系统会创建新的进程，为其分配资源，例如存储数据和代码的空间, 然后把原来的进程的所有值都复制到新的进程中，只有少量数值与原来的进程值不同，相当于克隆了一个自己. 
+
+那么程序的后续代码逻辑要如何区分自己是新进程还是父进程呢: fork()的神奇之处在于它仅仅被调用一次，却能够返回两次（父进程与子进程各返回一次）, 通过返回值的不同就可以进行区分父进程与子进程. 它可能有三种不同的返回值：
+- 在父进程中，fork返回新创建子进程的进程ID
+- 在子进程中，fork返回0
+- 如果出现错误，fork返回一个负值
+
+> 孤儿进程的检查方法是自己通过调用 getppid() 并判断是否返回 1.
+
+### runC
+参考:
+ - [探索 runC](https://segmentfault.com/a/1190000017543294)
+
+容器运行时(Container Runtime)是指管理容器和容器镜像的软件, 而runC是一个遵循OCI标准的用来运行容器的**命令行工具**(CLI Tool), 同时它也是一个Runtime的实现.
+
+查看docker的runtime信息:
+```sh
+$ docker info
+.....
+Runtimes: runc
+Default Runtime: runc
+.....
+```
+
+runC可以启动并管理符合OCI标准的容器. 简单地说，runC需要利用OCI bundle创建一个独立的运行环境，并执行指定的程序. 在Linux平台上，这个环境就是指各种类型的Namespace以及Capability等等配置.

@@ -56,6 +56,7 @@
 - [理解 channels - Kavya Joshi](https://blog.lab99.org/post/golang-2017-10-04-video-understanding-channels.html#jian-dan-de-fa-song-jie-shou)
 - [*Go性能监控/分析工具](http://johng.cn/go%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7%EF%BC%9Ago-tool-pprof/)
 - [全面总结： Golang 调用 C/C++，例子式教程](https://juejin.im/post/5a62f7cff265da3e4c07e0ab)
+- [配置 sql.DB 获得更好的性能](https://www.tuicool.com/articles/6nYJryF)
 
 ## 教程
 - [Go by Example 中文](http://gobyexample.everyx.in/)
