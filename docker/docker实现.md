@@ -244,7 +244,7 @@ lrwxrwxrwx 1 root root 0 5月  27 22:45 uts -> uts:[4026532546]
 int main(int argc, char *argv[]) {
     int fd;
     
-    fprintf(stdout, "argv1: %s, argv2\n", argv[1],argv[2]);
+    fprintf(stdout, "argv1: %s, argv2: %s\n", argv[1],argv[2]);
 
     fd = open(argv[1], O_RDONLY);
     if (setns(fd, 0) == -1) {
@@ -265,13 +265,11 @@ int main(int argc, char *argv[]) {
 运行:
 ```bash
 $ gcc -o setns setns.c 
-$ sudo ./setns /proc/25686/ns/net /bin/bash
+$ sudo ./setns /proc/8432/ns/net /bin/bash
 $ sudo ps -ef|grep /bin/bash
-root       441 32530  0 23:32 pts/2    00:00:00 sudo ./setns /proc/8432/ns/pid /bin/bash
+root       441 32530  0 23:32 pts/2    00:00:00 sudo ./setns /proc/8432/ns/net /bin/bash
 root       442   441  0 23:32 pts/2    00:00:00 /bin/bash # 找到进程
-chen       625   477  0 23:32 pts/4    00:00:00 grep --color=auto /bin/bash
-chen      4084     1  0 22:17 ?        00:00:00 /bin/bash /usr/lib/x86_64-linux-gnu/bamf/bamfdaemon-dbus-runner
-$ sudo ls -al /proc/727/ns/
+$ sudo ls -al /proc/442/ns
 总用量 0
 dr-x--x--x 2 root root 0 5月  27 23:34 .
 dr-xr-xr-x 9 root root 0 5月  27 23:34 ..
