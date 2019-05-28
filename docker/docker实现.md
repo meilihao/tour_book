@@ -325,6 +325,27 @@ PID namespace 比较特殊, 因为它本身的限制，进程所属的pid namesp
 而由于使用了联合文件系统，你在容器里对镜像 rootfs 所做的任何修改，都会被操作系统先复制到这个可读写层，然后再修改, 这就是所谓的`Copy-on-Write`.
 而正如前所说init 层的存在，就是为了避免你执行 docker commit 时，把 Docker 自己对 /etc/hosts 等文件做的修改也一起提交掉.
 
+## Volume
+volume机制允许将宿主机上指定的目录或者文件挂载到容器里面进行读取和修改操作.
+
+演示:
+```sh
+$ docker run -v /test ... # 由于没有显示声明宿主机目录，那么 Docker 就会默认在宿主机上创建一个临时目录 /var/lib/docker/volumes/[VOLUME_ID]/_data, 再挂载到容器的 /test 目录上
+$ docker run -v /var:/test ... # 把指定的宿主机 /var 目录挂载到容器的 /test 目录上
+$ docker inspect --format '{{json .Mounts }}' ${容器id} # 查看挂载
+```
+
+原理: 只需要在 rootfs 准备好之后，在执行 chroot/pivot_root 之前，把 Volume 指定的宿主机目录（比如 /var 目录），挂载到指定的容器目录（比如 /test 目录）即宿主机上对应的目录（即"MergedDir": "/var/lib/docker/overlay2/5a66027c4bd6602d784e6f0a0e2ffb787bf5d77adee04dfeba2eb652cecbeb4c/merged/upper"???）上，这个 Volume 的挂载工作就完成了.
+
+更重要的是，由于执行这个挂载操作时，“容器进程”已经创建了，也就意味着此时 Mount Namespace 已经开启了. 所以这个挂载事件只在这个容器里可见, 在宿主机上是看不见容器内部的这个挂载点的. 这就保证了容器的隔离性不会被 Volume 打破.
+
+> 注意：这里提到的 " 容器进程 "，是 Docker 创建的一个容器初始化进程 (dockerinit)，而不是应用进程 (ENTRYPOINT + CMD). dockerinit 会负责完成根目录的准备、挂载设备和目录、配置 hostname 等一系列需要在容器内进行的初始化操作. 最后它通过 execv() 系统调用，让应用进程取代自己，成为容器里的 PID=1 的进程.
+
+这里使用到的挂载技术是 Linux 的绑定挂载（bind mount）机制. 它的主要作用就是: 允许你将一个目录或者文件，而不是整个设备，挂载到一个指定的目录上, 并且在该挂载点上进行的任何操作，只是发生在被挂载的目录或者文件上，而原挂载点的内容则会被隐藏起来且不受影响. 绑定挂载实际上是一个 inode 替换的过程.
+
+容器的镜像操作，比如 docker commit，都是发生在宿主机空间的, 而由于 Mount Namespace 的隔离作用，宿主机并不知道这个绑定挂载的存在. 所以在宿主机看来，容器中可读写层的 /test 目录始终是空的. 因此它不会被 docker commit提交. 不过由于 Docker 一开始还是要创建 /test 这个目录作为挂载点，所以执行了 docker commit 之后，就会发现新产生的镜像里多出来一个空的 /test 目录.
+
+
 ## 扩展
 ### clone demo
 ```c

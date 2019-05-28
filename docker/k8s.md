@@ -3,12 +3,18 @@
 - [Kubernetes核心概念总结](http://dockone.io/article/8866)
 - [Kubernetes架构为什么是这样的？](https://www.tuicool.com/articles/J7Rbimu)
 
+Kubernetes 最主要的设计思想是从更宏观的角度，以统一的方式来定义任务之间的各种关系，并且为将来支持更多种类的关系留有余地.
+
 ## 概念
 
 ### 容器
 是一种沙盒技术. 容器技术的核心功能，就是通过约束和修改进程的动态表现，从而为其创造出一个“边界”. “敏捷”和“高性能”是容器相较于虚拟机最大的优势.
 
 对于 Docker 等大多数 Linux 容器来说，Cgroups 技术是用来制造**约束**的主要手段，而Namespace 技术则是用来修改**进程视图(容器进程看待整个操作系统的视图)**的主要方法
+
+一个正在运行的 Linux 容器，其实可以被“一分为二”地看待：
+- 一组是“容器镜像”（Container Image），是容器的静态视图
+- 一个由 Namespace+Cgroups 构成的隔离环境, 是“容器运行时”（Container Runtime），是容器的动态视图
 
 > Cgroups是进程设置资源限制的方法, Namespace是进程隔离的方法.
 > 容器是一个“单进程”模型
@@ -51,6 +57,9 @@ node是具体负责运行容器的应用, 会监控并汇报容器状态, 同时
 pod是k8s最小的工作(调度,扩展,共享资源,管理生命周期)单位. 它是一个或多个相关容器的集合, 其原因是:
 1. 可管理性: 某些容器的应用间存在紧密联系
 1. 共享通信和存储: pod中的容器使用同一个网络namespace.
+
+围绕着容器和 Pod 不断向真实的技术场景扩展，我们就能够摸索出一幅如下所示的 Kubernetes 项目核心功能的“全景图”:
+![Kubernetes 项目核心功能的“全景图](https://static001.geekbang.org/resource/image/16/06/16c095d6efb8d8c226ad9b098689f306.png)
 
 基本操作:
 - 创建: kubectl create -f xxx.yaml
@@ -283,6 +292,10 @@ pod运行的地方, 其上运行的相关组件有kubelet,kube-proxy和pod网络
 
 #### kubelet
 是node的agent, 负责维护和管理该Node上面的所有容器. scheduler选中该node后会将pod的具体配置信息(image,volume等)发送到kubelet, 由kubelet依据这些信息创建和运行容器, 并向master报告运行状态. 本质上，它负责使Pod得运行状态与期望的状态一致.
+
+此外，kubelet 还通过 gRPC 协议同一个叫作 Device Plugin 的插件进行交互. 这个插件是 Kubernetes 项目用来管理 GPU 等宿主机物理设备的主要组件，也是基于 Kubernetes 项目进行机器学习训练、高性能作业支持等工作必须关注的功能.
+
+而kubelet 的另一个重要功能，则是调用网络插件和存储插件为容器配置网络和持久化存储. 这两个插件与 kubelet 进行交互的接口，分别是 CNI（Container Networking Interface）和 CSI（Container Storage Interface）.
 
 > 如果容器不是通过Kubernetes创建的，它并不会管理.
 
