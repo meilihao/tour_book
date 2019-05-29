@@ -145,6 +145,12 @@ $ xrandr --addmode DP-1 "1920x1440_60.00"
 $ xrandr --output DP-1 --mode "1920x1440_60.00"
 ```
 
+## su root报错`无法执行 fish: 没有那个文件或目录`
+```sh
+$ cat /etc/passwd|grep root
+root:x:0:0:root:/root:fish # root的shell的路径不对
+```
+
 ## ssh
 ### ssh-add无法添加ed25519 key
 ```

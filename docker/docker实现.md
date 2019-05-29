@@ -345,6 +345,10 @@ $ docker inspect --format '{{json .Mounts }}' ${容器id} # 查看挂载
 
 容器的镜像操作，比如 docker commit，都是发生在宿主机空间的, 而由于 Mount Namespace 的隔离作用，宿主机并不知道这个绑定挂载的存在. 所以在宿主机看来，容器中可读写层的 /test 目录始终是空的. 因此它不会被 docker commit提交. 不过由于 Docker 一开始还是要创建 /test 这个目录作为挂载点，所以执行了 docker commit 之后，就会发现新产生的镜像里多出来一个空的 /test 目录.
 
+可通过 /proc/[pid]/mounts 查看到所有挂载在当前 Namespace 中的文件系统，还可以通过 /proc/[pid]/mountstats 看到 Mount Namespace 中文件设备信息，包括挂载文件的名字、文件系统类型、挂载位置等.
+
+参考:
+- [Linux的Mount绑定关系/Mount绑定传播](https://my.oschina.net/LastRitter/blog/3055267)
 
 ## 扩展
 ### clone demo

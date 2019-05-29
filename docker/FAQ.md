@@ -182,3 +182,12 @@ Error response from daemon: driver failed programming external connectivity on e
 ```
 
 docker服务启动时定义的自定义链DOCKER由于某种原因被清掉,重启docker服务即可重新生成自定义链DOCKER.
+
+## alpine 和 busybox 比较
+单从image的size上来说，busybox更小. 不过busybox默认的libc实现是uClibc(1.2MB)，而我们通常运行环境使用的libc实现都是glibc，因此我们要么选择静态编译程序，要么使用busybox:glibc(4.46MB)镜像作为base image.
+
+而 alpine image 是另外一种蝇量级 base image，它使用了比 glibc 更小更安全的 musl libc(5.53MB). 不过和 busybox image 相比，alpine image 体积还是略大. 除了因为 musl比uClibc 大一些之外，alpine还在镜像中添加了自己的**包管理系统apk**，开发者可以使用apk在基于alpine的镜像中添 加需要的包或工具. 因此，对于普通开发者而言，alpine image显然是更佳的选择, 不过alpine使用的libc实现为musl，与基于glibc上编译出来的应用程序不兼容, 通常因为找不到glibc的动态共享库文件而报`xxx "no such file or directory"`.
+
+目前Docker官方已推荐使用Alpine作为基础镜像环境
+
+对于Go应用来说，我们可以采用静态编译的程序，但一旦采用静态编译，也就意味着我们将失去一些libc提供的原生能力，比如, 在linux上就无法使用系统提供的DNS解析能力，只能使用Go自实现的DNS解析器, 不过对于使用并没有影响.
