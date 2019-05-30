@@ -18,3 +18,5 @@ chown [OPTION]... [OWNER][:[GROUP]] FILE...
 ## 例
 
     # chown -R chen:chen ./ # 为当前目录下的所有文件修改拥有者和群组
+    # chown User a.txt // 仅修改授权用户
+    # chown :Group a.txt // 仅修改授权组
