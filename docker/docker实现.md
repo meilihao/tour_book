@@ -14,7 +14,7 @@ Docker 容器实际上是在创建容器进程时，指定了这个进程所需�
 Namespace包括PID、Mount、UTS、IPC、Network 和 User.
 
 它主要涉及3个系统调用:
-- clone() : 实现线程的系统调用，用来创建一个新的进程，并可以通过Namespace flag达到隔离
+- clone() : 创建新进程的系统调用. 它可以通过Namespace flag创建Namespace, 并将它创建的子进程加入这些Namespaces.
 - unshare() : 使某进程脱离某个namespace
 - setns() : 把某进程加入到某个namespace
 
