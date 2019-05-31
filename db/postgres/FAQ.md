@@ -81,8 +81,9 @@ postgres日志是在`${PGDATA}/pg_log`文件夹中.
 
 使用explain,如`explain select * from table_name`.
 
-### pgAdmin3显示NULL值
-`File->Options->Query tool->Results grid->Show NULL values as <NULL>`
+### 显示NULL值
+pgadmin3: `File->Options->Query tool->Results grid->Show NULL values as <NULL>`
+psql: `\pset null NULL`
 
 ### 获取主键
 
@@ -130,6 +131,14 @@ UPDATE "logs" SET "log" = log || '{"kind":1,"text":"xxx"}'
 ```sql
 alter sequence channel_id_seq restart with 5;
 ```
+
+### duplicate key value violates unique constraint
+明明`\d xxx_id_seq;`有内容, `select currval('xxx_id_seq');`却报错.
+
+```sql
+SELECT setval('tablename_id_seq', (SELECT MAX(id) FROM tablename)+1) -- 修正后`select currval`可用
+```
+serial key其实是由sequence实现的，当手动给serial列赋值的时候，sequence是不会自增, 因此不要给serial手工赋值
 
 ### 位操作
 ```sql

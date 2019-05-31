@@ -1,4 +1,6 @@
 # docker实现
+os: Linux chen-pc 4.15.0-30deepin-generic #31 SMP Fri Nov 30 04:29:02 UTC 2018 x86_64 GNU/Linux
+
 参考:
 - [Docker背后的内核知识：命名空间资源隔离](https://linux.cn/article-5057-1.html)
 - [容器核心技术详解](https://blog.fliaping.com/container-core-technical-details/)
@@ -26,15 +28,56 @@ Namespace包括PID、Mount、UTS、IPC、Network 和 User.
 int pid = clone(main_function, stack_size, CLONE_NEWPID | SIGCHLD, NULL);
 ```
 
-### Mount
-让被隔离进程只看到当前 Namespace 里的挂载点信息. Mount Namespace 修改的是容器进程对文件系统“挂载点”的认知. 这就意味着: 只有在“挂载”这个操作发生之后，进程的视图才会被改变, 而在此之前，新创建的容器会直接继承宿主机的各个挂载点. 因此Mount Namespace 跟其他 Namespace 的使用略有不同：它对容器进程视图的改变，一定是伴随着挂载操作（mount）才能生效.
+#### go
+```go // fork demo for go
+...
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Cloneflags: syscall.CLONE_NEWPID,
+	}
+...
+```
 
-flag : CLONE_NEWNS
+运行:
+```sh
+$ go build -o pid
+$ sudo ./pid
+# pstree -pl // 此时未隔离/proc
+...
+...  ├─fish(31625)───sudo(3894)───pid(3895)─┬─sh(3991)───pstree(4054) // 新进程在宿主机上的pid
+...
+# echo $$
+1 // 新进程的pid
+```
+
+### Mount
+让被隔离进程只看到当前 Namespace 里的挂载点信息. Mount Namespace 修改的是容器进程对文件系统“挂载点”的认知. 这就意味着: 只有在“挂载”这个操作发生之后，进程的视图才会被改变, 而在此之前，新创建的容器会**直接继承宿主机的各个挂载点**. 因此Mount Namespace 跟其他 Namespace 的使用略有不同：它对容器进程视图的改变，一定是伴随着挂载操作（mount）才能生效.
 
 每当创建一个新容器时，通过结合使用 Mount Namespace 和 rootfs，容器就能够为进程构建出一个完善的文件系统隔离环境，而不是继承自宿主机的文件系统, 这就用到了pivot_root/chroot(切换进程根目录). 而这个挂载在容器根目录上、用来为容器进程提供隔离后执行环境的文件系统，就是所谓的“容器镜像”, 它还有一个更为专业的名字，叫作：rootfs（根文件系统）.
 
+> flag是CLONE_NEWNS, 而不是CLONE_NEWMOUNT:  历史原因, Mount是第一个实现的Namespace, 当时未预料到还需要其他Namespaces
 > 实际上，Mount Namespace 正是基于对 chroot 的不断改良才被发明出来的，它也是 Linux 操作系统里的第一个 Namespace.
 > rootfs 只是一个操作系统所包含的文件、配置和目录，**并不包括操作系统内核**. 在 Linux 操作系统中，这两部分是分开存放的，操作系统只有在开机启动时才会加载指定版本的内核镜像. 同一台机器上的所有容器都共享宿主机操作系统的内核. 这也是容器相比于虚拟机的主要缺陷之一：毕竟后者不仅有模拟出来的硬件机器充当沙盒，而且每个沙盒里还运行着一个完整的 Guest OS 给应用随便折腾.
+
+#### go
+```go // fork demo for go
+...
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Cloneflags: syscall.CLONE_NEWNS,
+	}
+...
+```
+
+运行:
+```sh
+$ go build -o mount
+$ sudo ./mount
+[sudo] chen 的密码：
+# ls /proc // /proc是一个文件系统, 这里看到的是宿主机的/proc
+1      11173  13946  1770   20 ...
+# mount -t proc proc /proc // 需要提前挂载???
+mount: proc is already mounted or /proc busy
+       proc is already mounted on /proc
+```
 
 ### Network
 让被隔离进程看到当前 Namespace 里的网络设备和配置
@@ -59,7 +102,48 @@ int child_pid = clone(child_main, child_stack+STACK_SIZE, CLONE_NEWUTS | SIGCHLD
 }
 ```
 
+#### go
+```go // fork demo for go
+...
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Cloneflags: syscall.CLONE_NEWUTS,
+	}
+...
+```
+
+运行:
+```
+$ go build -o uts
+$ sudo ./uts // 进入新进程sh
+# echo $$ // 查看新进程的pid
+1603
+# pstree -pl //此时/proc未隔离, 能获取完整的pstree
+...
+... ├─fish(31625)───sudo(1597)───uts(1598)─┬─sh(1603)───pstree(1750)
+...
+# hostname
+chen-pc
+# hostname -b hello // 修改hostname
+# hostname
+hello
+```
+
+在宿主机查看uts:
+```
+$ sudo readlink /proc/1598/ns/uts
+uts:[4026531838]
+$ sudo readlink /proc/1603/ns/uts
+uts:[4026532573]
+$ hostname
+chen-pc // 宿主机hostname不变
+```
+
+可以看到uts已不同.
+
+> go exec.Command 通过`UTS namespace` clone了一个新进程，但会发现新进程的hostname和原宿主的hostname是一样的(除非进入新程序后再自行修改, 但这样就不安全, 同时mount namespace 也面临同样的问题). go并没有提供原生的修改方法(可以通过strace 追踪`./uts`的clone后续过程验证). 所以如果在调用系统clone函数启动/bin/sh这个新进程前如果能先一步进行初始化(就像`UTS`的c demo先调用`sethostname`一样)那这个问题就解决了, 可参考[使用golang理解Linux namespace（四）-clone前的初始化](https://here2say.tw/38/), [Namespaces in Go - reexec](https://medium.com/@teddyking/namespaces-in-go-reexec-3d1295b91af8)和`https://github.com/moby/moby/tree/master/pkg/reexec`.
+
 ### IPC
+用来隔离 System V IPC 和 POSIX message queues
 
 演示:
 ```
@@ -69,9 +153,89 @@ int child_pid = clone(child_main, child_stack+STACK_SIZE, CLONE_NEWIPC | SIGCHLD
 ```
 > 目前使用IPC namespace机制的软件不多, 比较有名的有PostgreSQL. Docker本身通过socket或tcp进行通信
 
-### User
-隔离了安全相关的标识符（identifiers）和属性（attributes）, 包括用户ID、用户组ID、root目录、key（指密钥）以及特殊权限
+#### go
+```go // fork demo for go
+...
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Cloneflags: syscall.CLONE_NEWIPC,
+	}
+...
 
+在宿主机运行:
+```sh
+$ ipcs -q // 查看现有的ipc message queues
+
+------ Message Queues --------
+key        msqid      owner      perms      used-bytes   messages
+
+$ ipcmk -Q // 新建一个ipc message queue
+Message queue id: 0
+$ ipcs -q
+
+------ Message Queues --------
+key        msqid      owner      perms      used-bytes   messages
+0xe7cbc99a 0          chen       644        0            0
+
+$ go build -o ipc
+$ sudo ./ipc
+[sudo] chen 的密码：
+# ipcs -q // 在新进程里查看ipc message queues, 发现没有宿主机里新建的ipc message queue
+
+------ Message Queues --------
+key        msqid      owner      perms      used-bytes   messages
+
+```
+
+### User
+隔离了安全相关的标识符（identifiers）和属性（attributes）, 包括用户ID、用户组ID、root目录、key（指密钥）以及特殊权限.
+比较常用的是, 在宿主机上以一个非root用户运行创建一个 User Namespace, 然后在 User Namespace 里面却映射成 root 用户, 这意味着这个进程在 User Namespace 里面有 root 权限,但是在 User Namespace 外面却没有 root 的权限.
+
+#### go
+```go // fork demo for go
+...
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+    Cloneflags: syscall.CLONE_NEWUSER,
+    Credential: &syscall.Credential{
+			Uid:1,
+			Gid:1,
+		},
+	}
+...
+运行
+```
+$ go build -o user
+$ sudo ./user
+2019/05/31 16:25:47 fork/exec /usr/bin/sh: operation not permitted // 原因: [Linux kernel在3.19以上的版本中对  user namespace 做了些修改](https://github.com/xianlubird/mydocker/issues/3)
+```
+
+修正:
+```go
+cmd.SysProcAttr = &syscall.SysProcAttr{
+		Cloneflags:  syscall.CLONE_NEWUSER,
+		UidMappings: []syscall.SysProcIDMap{
+			{
+				ContainerID: 0,
+				HostID:      0,
+				Size:        1,
+			},
+		},
+		GidMappings: []syscall.SysProcIDMap{
+			{
+				ContainerID: 0,
+				HostID:      0,
+				Size:        1,
+			},
+		},
+	}
+```
+
+运行:
+```sh
+$ go build -o user
+# sudo ./user
+# id
+uid=0(root) gid=0(root) 组=0(root)
+```
 
 ## Linux Cgroups (Linux Control Group)
 限制一个进程组能够使用的资源上限，包括 CPU、内存、磁盘、网络带宽等等. 此外，Cgroups 还能够对进程进行优先级设置、审计，以及将进程挂起和恢复等操作.
@@ -399,6 +563,32 @@ int main()
   }
   printf("Parent - container stopped!\n");
   return 0;
+}
+```
+
+### fork demo for go
+```go
+package main
+
+import (
+	"log"
+	"os"
+	"os/exec"
+	"syscall"
+)
+
+func main() {
+	cmd := exec.Command("sh") // 指定被fork出来的新进程运行的程序
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+	}
+
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		log.Fatal(err)
+	}
 }
 ```
 
