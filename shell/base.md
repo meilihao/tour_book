@@ -141,7 +141,7 @@ Ctl-H   backspace,删除光标前边的字符
 ## Here Document
 Here Document 是在Linux Shell 中的一种特殊的重定向方式，它的基本的形式如下:
 ```
-cmd << delimiter
+cmd << delimiter // 此处如果使用了`-delimiter`则结尾的delimiter可不用顶格, 但要用tab缩进
   Here Document Content
 delimiter
 ```
