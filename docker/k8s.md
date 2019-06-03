@@ -2,6 +2,8 @@
 参考:
 - [Kubernetes核心概念总结](http://dockone.io/article/8866)
 - [Kubernetes架构为什么是这样的？](https://www.tuicool.com/articles/J7Rbimu)
+- [k8s yaml apiVersion](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/)
+- [kubernetes/examples](https://github.com/kubernetes/examples)
 
 Kubernetes 最主要的设计思想是从更宏观的角度，以统一的方式来定义任务之间的各种关系，并且为将来支持更多种类的关系留有余地.
 
@@ -52,6 +54,17 @@ controller分类:
 - StatefuleSet : 保证pod的每个副本在整个生命周期中的名称是不变的(因故障需删除并重启除外), 同时会保证副本按照固定的顺序启动,更新或删除
 - Job
 
+#### deployment
+部署pod并分布到各个node上, 每个node允许存在多个副本.
+
+#### daemonset
+每个node至多运行一个副本, k8s本身就在用daemonset运行部分组件`kubectl get daemonsets --all-namespaces`.
+
+daemonset的典型应用场景:
+1. 存储: ceph
+1. 日志收集: flunentd, logstash
+1. 监控: prometheus node exporter, collected
+
 #### job
 从程序的运行形态上来区分，我们可以将Pod分为两类：
 - 长时运行服务（JBoss、MySQL等）
@@ -60,6 +73,11 @@ controller分类:
 RC创建的Pod都是长时运行的服务，而Job创建的Pod都是一次性任务.
 
 在Job的定义中，restartPolicy（重启策略）只能是Never和OnFailure. Job可以控制一次性任务的Pod的完成次数（Job.spec.completions）和并发执行数（Job.spec.parallelism），当Pod成功执行指定次数后，即认为Job执行完毕.
+
+可用`kubectl get pods --show-all`查看已`Completed`的pod
+job的并行性可通过设置parallelism.
+job设置completion可指定完成job所需要的pod总数,即job执行次数.
+job还可以是定时Job, yaml的kind = CronJob.
 
 ### node
 node是具体负责运行容器的应用, 会监控并汇报容器状态, 同时会根据master的要求管理容器的生命周期. node由master管理.
@@ -240,6 +258,92 @@ Kubernetes集群现在支持增加一个可选的组件——DNS服务器. 这�
 ### Service目前存在的不足
 Kubernetes使用iptables和kube-proxy解析Service的入口地址，在中小规模的集群中运行良好，但是当Service的数量超过一定规模时，仍然有一些小问题. 首当其冲的便是Service环境变量泛滥，以及Service与使用Service的Pod两者创建时间先后的制约关系. 目前来看，很多使用者在使用Kubernetes时往往会开发一套自己的Router组件来替代Service，以便更好地掌控和定制这部分功能. 
 
+### Deployment
+Kubernetes提供的一种更加简单的维护RC和Pod的机制. 通过在Deployment中描述所期望的集群状态，Deployment Controller会将现在的集群状态在一个可控的速度下逐步更新到所期望的集群状态.
+
+90%的功能与Replication Controller完全一样，可以看做新一代的Replication Controller. 但是，它又具备了Replication Controller之外的新特性：
+- Replication Controller全部功能
+- 事件和状态查看：可以查看Deployment的升级详细进度和状态
+- 回滚：当升级Pod镜像或者相关参数的时候发现问题，可以使用回滚操作回滚到上一个稳定的版本或者指定的版本
+- 版本记录：每一次对Deployment的操作，都能保存下来，给予后续可能的回滚使用
+- 暂停和启动：对于每一次升级，都能够随时暂停和启动
+- 多种升级方案：
+    - Recreate : 删除所有已存在的Pod，重新创建新的
+    - RollingUpdate : 滚动升级，逐步替换的策略，同时滚动升级时，支持更多的附加参数，例如设置最大不可用Pod数量，最小升级间隔时间等等
+
+#### 滚动升级
+相比于RC，Deployment直接使用`kubectl edit deployment ${deployment_name}(推荐)`或者`kubectl set`方法就可以直接升级（原理是Pod的template发生变化，例如更新Label、更新镜像版本等操作会触发Deployment的滚动升级）.
+
+创建Deployment:
+```sh
+$ kubectl create -f nginx-deploy-v1.yaml --record // `--record`便于之后使用查看history
+$ kubectl rollout history deployment nginx-deployment // 查看Deployment的变更信息, 这些信息得以保存是创建时候加的`--record`选项的作用
+```
+Deployment的一些基础命令:
+```sh
+$ kubectl describe deployments  #查询详细信息，获取升级进度
+$ kubectl rollout pause deployment nginx-deployment2  #暂停升级
+$ kubectl rollout resume deployment nginx-deployment2  #继续升级
+$ kubectl rollout undo deployment nginx-deployment2  #升级回滚
+$ kubectl scale deployment nginx-deployment --replicas 10  #弹性伸缩Pod数量
+```
+
+#### Horizontal Pod Autoscaler
+Horizontal Pod Autoscaler的操作对象是Replication Controller、ReplicaSet或Deployment对应的Pod，根据观察到的实际资源使用量与用户的期望值进行比对，做出是否需要增减实例数量的决策.
+
+### volume
+在Kubernetes中，当Pod重建的时候，数据是会丢失的，Kubernetes也是通过数据卷挂载来提供Pod数据的持久化的. Kubernetes数据卷是对Docker数据卷的扩展，Kubernetes数据卷是Pod级别的，可以用来实现Pod中容器的文件共享. 目前，Kubernetes支持的数据卷类型如下：
+- EmptyDir
+- HostPath
+- GCE Persistent Disk
+- AWS Elastic Block Store
+- NFS
+- iSCSI
+- Flocker
+- GlusterFS
+- RBD
+- Git Repo
+- Secret
+- Persistent Volume Claim
+- Downward API
+
+Kubernetes中提供了存储消费模式: Persistent Volume和Persistent Volume Claim机制.
+Persistent Volume是由系统管理员配置创建的一个数据卷（目前支持HostPath、GCE Persistent Disk、AWS Elastic Block Store、NFS、iSCSI、GlusterFS、RBD），它代表了某一类存储插件实现；而对于普通用户来说，通过Persistent Volume Claim可请求并获得合适的Persistent Volume，而无须感知后端的存储实现. Persistent Volume和Persistent Volume Claim相互关联，有着完整的生命周期管理：
+- 准备：系统管理员规划或创建一批Persistent Volume；
+- 绑定：用户通过创建Persistent Volume Claim来声明存储请求，Kubernetes发现有存储请求的时候，就去查找符合条件的Persistent Volume（最小满足策略）。找到合适的就绑定上，找不到就一直处于等待状态；
+- 使用：创建Pod的时候使用Persistent Volume Claim；
+- 释放：当用户删除绑定在Persistent Volume上的Persistent Volume Claim时，Persistent Volume进入释放状态，此时Persistent Volume中还残留着上一个Persistent Volume Claim的数据，状态还不可用；
+- 回收：是否的Persistent Volume需要回收才能再次使用。回收策略可以是人工的也可以是Kubernetes自动进行清理（仅支持NFS和HostPath）
+
+#### 本地数据卷
+EmptyDir、HostPath只能用于本地文件系统, 所以当Pod发生迁移的时候，数据便会丢失. 该类型Volume的用途是：Pod中容器间的文件共享、共享宿主机的文件系统.
+
+1. EmptyDir
+如果Pod配置了EmpyDir数据卷，在Pod的生命周期内都会存在，当Pod被分配到 Node上的时候，会在Node上创建EmptyDir数据卷，并挂载到Pod的容器中。只要Pod 存在，EmpyDir数据卷都会存在（容器删除不会导致EmpyDir数据卷丟失数据），但是如果Pod的生命周期终结（Pod被删除），EmpyDir数据卷也会被删除，并且永久丢失。
+
+EmpyDir数据卷非常适合实现Pod中容器的文件共享, 比如可以通过一个专职日志收集容器，在每个Pod中和业务容器中进行组合，来完成日志的收集和汇总.
+
+1. HostPath
+HostPath数据卷允许将容器宿主机上的文件系统挂载到Pod中. 如果Pod需要使用宿主机上的某些文件，可以使用HostPath
+
+#### 网络数据卷
+Kubernetes提供了很多类型的数据卷以集成第三方的存储系统，包括一些非常流行的分布式文件系统，也有在IaaS平台上提供的存储支持，这些存储系统都是分布式的，通过网络共享文件系统.
+
+网络数据卷能够满足数据的持久化需求，Pod通过配置使用网络数据卷，每次Pod创建的时候都会将存储系统的远端文件目录挂载到容器中，数据卷中的数据将被水久保存，即使Pod被删除，只是除去挂载数据卷，数据卷中的数据仍然保存在存储系统中，且当新的Pod被创建的时候，仍是挂载同样的数据卷. 网络数据卷包含以下几种：NFS、iSCISI、GlusterFS、RBD（Ceph Block Device）、Flocker、AWS Elastic Block Store、GCE Persistent Disk.
+
+#### 信息数据卷
+Kubernetes中有一些数据卷，主要用来给容器传递配置信息. 比如Secret（处理敏感配置信息，密码、Token等）、Downward API（通过环境变量的方式告诉容器Pod的信息）、Git Repo（将Git仓库下载到Pod中），都是将Pod的信息以文件形式保存，然后以数据卷方式挂载到容器中，容器通过读取文件获取相应的信息.
+
+### StatefulSet
+适合于有状态服务, 比如数据库服务MySQL和PostgreSQL，集群化管理服务ZooKeeper、etcd等.
+
+StatefulSet做的只是将确定的Pod与确定的存储关联起来保证状态的连续性.
+
+### ConfigMap
+很多生产环境中的应用程序配置较为复杂，可能需要多个Config文件、命令行参数和环境变量的组合. 并且这些配置信息应该从应用程序镜像中解耦出来，以保证镜像的可移植性以及配置信息不被泄露.
+
+ConfigMap包含了一系列的键值对，用于存储被Pod或者系统组件（如controller）访问的信息. 这与secret的设计理念有异曲同工之妙，它们的主要区别在于ConfigMap通常不用于存储敏感信息，而只存储简单的文本信息.
+
 ### Namespace
 Namespace将一个物理cluster逻辑上划分为多个虚拟的cluster, 不同Namespace间的资源是完全隔离的.
 
@@ -287,6 +391,12 @@ controller分类:
 - serviceaccounts controller
 
 > 如果认为kube-apiserver是前台, 那么kube-controller-manager就是后台
+
+#### Deployment Controller
+deployment controller创建pod的过程:
+1. 通过kubectl创建Deployment
+1. Deployment创建ReplicaSet
+1. ReplicaSet创建pod
 
 #### Replication Controller(RC)
 应用托管在Kubernetes之后，Kubernetes需要保证应用能够持续运行，这是RC的工作内容，它会确保任何时间Kubernetes中都有指定数量的Pod在运行. 在此基础上，RC还提供了一些更高级的特性，比如滚动升级、升级回滚等
@@ -350,6 +460,24 @@ pod运行的地方, 其上运行的相关组件有kubelet,kube-proxy和pod网络
 
 反向代理方面: 负责将访问service的tcp/udp数据流转发到具体的容器上. 有多个容器副本时, 它还能实现负载均衡(默认基于Round Robin算法)
 服务发现方面: 使用etcd的watch机制，监控集群中Service和Endpoint对象数据的动态变化，并且维护一个Service到Endpoint的映射关系，从而保证了后端Pod的IP变化不会对访问者造成影响. 另外kube-proxy还支持session affinity.
+
+#### pod
+##### 用label控制pod位置
+默认情况下, scheduler会将pod调度到所有可用的node. 但k8s可以通过label来实现调度pod到指定node:
+1. 将指定node打上label: `kubectl label node xxx disktype=ssd`
+1. 在yaml的pod模板的spec里指定nodeSelector
+    ```yaml
+    apiVersion: v1
+    kind: Deployment
+    ...
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        imagePullPolicy: IfNotPresent
+      nodeSelector:
+        disktype: ssd
+    ```
 
 #### Runtime
 容器运行环境，目前Kubernetes支持Docker和rkt两种容器
@@ -489,6 +617,7 @@ targetPort 是Pod上的端口.
 
 ## cmd
 - `kubectl logs -f POD-NAME` # 获取pod日志
+- `kubectl edit deployment ${deployment-name}` # 查看deployment配置和运行状态
 - `kubectl exec -it POD-NAME sh` # 进入pod的容器
 - `kubectl describe node Node-NAME` # 获取node的描述信息
 - `kubectl describe pod POD-NAME` # 获取pod的描述信息(简单), 生命周期事件
@@ -498,12 +627,14 @@ targetPort 是Pod上的端口.
 - `kubectl get pod myweb-fnncj --output json/yaml` # 获取pod的详细信息, 有状态信息
 - `kubectl get pods --all-namespaces [-o wide]` # 获取所有pod的状态,加`-o wide`时还会输出更多信息, 比如ip和node host
 - `kkubectl get pod -l app=nginx` # 获取所有lable是`app=nginx`的pods
-- `kubectl get event` # 查询所有事件
-- `kubectl get deployment` # 获取所有deployment
-- `kubectl get nodes` # 获取所有node
+- `kubectl get events` # 查询所有事件
+- `kubectl get pods [--show-all]` # 查询所有pod
+- `kubectl get deployments` # 获取所有deployment
+- `kubectl get nodes [--show-labels]` # 获取所有node
 - `kubectl get replicaset` # 获取所有replicaset
 - `kubectl logs POD-NAME Container-NAME [-p]` # 查询pod中容器的日志,`-p`允许查询`Container-NAME`重建前的日志
 - `kubectl apply -f nginx-deployment.yaml` # 统一进行 Kubernetes 对象的创建和更新操作, 是 Kubernetes“声明式 API”所推荐的使用方法. 作为用户，你不必关心当前的操作是创建还是更新，你执行的命令始终是 kubectl apply，而 Kubernetes 则会根据 YAML 文件的内容变化，自动进行具体的处理
+- `kubectl api-versions` # 查看api version支持的资源版本
 
 ## 生态
 ### kubeadm
