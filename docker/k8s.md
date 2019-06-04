@@ -1,4 +1,6 @@
 # k8s
+env: k8s 1.14.1 / Rancher v2.2.3
+
 参考:
 - [Kubernetes核心概念总结](http://dockone.io/article/8866)
 - [Kubernetes架构为什么是这样的？](https://www.tuicool.com/articles/J7Rbimu)
@@ -57,6 +59,16 @@ controller分类:
 #### deployment
 部署pod并分布到各个node上, 每个node允许存在多个副本.
 
+`kubectl get deployment ${deployment_name}`输出:
+- DESIRED : 期望状态是READY的副本数
+- CURRENT : 当前副本总数
+- UP-TO-DATE : 当前已完成更新的副本数
+- AVAILABLE : 当前处于READY的副本数
+
+滚动更新的控制参数:
+- maxSurge : 控制滚动更新中副本总数超过DESIRED的上限, 默认是`25%`, 取值方法是roundUp. 值越大, 滚动更新中创建的新副本就越多
+- maxUnavailable : 控制滚动更新中, 不可用副本占DESIRED的上限, 默认是`25%`, 取值方法是roundDown. 值越大, 滚动更新中销毁的旧副本就越多
+
 #### daemonset
 每个node至多运行一个副本, k8s本身就在用daemonset运行部分组件`kubectl get daemonsets --all-namespaces`.
 
@@ -93,6 +105,7 @@ pod是k8s最小的工作(调度,扩展,共享资源,管理生命周期)单位. �
 > pod类似于进程组的或虚拟机的角色, 而容器就是里面的进程
 > 凡是调度、网络、存储，以及安全相关的属性，基本上是 Pod 级别的; 凡是跟容器的 Linux Namespace 相关的属性，也一定是 Pod 级别的, 因为Pod 的设计就是要让它里面的容器尽可能多地共享 Linux Namespace，仅保留必要的隔离和限制能力
 > Pod是一组共享了某些资源的容器, Pod 里的所有容器，共享的是同一个 Network Namespace，并且可以声明共享同一个 Volume
+> 容器进程返回值非零, k8s会认为容器发生故障就会按照Pod的restartPolicy进行处理
 
 在 Kubernetes 项目里，Pod 的实现需要使用一个中间容器，这个容器叫作 Infra 容器. 在这个 Pod 中，Infra 容器永远都是第一个被创建的容器，而其他用户定义的容器，则通过 Join Network Namespace 的方式，与 Infra 容器关联在一起.
 
@@ -146,6 +159,15 @@ spec:
 ```
 $ kubectl taint nodes --all foo- // 只需要在taint的键后面加上了一个短横线`-`即可
 ```
+
+#### health check
+- liveness探测 : 告诉k8s何时通过重启容器实现自愈
+- readiness探测 :　告诉k8s何时可以将容器加入Service的负载均衡池对外提供服务, 常用于Scale Up/Rolling Update中.
+
+两者比较:
+1. 默认均通过判断容器进程的返回值是否为零来判断探测是否成功; 默认连续3次非零则启用应对策略
+1. liveness失败是重启容器, readiness失败是将容器设为不可用, 不再接收Service转发的请求
+1. 两者独立无依赖, 可组合使用
 
 #### Pod生命周期
 ![pod生命周期](http://dockone.io/uploads/article/20190520/c8e551e53f7e7e2a3af022c4ea672fe9.png)
@@ -292,7 +314,10 @@ $ kubectl scale deployment nginx-deployment --replicas 10  #弹性伸缩Pod数�
 Horizontal Pod Autoscaler的操作对象是Replication Controller、ReplicaSet或Deployment对应的Pod，根据观察到的实际资源使用量与用户的期望值进行比对，做出是否需要增减实例数量的决策.
 
 ### volume
-在Kubernetes中，当Pod重建的时候，数据是会丢失的，Kubernetes也是通过数据卷挂载来提供Pod数据的持久化的. Kubernetes数据卷是对Docker数据卷的扩展，Kubernetes数据卷是Pod级别的，可以用来实现Pod中容器的文件共享. 目前，Kubernetes支持的数据卷类型如下：
+参考:
+- [k8s学习笔记之持久化存储](https://zhuanlan.zhihu.com/p/29706309)
+
+在Kubernetes中，当Pod重建的时候，数据是会丢失的，Kubernetes也是通过数据卷挂载来提供Pod数据的持久化的. Kubernetes数据卷是对Docker数据卷的扩展，Kubernetes数据卷是Pod级别的，可以用来实现Pod中容器的文件共享. 目前，[Kubernetes支持的数据卷类型](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes)如下：
 - EmptyDir
 - HostPath
 - GCE Persistent Disk
@@ -308,23 +333,45 @@ Horizontal Pod Autoscaler的操作对象是Replication Controller、ReplicaSet�
 - Downward API
 
 Kubernetes中提供了存储消费模式: Persistent Volume和Persistent Volume Claim机制.
-Persistent Volume是由系统管理员配置创建的一个数据卷（目前支持HostPath、GCE Persistent Disk、AWS Elastic Block Store、NFS、iSCSI、GlusterFS、RBD），它代表了某一类存储插件实现；而对于普通用户来说，通过Persistent Volume Claim可请求并获得合适的Persistent Volume，而无须感知后端的存储实现. Persistent Volume和Persistent Volume Claim相互关联，有着完整的生命周期管理：
+[Persistent Volume](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#types-of-persistent-volumes)是由系统管理员配置创建的一个数据卷（目前支持HostPath、GCE Persistent Disk、AWS Elastic Block Store、NFS、iSCSI、GlusterFS、RBD），它代表了某一类存储插件实现；而对于普通用户来说，通过Persistent Volume Claim可请求并获得合适的Persistent Volume，而无须感知后端的存储实现. Persistent Volume和Persistent Volume Claim相互关联，有着完整的生命周期管理：
 - 准备：系统管理员规划或创建一批Persistent Volume；
 - 绑定：用户通过创建Persistent Volume Claim来声明存储请求，Kubernetes发现有存储请求的时候，就去查找符合条件的Persistent Volume（最小满足策略）。找到合适的就绑定上，找不到就一直处于等待状态；
 - 使用：创建Pod的时候使用Persistent Volume Claim；
 - 释放：当用户删除绑定在Persistent Volume上的Persistent Volume Claim时，Persistent Volume进入释放状态，此时Persistent Volume中还残留着上一个Persistent Volume Claim的数据，状态还不可用；
 - 回收：是否的Persistent Volume需要回收才能再次使用。回收策略可以是人工的也可以是Kubernetes自动进行清理（仅支持NFS和HostPath）
 
+PersistentVolume的Access Modes:
+- ReadWriteOnce : the volume can be mounted as read-write by a single node (单node的读写) 
+- ReadOnlyMany : the volume can be mounted read-only by many nodes (多node的只读) 
+- ReadWriteMany : the volume can be mounted as read-write by many nodes (多node的读写) 
+
+pv的reclaim policy:
+- Retain : 管理员手动回收
+- Recycle : 基本的数据擦除 (`rm -rf /thevolume/*`)
+- Delete : 删除相关联的后端存储卷， 后端存储比如AWS EBS, GCE PD, Azure Disk, or OpenStack Cinder
+
+pv的volumn phase:
+- Available : 资源可用， 还没有被声明绑定
+- Bound : 被声明绑定
+- Released : 绑定的声明被删除了，但是还没有被集群重声明
+- Failed : 自动回收失败
+
+注意: 只有本地盘和nfs支持数据盘Recycle 擦除回收， AWS EBS, GCE PD, Azure Disk, and Cinder 存储卷支持Delete策略
+
+pv 存在:
+- 静态供给(Static Provision) : 集群管理员创建多个PV, 存在于Kubernetes API中，可用于消费. 它们携带可供集群用户使用的真实存储的详细信息
+- 动态供给(Dynamical Provision) : 
+
 #### 本地数据卷
 EmptyDir、HostPath只能用于本地文件系统, 所以当Pod发生迁移的时候，数据便会丢失. 该类型Volume的用途是：Pod中容器间的文件共享、共享宿主机的文件系统.
 
 1. EmptyDir
-如果Pod配置了EmpyDir数据卷，在Pod的生命周期内都会存在，当Pod被分配到 Node上的时候，会在Node上创建EmptyDir数据卷，并挂载到Pod的容器中。只要Pod 存在，EmpyDir数据卷都会存在（容器删除不会导致EmpyDir数据卷丟失数据），但是如果Pod的生命周期终结（Pod被删除），EmpyDir数据卷也会被删除，并且永久丢失。
+如果Pod配置了EmpyDir数据卷，在Pod的生命周期内都会存在，当Pod被分配到 Node上的时候，会在Node上创建EmptyDir数据卷，并挂载到Pod的容器中. 只要Pod 存在，EmpyDir数据卷都会存在（容器删除不会导致EmpyDir数据卷丟失数据），但是如果Pod的生命周期终结（Pod被删除），EmpyDir数据卷也会被删除，并且永久丢失.
 
 EmpyDir数据卷非常适合实现Pod中容器的文件共享, 比如可以通过一个专职日志收集容器，在每个Pod中和业务容器中进行组合，来完成日志的收集和汇总.
 
 1. HostPath
-HostPath数据卷允许将容器宿主机上的文件系统挂载到Pod中. 如果Pod需要使用宿主机上的某些文件，可以使用HostPath
+HostPath数据卷允许将容器宿主机上的文件系统挂载到Pod中, 增加了Pod与节点的耦合. 如果Pod需要使用宿主机上的某些文件，可以使用HostPath, 比如kube-apiserver, kube-controller-manager.
 
 #### 网络数据卷
 Kubernetes提供了很多类型的数据卷以集成第三方的存储系统，包括一些非常流行的分布式文件系统，也有在IaaS平台上提供的存储支持，这些存储系统都是分布式的，通过网络共享文件系统.
@@ -333,6 +380,18 @@ Kubernetes提供了很多类型的数据卷以集成第三方的存储系统，�
 
 #### 信息数据卷
 Kubernetes中有一些数据卷，主要用来给容器传递配置信息. 比如Secret（处理敏感配置信息，密码、Token等）、Downward API（通过环境变量的方式告诉容器Pod的信息）、Git Repo（将Git仓库下载到Pod中），都是将Pod的信息以文件形式保存，然后以数据卷方式挂载到容器中，容器通过读取文件获取相应的信息.
+
+#### Secret
+以密文形式保持数据, 避免直接在配置中保存敏感信息. 支持以Volume(支持动态更新)或Env方式加载.
+
+格式: key = base64(value)
+
+```
+$ echo -n admin | base64
+YWRtaW4=
+$ echo -n YWRtaW4= | base64 --decode
+admin
+```
 
 ### StatefulSet
 适合于有状态服务, 比如数据库服务MySQL和PostgreSQL，集群化管理服务ZooKeeper、etcd等.
@@ -359,6 +418,17 @@ k8s镜像下载策略：
 - Always：每次都下载最新的镜像
 - Never：只使用本地镜像，从不下载
 - IfNotPresent：只有当本地没有的时候才下载镜像
+
+### Helm
+k8s应用打包工具, 支持:
+- 从零创建chart
+- 与存储chart的repo交互, 拉取, 保存和更新 chart
+- 安装卸载chart
+- 更新, 回滚和测试 chart
+
+概念:
+- chart : 一个应用的信息集合, 包含各种k8s 对象的配置模板, 参数定义, 依赖关系, 文档等.
+- release : chart 的运行实例. chart能够多次安装到同一个集群
 
 ## 架构
 k8s cluster 由 master 和 node 组成.
@@ -589,7 +659,78 @@ pod是k8s的基本处理单元, 其包含一个特殊的Pause容器(即根容器
 1. pod里的多个业务容器共享Pause容器的IP和其挂载的volume,简化了密切相关的业务容器间的通信及文件共享问题
 
 ### service
+参考:
+- [kubernetes的网络策略(kube-proxy)流程探究](https://www.jianshu.com/p/13b86daf56dc)
+- [华为云在 K8S 大规模场景下的 Service 性能优化实践](https://zhuanlan.zhihu.com/p/37230013)
+- [Kubernetes 从1.10到1.11升级记录(续)：Kubernetes kube-proxy开启IPVS模式](https://blog.frognew.com/2018/10/kubernetes-kube-proxy-enable-ipvs.html)
+
 为一组具有相同功能的容器应用提供一个统一的入口, 并将请求进行负载均衡地分发到pod上, 其屏蔽了pod ip的变化, 并通过Label来关联pod.
+
+Endpoint: service通过selector和pod建立关联, k8s会根据service关联到pod的podIP信息组合成一个endpoint.  可通过`kubectl describe service ${service_name}`查看Endpoints.
+
+Service类型:
+- ClusterIP(默认) : 只有Cluster内的节点和Pod可以访问
+- NodePort(不推荐) : Service通过Cluster节点上的端口(`NodeIP:NodePort`)对外提供服务.
+  k8s还是会分配一个ClusterIP, `EXTERNAL-IP`变为`nodes`, `PORT(S)`变为`${Cluster_Port}:${Node_Port,自动分配时的范围:30000~32767}/protocol`.
+- LoadBalancer: 借助cloud provider创建一个外部的负载均衡器进行请求转发, 比如转发到ClusterIP/NodePort. 目前[cloud provider(具体实现见代码)](https://github.com/kubernetes/kubernetes/blob/master/pkg/cloudprovider/providers/providers.go)有GCE, AWS, Aliyun等.
+
+kube-proxy 有三种实现 service 的方案, userspace, iptables 和 ipvs:
+- userspace(废弃) : 在用户空间监听一个端口，所有的 service 都转发到这个端口，然后 kube-proxy 在内部应用层对其进行转发。因为是在用户空间进行转发，所以效率也不高
+- iptables(默认, 推荐) : 完全使用 iptables 来实现 service，是目前默认的方式，也是推荐的方式，效率很高（只有内核中 netfilter 一些损耗）
+- ipvs模式 (**最推荐**): IPVS(IP Virtual Server)是lvs项目的一部分，作为Linux内核的一部分，提供4层负载均衡器的功能，即传输层负载均衡
+
+> Kubernetes 原生的 Service 负载均衡基于 Iptables 实现，其规则链会随 Service 的数量呈线性增长，在大规模场景下对 Service 性能影响严重.
+> IPVS 在 CPU/内存两个维度的指标都要远远低于 Iptables.
+
+#### ClusterIP
+它是一个虚拟ip, 由k8s 节点上的iptables管理.
+
+```sh
+$ sudo iptables-save |grep "httpd-svc"
+-A KUBE-SERVICES ! -s 10.42.0.0/16 -d 10.43.5.99/32 -p tcp -m comment --comment "default/httpd-svc: cluster IP" -m tcp --dport 8080 -j KUBE-MARK-MASQ // 允许cluster内的pod(源地址来自10.42.0.0/16) 访问httpd-svc
+-A KUBE-SERVICES -d 10.43.5.99/32 -p tcp -m comment --comment "default/httpd-svc: cluster IP" -m tcp --dport 8080 -j KUBE-SVC-RL3JAE4GN7VOGDGP //  其他源地址访问httpd-svc, 跳转到规则 KUBE-SVC-RL3JAE4GN7VOGDGP
+$ sudo iptables-save |grep KUBE-SVC-RL3JAE4GN7VOGDGP // KUBE-SVC-RL3JAE4GN7VOGDGP的规则
+-A KUBE-SVC-RL3JAE4GN7VOGDGP -m statistic --mode random --probability 0.50000000000 -j KUBE-SEP-46JOUSXCF6FAU35R // 一半概率跳到规则 46JOUSXCF6FAU35R
+-A KUBE-SVC-RL3JAE4GN7VOGDGP -j KUBE-SEP-UOPS3DAR6EOBA5G6 // 剩下一半概率跳到规则 KUBE-SEP-UOPS3DAR6EOBA5G6
+$ sudo iptables-save |egrep "KUBE-SEP-46JOUSXCF6FAU35R|KUBE-SEP-UOPS3DAR6EOBA5G6" // 将请求分别转发到后端的两个pod
+-A KUBE-SEP-46JOUSXCF6FAU35R -s 10.42.0.7/32 -j KUBE-MARK-MASQ
+-A KUBE-SEP-46JOUSXCF6FAU35R -p tcp -m tcp -j DNAT --to-destination 10.42.0.7:80
+-A KUBE-SEP-UOPS3DAR6EOBA5G6 -s 10.42.0.8/32 -j KUBE-MARK-MASQ
+-A KUBE-SEP-UOPS3DAR6EOBA5G6 -p tcp -m tcp -j DNAT --to-destination 10.42.0.8:80
+```
+
+> cluster每个节点都配置了相同的iptables规则, 确保整个cluster都能够通过Service的cluster ip访问Service.
+
+#### NodePort
+与ClusterIP类似(唯一不同之处是NodePort在节点上开了一个占位端口), 将访问当前节点Node_Port端口的请求路由到 ClusterIP 上
+```
+$ sudo ss -anlpt|grep 31920 // 31920 is Node_Port
+LISTEN     0      32768       :::31920                   :::*                   users:(("kube-proxy",pid=2961,fd=6)) // 占用nodePort端口: 为了防止主机上的其它进程使用了该nodePort端口而导致访问冲突
+$ sudo iptables -S -t nat|grep 31920
+-A KUBE-NODEPORTS -p tcp -m comment --comment "default/httpd-svc:" -m tcp --dport 31920 -j KUBE-MARK-MASQ
+-A KUBE-NODEPORTS -p tcp -m comment --comment "default/httpd-svc:" -m tcp --dport 31920 -j KUBE-SVC-RL3JAE4GN7VOGDGP // 访问当前节点31920端口的请求会应用到KUBE-SVC-RL3JAE4GN7VOGDGP, 即NodePort 会路由到 ClusterIP 上.
+$ sudo iptables-save |egrep "KUBE-SVC-RL3JAE4GN7VOGDGP"
+-A KUBE-SVC-RL3JAE4GN7VOGDGP -m statistic --mode random --probability 0.50000000000 -j KUBE-SEP-46JOUSXCF6FAU35R
+-A KUBE-SVC-RL3JAE4GN7VOGDGP -j KUBE-SEP-UOPS3DAR6EOBA5G6
+$ sudo iptables-save |egrep "KUBE-SEP-46JOUSXCF6FAU35R|KUBE-SEP-UOPS3DAR6EOBA5G6" // 到具体的pod
+-A KUBE-SEP-46JOUSXCF6FAU35R -s 10.42.0.7/32 -j KUBE-MARK-MASQ
+-A KUBE-SEP-46JOUSXCF6FAU35R -p tcp -m tcp -j DNAT --to-destination 10.42.0.7:80
+-A KUBE-SEP-UOPS3DAR6EOBA5G6 -s 10.42.0.8/32 -j KUBE-MARK-MASQ
+-A KUBE-SEP-UOPS3DAR6EOBA5G6 -p tcp -m tcp -j DNAT --to-destination 10.42.0.8:80
+``` 
+
+#### 通过dns访问Service
+dns功能由kube-dns提供, 每当有新的Service被创建, kube-dns会添加该Service的DNS记录. 这样Cluster中的Pod就可以通过`<Serviced_Name>.<Namespace_Name>`访问Service了, 同namespace访问可直接用`<Serviced_Name>`即可.
+
+如何获取dns所在服务的ip:
+- 进入pod, 查看`/etc/resolv.conf`的`nameserver`
+- `kubectl get service -n kube-system | grep -i dns`
+
+如何获取Service的dns记录:
+- 进入pod, 执行`nslookup httpd-svc`即可. // 在kube-dns和namespace system下的pod不能用`nslookup httpd-svc.defualt`访问namespce default 下的Service???
+
+#### 外网访问Service
+
 
 ### 如何访问
 参考:
@@ -616,6 +757,7 @@ Kubernetes Ingress提供了负载平衡器的典型特性：HTTP路由，粘性�
 targetPort 是Pod上的端口.
 
 ## cmd
+- `kubectl run alpine --rm -ti --image=alpine /bin/sh` # 创建调试pod
 - `kubectl logs -f POD-NAME` # 获取pod日志
 - `kubectl edit deployment ${deployment-name}` # 查看deployment配置和运行状态
 - `kubectl exec -it POD-NAME sh` # 进入pod的容器
@@ -633,8 +775,10 @@ targetPort 是Pod上的端口.
 - `kubectl get nodes [--show-labels]` # 获取所有node
 - `kubectl get replicaset` # 获取所有replicaset
 - `kubectl logs POD-NAME Container-NAME [-p]` # 查询pod中容器的日志,`-p`允许查询`Container-NAME`重建前的日志
-- `kubectl apply -f nginx-deployment.yaml` # 统一进行 Kubernetes 对象的创建和更新操作, 是 Kubernetes“声明式 API”所推荐的使用方法. 作为用户，你不必关心当前的操作是创建还是更新，你执行的命令始终是 kubectl apply，而 Kubernetes 则会根据 YAML 文件的内容变化，自动进行具体的处理
+- `kubectl apply -f nginx-deployment.yaml [--record]` # 统一进行 Kubernetes 对象的创建和更新操作, 是 Kubernetes“声明式 API”所推荐的使用方法. 作为用户，你不必关心当前的操作是创建还是更新，你执行的命令始终是 kubectl apply，而 Kubernetes 则会根据 YAML 文件的内容变化，自动进行具体的处理. `--record`用于记录revision历史
 - `kubectl api-versions` # 查看api version支持的资源版本
+- `kubectl rollout history deployment ${deployment_name}` # 查看revision历史记录
+- `kubectl rollout undo deployment ${deployment_name} --to-revision=${num}` # 回滚到指定revison版本
 
 ## 生态
 ### kubeadm
