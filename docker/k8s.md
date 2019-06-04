@@ -604,7 +604,7 @@ spec:
     image: nginx
   - name: shell
     image: busybox
-    stdin: true
+    stdin: true # 必须设置tty和stdin, 否则kubectl attach时会报错: Unable to use a TTY - container es-node did not allocate one
     tty: true
 ```
 或
