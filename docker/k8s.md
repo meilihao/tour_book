@@ -869,7 +869,21 @@ targetPort 是Pod上的端口.
 - `kubectl rollout history deployment ${deployment_name}` # 查看revision历史记录
 - `kubectl rollout undo deployment ${deployment_name} --to-revision=${num}` # 回滚到指定revison版本
 
+## 网络模型
+k8s基于扁平地址空间的网络模型, 采用Container Networking Interface(CNI)规范, 每个Pod有自己的ip, Pod间不需要配置NAT就能直接通信. 同一个Pod贡献容器IP, 能通过localhost通信.
+
+> [网络方案安装](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/)
+> [Kube-OVN](https://github.com/alauda/kube-ovn) : 基于 OVN 的 Kubernetes 网络系统
+> [ovn-kubernetes提供了一个ovs OVN网络插件，支持underlay和overlay两种模式](https://www.bookstack.cn/read/sdn-handbook/ovs-ovn-kubernetes.md)
+
+
 ## 生态
+### 监控
+Prometheus Operator, 可使用Helm安装.
+
+### 日志
+k8s Elasticsearch addon
+
 ### kubeadm
 参考:
 - [kubeadm init](https://k8smeetup.github.io/docs/reference/setup-tools/kubeadm/kubeadm-init/)
