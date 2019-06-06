@@ -4,14 +4,14 @@ linux kernel没有aufs驱动,试试其他docker storage-driver,比如"docker dae
 
 ## 进入运行中的docker容器
 [进入容器](https://yeasy.gitbooks.io/docker_practice/content/container/enter.html):
-- `docker attach`,通过 docker attach 可以 attach 到**容器启动命令的终端**
-使用 attach 命令有时候并不方便。当多个窗口同时 attach 到同一个容器的时候，所有窗口都会同步显示。当某个窗口因命令阻塞时,其他窗口也无法执行操作了.
+- `docker attach`,通过 docker attach 可以 attach 到**容器启动命令所用的终端**
+使用 attach 命令有时候并不方便. 当多个窗口同时 attach 到同一个容器的时候，所有窗口都会同步显示. 当某个窗口因命令阻塞时,其他窗口也无法执行操作了.
 且如果你用CTRL-c或`exit xxx`来退出，同时这个信号会kill该容器,但可通过 Ctrl+p 然后 Ctrl+q 组合键退出 attach 终端
 - `docker exec`
 - nsenter工具
 
 attach 与 exec 主要区别如下:
-1. attach 直接进入容器(???原理)，不会启动新的进程;exec 则是在容器中打开新的终端，并且会启动新的进程
+1. attach 直接进入容器，不会启动新的进程;exec 则是在容器中打开**新的终端**，并且会启动**新的进程**
 2. 如果想直接在终端中查看启动命令的输出，用 attach；其他情况使用 exec
 
 ## save/load和export/import 区别
@@ -31,69 +31,55 @@ import/load用于导入镜像,但import用于操作export导出的容器,load用
 
 ## Dockerfile ADD/COPY
 区别:
-- ADD 的`<src>`可以为URL
+- ADD 的`<src>`可以为URL; COPY只能复制build context(即Dockerfile所在目录)中的文件
 - ADD指令会将tar文件解压到指定位置，而COPY指令只做复制操作
 
 **一般优先使用 COPY,因为它比 ADD 更透明**
-## Dockerfile RUN/ENTRYPOINT/CMD
-ENTRYPOINT指令有两种格式，CMD指令有三种格式：
-```
-ENTRYPOINT ["程序名", "参数1", "参数2"]
-ENTRYPOINT 命令 参数1 参数2
 
-CMD ["程序名", "参数1", "参数2"]
-CMD 命令 参数1 参数2
-CMD 参数1 参数2 # as default parameters to ENTRYPOINT
-```
-每个Dockerfile只能有一条CMD命令,有多条时,只有最后一条会被执行;用户启动容器时指定的命令会覆盖CMD指定的命令.
-每个Dockerfile只能有一条ENTRYPOINT命令,有多条时,只有最后一条会被执行;用户启动容器时指定的命令会作为参数传递给ENTRYPOINT命令.
+## Dockerfile RUN/ENTRYPOINT/CMD
+RUN是只在build镜像时运行，固化在image中, 其先于CMD和ENTRYPOINT的. CMD会在每次启动容器的时候运行.
+
+Dockerfile中可以有多个CMD, 但只有最后一个生效. **CMD可以被docker run指定的命令取代**.
+Dockerfile中可以有多个ENTRYPOINT, 但只有最后一个生效. **CMD/docker run指定的命令会被当做参数传递给ENTRYPOINT**.
 
 ENTRYPOINT是容器运行程序的入口.
 
-RUN是在build成镜像时就运行的，先于CMD和ENTRYPOINT的，CMD会在每次启动容器的时候运行，而RUN只在创建镜像时执行一次，固化在image中.
+ENTRYPOINT指令有两种格式，CMD指令有三种格式, RUN有两种格式：
+```
+ENTRYPOINT ["command", "arg1", "arg2"] // exec 模式的写法: docker直接执行[command], 推荐写法
+ENTRYPOINT command arg1 arg2 // shell 模式的写法: docker执行`/bin/sh -c [command]`
 
-ENTRYPOINT和CMD的不同点在于执行docker run时参数传递方式，**CMD指定的命令可以被docker run传递的命令覆盖**.
-ENTRYPOINT会把容器名后面的所有内容都当成参数传递给其指定的命令(**不会对命令覆盖**)
+CMD ["command", "arg1", "arg2"]
+CMD command arg1 arg2
+CMD ["arg1, "arg2"] # as default parameters to ENTRYPOINT, 必须配合exec 模式的ENTRYPOINT来使用
 
-关于ENTRYPOINT和CMD的交互，用一个官方表格可以说明：
-<table>
-<thead>
-<tr>
-<th align="left"></th>
-<th align="left"><strong>No ENTRYPOINT</strong></th>
-<th align="left"><strong>ENTRYPOINT exec_entry p1_entry</strong></th>
-<th align="left"><strong>ENTRYPOINT ["exec_entry", "p1_entry"]</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="left"><strong>No CMD</strong></td>
-<td align="left">error, not allowed</td>
-<td align="left">/bin/sh -c exec_entry p1_entry</td>
-<td align="left">exec_entry p1_entry</td>
-</tr>
-<tr>
-<td align="left"><strong>CMD ["exec_cmd", "p1_cmd"]</strong></td>
-<td align="left">exec_cmd p1_cmd</td>
-<td align="left">/bin/sh -c exec_entry p1_entry</td>
-<td align="left">exec_entry p1_entry exec_cmd p1_cmd</td>
-</tr>
-<tr>
-<td align="left"><strong>CMD ["p1_cmd", "p2_cmd"]</strong></td>
-<td align="left">p1_cmd p2_cmd</td>
-<td align="left">/bin/sh -c exec_entry p1_entry</td>
-<td align="left">exec_entry p1_entry p1_cmd p2_cmd</td>
-</tr>
-<tr>
-<td align="left"><strong>CMD exec_cmd p1_cmd</strong></td>
-<td align="left">CMD exec_cmd p1_cmd</td>
-<td align="left">/bin/sh -c exec_entry p1_entry</td>
-<td align="left">exec_entry p1_entry /bin/sh -c exec_cmd p1_cmd</td>
-</tr></tbody></table>
+RUN ["command", "arg1", "arg2"]
+RUN command
+```
 
-ps: shell 形式防止使用任何CMD或运行命令行参数，但是缺点是您的ENTRYPOINT将作/bin/sh -c的子命令启动，它不传递信号。这意味着可执行文件将不是容器的PID 1，并且不会接收Unix信号，因此您的可执行文件将不会从docker stop <container>接收到SIGTERM
+关于ENTRYPOINT和CMD的交互细节在[官方Dockerfile的Understand how CMD and ENTRYPOINT interact里](https://docs.docker.com/engine/reference/builder/).
 
-> 默认情况下，Docker 会提供一个隐含的 ENTRYPOINT:`/bin/sh -c`. 所以在不指定 ENTRYPOINT 时，实际上运行容器里的在完整进程是`/bin/sh -c ${CMD}`，即 CMD 的内容就是 ENTRYPOINT 的参数. 因此我们会统一称 Docker 容器的启动进程为 ENTRYPOINT，而不是 CMD.
+永远使用Exec表示法: 组合使用ENTRYPOINT和CMD格式时确保你一定用的是Exec表示法. 如果用其中一个用的是Shell表示法, 或者一个是Shell表示法, 另一个是Exec表示法, 将永远得不到预期的效果:
+```text
+Dockerfile    Command
+
+ENTRYPOINT /bin/ping -c 3
+CMD localhost               /bin/sh -c '/bin/ping -c 3' /bin/sh -c localhost
+
+ENTRYPOINT ["/bin/ping","-c","3"]
+CMD localhost               /bin/ping -c 3 /bin/sh -c localhost
+
+ENTRYPOINT /bin/ping -c 3
+CMD ["localhost"]"          /bin/sh -c '/bin/ping -c 3' localhost
+
+ENTRYPOINT ["/bin/ping","-c","3"]
+CMD ["localhost"]            /bin/ping -c 3 localhost
+```
+从上面看出, 只有ENTRYPOINT和CMD都用Exec表示法, 才能得到预期的效果.
+
+ps: shell 形式是以`/bin/sh -c [command]`启动，它不传递信号. 这意味着可执行文件将不是容器的PID 1，并且不会接收Unix信号，因此您的可执行文件将不会从docker stop <container>接收到SIGTERM
+
+> 默认情况下，Docker 会提供一个隐含的 ENTRYPOINT:`/bin/sh -c`. 所以在不指定 ENTRYPOINT 时，实际上运行容器里的在完整进程是`/bin/sh -c ${CMD}`，即 CMD 的内容就是 ENTRYPOINT 的参数. 因此我们会统一称 Docker 容器的启动进程为 ENTRYPOINT，而不是 CMD. 推荐Dockerfile至少要指定一个CMD或者ENTRYPOINT命令.
 
 ## alpine无法运行golang程序
 ```sh

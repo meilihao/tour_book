@@ -1,6 +1,6 @@
 ## 常用操作
 下载镜像 ： docker pull [registry_hostname/[group/]]namespace/name[:tag]
-添加镜像tag : docker tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG] # 镜像的ID相同,仅创建别名而已
+给镜像打tag : docker tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG] # 镜像的ID相同,仅创建别名而已
 镜像/容器的详细信息 : docker inspect [OPTIONS] NAME|ID [NAME|ID...]
 镜像查找 : docker search [OPTIONS] TERM
 查看镜像列表：docker images [OPTIONS] [REPOSITORY[:TAG]]
@@ -10,7 +10,9 @@
 上传镜像 : docker push [OPTIONS] NAME[:TAG]
 用镜像创建容器并启动：sudo docker run
 查看容器列表：docker ps [OPTIONS]
-停止容器：docker stop [OPTIONS] CONTAINER [CONTAINER...]
+暂停/取消暂停容器：docker pause/unpause CONTAINER [CONTAINER...]
+停止容器：docker stop [OPTIONS] CONTAINER [CONTAINER...] // 向容器进程发送SIGTERM信号
+kill容器：docker kill [OPTIONS] CONTAINER [CONTAINER...] // 向容器进程发送SIGKILL信号
 启动容器：docker start [OPTIONS] CONTAINER [CONTAINER...]
 删除容器：docker rm [OPTIONS] CONTAINER [CONTAINER...]
 端口映射信息 : docker port CONTAINER [PRIVATE_PORT[/PROTO]]
@@ -23,6 +25,7 @@
 查看容器的存储层变化: docker diff CONTAINER # 最上层(读写层)和其他层(只读层)的差异
 查看当前映射的端口配置: docker port CONTAINER
 docker环境信息: docker info
+构建image: docker build [--no-cache] // --no-cache: 不使用image缓存 
 
 ### 创建镜像
 
@@ -31,6 +34,7 @@ docker环境信息: docker info
 1. 基于本地模板导入 : `docker import [OPTIONS] file|URL|- [REPOSITORY[:TAG]]`
 `sudo cat ubuntu-16.04.tar.gz |docker import - ubuntu:16.04`
 1. 基于Dockerfile创建,**推荐**
+    构建失败时, 可`docker run ${上一步构建成功的中间镜像}`用于调试Dockerfile
 
 ### 创建容器及启动
 1. docker create [OPTIONS] IMAGE [COMMAND] [ARG...] + docker start [OPTIONS] CONTAINER [CONTAINER...]

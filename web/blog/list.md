@@ -26,6 +26,7 @@
 - [fouber/blog # 前端博客](github.com/fouber/blog)
 - [75份开发者、设计师必备的速查表](http://info.9iphp.com/75-best-cheat-sheets-for-designers-and-programmers/)
 - [中高级前端大厂面试秘籍，为你保驾护航金三银四，直通大厂](https://github.com/xd-tayde/blog/blob/master/interview-1.md)
+- [HTTP2 in GO](https://www.tuicool.com/articles/jMreQbN)
 
 ## css
  - [CSS动画简介](http://www.ruanyifeng.com/blog/2014/02/css_transition_and_animation.html)
