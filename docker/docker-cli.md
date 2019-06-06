@@ -26,6 +26,8 @@ kill容器：docker kill [OPTIONS] CONTAINER [CONTAINER...] // 向容器进程�
 查看当前映射的端口配置: docker port CONTAINER
 docker环境信息: docker info
 构建image: docker build [--no-cache] // --no-cache: 不使用image缓存 
+查看bridge信息: docker network inspect bridge
+列出docker daemon的所有网络: docker network ls
 
 ### 创建镜像
 

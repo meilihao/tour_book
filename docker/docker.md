@@ -59,3 +59,16 @@ docker run的资源限制参数:
 - --memory-swap : 内存+swap的限制
 - -c : 使用cpu的权重(仅cpu资源紧张的情况下有效), 具体分配到的cpu取决于该值占所有容器cpu share总和的比例.
 - --blkio-weight : io的权重值, 也`-c`类似
+
+## 网络
+通过`docker run`的`--network`指定:
+- none : 使用none网络, 即网卡上仅有`lo`项
+- host : 共享host的网络, 即容器的网络配置与host完全一样
+    最大好处是性能, 坏处是要考虑与host的端口冲突
+- bridge : linux bridge(可通过`brctl show`查看), 是docker的默认网络, `docker0`是docker安装时创建
+    ![bridge模型](images/network_bridge.png)
+    Docker每创建一个`network`的容器都会执行如下操作：
+    1. 创建一对虚拟接口，即veth pair，分别放到宿主机和容器中(该容器退出时也会删除其veth pair)
+    1. 主机一端桥接到默认的docker0或指定网桥上，具有一个唯一的名字，如vethXXX(veth0ac844e)
+    1. 另一端放到新容器中，并修改名字为eth0，该接口只在容器的命名空间可见
+    1. 从网桥可用地址段中获取一个空闲地址分配给容器的eth0，并配置默认路由到桥接网卡veth0ac844e
