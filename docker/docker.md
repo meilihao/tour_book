@@ -24,6 +24,9 @@ docker是典型的C/S架构:
 ![一张图掌握 Docker 命令](https://static.oschina.net/uploads/img/201702/09111906_odFS.png)
 
 ## 镜像
+参考:
+- [深入分析 Docker 镜像原理](http://blog.daocloud.io/principle-of-docker-image/)
+
 镜像的实现使用了Union File System 也叫 UnionFS，其最主要的功能是将多个不同位置的目录联合挂载（union mount）到同一个目录下.
 
 所有对容器的改动, 包括添加, 修改, 删除都只发生在容器层(即可读写层), 细节:
@@ -34,6 +37,8 @@ docker是典型的C/S架构:
 1. 删除 : 只读层存在删除对象时使用 whiteout(对文件)/opaque(对目录) 机制: 通过在容器层建立对应的 whiteout/opaque，来遮挡下层分支中的所有路径名相同的文件/目录
 
 当前默认GraphDriver是overlay2. overlay2仅有两层, 性能上比使用多层的aufs(不推荐)有优势.
+
+![容器和镜像的分层](images/image.jpg)
 
 ### 创建镜像
 1. 基于已有镜像的容器创建(不推荐) : `docker commit`
@@ -84,6 +89,7 @@ docker run的资源限制参数:
 
 > bridge, none仅支持单机通信.
 > docker默认禁止bridge间通信(通过iptables), 可通过`docker network connect`添加对应的网卡解决
+> Docker1.12以后提供了docker network来替代`--link`方式来实现容器互联
 
 ### 容器间通信:
 - ip : 容器在同一个网络即可: 创建时使用`--network`指定网络或使用`docker network connect`将现有容器加入指定网络
@@ -133,6 +139,8 @@ storage driver目前支持overlay2(linux默认, 已进入linux kernel), aufs, de
 
 > storage driver选择: docker安装时指定的默认dirver即可.
 > docker也支持[第三方的volume](https://docs.docker.com/engine/extend/legacy_plugins/#Volume plugins)以实现跨host共享数据.
+
+![Overlay2的分层](images/overlay_constructs.jpg)
 
 ### volume
 本质是docker host文件系统上的目录或文件, 可以被mount到容器中, 用于持久化数据, 可通过`docker inspect`查看.
@@ -188,3 +196,16 @@ data-packed volume container : 将数据打包到镜像中, 其他容器再通�
 docker的 logging driver(从运行的容器中提取日志)默认是`json-file`, 可通过`docker info|grep 'Logging Driver'`查看. 容器的日志在`/var/lib/docker/containers/${container id}/${container id}-json.log`里.
 
 > [docker 支持的logging driver在这里](https://docs.docker.com/config/containers/logging/configure/#Supported logging drivers)
+
+## 容器编排
+解决方案:
+- docker compose : 小规模/测试
+- k8s : 大规模, **推荐**
+
+## 开发
+- [循序渐进学Docker#Docker插件开发]
+- [循序渐进学Docker#Docker源码探索], 使用`sourcegraph.com`阅读
+
+## 实践
+- [美团容器平台架构及容器技术实践](https://tech.meituan.com/2018/11/15/docker-architecture-and-evolution-practice.html)
+- [HECD = Haproxy + Etcd + Cond + Docker]
