@@ -451,9 +451,30 @@ pv的volumn phase:
 
 注意: 只有本地盘和nfs支持数据盘Recycle 擦除回收， AWS EBS, GCE PD, Azure Disk, and Cinder 存储卷支持Delete策略
 
+PVC 要真正被容器使用起来，就必须先和某个符合条件的 PV 进行绑定, 要检查的条件包括两部分：
+1. PV 和 PVC 的 spec 字段. 比如PV 的存储（storage）大小，就必须满足 PVC 的要求
+1. PV 和 PVC 的 storageClassName 字段必须一样
+
+PVC 可以理解为持久化存储的“接口”，它提供了对某种持久化存储的描述，但不提供具体的实现；而这个持久化存储的实现部分则由 PV 负责完成.
+PersistentVolumeController将一个 PV 与 PVC 进行“绑定”，其实就是将这个 PV 对象的名字，填在了 PVC 对象的 spec.volumeName 字段上
+
+PV 对象如何变成容器里的一个持久化存储(两阶段处理):
+1. Attach : 为虚拟机挂载远程磁盘的操作, 有的不需要挂载设备可以跳过, 比如NFS.
+  该阶段是由 Volume Controller 负责维护的，这个控制循环的名字叫作：AttachDetachController, 其运行在 Master 节点上的: Attach 操作只需要调用公有云或者具体存储项目的 API，并不需要在具体的宿主机上执行操作
+1. Mount: 将磁盘设备格式化并挂载到 Volume 宿主机目录的操作
+  必须发生在 Pod 对应的宿主机上，所以它必须是 kubelet 组件的一部分。这个控制循环的名字，叫作：VolumeManagerReconciler，它运行起来之后，是一个独立于 kubelet 主循环的 Goroutine
+
+上述关于 PV 的“两阶段处理”流程，是靠独立于 kubelet 主控制循环（Kubelet Sync Loop）之外的两个控制循环来实现的
+
 pv 存在:
-- 静态供给(Static Provision) : 集群管理员创建多个PV, 存在于Kubernetes API中，可用于消费. 它们携带可供集群用户使用的真实存储的详细信息
-- 动态供给(Dynamical Provision) : 
+- 静态供给(Static Provisioning) : 集群管理员创建多个PV, 存在于Kubernetes API中，可用于消费. 它们携带可供集群用户使用的真实存储的详细信息
+- 动态供给(Dynamical Provisioning) :  StorageClass 对象的作用，其实就是创建 PV 的模板, 只有同属于一个 StorageClass 的 PV 和 PVC，才可以绑定在一起
+
+具体地说，StorageClass 对象会定义如下两个部分内容：
+1. PV 的属性 : 比如，存储类型、Volume 的大小等等
+1. 创建这种 PV 需要用到的存储插件 : 比如，Ceph 等等
+有了这样两个信息之后，Kubernetes 就能够根据用户提交的 PVC，找到一个对应的 StorageClass 了。然后，Kubernetes 就会调用该 StorageClass 声明的存储插件，创建出需要的 PV
+
 
 #### 本地数据卷
 EmptyDir、HostPath只能用于本地文件系统, 所以当Pod发生迁移的时候，数据便会丢失. 该类型Volume的用途是：Pod中容器间的文件共享、共享宿主机的文件系统.
