@@ -103,12 +103,30 @@ docker run的资源限制参数:
 
 ![docker-proxy](images/docker-proxy.jpg)
 
+### 跨host通信
+这里仅了解, 跨host通信推荐使用k8s.
+
+参考:
+- [容器网络聚焦：CNM和CNI](http://www.dockerinfo.net/3772.html)
+- [每天5分钟玩转Docker容器技术#容器网络]
+
+解决方案:
+- CNM(Container Network Model), Libnetwork是CNM的原生实现, 它为Docker daemon和网络驱动程序之间提供了接口.
+- CNI : 被k8s采用, 会成为未来容器网络的标准, 推荐.
+
+具体实现:
+- docker 原生的overlay和macvlan
+- 第三方的flannel, calico, weave等
+
+对比: Underlay网络性能优于Overlay; Overlay支持等多的二层网段, 更能利用已有的网络以及能避免物理交换机MAC表耗尽等
+
 ## 存储
 由storage driver管理的镜像层和容器层 + volume组成
 
 storage driver目前支持overlay2(linux默认, 已进入linux kernel), aufs, device mapper, btrfs, vfs, zfs. 可通过`docker info`查看默认dirver.
 
->　storage driver选择: docker安装时指定的默认dirver即可.
+> storage driver选择: docker安装时指定的默认dirver即可.
+> docker也支持[第三方的volume](https://docs.docker.com/engine/extend/legacy_plugins/#Volume plugins)以实现跨host共享数据.
 
 ### volume
 本质是docker host文件系统上的目录或文件, 可以被mount到容器中, 用于持久化数据, 可通过`docker inspect`查看.
@@ -147,3 +165,20 @@ bind mount(推荐)/docker managed volume
 1. volume container(推荐), 其支持bind mount/docker managed volume, 其他容器通过`--volumes-from`引入`volume container`
 
 data-packed volume container : 将数据打包到镜像中, 其他容器再通过`--volumes-from`引入. 它不依赖host, 具有很强的移植性, 非常适合只使用静态数据的场景, 比如应用的配置, web server的static files.
+
+## 监控
+参考:
+- [每天5分钟玩转Docker容器技术#容器监控]
+
+- docker 自带 :`docker container stats`, `docker container ps`,`docker container top CONTAINER`
+- 第三方 : sysdig, Weave Scope, cAdvisor, Prometheus(推荐)
+
+### sysdig
+仅显示实时数据, 没有变化和趋势
+
+## 日志
+将容器日志发送到stdout,stderr是dcoker的默认日志行为.
+
+docker的 logging driver(从运行的容器中提取日志)默认是`json-file`, 可通过`docker info|grep 'Logging Driver'`查看. 容器的日志在`/var/lib/docker/containers/${container id}/${container id}-json.log`里.
+
+> [docker 支持的logging driver在这里](https://docs.docker.com/config/containers/logging/configure/#Supported logging drivers)
