@@ -31,7 +31,7 @@ docker是典型的C/S架构:
 1. 读取 : Docker会从上往下依次在各层查找, 找到后载入内存
 1. 修改 : 不在容器层时，Docker会从上往下依次在各层查找, 找到后复制到容器层, 再修改
     使用了CopyOnWrite机制: 仅当需要修改时才复制数据, 优势是共享数据，减少物理空间占用
-1. 删除 : 只读层存在删除对象，使用 whiteout(对文件)/opaque(对目录) 机制: 通过在容器层建立对应的 whiteout/opaque，来遮挡下层分支中的所有路径名相同的文件/目录
+1. 删除 : 只读层存在删除对象时使用 whiteout(对文件)/opaque(对目录) 机制: 通过在容器层建立对应的 whiteout/opaque，来遮挡下层分支中的所有路径名相同的文件/目录
 
 当前默认GraphDriver是overlay2. overlay2仅有两层, 性能上比使用多层的aufs(不推荐)有优势.
 
@@ -72,3 +72,78 @@ docker run的资源限制参数:
     1. 主机一端桥接到默认的docker0或指定网桥上，具有一个唯一的名字，如vethXXX(veth0ac844e)
     1. 另一端放到新容器中，并修改名字为eth0，该接口只在容器的命名空间可见
     1. 从网桥可用地址段中获取一个空闲地址分配给容器的eth0，并配置默认路由到桥接网卡veth0ac844e
+
+    注意: 只有创建bridge时指定`--subnet`才允许使用`--ip`指定静态ip
+- user-defined网络 : bridge, overlay, macvlan
+
+> bridge, none仅支持单机通信.
+> docker默认禁止bridge间通信(通过iptables), 可通过`docker network connect`添加对应的网卡解决
+
+### 容器间通信:
+- ip : 容器在同一个网络即可: 创建时使用`--network`指定网络或使用`docker network connect`将现有容器加入指定网络
+- dns : 为了解决部署应用前无法确定ip的情况, 创建容器时使用`--name`命名容器即可.
+- joined : 通过`--network=Container:xxx`共享指定容器的network namespace, 适用于:
+    1. 不同容器希望通过loopback快速通信
+    1. 希望监控其他容器的网络流量
+
+> 默认的bridge(docker0)无法使用dns, 但user-defined创建的bridge可以.
+
+### 容器与外部网络的互访
+这里的外部网络是指非当前使用的容器网络
+
+#### 容器访问外部网络
+容器默认就能访问外网, 比如`ping www.baidu.com`.
+
+![通过iptable NAT, 容器访问外网的细节](images/nat.jpg)
+
+#### 外部网络访问容器
+通过容器启动时指定`-p`指定端口映射
+
+每个映射的端口都会启动一个docker-proxy来处理访问容器的流量.
+
+![docker-proxy](images/docker-proxy.jpg)
+
+## 存储
+由storage driver管理的镜像层和容器层 + volume组成
+
+storage driver目前支持overlay2(linux默认, 已进入linux kernel), aufs, device mapper, btrfs, vfs, zfs. 可通过`docker info`查看默认dirver.
+
+>　storage driver选择: docker安装时指定的默认dirver即可.
+
+### volume
+本质是docker host文件系统上的目录或文件, 可以被mount到容器中, 用于持久化数据, 可通过`docker inspect`查看.
+
+docker支持两种volume:
+1. bind mount : 使用`-v`参数将host上已存在的目录或文件mount到容器
+1. docker managed volueme
+
+#### bind mount
+格式: `${host path}:${Container path}[:读写权限]`.
+删除数据的工作由host负责.
+
+> `host path`是单文件时, 该文件必须存在, 否则将会当做一个新目录mount到容器
+
+#### docker managed volume
+与bind mount最大区别是`-v`参数不需要指定mount src, 便于容器迁移, 比如容器迁移时mount src不存在而失败.
+
+此时docker会在`/var/lib/docker/volumes`下创建一个**随机目录**来作为`mount src`.
+
+> 如果mount dist已存在, docker会先将其下数据复制到mount src后在mount.
+
+docker rm时带上`-v`即可删除, 前提是没有其它容器mount了该volume, 这是为了保护数据; 没带`-v`删除时会产生孤儿volume, 可通过`docker volume`对docker managed volume进行维护.
+
+![bind mount与docker managed volume的不同点](images/mount_bind_managed.png)
+
+### 数据共享
+#### 容器与host
+bind mount(推荐)/docker managed volume
+
+> docker managed volume是容器启动时生成的随机目录, 因此推荐使用bind mount.
+> `docker cp` 允许容器和host间复制数据.
+
+#### 容器间
+方法:
+1. 通过bind mount将要共享的数据mount到多个容器
+1. volume container(推荐), 其支持bind mount/docker managed volume, 其他容器通过`--volumes-from`引入`volume container`
+
+data-packed volume container : 将数据打包到镜像中, 其他容器再通过`--volumes-from`引入. 它不依赖host, 具有很强的移植性, 非常适合只使用静态数据的场景, 比如应用的配置, web server的static files.
