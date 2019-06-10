@@ -35,6 +35,12 @@ docker是典型的C/S架构:
 
 当前默认GraphDriver是overlay2. overlay2仅有两层, 性能上比使用多层的aufs(不推荐)有优势.
 
+### 创建镜像
+1. 基于已有镜像的容器创建(不推荐) : `docker commit`
+1. 基于本地模板导入 : `docker import`
+1. 基于Dockerfile创建, **推荐**
+    构建失败时, 可`docker run ${上一步构建成功的中间镜像}`用于调试Dockerfile
+
 ### [Dockerfile](https://docs.docker.com/engine/reference/builder/)
 `FROM scratch`表示从零开始构建,不推荐: 因为没有常用的调试工具. 常用alpine.
 

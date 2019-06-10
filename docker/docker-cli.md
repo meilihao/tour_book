@@ -1,3 +1,5 @@
+# docker cli
+
 ## 常用操作
 下载镜像 ： docker pull [registry_hostname/[group/]]namespace/name[:tag]
 给镜像打tag : docker tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG] # 镜像的ID相同,仅创建别名而已
@@ -31,7 +33,6 @@ docker环境信息: docker info
 为容器添加网卡(比如bridge) : `docker network connect ${network_name} CONTAINER`
 
 ### 创建镜像
-
 1. 基于已有镜像的容器创建(不推荐) : `docker commit [OPTIONS] CONTAINER [REPOSITORY[:TAG]]`
 `sudo docker commit -m "Added a new file" -a "chen" 0e65be4364a8 test`
 1. 基于本地模板导入 : `docker import [OPTIONS] file|URL|- [REPOSITORY[:TAG]]`
@@ -40,13 +41,13 @@ docker环境信息: docker info
     构建失败时, 可`docker run ${上一步构建成功的中间镜像}`用于调试Dockerfile
 
 ### 创建容器及启动
-1. docker create [OPTIONS] IMAGE [COMMAND] [ARG...] + docker start [OPTIONS] CONTAINER [CONTAINER...]
 1. docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
-- -t : 让docker分配一个伪终端(pseudo-tty)并绑定到容器的标准输出上
-- -i : 当前shell的标准输入绑定到容器的标准输入上
-- -d : 让容器在后台以守护态(daemonized)形式运行
-- -v : 本地目录必须使用绝对路径,但本地文件可以使用相对路径,**推荐使用目录**
+    - -t : 让docker分配一个伪终端(pseudo-tty)并绑定到容器的标准输出上
+    - -i : 当前shell的标准输入绑定到容器的标准输入上
+    - -d : 让容器在后台以守护态(daemonized)形式运行
+    - -v : 本地目录必须使用绝对路径,但本地文件可以使用相对路径,**推荐使用目录**
+1. docker start [OPTIONS] CONTAINER [CONTAINER...]
 
-## 删除镜像
+### 删除镜像
 sudo docker rmi $(sudo docker images | awk '/^<none>/ { print $3 }')
 
