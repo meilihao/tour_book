@@ -17,6 +17,7 @@
 - -k [ FStart [ .CStart ] ] [ Modifier ] [, [ FEnd [ .CEnd ] ][ Modifier ] ] : 按指定区间排序
 - -t<分隔符> : 指定排序时所用的分隔符
 - -u : 去除重复行
+- --debug : 输出调试信息
 
 `[ FStart [ .CStart ] ] [ Modifier ] [, [ FEnd [ .CEnd ] ][ Modifier ] ]`解析:
 这个语法格式可以被其中的`,`分为两大部分，Start部分和End部分, 如果不设定End部分，那么就认为End被设定为行尾.
