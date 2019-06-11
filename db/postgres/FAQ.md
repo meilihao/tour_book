@@ -143,3 +143,7 @@ serial key其实是由sequence实现的，当手动给serial列赋值的时候�
 ### 位操作
 ```sql
 ```
+
+### `pq: relation "${table_name}" does not exist`即该表不存在
+- connection string 错误
+- sql的字段需要引号/需要指定schema
