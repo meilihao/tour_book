@@ -832,7 +832,9 @@ apt-get install -y kubelet kubeadm kubectl
 
 > [k8s官网doc](https://kubernetes.io/docs/setup/independent/install-kubeadm/)给的安装源是https://packages.cloud.google.com，但国内访问不了，此时我们可以使用[阿里云的仓库镜像](https://opsx.alibaba.com/mirror)
 
-**安装太复杂, 使用[rancher部署,推荐](https://www.cnrancher.com/kubernetes-installation/)来代替**
+**安装太复杂, 使用[rancher部署,推荐](https://www.cnrancher.com/kubernetes-installation/)来代替**.
+
+> [rancher卸载](https://www.cnrancher.com/docs/rancher/v2.x/cn/configuration/admin-settings/remove-node/)
 
 ## rancher部署
 [docker 版本支持](http://rancher.com/docs/rancher/v1.6/en/hosts/#supported-docker-versions)
