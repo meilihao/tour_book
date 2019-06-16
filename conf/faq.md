@@ -166,3 +166,22 @@ $ echo $SSH_AUTH_SOCK
 ```
 
 虽然ssh-add无法添加, 但`ssh xxx`还是可正常使用
+
+### ssh自动断开
+1. 服务端设置
+    找到/etc/ssh/sshd_config, 并修改数值
+
+    # 30表示30s给客户端发送一次心跳
+    ClientAliveInterval 30
+    # 此客户端没有返回心跳3次，则会断开连接
+    ClientAliveCountMax 3
+    # TCP保持连接不断开
+    TCPKeepAlive yes
+1. 客户端配置(推荐)
+    如果是想让主机所有用户都生效，修改/etc/ssh/ssh_config
+    如果只想让当前用户生效，则修改 ~/.ssh/config
+
+    Host *
+        ServerAliveInterval 30
+        ServerAliveCountMax 3
+        TCPKeepAlive yes
