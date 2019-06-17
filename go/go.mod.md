@@ -35,3 +35,22 @@ export GOPROXY=https://goproxy.io
 ## FAQ
 ### go: cannot determine module path for source directory
 在 $GOPATH 之外使用 go modules, 如果是现有项目的话可以直接 go mod init, 现有项目会根据 git remote 自动识别 module 名, 但是新项目的话就会报`go: cannot determine module path for source directory`, 此时需要带上 module 名即可.
+
+### go mod使用gitlab私有仓库作为项目的依赖包
+```sh
+$ git config --global url."git@code.aliyun.com:xxx_backend/saas.git".insteadOf "https://code.aliyun.com/xxx_backend/saas.git"
+$ go get -u code.aliyun.com/xxx_backend/saas
+```
+
+go.mod:
+```txt
+...
+require (
+	...
+	xxx/saas v0.0.0-00010101000000-000000000000 // go mod自动添加
+)
+
+// 有两种方法:
+replace xxx/saas => code.aliyun.com/xxx_backend/saas v0.0.0-20190617102944-e1b0da75851a // 1. 使用私有仓库, 推荐
+// replace xxx/saas => /home/chen/git/xxx/saas // 2. 使用本地package, 不推荐
+```
