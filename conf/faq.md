@@ -185,3 +185,6 @@ $ echo $SSH_AUTH_SOCK
         ServerAliveInterval 30
         ServerAliveCountMax 3
         TCPKeepAlive yes
+
+## linux 搜狗输入法 禁用半角切换
+打开Fcitx配置界面 -> 全局配置, 选中左下角的`显示高级选项`, 重新定义`切换全角`的快捷键即可.
