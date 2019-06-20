@@ -73,6 +73,17 @@ RENAME TABLE tbl_name TO new_tbl_name
 - 事务是需要在同一个处理单元中执行的一系列操作的集合.
 - 事务特性ACID:原子性(Atomicity),一致性(Consistency),隔离性(Isolation)和持久性(Durability).
 
+### [隔离级别](https://juejin.im/post/5b90cbf4e51d450e84776d27)
+- 脏读(dirty read/Read uncommitted)：一个事务读取了另一个事务尚未提交的修改
+- 不可重复读(non-repeatable read/Read committed)：一个事务对同一行数据读取两次，得到不同结果, 即读到其他事务已提交的数据
+- 幻读(phantom read/Repeatable read)：事务在操作过程中进行了两次查询，第二次的结果包含了第一次未出现的新数据或部分数据消失
+- 串行化(Serializable)：一个事务在执行过程中完全看不到其他事务对数据库所做的更新．`写`会加`写锁`，`读`会加`读锁`,当出现读写锁冲突的时候，后访问的事务必须等前一个事务执行完成，才能继续执行.
+
+> 现在为止:所有的数据库都避免脏读
+> 不可重复读是由于数据修改引起的，幻读是由数据插入或者删除引起的
+> 串行化:可避免脏读、不可重复读、幻读的发生
+> MySQL的默认隔离级别就是Repeatable read, 查看方法:`show [global]  variables like "%isolation%";`
+
 ### 视图
 - 视图中保存的是从表中取出数据所使用的`SELECT`语句.
 - 多重视图会降低SQL的性能,不推荐.
