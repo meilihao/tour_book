@@ -22,6 +22,12 @@ set global general_log_file='/var/log/mysql/mysql.log';
 mysqladmin -u 用户名 -p password "新密码"
 ```
 
+mariadb 10.4 初始化密码:
+```
+$ sudo mysql -u root
+> set password for 'root'@'localhost' = PASSWORD('xxx');
+```
+
 #### 查询sql_mdoe
 ```sql
 select @@sql_mode,@@GLOBAL.SQL_MODE;
