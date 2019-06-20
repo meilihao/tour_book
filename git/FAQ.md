@@ -153,3 +153,11 @@ git pull origin master --allow-unrelated-histories
 ```bash
 git clone -l <path_to_bare_repo> <new_normal_repo>
 ```
+
+### the remote end hung up unexpectedly
+网络比较缓慢(质量差)情况下，就断开了
+
+```
+git config --global http.lowSpeedLimit 0
+git config --global http.lowSpeedTime 999999
+```
