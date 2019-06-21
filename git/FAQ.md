@@ -153,3 +153,13 @@ git pull origin master --allow-unrelated-histories
 ```bash
 git clone -l <path_to_bare_repo> <new_normal_repo>
 ```
+
+### the remote end hung up unexpectedly
+网络比较缓慢(质量差)情况下，就断开了
+
+```
+git config --global http.lowSpeedLimit 1000
+git config --global http.lowSpeedTime 300
+```
+
+以上配置后，只有持续300秒以上的时间内传输速率都低于 1KB/s 的话才会 timeout
