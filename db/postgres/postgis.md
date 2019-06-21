@@ -3,6 +3,7 @@
 - [GIS基本概念](https://blog.csdn.net/alinshen/article/details/78503333)
 - [GeoJSON对象](https://www.jianshu.com/p/5c6c6e76d4df)
 - [PostGIS中的常用函数](https://my.oschina.net/weiwubunengxiao/blog/101290)
+- [与 ST_Geometry 配合使用的 SQL 函数](https://desktop.arcgis.com/zh-cn/arcmap/latest/manage-data/using-sql-with-gdbs/a-quick-tour-of-sql-functions-used-with-st-geometry.htm)
 
 ## 类型
 - geometry: 几何类型, 平面. 两个点之间的最短路径是一条直线
