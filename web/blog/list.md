@@ -122,3 +122,8 @@
 - [HTML5-Audio- The most useful filter nodes](http://masf-html5.blogspot.com/2016/04/html5-audio-most-useful-filter-nodes.html)
 - [Web Audio API samples](https://webaudioapi.com/samples/)
 - [standardized-audio-context](https://github.com/chrisguttandin/standardized-audio-context)
+
+## http3
+- [HTTP/3 explained](https://daniel.haxx.se/http3-explained/)
+- [quic status](https://datatracker.ietf.org/wg/quic/about/)
+- [HTTP/3 status](https://datatracker.ietf.org/doc/draft-ietf-quic-http/)
