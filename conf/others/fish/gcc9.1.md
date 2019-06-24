@@ -1,0 +1,3 @@
+set -gx GCC91ROOT /usr/local/gcc-9.1
+set -gx PATH $GCC91ROOT/bin $PATH
+set -gx LD_LIBRARY_PATH $GCC91ROOT/lib64 $LD_LIBRARY_PATH
