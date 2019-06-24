@@ -22,6 +22,10 @@ export LD_LIBRARY_PATH=/usr/local/gcc-9.1/lib64:$LD_LIBRARY_PATH
 1. 编译gcc : `cannot run /bin/bash ../.././gmp/config.sub`
 依赖的`${gcc_src_root}/gmp-6.1.0/config.sub`不存在
 删除`${gcc_src_root}`重新准备`${gcc_src_root}`, 再执行`./contrib/download_prerequisites`, 其提示`All prerequisites downloaded successfully.`即可.
+1. `./contrib/download_prerequisites`慢
+download_prerequisites里的`base_url='ftp://gcc.gnu.org/pub/gcc/infrastructure/'`是使用ftp协议, 换成http即可
+1. `./contrib/download_prerequisites` 校验和不匹配
+删除损坏的相应文件, 重新运行`./contrib/download_prerequisites`下载即可.
 1. 查看gcc的编译选项
 ```
 $ gcc -v
