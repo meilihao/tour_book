@@ -3,9 +3,9 @@
 ### 整型
 | 类型名称 | 范围 |存储需求|
 |--------|--------|----------|
-|  smallint      |        |2B|
-|  int      |        |4B|
-|  bigint      |        |8B|
+|  smallint / int2      |        |2B|
+|  int / int4     |        |4B|
+|  bigint / int8   |        |8B|
 
 ### 浮点类型
 | 类型名称 | 说明 |存储需求|
@@ -33,7 +33,7 @@
 ### 字符串类型
 | 类型名称 | 说明 |
 |--------|--------|
-|  char      | 固定长度非二进制字符串,不足不空白      |
+|  char      | 固定长度非二进制字符串,不足补空白, **推荐使用varchar**      |
 |  varchar	      |    变长非二进制字符串,有长度限制  |
 |  text	      |     变长非二进制字符串,无长度限制  |
 
@@ -75,6 +75,37 @@
 <table><thead><tr><th>操作符</th><th>描述</th><th>例子</th><th>结果</th></tr></thead><tbody><tr><td>||</td><td>连接</td><td>B'10001' || B'011'</td><td>10001011</td></tr><tr><td>&amp;</td><td>位与</td><td>B'10001' &amp; B'01101'</td><td>00001</td></tr><tr><td>|</td><td>位或</td><td>B'10001' | B'01101'</td><td>11101</td></tr><tr><td>#</td><td>位异或</td><td>B'10001' # B'01101'</td><td>11100</td></tr><tr><td>`~`</td><td>位非</td><td>`~ B'10001'`</td><td>01110</td></tr><tr><td>&lt;&lt;</td><td>位左移</td><td>B'10001' &lt;&lt; 3</td><td>01000</td></tr><tr><td>&gt;&gt;</td><td>位右移</td><td>B'10001' &gt;&gt; 2</td><td>00100</td></tr></tbody></table>
 
 ps: `&, |,#`的位串操作数必须等长
+
+### [运算符优先级](http://www.postgres.cn/docs/11/sql-syntax-lexical.html#SQL-PRECEDENCE)
+
+
+## sql
+psql:
+```
+-- 查询sql命令的解释
+\h alter table
+-- 打开编辑器
+\e
+```
+
+```
+-- 修改数据库名称
+alter database mytest rename to mytest1;
+-- 修改数据库所有人
+alter database mytest owner to user1;
+-- 修改字段类型
+alter table tb alter column name type varchar(10); -- 注意有`type`
+-- 修改字段名称
+alter table tb rename xxx to xxx2;
+-- 添加字段
+alter table tb add column a int8;
+-- 删除外键
+alter table tb drop constraint  ${外键名};
+-- 删除表
+drop table if exists td;
+-- 插入时间, t2 is time
+insert into users (t2) values (CURRENT_TIME);
+```
 
 ## pg函数
 
@@ -204,3 +235,8 @@ Append	UNION操作	无启动时间
 Materialize	子查询	有启动时间
 SetOp	INTERCECT，EXCEPT
 有启动时
+
+## 扩展
+### 特殊表
+1. temporary table : 临时表. 会话隔离, 本会话创建的临时表，不能被其他会话看到; 临时表的生命周期最长就是会话生命周期
+1. unlogged table : 为临时数据设计的(不写WAL)，写入性能较高，但是当postgresql进程崩溃时会丢失数据
