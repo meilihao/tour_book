@@ -51,7 +51,7 @@
 允许将字段定义为定长或变长的一维或多维数组.不过目前pg并不强制数组的长度,所以声明长度和不声明长度是一样的.
 
 ## 常见运算符
-运算符优先级: [官方文档](http://www.postgres.cn/docs/9.4/sql-syntax-lexical.html#SQL-PRECEDENCE)
+运算符优先级: [官方文档](http://www.postgres.cn/docs/10/sql-syntax-lexical.html#SQL-PRECEDENCE)
 ### 比较运算符
 规则:
 1. 有一个或两个参数为NULL,结果为空
@@ -81,14 +81,14 @@ ps: `&, |,#`的位串操作数必须等长
 
 ## sql
 psql:
-```
+```sql
 -- 查询sql命令的解释
 \h alter table
 -- 打开编辑器
 \e
 ```
 
-```
+```sql
 -- 修改数据库名称
 alter database mytest rename to mytest1;
 -- 修改数据库所有人
@@ -110,68 +110,123 @@ insert into users (t2) values (CURRENT_TIME);
 ## pg函数
 
 ### 数学函数
-[数学函数](http://www.postgres.cn/docs/9.4/functions-math.html)
-[字符串函数](http://www.postgres.cn/docs/9.4/functions-string.html)
->char_length(str),一个多字节字符算一个字符．
->length(str),使用utf8编码时，一个汉字3字节．
+- [数学函数](http://www.postgres.cn/docs/10/functions-math.html)
+  - random() : 范围 0.0 <= x < 1.0 中的随机值
+  - trunc（value,precision）: 按精度(precision)截取某个数字,**不进行舍入操作**
+  - round（value,precision）: 根据给定的精度(precision)输入数值, **会进行舍入操作**, 如果precision为负数, 则将保留value值到小数点左边precision位
+  - ceil (value) : 产生大于或等于指定值（value）的最小整数
+  - floor（value）: 与 ceil（）相反，产生小于或等于指定值（value）的最小整数
+  - sign(value) : 取参数的符号（-1, 0, +1）
+  - abs(x) : 绝对值
+  - mod(x,y) : 返回x被y除后的余数
 
-[时间/日期函数](http://www.postgres.cn/docs/9.4/functions-datetime.html)
-[条件判断函数](http://www.postgres.cn/docs/9.4/functions-conditional.html)
-[系统信息函数](http://www.postgres.cn/docs/9.4/functions-info.html)
-[加密函数](http://www.postgres.cn/docs/9.4/functions-binarystring.html)
+- [字符串函数](http://www.postgres.cn/docs/10/functions-string.html)
+  - char_length(str) : 一个多字节字符算一个字符．
+  - length(str) : 返回字符串的字节长度, 比如使用utf8编码时，一个汉字3字节．
+  - concat(s1,s2,...) : 返回拼接后的字符串(无拼接字符)
+  - concat(x,s1,s2,...) : 返回使用x拼接后的字符串
+  - left(s,n) : 返回字符串s的最左边n个字符
+  - right(s,n) : 返回字符串s的最右边n个字符
+  - substring(s, n, len) : 从字符串s返回一个长度为len的子字符串, 起始位置是n. 如果n<0,表示倒数第n个字符.
+
+- [时间/日期函数](http://www.postgres.cn/docs/10/functions-datetime.html)
+  - current_date : 获取系统当前日期
+  - current_time : 获取系统当前具体时间(时分秒)
+  - current_timestamp : 获取系统当前时间(日期+具体时间)
+  - extract(type from date)从当前时间中提前部分
+- [条件判断函数](http://www.postgres.cn/docs/10/functions-conditional.html)
+  - case [value] when v1 then r1 [when v2 then r2] [else rn] end : if...else....没有value时, vn应为bool表达式.
+- [系统信息函数](http://www.postgres.cn/docs/10/functions-info.html)
+  - version()
+  - user/current_user
+- [加密函数](http://www.postgres.cn/docs/10/functions-binarystring.html)
+  - md5('xxx')
+  - decode/encode(str, encodeType) : 使用encodeType(base64,hex)编/解码str
 
 ## 数据查询/select
->1. 除非必要应尽量避免使用`select *`,否则会因获取不需要的列数据而降低性能．
->2. 有时IN操作符可以实现OR操作符的效果，此时推荐使用IN,因为其语法更简明且执行速度更快，而且还支持更复杂的嵌套查询．
->3. group by通常和集合函数一起使用，例如，max(),min(),count(),sum(),avg().
->4. having和where均用于过滤数据．having用在数据分组后来过滤分组;where用于选择特定的记录．
->5．`limit x [offset y]`:［从表的第ｙ＋1条记录开始］选取ｘ条记录．
->6. `count(column)`会忽略column字段值为空值(NULL)的行;`count(*)`则所有记录均不忽略．
->7. `sum()`忽略列值为NULL的行．
->8. `max()`不仅适用于数值类型，也可用于字符类型，日期值．
+- 除非必要应尽量避免使用`select *`,否则会因获取不需要的列数据而降低性能．
+- 有时IN操作符可以实现OR操作符的效果，此时推荐使用IN,因为其语法更简明且执行速度更快，而且还支持更复杂的嵌套查询．
+- group by通常和集合函数一起使用，例如，max(),min(),count(),sum(),avg().
+- having和where均用于过滤数据．having用在数据分组即group by后来过滤分组;where用于选择特定的记录．
+-`limit x [offset y]`:［从表的第ｙ＋1条记录开始］选取ｘ条记录．
+- `count(column)`会忽略column字段值为空值(NULL)的行;`count(*)`则所有记录均不忽略．
+- `sum()`忽略列值为NULL的行．
+- `max()`不仅适用于数值类型，也可用于字符类型，日期值．
+- `order by`与`limit`联用时, `limit`必须在后面
+- `distinct`是应用于给出的所有列
 
-### [连接查询](http://www.postgres.cn/docs/9.4/queries-table-expressions.html)
-- 内连接：
-格式：`select ... from t1 inner join t2 on t1.xxx=t2.xxx`
-内连接也可用where子句来实现，性能可能更高．
-自连接是内连接的特例．
+### [连接查询](http://www.postgres.cn/docs/10/queries-table-expressions.html)
+- 内连接:
+
+  格式：`select ... from t1 inner join t2 on t1.xxx=t2.xxx`
+  内连接也可用where子句来实现，性能可能更高．
+  自连接是内连接的特例．
 - 外连接:
-`left join(返回包括左表中的所有记录和右表中连接字段相等的记录)`和`right join(返回包括右表中的所有记录和左表中连接字段相等的记录)`
-- 全连接
-`FULL OUTER JOIN`,显示符合条件的数据行，同时显示左右不符合条件的数据行，相应的左右两边显示NULL，即显示左连接、右连接和内连接的并集.
-- 交叉连接
-`T1 CROSS JOIN T2`,对每个来自T1和T2 的行进行组合（也就是，一个笛卡尔积），连接成的表将包含这样的行： 所有T1里面的字段后面跟着所有T2 里面的字段。如果两表分别有 N 和 M 行，连接成的表将有 N*M 行.`FROM T1 CROSS JOIN T2`等效于`FROM T1,T2`.
 
-### [子查询](http://www.postgres.cn/docs/9.4/functions-subquery.html)
+  `left join(返回包括左表中的所有记录和右表中连接字段相等的记录)`和`right join(返回包括右表中的所有记录和左表中连接字段相等的记录)`
+- 全连接
+
+  `FULL OUTER JOIN`,显示符合条件的数据行，同时显示左右不符合条件的数据行，相应的左右两边显示NULL，即显示左连接、右连接和内连接的并集.
+- 交叉连接
+
+  `T1 CROSS JOIN T2`,对每个来自T1和T2 的行进行组合（也就是，一个笛卡尔积），连接成的表将包含这样的行： 所有T1里面的字段后面跟着所有T2 里面的字段。如果两表分别有 N 和 M 行，连接成的表将有 N*M 行.`FROM T1 CROSS JOIN T2`等效于`FROM T1,T2`.
+
+### [子查询](http://www.postgres.cn/docs/10/functions-subquery.html)
 子查询常用操作符：any/some,all,in,exists.
-- any/some
-`expression operator ANY (subquery)`,左边表达式使用operator对子查询结果的每一行进行一次计算和比较， 其结果必须是布尔值.如果至少获得一个真值，则ANY结果为"真"; 如果全部获得假值，则结果是"假"(包括子查询没有返回任何行的情况).
+- any=some
+
+  `expression operator ANY (subquery)`,左边表达式使用operator对子查询结果的每一行进行一次计算和比较， 其结果必须是布尔值.如果至少获得一个真值，则ANY结果为"真"; 如果全部获得假值，则结果是"假"(包括子查询没有返回任何行的情况).
 
 - all
-`expression operator ALL (subquery)`,左边表达式使用operator对子查询结果的每一行进行一次计算和比较， 其结果必须是布尔值。如果全部获得真值，ALL结果为"真" (包括子查询没有返回任何行的情况)。如果至少获得一个假值，则结果是"假"。`NOT IN等效于<> ALL`.
+
+  `expression operator ALL (subquery)`,左边表达式使用operator对子查询结果的每一行进行一次计算和比较， 其结果必须是布尔值。如果全部获得真值，ALL结果为"真" (包括子查询没有返回任何行的情况)。如果至少获得一个假值，则结果是"假"。`NOT IN等效于<> ALL`.
+
 - EXISTS
-`EXISTS (subquery)`,判断subquery是否返回行。如果它至少返回一行，那么EXISTS的结果就为 "真"；如果子查询没有返回任何行，那么EXISTS的结果是"假"。`NOT EXISTS`和`EXISTS`作用相反．
+
+  `EXISTS (subquery)`,判断subquery是否返回行。如果它至少返回一行，那么EXISTS的结果就为 "真"；如果子查询没有返回任何行，那么EXISTS的结果是"假"。`NOT EXISTS`和`EXISTS`作用相反．
+
 - IN
-`expression IN (subquery)`,左边表达式对子查询结果的每一行进行一次计算和比较。如果找到任何相等的子查询行， 则IN结果为"真"。如果没有找到任何相等行，则结果为"假" (包括子查询没有返回任何行的情况)。`NOT IN`和`IN`作用相反．
+
+  `expression IN (subquery)`,左边表达式对子查询结果的每一行进行一次计算和比较。如果找到任何相等的子查询行， 则IN结果为"真"。如果没有找到任何相等行，则结果为"假" (包括子查询没有返回任何行的情况)。`NOT IN`和`IN`作用相反．
+
+### 合并查询
+- union [all]: 列数,数据类型都必须相同. all的作用是不删除重复行,也不对结果进行排序
 
 ### 正则查询
-[模式匹配#POSIX 正则表达式](http://www.postgres.cn/docs/9.4/functions-matching.html)
+[模式匹配#POSIX 正则表达式](http://www.postgres.cn/docs/10/functions-matching.html)
+- ~ : 匹配正则, 且区分大小写
+- ~* : 匹配正则, 不区分大小写
+- !~ : 不匹配正则, 且区分大小写
+- !~* : 不匹配正则, 不区分大小写
 
 ## 索引
-索引是对数据库表中一列或多列的值进行排序的一种结构，其包含着对数据表里所有记录的引用指针，是提高数据库性能的常用方法．
+索引是对数据库表中一列或多列的值进行排序的一种结构，其包含着对数据表里所有记录的引用指针，是提高数据库性能的常用方法．其由存储引擎实现.
 
-PostgreSQL提供了好几种索引类型：B-tree, Hash, GiST, SP-GiST和GIN ．每种索引类型都比较适合某些特定的查询类型，因为它们用了不同的算法。缺省时， CREATE INDEX命令将创建 B-tree 索引，它适合大多数情况．
+> 在使用分组和排序子句进行查询时使用索引, 也可显著减少查询中分组和排序的时间.
+
+PostgreSQL提供了好几种索引类型：B-tree, Hash, GiST, SP-GiST和GIN．每种索引类型都比较适合某些特定的查询类型，因为它们用了不同的算法, 缺省时， CREATE INDEX命令将创建 B-tree 索引，它适合大多数情况.
+
+索引类型:
 - B-tree
-适合处理那些能够按顺序存储的数据,特别是在一个建立了索引的字段涉及到使用`<,<=,=,>=,>`.
+
+  适合处理那些能够按顺序存储的数据,特别是在一个建立了索引的字段涉及到使用`<,<=,=,>=,>`.
 - Hash(不推荐)
-只能处理简单的等于比较。当一个索引了的列涉及到使用= 操作符进行比较的时候.
->不推荐原因：性能比B-tree弱，且不走WAL日志，因此数据库崩溃时需使用REINDEX重建Hash索引
+
+  只能处理简单的等于比较。当一个索引了的列涉及到使用= 操作符进行比较的时候.
+  
+  不推荐原因：性能比B-tree弱，且不走WAL日志，因此数据库崩溃时需使用REINDEX重建Hash索引
+
 - GiST
-GiST 索引不是单独一种索引类型，而是一种架构，可以在这种架构上实现很多不同的索引策略。 因此，可以使用 GiST 索引的操作符高度依赖于索引策略(操作符类)。
+
+  GiST 索引不是单独一种索引类型，而是一种架构，可以在这种架构上实现很多不同的索引策略。 因此，可以使用 GiST 索引的操作符高度依赖于索引策略(操作符类)。
+
 - SP-GiST
-SP-GiST索引类似于GiST索引，提供一个支持不同类型检索的架构。 SP-GiST允许实现许多各种不同的非平衡的基于磁盘的数据结构，例如四叉树，k-d树和基数树(字典树)。
+
+  SP-GiST索引类似于GiST索引，提供一个支持不同类型检索的架构。 SP-GiST允许实现许多各种不同的非平衡的基于磁盘的数据结构，例如四叉树，k-d树和基数树(字典树)。
+
 - GIN
-GIN 索引是反转索引，它可以处理包含多个键的值(比如数组)。与 GiST和SP-GiST 类似， GIN 支持用户定义的索引策略，可以使用 GIN 索引的操作符根据索引策略的不同而不同。
+
+  GIN 索引是反转索引，它可以处理包含多个键的值(比如数组)。与 GiST和SP-GiST 类似， GIN 支持用户定义的索引策略，可以使用 GIN 索引的操作符根据索引策略的不同而不同。
 
 设计索引的准则:
 - 索引并非越多越好,一个表中如果有大量的索引,不仅占用的存储空间将增大,而且会影响Insert,Delete,Update等语句的性能,因为当表中的数据更改时，所有索引都须进行适当的调整和更新。
@@ -190,6 +245,25 @@ GIN 索引是反转索引，它可以处理包含多个键的值(比如数组)�
 ## 视图
 视图是一个虚拟表,是从一个或多个表中导出的,它的行为与普通表非常类似,可以帮助用户屏蔽真实表结构变化带来的影响,并提高安全性(添加限定条件,屏蔽特定的行和列).
 
+## 触发器
+由业务层处理, 更自由友好.
+
+## 事务
+pg的有事务管理器负责事务, 可分为两部分:
+1. 锁管理器 : 主要提供在事务的写阶段并发控制所需要的各种锁, 从而保证事务的各种隔离级别
+1. 日志管理器 : 主要记录事务执行的状态和数据的变化过程
+
+## 权限
+在PostgreSQL 里没有区分用户和角色的概念，"CREATE USER" 为 "CREATE ROLE" 的别名，这两个命令几乎是完全相同的，唯一的区别是"CREATE USER" 命令创建的用户默认带有LOGIN属性，而"CREATE ROLE" 命令创建的用户默认不带LOGIN属性.
+
+## pg_dump
+```
+$ pg_dump -U postgres -f /home/chen/test_backup test # 备份数据库test中的所有表
+$ pg_dump -U postgres -t t1 [-t tn,...] -f /home/chen/test_backup test # 备份数据库test中的指定表
+$ pg_dumpall -U postgres -f /home/chen/db_backup test # 备份所有数据库
+$ psql -d test -U postgres -f /home/chen/test_backup # 将备份的数据库还原(还原文件应是create,insert语句的文本文件)
+$ pg_restore -d test -U postgres -C /home/chen/test_backup # 将备份的数据库还原, `-C`表示在恢复数据库之前先创建它
+```
 
 ## SQL说明
 ```sql
