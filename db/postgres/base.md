@@ -285,6 +285,23 @@ ALTER DATABASE mytest2
 ```
 
 ## explain
+explain(仅用于select)用于分析一个语句的执行计划, 即显示语句如何查询表.
+
+格式:
+```sql
+-- ANALYZE : 显示执行时间
+-- VERBOSE : 计划树完整的内部表现形式,而不仅仅是摘要
+-- cost : 代表语句的执行成本(即计算开销), 包括语句的花费时间, 扫描的行数等.
+EXPLAIN [ ANALYZE ] [ VERBOSE ] 语句
+```
+
+> pg预估成本: `cost=0.00..5.04`意味着PostgreSQL希望花费`5.04`的任意计算单位来找到这些值,而`0.00`是该节点起始工作成本(即启动成本).
+> 时间成本: `actual time=0.049..0.049`表示此步骤的开始时间是0.049,结束时间0.049,单位为毫秒,因此此实际执行时间是0,实际时间是每次迭代的平均值,可以将值乘以循环次数以获得真实的执行时间.
+
+连接查询更高效: pg不需要在内存中创建临时表来完成查询工作
+子查询效率慢: pg需要为内层查询的结果建立临时表以供外层查询语句查询.
+
+> 显示表的统计信息: `ANALYZE [ VERBOSE ] [ table_and_columns [, ...] ]`
 
 [PostgreSQL执行计划的解释](http://blog.csdn.net/ls3648098/article/details/7602136)
 执行计划运算类型	操作说明	是否有启动时间
@@ -307,8 +324,7 @@ Aggregate	count, sum,avg, stddev集约函数	有启动时间
 Group	GROUP BY分组操作	有启动时间
 Append	UNION操作	无启动时间
 Materialize	子查询	有启动时间
-SetOp	INTERCECT，EXCEPT
-有启动时
+SetOp	INTERCECT，EXCEPT 有启动时
 
 ## 扩展
 ### 特殊表
