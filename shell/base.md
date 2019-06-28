@@ -178,5 +178,6 @@ $ alias ll
 alias ll='ls -l'
 ```
 
-## bash命令中的反引号
-将反引号内容作为子命令并优先执行, 比如"mv `find . -name ".txt"` dir"
+## bash
+- `bash -x`在执行每条命令之前先打印该命令
+- 内置命令`fc`能捕获上次命令并送入编辑器.
