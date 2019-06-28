@@ -162,6 +162,9 @@ vmware workstation: Edit -> Preferences -> Shared VMs -> Disable "Enable virtual
 
 需要在`/etc/pam.d/common-session`中加入`session required pam_limits.so`，再使用su username登录当前用户，然后 就可以使用ulimit命令了. 原因可能是gnome terminal默认是none-login的，所以我们在配置文件中的修改并没有影响到当前的terminal.
 
+### 百度网盘Linux启动停留在启动界面的解决办法
+先`rm -rf ~/baidunetdisk`, 再重启即可.
+
 ## syslog.socket: Socket service syslog.service not loaded, refusing
 启动freeswith.service报错:
 ```
