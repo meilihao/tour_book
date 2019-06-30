@@ -4,6 +4,11 @@
 
 按计划执行程序
 
+每个用户的crontab保存在`/var/spool/cron/crontabs`, 且每个用户至多一个crontab.
+
+> 同时指定weekday和day时, 满足其一就会被选中.
+> crontab使用`/etc/crontab`指定的shell执行命令.
+
 ## 选项
 - l : 打印出当前用户的crontab
 - e : 为当前用户编辑crontab
