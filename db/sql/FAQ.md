@@ -209,3 +209,17 @@ selete * from testtable limit 2 offset 1; # B
 这两个都是能完成需要，但是他们之间是有区别的：
 1. A是从数据库中第三条开始查询，取一条数据，即第三条数据读取，一二条跳过.
 1. B是从数据库中的第二条数据开始查询两条数据，即第二条和第三条.
+
+### udpate with join
+```sql
+-- mysql
+UPDATE employees
+LEFT JOIN departments ON employees.department_id = departments.id
+SET department_name = departments.name
+
+-- postgres
+UPDATE employees
+SET department_name = departments.name
+FROM departments
+WHERE employees.department_id = departments.id
+```
