@@ -56,3 +56,8 @@ replace xxx/saas => code.aliyun.com/xxx_backend/saas v0.0.0-20190617102944-e1b0d
 ```
 
 更新时直接使用`go get -u code.aliyun.com/xxx_backend/saas`会报错, 可将`v0.0.0-20190617102944-e1b0da75851a`替换为`latest`, `go build`时会自动更新到最新版.
+
+注意, go1.13运行`go build`时要使用:
+```bash
+$ env GONOPROXY="code.aliyun.com" GONOSUMDB="code.aliyun.com" go build
+```
