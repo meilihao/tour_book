@@ -353,17 +353,17 @@ Go 中定义的Happens Before保证:
 	- 如果包P1中导入了包P2，则P2中的init函数Happens Before 所有P1中的操作
 	- main函数Happens After 所有的init函数
 1. Goroutine
-Goroutine的创建Happens Before所有此Goroutine中的操作
-Goroutine的销毁Happens After所有此Goroutine中的操作
+	- Goroutine的创建Happens Before所有此Goroutine中的操作
+	- Goroutine的销毁Happens After所有此Goroutine中的操作
 1. Channel
 	- 对一个元素的send操作Happens Before对应的receive 完成操作
 	- 对channel的close操作Happens Before receive 端的收到关闭通知操作
 	- 对于Unbuffered Channel，对一个元素的receive 操作Happens Before对应的send完成操作
 	- 对于Buffered Channel，假设Channel 的buffer 大小为C，那么对第k个元素的receive操作，Happens Before第k+C个send完成操作, 可以看出上一条Unbuffered Channel规则就是这条规则C=0时的特例
 
-首先注意这里面，send和send完成，这是两个事件，receive和receive完成也是两个事件.
+	首先注意这里面，send和send完成，这是两个事件，receive和receive完成也是两个事件.
 
-然后，Buffered Channel这里有个坑，它的Happens Before保证比UnBuffered 弱，这个弱只在【在receive之前写，在send之后读】这种情况下有问题, 而【在send之前写，在receive之后读】，这样用是没问题的. 这也是我们通常写程序常用的模式，千万注意这里不要弄错！
+	然后，Buffered Channel这里有个坑，它的Happens Before保证比UnBuffered 弱，这个弱只在【在receive之前写，在send之后读】这种情况下有问题, 而【在send之前写，在receive之后读】，这样用是没问题的. 这也是我们通常写程序常用的模式，千万注意这里不要弄错！
 
 1. Lock
 Go里面有Mutex和RWMutex两种锁，RWMutex除了支持互斥的Lock/Unlock，还支持共享的RLock/RUnlock.
