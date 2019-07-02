@@ -61,3 +61,5 @@ replace xxx/saas => code.aliyun.com/xxx_backend/saas v0.0.0-20190617102944-e1b0d
 ```bash
 $ env GONOPROXY="code.aliyun.com" GONOSUMDB="code.aliyun.com" go build
 ```
+
+> GONOPROXY,GONOSUMDB有多项时需用`,`分隔
