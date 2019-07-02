@@ -21,27 +21,9 @@ sudo apt-get install sysstat
 
 ## 说明
 
-输出项说明：
-
-CPU：all 表示统计信息为所有 CPU 的平均值。
-
-%user：显示在用户级别(application)运行使用 CPU 总时间的百分比。
-
-%nice：显示在用户级别，用于nice操作，所占用 CPU 总时间的百分比。
-
-%system：在核心级别(kernel)运行所使用 CPU 总时间的百分比。
-
-%iowait：显示用于等待I/O操作占用 CPU 总时间的百分比。
-
-%steal：管理程序(hypervisor)为另一个虚拟进程提供服务而等待虚拟 CPU 的百分比。
-
-%idle：显示 CPU 空闲时间占用 CPU 总时间的百分比。
-
-1. 若 %iowait 的值过高，表示硬盘存在I/O瓶颈
-
-2. %idle值高，表示CPU较空闲,若 %idle 的值高但系统响应慢时，有可能是 CPU 等待分配内存，此时应加大内存容量
-
-3. 若 %idle 的值持续低于10，则系统的 CPU 处理能力相对较低，表明系统中最需要解决的资源是 CPU
+cpu输出项说明：
+- all 表示统计信息为所有 CPU 的平均值
+- 其他项与iostat一致
 
 ## 例
 

@@ -242,12 +242,8 @@ swap分区:
 - `>16G`: 不设置swap
 
 > db server建议使用大内存且关闭swap
-
-#### I/O调度器
-
-- [如何更改 Linux I/O 调度器来调整性能 for ssd](https://linux.cn/article-8179-1.html)
-
-修改后需更新grub: `sudo update-grub`.
+> 永久禁用swap: 修改`/etcd/fstab`
+> 临时禁用swap: `swapoff -a`
 
 #### tcp bbr
 要求 : linux kernel >=4.9
