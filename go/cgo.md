@@ -1,6 +1,7 @@
 # cgo
 
 参考：
+- [CGO编程](https://chai2010.cn/advanced-go-programming-book/ch2-cgo/readme.html)
 - [binnnliu/cgo-demo](https://github.com/binnnliu/cgo-demo)
 - [draffensperger/go-interlang](https://github.com/draffensperger/go-interlang)
 - [Go与C语言的互操作](https://tonybai.com/2012/09/26/interoperability-between-go-and-c/)
@@ -76,7 +77,7 @@ func main() {
 要点：
 - 但凡要引用与 c/c++ 相关的内容，写到 go 文件的头部注释里面
 - 嵌套的 c/c++ 代码必须符合其语法，不与 go 一样
-- import "C" 这句话要紧随，注释后，不要换行，否则报错
+- import "C" 这句话要紧随，注释后，不要换行，否则报错. 其表示启用CGO特性, 而go build命令会在编译和链接阶段启动gcc编译器处理.
 - go 代码中调用 c/c++ 的格式是: C.xxx()，例如 C.Demo(name)
 
 ## 直接引用 c/c++ 文件
