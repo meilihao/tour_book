@@ -23,11 +23,6 @@
 ## 编码
 - [Base64编码原理与应用*](http://blog.xiayf.cn/2016/01/24/base64-encoding/)
 
-## 分布式
-- [raft动画](http://thesecretlivesofdata.com/raft/)
-- [微信自研生产级paxos类库PhxPaxos实现原理介绍](http://mp.weixin.qq.com/s?__biz=MzI4NDMyNTU2Mw==&mid=2247483695&idx=1&sn=91ea422913fc62579e020e941d1d059e)
-- [分布式系统的事务处理](http://coolshell.cn/articles/10910.html)
-
 ## 可视化
 
 - [算法可视化 - AlgorithmVisualizer](github.com/parkjs814/AlgorithmVisualizer)
