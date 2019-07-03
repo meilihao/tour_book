@@ -1,0 +1,298 @@
+# 定义
+- DB是存储数据的有序集合.
+- table是一个二维数组的集合,是存储数据和操作数据的逻辑结构.
+- SQL(Structured Query Language) 是用于访问和处理数据库的标准的计算机语言.
+- SQL的四部分:
+  - 数据定义语言 (DDL - create,drop,alter)
+  - 数据操作语言 (DML - - select,update,delete,insert)
+  - 数据控制语言 (DCL - grant,revoke,commit,rollback)
+
+## 运算符优先级(Operator Precedence)
+
+- [Postgres](http://www.postgresql.org/docs/9.4/static/sql-syntax-lexical.html)
+- [MySQL](https://dev.mysql.com/doc/refman/5.6/en/operator-precedence.html)
+
+## 范式
+1. 第一范式（1NF）
+
+在任何一个关系数据库中，第一范式（1NF）是对关系模式的基本要求，不满足第一范式（1NF）的数据库就不是关系数据库.
+所谓第一范式（1NF）是指数据库表的每一列都是不可分割的基本数据项，同一列中不能有多个值，即实体中的某个属性不能有多个值或者**不能有重复的属性**.
+
+2. 第二范式（2NF）
+
+第二范式（2NF）是在第一范式（1NF）的基础上建立起来的，即满足第二范式（2NF）必须先满足第一范式（1NF）. 第二范式（2NF）要求数据库表中的每行必须可以被惟一地区分. 为实现区分通常需要为表加上一个列，以存储各个实例的惟一标识, 这个惟一属性列被称为主键.
+第二范式（2NF）要求实体的**属性完全依赖于主键**. 简而言之，第二范式就是非主属性非部分依赖于主关键字。
+
+3. 第三范式（3NF）
+
+满足第三范式（3NF）必须先满足第二范式（2NF）. 简而言之，第三范式（3NF）要求一个数据库表中不包含已在其它表中已包含的非主键信息. 简而言之，第三范式就是属性不依赖于其它非主属性,即消除传递依赖.
+
+# SQL
+
+## SQL规则
+
+### 命名/大小写
+
+- 只使用英文状态下的**英文字母,数字,下划线**作为数据库,表和字段的名称,且以英文字母开头.
+- sql关键字不区分大小写,**推荐使用大写**.
+
+### 书写
+
+- SQL中的字符串,日期时间或数字被称为常数,字符串和日期时间常数需使用单引号包裹,数字则直接书写即可.
+- 别名(AS)通常**使用双引号包裹**(推荐)或直接书写,如果名称包含空格等字符时必须使用双引号包裹.
+- 常数作为列的内容时,字符串和日期时间常数需使用单引号包裹,数字则直接书写.
+- 注释: 单行注释用`-- `开头;多行注释用`/* */`包裹.注释可穿插在SQL语句中.
+- `SELECT>FROM>WHERE>GROUP BY>HAVING`
+
+## SQL语句
+
+### ALTER TABLE
+
+```sql
+ALTER TABLE <表名> ADD COLUMN <列的定义>;
+ALTER TABLE <表名> DROP COLUMN <列名>;
+```
+
+### 表重命名
+
+```sql
+// Postgres
+ALTER TABLE [ IF EXISTS ] tbl_name RENAME TO new_tbl_name
+// mysql
+RENAME TABLE tbl_name TO new_tbl_name
+```
+
+### GROUP BY/HAVING
+
+- `GROUP BY`字句中指定的列称为聚合键或分组列.聚合键中含NULL时,在结果中会以`空行`的形式来表示.
+- `GROUP BY`允许使用别名.
+- `GROUP BY`的结果是无序的.
+- 使用聚合函数和`GROUP BY`时,`SELECT`和`HAVING`子句只能包含`常数,聚合函数和聚合键`.
+- 聚合键所对应的条件不应该写在`HAVING`子句中,而应该写在`WHERE`子句中,且写在`WHERE`中更有性能优势.
+
+### ORDER BY
+- 排序列包含NULL时,会在开头或末尾显示.
+- `ORDER BY`允许使用别名.
+- `ORDER BY`允许使用未包含在`SELECT`中的列和聚合函数.
+
+### INSERT
+- 列名或值用逗号分隔,并用`()`包裹,这种形式称为清单,`INSERT`包含列清单和值清单.
+- `INSERT INTO...SELECT`用于表复制.
+
+### DELETE
+- `DELETE`只能使用`WHERE`子句.
+- Postgres和MySQL支持`TRUNCATE <表名>`来清空表,速度比`DELETE`快.
+
+### UPDATE
+
+- Postgres的`UPDATE`不支持`LIMIT`,但可将`LIMIT`放在`From`或`WHERE`的子句里.
+
+### 事务
+- 事务是需要在同一个处理单元中执行的一系列操作的集合.
+- 事务特性ACID:原子性(Atomicity),一致性(Consistency),隔离性(Isolation)和持久性(Durability).
+
+### [隔离级别](https://juejin.im/post/5b90cbf4e51d450e84776d27)
+- 脏读(dirty read/Read uncommitted)：一个事务读取了另一个事务尚未提交的修改
+- 不可重复读(non-repeatable read/Read committed)：一个事务对同一行数据读取两次，得到不同结果, 即读到其他事务已提交的数据
+- 幻读(phantom read/Repeatable read)：事务在操作过程中进行了两次查询，第二次的结果包含了第一次未出现的新数据或部分数据消失
+- 串行化(Serializable)：一个事务在执行过程中完全看不到其他事务对数据库所做的更新．`写`会加`写锁`，`读`会加`读锁`,当出现读写锁冲突的时候，后访问的事务必须等前一个事务执行完成，才能继续执行.
+
+> 现在为止:所有的数据库都避免脏读
+>
+> 不可重复读是由于数据修改引起的，幻读是由数据插入或者删除引起的
+>
+> 串行化:可避免脏读、不可重复读、幻读的发生
+>
+> 随着事务隔离级别变得越来越严格，数据库对于并发执行事务的性能也逐渐下降
+>
+> MySQL的默认隔离级别就是Repeatable read, 查看方法:`show [global]  variables like "%isolation%";`
+
+#### 悲观锁和乐观锁
+悲观锁，数据库总是认为别人会去修改它所要操作的数据，因此在数据库处理过程中将数据加锁. 其实现依靠数据库底层.
+
+乐观锁，总是认为别人不会去修改，只有在提交更新的时候去检查数据的状态. 通常基于数据版本（ Version ）记录机制(给数据增加一个字段来标识数据的版本)实现.
+
+### 视图
+- 视图是虚拟的表, 是从真实表中取出数据所使用的`SELECT`语句. 使用视图可以简化复杂的sql操作，隐藏具体的细节，保护数据.
+- 多重视图会降低SQL的性能,**不推荐**.
+- 通过视图更新数据有诸多限制,**不推荐**.
+
+### 子查询
+- 子查询即是一次性的视图.
+- 多重子查询会降低SQL的性能,不推荐.
+- 子查询可以通过`AS`关键字来命名,或用空格来分隔.
+- 标量子查询(scalar subquery)指有且仅有一行一列的结果,其可以用在`SELECT`,`GROUP BY`,`HAVING`,`ORDER BY`子句等地方.
+- 关联子查询就是指子查询与主查询之间有条件关联,不能独自执行.子查询的执行的次数依赖于外部查询，外部查询每执行一行，子查询执行一次,性能不佳.
+- 在细分的组内进行比较时,需要使用关联子查询.
+
+### 函数
+参考 : SQL基础教程.MICK 的第6章.
+
+### 谓词
+- 谓词(predicate)即返回值是真值(即布尔值)的函数,作用是"判断是否存在满足某种条件的记录".
+- 通常使用关联子查询作为`EXIST`的参数.
+
+### UNION
+- `UNION`会去除重复行,会对结果进行排序,但`UNION ALL`会保留重复行且不排序.
+- `UNION`的列数和列的类型必须一致.
+- `ORDER BY`只能用在`UNION`的最后,不能用于`SELECT`子句中.
+
+### JOIN
+- `JOIN`分内连接和外连接.
+- 内连接`a INNER JOIN b ON a.xxx=b.xxx`
+- 外连接`a {LEFT|RIGHT} [OUTER] JOIN b ON a.xxx=b.xxx`,不存在的列用NULL填充.
+- 交叉连接`a CROSS JOIN b`,没有`ON`子句,即求笛卡儿积. **cross join后加条件只能用where,不能用on**.
+- `FULL JOIN`是`LEFT JOIN`与`RIGHT JOIN`的并集. 当某行在另一个表中没有匹配行时，则另一个表的选择列用NULL值填充. 如果表之间有匹配行，则整个结果集行包含基表的数据.
+- 不推荐将连接条件写在`WHERE`中.
+- 使用`JOIN`时,`SELECT`子句中的列需按照`<表名>.<列名>`的格式来书写.
+
+参考 : ![图解SQL的JOIN操作](http://jbcdn2.b0.upaiyun.com/2013/05/SQL-Joins.jpg)
+
+example:
+```sql
+select * from table1 join table2 on table1.id=table2.id <=> select a.*,b.* from table1 a,table2 b where a.id=b.id <=> select * from table1 cross join table2 where table1.id=table2.id
+select * from table1 cross join table2 <=> select * from table1,table2
+```
+
+### 窗口函数
+- 通过`PARTITION BY`分组的记录集合被称为"窗口",代表"范围".
+- 窗口函数兼具**分组和排序**两种功能,只能在`SELECT`中使用,格式是:
+```sql
+function (expression) OVER (
+  [ PARTITION BY expression_list ] -- 指定分组的对象范围,将窗口缩小到特定的集合内
+  [ ORDER BY order_list [ frame_clause ] ]
+  [ frame_clause ])
+```
+- [frame_clause](http://www.postgres.cn/docs/9.4/sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS)用于指定统计范围(其以当前记录作为基准),格式是：
+```sql
+{ RANGE | ROWS } frame_start
+{ RANGE | ROWS } BETWEEN frame_start AND frame_end
+```
+- 窗口函数是对`WHERE`子句或者`GROUP BY`子句处理后的"结果"进行的操作.
+- 相同的order_list,窗口函数的计算结果相同
+- 没有`PARTITION BY`时,将整个表作为一个窗口,且聚合类窗口函数会按照order_list进行叠加处理.
+- 窗口函数中的`ORDER BY`用于窗口内的排序,`FROM`后的`ORDER BY`用于查找结果的排序,作用不同,且可同时使用.
+- 窗口函数包括:
+1. 能够作为窗口函数的聚合函数(SUM,AVG,COUNT,MAX,MIN)
+2. 专用窗口函数:RANK,DENSE_RANK,ROW_NUMBER等.
+- RANK,DENSE_RANK,ROW_NUMBER区别:
+1. ROW_NUMBER是在其分区中的当前行号
+2. RANK有间隔的当前行排名,order_list的内容相同时行号相同,行号有间隔
+3. DENSE_RANK没有间隔的当前行排名,order_list的内容相同时行号相同,行号连续
+
+参考 : [Postgres的窗口函数](http://www.postgres.cn/docs/9.4/functions-window.html#FUNCTIONS-WINDOW-TABLE)
+
+### GROUPING
+- `ROLLUP`可以同时计算出合计和小计.
+- 通过`GROUPING`函数可以简单地分辨出原始数据中的NULL和超级分组记录中的NULL.
+
+参考 : [Postgres的GROUPING](https://www.postgresql.org/docs/devel/static/queries-table-expressions.html#QUERIES-GROUPING-SETS)
+
+### 其他
+- `EXISTS`会针对基础表的每条记录进行子查询操作,**不推荐使用**(因为基础表量大时很耗资源).
+- `DISTINCT`必须紧跟在`SELECT`后(即第一个列名之前),如果其后存在多列时会将多列作为一个整体来去重.
+- `SELECT`子句中可使用表达式,比如四则运算.
+- 所有包含NULL的计算,其结果均为NULL.
+- `<>`和`!=`作用相同,但`<>`属于SQL标准,推荐使用.
+- 聚合函数会对NULL以外的数据进行合计,但`COUNT`除外.`COUNT({ [ [ ALL | DISTINCT ] expression ] | * })`有且仅有一个参数,
+  `COUNT(*)`会统计包含NULL的行,而`COUNT(<列名>)`不会,`COUNT(整数)`==`COUNT(*)`,推荐`COUNT(pk)`;`DISTINCT`的结果会包含NULL,且支持所有的聚合函数.
+- `MAX/MIN`支持所有可排序的数据类型,即不仅支持数字,也支持字符串,时间等.
+- 聚合函数不能使用别名.
+- `WHERE`字句不能使用聚合函数,只有`SELECT`,`ORDER BY`和`HAVING`子句可以.
+- `WHERE`用来筛选数据行,`HAVING`用来指定分组的条件.
+- [SQL解析顺序](http://www.jellythink.com/archives/924):
+```
+(7)     SELECT
+(8)     DISTINCT <select_list>
+(1)     FROM <left_table>
+(3)     <join_type> JOIN <right_table>
+(2)     ON <join_condition>
+(4)     WHERE <where_condition>
+(5)     GROUP BY <group_by_list>
+(6)     HAVING <having_condition>
+(9)     ORDER BY <order_by_condition>
+(10)    LIMIT <limit_number>
+```
+
+### index
+**数据库索引**，是数据库管理系统中一个排序的数据结构(以某种方式引用/指向数据)，以协助快速查询、更新数据库表中数据. 索引的实现通常使用B树及其变种B+树.
+
+为表设置索引要付出代价的：一是增加了数据库的存储空间，二是在插入和修改数据时要花费较多的时间(因为索引也要随之变动).
+
+优点:
+1. 通过创建唯一性索引，可以保证数据库表中每一行数据的唯一性
+1. 通过使用索引，可以在查询的过程中, 使用优化器, 大大加快数据的检索速度
+1. 在使用分组和排序子句进行数据检索时，同样可以显著减少查询中分组和排序的时间
+1. 加速表和表之间的连接
+
+创建索引的考虑:
+- 应该
+  1. 在经常需要搜索的列上，可以加快搜索的速度
+  1. 在作为主键的列上，强制该列的唯一性和组织表中数据的排列结构
+  1. 在经常用在join的列上，这些列主要是一些外键，可以加快连接的速度
+  1. 在经常需要根据范围进行搜索的列上创建索引，因为索引已经排序，其指定的范围是连续的
+  1. 在经常需要排序的列上创建索引，因为索引已经排序，这样查询可以利用索引的排序，加快排序查询时间
+  1. 在经常使用在WHERE子句中的列上面创建索引，加快条件的判断速度
+- 不应该
+  1. 对于那些在查询中很少使用或者参考的列不应该创建索引. 这是因为，既然这些列很少使用到，因此有索引或者无索引，并不能提高查询速度. 相反，由于增加了索引，反而降低了系统的维护速度和增大了空间需求.
+  1. 对于那些只有很少数据值的列也不应该增加索引. 这是因为，由于这些列的取值很少，例如user表的性别列，在查询的结果中，结果集的数据行占了表中数据行的很大比例，即需要在表中搜索的数据行的比例很大. 增加索引，并不能明显加快检索速度.
+  1. 对于那些定义为text, image和bit数据类型的列不应该增加索引. 这是因为，这些列的数据量要么相当大，要么取值很少.
+  1. 当修改性能远远大于检索性能时，不应该创建索引. 这是因为，修改性能和检索性能是互相矛盾的. 当增加索引时，会提高检索性能，但是会降低修改性能。当减少索引时，会提高修改性能，降低检索性能. 因此，当修改性能远远大于检索性能时，不应该创建索引
+
+索引类型:
+1. 唯一索引
+
+    唯一索引是不允许其中任何两行具有相同索引值的索引
+1. 主键索引
+    数据库表经常有一列或列组合，其值唯一标识表中的每一行
+1. 聚集索引
+
+#### 数据库优化的思路
+思路来源通常是监控, 比如慢查询日志.
+
+1. SQL语句优化
+    1. 应尽量避免在 where 子句中使用!=或<>操作符，否则将引擎放弃使用索引而进行全表扫描
+    1. 应尽量避免在 where 子句中对字段进行 null 值判断，否则将导致引擎放弃使用索引而进行全表扫描.
+        ```sql
+        select id from t where num is null
+        -- 可以在num上设置默认值0，确保表中num列没有null值，然后再查询：
+        select id from t where num=0
+        ```
+    1. 很多时候用 exists 代替 in 是一个好的选择
+    1. 用Where子句替换HAVING子句: 因为HAVING 只会在检索出所有记录之后才对结果集进行过滤
+
+2. 索引优化
+
+3. 数据库结构优化
+
+    1. 范式优化： 比如消除冗余, 以节省空间 
+    1. 反范式优化：比如适当加冗余等（减少join） 
+    1. 拆分表
+
+      分区将数据在物理上分隔开，不同分区的数据可以制定保存在处于不同磁盘上的数据文件里. 这样，当对这个表进行查询时，只需要在表分区中进行扫描，而不必进行全表扫描，明显缩短了查询时间，另外处于不同磁盘的分区也将对这个表的数据传输分散在不同的磁盘I/O，一个精心设置的分区可以将数据传输对磁盘I/O竞争均匀地分散开. 对数据量大的时时表可采取此方法, 比如可按月自动建表分区.
+
+      拆分其实又分垂直拆分(列的拆分)和水平拆分(行的拆分).
+      水平拆分: 订单表通过完成状态拆分为已完成订单和未完成订单
+
+4. 服务器硬件优化
+
+#### drop,delete与truncate的区别
+drop直接删掉表; truncate删除表中数据，再插入时自增长id又从1开始; delete删除表中数据，可以加where字句:
+
+1. DELETE语句执行删除的过程是每次从表中删除一行，并且同时将该行的**删除操作作为事务记录在日志中保存以便进行进行回滚操作**. TRUNCATE TABLE 则一次性地从表中删除所有的数据并**不把单独的删除操作记录记入日志保存，删除行是不能恢复的**, 并且在删除的过程中**不会激活与表有关的删除触发器**, 执行速度快.
+1. 表和索引所占空间.当表被TRUNCATE 后，这个表和索引所占用的空间会恢复到初始大小，而DELETE操作不会减少表或索引所占用的空间.drop语句将表所占用的空间全释放掉.
+1. 一般而言，速度: drop > truncate > delete
+1. 应用范围.TRUNCATE 只能对TABLE；DELETE可以是table和view
+1. TRUNCATE 和DELETE只删除数据，而DROP则删除整个表（结构和数据）
+1. truncate与不带where的delete ：只删除数据，而不删除表的结构（定义）. drop语句将删除表的结构被依赖的约束（constrain),触发器（trigger)索引（index);依赖于该表的存储过程/函数将被保留，但其状态会变为：invalid.
+1. delete语句为DML（data maintain Language),这个操作会被放到 rollback segment中,事务提交后才生效.如果有相应的 tigger,执行的时候将被触发.
+1. truncate、drop是DLL（data define language),操作立即生效，原数据不放到 rollback segment中，不能回滚
+1. 在没有备份情况下，谨慎使用 drop 与 truncate.要删除部分数据行采用delete且注意结合where来约束影响范围.回滚段要足够大.要删除表用drop;若想保留表而将表中数据删除，如果于事务无关，用truncate即可实现.如果和事务有关，或想触发trigger,还是用delete.
+1. Truncate table 表名 速度快,而且效率高,因为: truncate table 在功能上与不带 WHERE 子句的 DELETE 语句相同：二者均删除表中的全部行.但 TRUNCATE TABLE 比 DELETE 速度快，且使用的系统和事务日志资源少.DELETE 语句每次删除一行，并在事务日志中为所删除的每行记录一项.TRUNCATE TABLE 通过释放存储表数据所用的数据页来删除数据，并且只在事务日志中记录页的释放.
+1. TRUNCATE TABLE 删除表中的所有行，但表结构及其列、约束、索引等定义保持不变.新行标识所用的计数值重置为该列的种子.如果想保留标识计数值，请改用 DELETE.如果要删除表定义及其数据，请使用 DROP TABLE 语句.
+1. 对于由 FOREIGN KEY 约束引用的表，不能使用 TRUNCATE TABLE，而应使用不带 WHERE 子句的 DELETE 语句.由于 TRUNCATE TABLE 不记录在日志中，所以它不能激活触发器.
+
+#### 存储过程与触发器的区别
+注意: 推荐业务层实现: 避免绑定db; 业务不需要知道db的内容.
+
+触发器与存储过程非常相似，触发器也是SQL语句集，两者唯一的区别是**触发器不能用EXECUTE语句调用，而是在用户执行SQL语句时自动触发（激活）执行**. 触发器是在一个修改了指定表中的数据时执行的存储过程. 通常通过创建触发器来强制实现不同表中的逻辑相关数据的引用完整性和一致性. 由于用户不能绕过触发器，所以可以用它来强制实施复杂的业务规则，以确保数据的完整性. **触发器不同于存储过程，触发器主要是通过事件执行触发而被执行的，而存储过程可以通过存储过程名称名字而直接调用**. 当对某一表进行诸如UPDATE、INSERT、DELETE这些操作时，RDMS就会自动执行触发器所定义的SQL语句，从而确保对数据的处理必须符合这些SQL语句所定义的规则.
