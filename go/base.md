@@ -1,3 +1,30 @@
+## 类型
+```go
+s := "众人a"
+for i, v := range s {
+	fmt.Printf("%d,%x\n", i, v)
+}
+for i, v := range []byte(s) {
+	fmt.Printf("%d,%x\n", i, v)
+}
+
+// output:
+// 0,4f17
+// 3,4eba
+// 6,61
+// 0,e4
+// 1,bc
+// 2,97
+// 3,e4
+// 4,ba
+// 5,ba
+// 6,61
+```
+
+"\u4f17"="\U00004f17"="\xe4\xbc\x97":
+- "\u4f17"和"\U00004f17"是unicode point,"\u"表示的rune值的高位2字节为0, `\U`是完整格式.
+- "\xe4\xbc\x97": utf8编码
+
 ### 传值和传指针
 
 **go中所有传递均是值拷贝**
