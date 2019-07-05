@@ -14,6 +14,9 @@
 ## 序列化
 - [Google FlatBuffers——开源、跨平台的新一代序列化工具](http://itindex.net/detail/50777-google-flatbuffers-%E5%BC%80%E6%BA%90)
 
+## 编码
+- [史上首个 UTF-8 编解码实现赏析](https://zhuanlan.zhihu.com/p/72254734)
+
 ## 架构
 - [支撑Github的开源技术](http://www.infoq.com/cn/news/2014/03/projects-power-github/)
 - [Reddit: 从扩展到每月10亿页面浏览量的过程中的各种失误中学到的经验教训](http://www.oschina.net/translate/reddit-lessons-learned-from-mistakes-made-scaling-to-1-billion)
