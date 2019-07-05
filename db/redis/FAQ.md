@@ -59,3 +59,24 @@ redis 内存数据集大小上升到一定大小的时候，就会施行数据�
 1. Master AOF持久化，如果不重写AOF文件，这个持久化方式对性能的影响是最小的，但是AOF文件会不断增大，AOF文件过大会影响Master重启的恢复速度. Master最好不要做任何持久化工作，包括rdb和AOF日志文件，特别是不要启用rdb做持久化,如果数据比较关键，某个Slave开启AOF备份数据，策略为每秒同步一次.
 1. Master调用BGREWRITEAOF重写AOF文件，AOF在重写的时候会占大量的CPU和内存资源，导致服务load过高，出现短暂服务暂停现象
 1. Redis主从复制的性能问题，为了主从复制的速度和连接的稳定性，Slave和Master最好在同一个局域网内
+
+### 分布式锁
+```
+tryLock(){  
+    SET Key UniqId Seconds // 官方文档上提醒后面的版本有可能去掉SETNX, SETEX, PSETEX,并用SET命令代替
+}
+release(){  
+    EVAL(
+      //LuaScript
+      if redis.call("get",KEYS[1]) == ARGV[1] then
+          return redis.call("del",KEYS[1])
+      else
+          return 0
+      end
+    )
+}
+```
+
+这个方案是目前最优的分布式锁方案, 在单实例redis的场景下是安全的，但是如果在Redis集群环境下依然存在问题: 由于Redis集群**数据同步为异步**，假设在Master节点获取到锁后未完成数据同步情况下Master节点crash，此时在新的Master节点依然可以获取锁，所以多个Client同时获取到了锁, 除非业务场景可以接受, 那么这种小概率可以忽略. 
+
+因此不建议使用Redis集群,而是使用业务分片的单机版redis, 因为目前而言, redis已经足够稳定.
