@@ -80,6 +80,8 @@ func main() {
 - import "C" 这句话要紧随，注释后，不要换行，否则报错. 其表示启用CGO特性, 而go build命令会在编译和链接阶段启动gcc编译器处理.
 - go 代码中调用 c/c++ 的格式是: C.xxx()，例如 C.Demo(name)
 
+> 使用 `go tool cgo -debug-gcc xxx.go` 可以得到中间代码和对象，在当前目录的 _obj 目录下
+
 ## 直接引用 c/c++ 文件
 ```
 .

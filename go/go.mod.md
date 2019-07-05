@@ -1,6 +1,18 @@
 # go mod
 Go1.11和Go1.12只能在$GOPATH以外的目录中使用Go Modules.
 
+> 依赖的包都会保存在 ${GOPATH}/pkg/mod 文件夹中
+
+## mod升级
+```
+$ go get github.com/objcoding/testmod@v1.0.1
+```
+或
+```
+$ go mod edit -require="github.com/objcoding/testmod@v1.0.1" // 主动修改 go.md 文件中依赖的版本号
+$ go mod tidy // 对版本进行更新，这是一条神一样的命令，它会自动清理掉不需要的依赖项，同时可以将依赖项更新到当前版本
+```
+
 ## replace
 从 Go 1.11 版本开始，新增支持了 go modules 用于解决包依赖管理问题. 该工具提供了 replace，就是为了解决包的别名问题，也能替我们解决 golang.org/x 无法下载的的问题.
 
@@ -23,7 +35,7 @@ replace (
 ```
 
 ## GOPROXY
-从 Go 1.11 版本开始，官方不仅支持了 go module 包依赖管理工具, 还新增了 GOPROXY 环境变量. 如果设置了该变量，下载源代码时将会通过这个环境变量设置的代理地址，而不再像以前那样直接从代码库下载.
+从 Go 1.11 版本开始，官方不仅支持了 go module 包依赖管理工具, 还新增了 GOPROXY 环境变量. 如果设置了该变量，下载源代码时将会**优先**通过这个环境变量设置的代理地址，而不再像以前那样直接从代码库下载.
 
 不过，需要依赖于 go module, 可通过`export GO111MODULE=on`开启 MODULE.
 
