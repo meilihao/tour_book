@@ -4,6 +4,7 @@
 1. nginx.conf/备份DB/gogs
 1. 浏览器配置
 1. ssr
+1. postman
 
 ## ResetOS
 SwitchyOmega
