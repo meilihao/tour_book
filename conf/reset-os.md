@@ -5,6 +5,8 @@
 1. 浏览器配置
 1. ssr
 1. postman
+1. wechat
+1. git
 
 ## ResetOS
 SwitchyOmega
