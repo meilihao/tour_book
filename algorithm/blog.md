@@ -29,6 +29,7 @@
 
 ## 数据结构
 - [Trie树结构](http://mp.weixin.qq.com/s?__biz=MjM5ODczNTkwMA==&mid=2650107126&idx=1&sn=cd28e9637693f60613c4453090016aa6#rd)
+- [红黑树](https://www.tuicool.com/articles/3EFzQnv)
 
 ## 算法题
 - [leetcode](https://leetcode.com/problemset/algorithms/)
