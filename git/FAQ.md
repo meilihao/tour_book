@@ -163,3 +163,8 @@ git config --global http.lowSpeedTime 300
 ```
 
 以上配置后，只有持续300秒以上的时间内传输速率都低于 1KB/s 的话才会 timeout
+
+### shallow update not allowed
+该仓库使用`git clone –depth=1`**浅克隆**而来, 其有限制: 不能将它推送到一个新的存储库.
+
+解决方法: 先使用`git fetch --unshallow old_repo`补全再推送即可.
