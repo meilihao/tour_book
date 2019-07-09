@@ -13,6 +13,7 @@
 - [Golang新开发者要注意的陷阱和常见错误](http://colobu.com/2015/09/07/gotchas-and-common-mistakes-in-go-golang/)
 - [go中的并发可视化*](http://strucoder.com/2016/03/15/gozhong-de-bing-fa-ke-shi-hua/)
 - [拜拜了，GOPATH君！新版本Golang的包管理入门教程](https://studygolang.com/articles/19978)
+- [Golang解决TCP粘包拆包问题](https://juejin.im/post/5d220f7b6fb9a07ec7553da4)
 
 ## 进阶
 - [Go 语言之三驾马车](https://cloud.tencent.com/community/article/649192)
