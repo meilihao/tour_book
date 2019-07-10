@@ -258,3 +258,42 @@ Nginx将请求代理给一个后端节点，这个请求耗时较长，在请求
 这样在用Nginx的负载时，后端若需要做发布. 只需要将对就节点标记为不可用并留出一定的时间让忆有请求都响应完毕即可.
 
 更严格一些，还应检测到后端节点的网络连接都已释放（那些EST、TIME_WAIT等连接都结束后）, 或使用signal获取应用还在服务的req count.
+
+### tengine jemalloc gcc-9.1
+jemalloc-5.2.0:
+```sh
+$ cd jemalloc-5.2.0
+$ env CC=/usr/local/gcc-9.1/bin/gcc-9.1 ./configure
+$ make
+$ sudo make install
+```
+
+ngx_brotli:
+```sh
+$ git clone --depth=1 git@github.com:eustas/ngx_brotli.git
+$ git submodule update --init
+$ cd deps/brotli/
+$ git pull origin master
+```
+
+> ngx_brotli使用git@github.com:google/ngx_brotli.git并更新依赖`deps/brotli`(`git pull origin master`)后, nginx报错: `Brotli library is missing from /xxx/ngx_brotli/deps/brotli directory`; 不更新`deps/brotli`时不报错. 怀疑是ngx_brotli/src与`deps/brotli`版本没对应的原因.
+
+tengin-2.3.1:
+```sh
+$ cd tengine-2.3.1
+$ ./configure --with-cc=/usr/local/gcc-9.1/bin/gcc-9.1 --with-jemalloc=/home/chen/jemalloc-5.2.0 --add-module=/home/chen/ngx_brotli
+$ make
+$ sudo make install
+```
+
+nginx.conf
+```
+# 在http块下增加以下指令, 重启nginx后,用浏览器或抓包查看css和图片里的请求头是否包含`Content-Encoding: br`.
+brotli on; # 是否启用在on-the-fly方式压缩文件，启用后，将会在响应时对文件进行压缩并返回
+brotli_types text/xml text/plain application/json text/css image/svg application/font-woff application/vnd.ms-fontobject application/vnd.apple.mpegurl application/javascript image/x-icon image/jpeg image/gif image/png; # 指定对哪些内容编码类型进行压缩. text/html内容是默认会被进行压缩,无需添加.
+brotli_static on;     # 启用后将会检查是否存在带有br扩展的预先压缩过的文件。如果值为always，则总是使用压缩过的文件，而不判断浏览器是否支持
+brotli_comp_level 6;  # 设置压缩质量等级(0~11)
+brotli_buffers 16 10k;# 设置缓冲的数量和大小, 大小默认为一个内存页的大小，也就是4k或者8k
+brotli_window 512k;   # 设置窗口大小
+brotli_min_length 20; # 设置需要进行压缩的最小响应大小
+```
