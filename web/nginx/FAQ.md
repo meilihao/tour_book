@@ -277,6 +277,7 @@ $ git pull origin master
 ```
 
 > ngx_brotli使用git@github.com:google/ngx_brotli.git并更新依赖`deps/brotli`(`git pull origin master`)后, nginx报错: `Brotli library is missing from /xxx/ngx_brotli/deps/brotli directory`; 不更新`deps/brotli`时不报错. 怀疑是ngx_brotli/src与`deps/brotli`版本没对应的原因.
+> 顺便再说一句: [google/ngx_brotli is dead](https://github.com/google/ngx_brotli/issues/62) and [eustas is primary contributor to google/brotli](https://github.com/NixOS/nixpkgs/pull/34943)
 
 tengin-2.3.1:
 ```sh
