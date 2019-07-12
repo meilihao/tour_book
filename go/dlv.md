@@ -22,3 +22,9 @@ info := h.GetPageInfo(abspath, relpath, mode, r.FormValue("GOOS"), r.FormValue("
 1. 输入`s`, dlv会进入`r.FormValue("GOOS")`, 一直回车, 待`r.FormValue`执行完成后dlv会回到`h.GetPageInfo`
 1. 输入`s`, `r.FormValue("GOARCH")`与`r.FormValue("GOOS")`类似, 执行完成后dlv会回到`h.GetPageInfo`
 1. 在输入`s`, dlv进入`h.GetPageInfo`
+
+### print 显示不全即显示more
+```
+(dlv) config max-string-len 99999 // 显示最大输出长度
+(dlv) config -list // 查看dlv配置
+```
