@@ -244,3 +244,6 @@ notify-send是一个可以让你发送桌面通知的命令.
 
 ## vscode 格式工具
 安装插件`beautify`, 再使用格式化快捷键`Ctrl + Shift + I`即可.
+
+## pdf
+PDF编辑器: LibreOffice Draw
