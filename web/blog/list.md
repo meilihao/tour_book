@@ -14,7 +14,6 @@
 ## base
  - [互联网协议入门（一）](http://www.ruanyifeng.com/blog/2012/05/internet_protocol_suite_part_i.html)
  - [MVC，MVP 和 MVVM 的图示](http://www.ruanyifeng.com/blog/2015/02/mvcmvp_mvvm.html)
- - [HTTP/2 资料汇总](https://imququ.com/post/http2-resource.html)
 - [浏览器HTTP缓存原理分析](http://www.cnblogs.com/tzyy/p/4908165.html)
 - [Web消息推送的技术及websocket](2016_09_11_001.md)
 
@@ -78,7 +77,6 @@
 - [如何收集 NGINX 指标（第二篇）](https://linux.cn/article-5985-1-rel.html)
 - [Nginx+Keepalived实现站点高可用](https://linux.cn/article-5715-1-rel.html)
 - [nginx 配置 location 总结及 rewrite 规则写法](https://linux.cn/article-5714-1-rel.html)
-- [NGINX Plus 现在完全支持 HTTP/2](https://linux.cn/article-6368-1.html)
 - [为最佳性能调优 Nginx](http://blog.jobbole.com/87531/)
 - [agentzh 的 Nginx 教程](http://openresty.org/download/agentzh-nginx-tutorials-zhcn.html)
 - [Nginx下流量拦截算法](http://homeway.me/2015/10/21/nginx-lua-traffic-limit-algorithm/)
