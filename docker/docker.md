@@ -57,10 +57,10 @@ docker是典型的C/S架构:
 docker run的restart策略:
 - no : 容器退出时不要自动重启, 是默认值
 - always : 无论容器因何原因退出(包括正常退出)都立即重启
-- on-failure[:max-retries] : 只在容器以非0状态码退出时重启. 可选的max-retries表示尝试重启容器的次数
+- on-failure[:max-retries] : 只在容器**以非0状态码退出时重启**. 可选的max-retries表示尝试重启容器的次数
 - unless-stopped : 不管退出状态码是什么始终重启容器, 但是不考虑在Docker daemon启动时就已经停止了的容器
 
-![容器生命周期](http://seo-1255598498.file.myqcloud.com/full/0c3da8ddb467b2c716c4570a4760bb4cb95fdb3a.jpg)
+![容器生命周期](/misc/img/docker/0c3da8ddb467b2c716c4570a4760bb4cb95fdb3a.jpg)
 
 ### 资源限制
 资源限制可使用`progrium/stress`镜像验证.
