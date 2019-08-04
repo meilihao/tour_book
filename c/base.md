@@ -12,21 +12,6 @@
 
 style: [Linux kernel coding style](https://www.kernel.org/doc/Documentation/process/coding-style.rst), 其翻译版在[Linux内核编码风格 Linux kernel coding style（中英对照）](http://iyu.is-programmer.com/posts/30315.html).
 
-## 关键字
-### const
-修饰的变量不可变
-
-> const是编译器实现, 运行时可通过指针修改.
-
-> `int const a=10` <=> `const int a=10`
-
-> 函数传参使用const指针: 效率 + 不能修改指向空间的内容.
-
-const修饰指针的三种形式:
-1. `const int *p`<=>`int const *p`, 表示p指向的空间是常量(即不能通过`*p`赋值), 但p可变
-1. `int *const p`, p不可变, 但p指向的空间内容可变
-1. `int const* const p`, p不可变, p指向的空间也不可变
-
 ## 变量类型
 **c声明变量时没有零值, 需显式初始化**.
 
@@ -119,6 +104,8 @@ type arrayName [ arraySize ];
 
 > 数组只有地址传递
 
+> 二维数组: a[0]=`&a[0][0]`, 又因为a等价于`&a[0]`, 因此a = `&&a[0][0]`
+
 ### struct
 ```c
 // tag、member-list、variable-list 这 3 部分至少要出现 2 个
@@ -147,6 +134,8 @@ datatype function_name(datatype parameters1 ,  datatype parameters2 , . . .)
 }
 ```
 
+> 函数名与数组名的最大区别: 函数名做右值时加不加`&`效果和意义都一样, 但数组名则不同.
+
 ### 指针
 ```c
 type *var-name;
@@ -156,6 +145,7 @@ type *var-name;
 
 ```c
 int *p1. p2; // p1是指针, p2是int型变量 => 该demo可体现golang类型后置的优势: 类型明确, 无歧义.
+void (*p)(void); // p表示函数指针`void (*)(void)`
 ```
 
 野指针是指向一个不确定的地址或引用的空间不确定, 危害:
@@ -233,12 +223,41 @@ int main(void)
 }
 ```
 
-## typeof
-### 修饰符
-1. static
-1. const
+## 修饰符
+### typedef
+给类型取别名.
 
-    不允许再次改变
+优点:
+1. 简化类型, 让程序更易理解和书写
+1. 定义平台无关类型, 便于移植
+
+理解typedef: 去掉typedef, 再将typedef定义的类型看做变量声明, 查看声明了什么变量即可.
+
+```c
+// 一次定义两个类型
+typedef struct node{} Node, *pNode; // = typedef 类型 Node + typedef 类型 *pNode
+typedef int *pint
+const pint p2; // = int *const p2;
+pint const p1; // = int *const p1;
+```
+
+> typedef在语法上是一个存储类的关键字(如auto, extern, static, register), 而变量只能被一种存储类的关键词修饰.
+
+> 想一次性定义多个指针变量, 需使用typedef, 否则会发生歧义.
+### static
+### const
+修饰的变量不可变
+
+> const是编译器实现, 运行时可通过指针修改.
+
+> `int const a=10` <=> `const int a=10`
+
+> 函数传参使用const指针: 效率 + 不能修改指向空间的内容.
+
+const修饰指针的三种形式:
+1. `const int *p`<=>`int const *p`, 表示p指向的空间是常量(即不能通过`*p`赋值), 但p可变
+1. `int *const p`, p不可变, 但p指向的空间内容可变
+1. `int const* const p`, p不可变, p指向的空间也不可变
 
 ## FAQ
 ### 行末尾的`\`
@@ -269,3 +288,16 @@ heap是一种动态内存管理方法, 通过malloc和free来使用.
 
 ### `#define`和`typedef`区别
 两者都可以定义别名, 但`#define`只是简单的宏替换, 而typedef不是;  `#define`是预编译时处理, 而typedef是编译时处理.
+
+### 复杂表达式的拆解
+拆解方法:
+1. 确定核心
+1. 找结合: 谁跟核心最近, 谁先跟核心结合
+
+   如果核心和`*`号结合表示核心是指针，如果核心和`[]`结合表示核心是数组，如果核心和`()`结合表示核心是函数
+1. 继续向外结合直至整个表达式介绍
+
+举例:
+- `int *p[5]` : p是核心, `[]`比`*`优先级更高, 因此p是数组，数组中的5个元素都是指针，指针指向int型，所以`int *p[5]`是一个指针数组
+- `int (*p)[5]` : p是核心, 因为`()`的优先级变更, 因此p是一个指针，指向一个数组，数组有5个元素都是int类型，所以`int (*p)[5]`是一个数组指针
+- `int *(p[5])`: 是一个指针数组，结合方式同第一个一样, 这里的`()`可忽略
