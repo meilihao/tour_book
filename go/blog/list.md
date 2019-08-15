@@ -24,6 +24,7 @@
 - [go语言调度器源代码情景分析之一](https://www.cnblogs.com/abozhang/p/10766628.html)
 - [深入理解channel：设计+源码](http://lessisbetter.site/2019/03/03/golang-channel-design-and-source/)
 - [Go 编程： 交叉编译 vs 条件编译](https://www.gitdig.com/go-compatible/)
+- [从垃圾回收解开Golang内存管理的面纱共3篇](https://zhuanlan.zhihu.com/p/53925833)
 
 ## RPC
  - ~~[Thrift RPC 使用指南实战(附golang&PHP代码)](http://blog.csdn.net/liuxinmingcode/article/details/45696237)~~
