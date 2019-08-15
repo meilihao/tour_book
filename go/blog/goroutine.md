@@ -64,7 +64,7 @@ Go runtime会在下面的goroutine被阻塞的情况下运行另外一个gorouti
 - 多对多模型（M:N） :　综合以上两种模型，即用户调度器实现用户线程到KSE的"调度"，内核调度器实现KSE到CPU上的"调度", 但实现最为复杂．golang采用的就是这种方式.
 
 ### 栈大小
-[线程是有固定的栈的，基本都是2MB(最大是8MB)](http://man7.org/linux/man-pages/man3/pthread_create.3.html)，当然，不同系统可能大小不太一样，但是的确都是固定分配的.这个栈用于保存局部变量，用于在函数切换时使用.
+[线程是有固定的栈的，默认是2MB(但进程即主线程是8MB)](http://man7.org/linux/man-pages/man3/pthread_create.3.html)，当然，不同系统可能大小不太一样，但是的确都是固定分配的.这个栈用于保存局部变量，用于在函数切换时使用.
 
 但是对于goroutine这种轻量级的协程来说，一个大小固定的栈可能会导致资源浪费：比如一个协程里面只print了一个语句，那么栈基本没怎么用；当然，也有可能嵌套调用很深，那么可能也不够用.
 所以go采用了动态扩张收缩的策略(g0除外)：初始化为2KB(`src/runtime/stack.go._StackMin`)，最大可扩张到1GB.
