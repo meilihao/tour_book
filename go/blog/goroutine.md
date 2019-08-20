@@ -3,6 +3,7 @@
  - [Go调度器系列](http://lessisbetter.site/2019/03/10/golang-scheduler-1-history/)
  - [Go语言——goroutine并发模型](https://www.jianshu.com/p/f9024e250ac6)
  - [Goroutine并发调度模型深度解析](https://juejin.im/entry/5b2878c7f265da5977596ae2)
+ - [Go 调度模型](https://wudaijun.com/2018/01/go-scheduler/)
 
 ## scheduler
 调度器由三方面实体构成：
@@ -15,8 +16,8 @@ Goroutine调度器和OS调度器是通过M结合起来的，每个M都代表了1
 每个M都有一个特殊的G即g0.用于执行调度，gc，栈管理等任务，所以g0的栈称为调度栈. g0使用的是os线程的栈, 其不会自动增长，不会被gc
 
 GMP的可视化方法:
-1. `go tool trace`
-1. Debug trace
+1. [`go tool trace`](https://mp.weixin.qq.com/s/nf_-AH_LeBN3913Pt6CzQQ)
+1. [GODEBUG](http://lessisbetter.site/2019/03/26/golang-scheduler-2-macro-view/, https://colobu.com/2016/04/19/Scheduler-Tracing-In-Go/)
 
 > G-P-M模型的定义放在src/runtime/runtime2.go里面，而调度过程则放在了src/runtime/proc.go里
 
@@ -28,13 +29,13 @@ Go调度器有两个不同的运行队列：
 ### 设计思想
 调度器的有两大思想：
 1. 复用线程：协程本身就是运行在一组线程之上，不需要频繁的创建、销毁线程，而是对线程的复用。在调度器中复用线程还有2个体现：
-    1. work stealing，当本线程无可运行的G时，尝试从其他线程绑定的P偷取G，而不是销毁线程
+    1. work stealing，当本线程无可运行的G时，尝试从其他线程绑定的P偷取(一半)G，而不是销毁线程
     1. hand off，当本线程因为G进行系统调用阻塞时，线程释放绑定的P，把P转移给其他空闲的线程执行
 1. 利用并行：GOMAXPROCS设置P的数量，当GOMAXPROCS大于1时，就最多有GOMAXPROCS个线程处于运行状态，这些线程可能分布在多个CPU核上同时运行，使得并发利用并行. 另外，GOMAXPROCS也限制了并发的程度，比如GOMAXPROCS = 核数/2，则最多利用了一半的CPU核进行并行.
 
 调度器的两小策略：
 1. 抢占：在coroutine中要等待一个协程主动让出CPU才执行下一个协程，在Go中，一个goroutine最多占用CPU 10ms，防止其他goroutine被饿死，这就是goroutine不同于coroutine的一个地方
-1. 全局G队列：在新的调度器中依然有全局G队列，但功能已经被弱化了，当M执行work stealing从其他P偷不到G时，它可以从全局G队列获取G
+1. 全局G队列：在新的调度器中依然有全局G队列，但功能已经被弱化了，当M执行work stealing从其他P偷不到G时，它可以从全局G队列(在`/src/runtime/runtime2.go`的`schedt`中)获取G
 
 ### goroutine切换
 Go runtime会在下面的goroutine被阻塞的情况下运行另外一个goroutine：

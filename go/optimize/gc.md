@@ -26,3 +26,12 @@ gc解读:
 - 16->17->8 MB ：按顺序分成三部分，16表示开始mark阶段前的heap_live大小；17表示开始markTermination阶段前的heap_live大小；8表示live heap的大小
 - 17 MB goal：表示下一次触发GC的内存占用阀值是17MB，等于8MB * 2，向上取整
 - 8 P ：本次gc共有多少个P
+
+## FAQ
+### GODEBUG
+参考
+- [用 GODEBUG 看调度跟踪](https://github.com/EDDYCJY/blog/blob/master/tools/godebug-sched.md)
+
+GODEBUG 变量可以控制运行时内的调试变量，参数以逗号分隔，格式为`name=val`, 比如：
+- schedtrace：设置 schedtrace=X 参数可以使运行时在每 X 毫秒发出一行调度器的摘要信息到标准 err 输出中
+- scheddetail：设置 schedtrace=X 和 scheddetail=1 可以使运行时在每 X 毫秒发出一次详细的多行信息，信息内容主要包括调度程序、处理器、OS 线程 和 Goroutine 的状态
