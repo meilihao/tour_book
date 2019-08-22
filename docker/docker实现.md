@@ -20,6 +20,32 @@ Namespace包括PID、Mount、UTS、IPC、Network 和 User.
 - unshare() : 使某进程脱离某个namespace
 - setns() : 把某进程加入到某个namespace
 
+### fork demo for go
+```go
+package main
+
+import (
+	"log"
+	"os"
+	"os/exec"
+	"syscall"
+)
+
+func main() {
+	cmd := exec.Command("sh") // 指定被fork出来的新进程运行的程序
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+	}
+
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
 ### PID
 让被隔离进程只看到当前 PID Namespace 里的进程, 也使得不同 PID namespace 里的进程 PID 可以重复且互不影响. PID namesapce 对容器类应用特别重要， 可以实现容器内进程的暂停/恢复等功能，还可以支持容器在跨主机的迁移前后保持内部进程的 PID 不发生变化.
 
@@ -565,42 +591,6 @@ int main()
   return 0;
 }
 ```
-
-### fork demo for go
-```go
-package main
-
-import (
-	"log"
-	"os"
-	"os/exec"
-	"syscall"
-)
-
-func main() {
-	cmd := exec.Command("sh") // 指定被fork出来的新进程运行的程序
-	cmd.SysProcAttr = &syscall.SysProcAttr{
-	}
-
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Run(); err != nil {
-		log.Fatal(err)
-	}
-}
-```
-
-### fork 系统调用
-当程序调用fork（）函数时，系统会创建新的进程，为其分配资源，例如存储数据和代码的空间, 然后把原来的进程的所有值都复制到新的进程中，只有少量数值与原来的进程值不同，相当于克隆了一个自己. 
-
-那么程序的后续代码逻辑要如何区分自己是新进程还是父进程呢: fork()的神奇之处在于它仅仅被调用一次，却能够返回两次（父进程与子进程各返回一次）, 通过返回值的不同就可以进行区分父进程与子进程. 它可能有三种不同的返回值：
-- 在父进程中，fork返回新创建子进程的进程ID
-- 在子进程中，fork返回0
-- 如果出现错误，fork返回一个负值
-
-> 孤儿进程的检查方法是自己通过调用 getppid() 并判断是否返回 1.
 
 ### runC
 参考:
