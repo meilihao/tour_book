@@ -109,7 +109,7 @@ mount: proc is already mounted or /proc busy
 让被隔离进程看到当前 Namespace 里的网络设备和配置
 
 ### UTS
-提供了主机名和域名的隔离，这样每个容器就可以拥有了独立的主机名和域名，在网络上可以被视作一个独立的节点而非宿主机上的一个进程.
+提供了主机名和域名的隔离，即让容器有自己的hostname，在网络上可以被视作一个独立的节点而非宿主机上的一个进程.
 
 演示:
 ```c
@@ -267,9 +267,9 @@ uid=0(root) gid=0(root) 组=0(root)
 限制一个进程组能够使用的资源上限，包括 CPU、内存、磁盘、网络带宽等等. 此外，Cgroups 还能够对进程进行优先级设置、审计，以及将进程挂起和恢复等操作.
 
 在 Linux 中，Cgroups 给用户暴露出来的操作接口是文件系统，即它以文件和目录的方式组织在操作系统的 /sys/fs/cgroup 路径下, 因此它就是**一个子系统目录加上一组资源限制文件**的组合.
-可通过`mount -t cgroup `查看, 查看输出就会发现在 /sys/fs/cgroup 下面有很多诸如 cpuset、cpu、 memory 这样的子目录，也叫子系统. 再通过`ls /sys/fs/cgroup/${子系统}`即可查看更具体的限制.
+可通过`mount -t cgroup`查看, 查看输出就会发现在 /sys/fs/cgroup 下面有很多诸如 cpuset、cpu、 memory 这样的子目录，也叫子系统. 再通过`ls /sys/fs/cgroup/${子系统}`即可查看更具体的限制.
 
-在对应的子系统下面创建一个目录, 这个目录就称为一个“控制组, 操作系统会在新创建的目录下，自动生成该子系统对应的资源限制文件.
+在对应的子系统下面创建一个目录, 这个目录就称为一个`控制组`. 操作系统会在新创建的目录下，自动生成该子系统对应的资源限制文件.
 控制组分类:
 - cpu : 为cpu使用限制
 - blkio : 为块设备设置I/O限制, 一般用于磁盘等设备
@@ -397,7 +397,7 @@ aufs实现删除的方式: 在aufs的rw层创建一个 whiteout 文件(.wh.${del
 
 容器的rw layer可通过docker commit 和 push 指令保存并上传到镜像仓库供其他人使用；而与此同时，原先的只读层里的内容则不会有任何变化. 这就是增量 rootfs 的好处.
 
-既然容器的 rootfs 是以只读方式挂载的，那要如何在容器里修改镜像的内容, 答案是Copy-on-Write: 所有的增删查改操作都只会作用在容器层，相同的文件上层会覆盖掉下层. 因此要修改一个文件的时候，首先会从上到下查找有没有这个文件，找到后就复制到容器层中再进行修改，修改的结果就会作用到下层的文件; 没有就创建一个即可.
+既然容器的 rootfs 是以只读方式挂载的，那要如何在容器里修改镜像的内容, 答案是Copy-on-Write: 所有的增删查改操作都只会作用在容器层，相同的文件上层会覆盖掉下层. 因此要修改一个文件的时候，首先会从上到下查找有没有这个文件，找到后就复制到容器层中再进行修改，修改的结果就会隐藏下层的对应文件; 没有就创建一个即可.
 
 实际容器演示:
 ```bash
@@ -456,9 +456,9 @@ lrwxrwxrwx 1 root root 0 5月  27 22:45 uts -> uts:[4026532546]
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
- 
+
 // 它需要两个参数: argv[1]是当前进程要加入的 Namespace 文件的路径, 而argv[1]是将要在这个 Namespace 里运行的进程
-// 这段代码的的核心操作是通过 open() 系统调用打开了指定的 Namespace 文件，并把这个文件的描述符 fd 交给 setns() 使用. 
+// 这段代码的的核心操作是通过 open() 系统调用打开了指定的 Namespace 文件，并把这个文件的描述符 fd 交给 setns() 使用.
 // 在 setns() 执行后，当前进程就加入了这个文件对应的 Linux Namespace 中.
 int main(int argc, char *argv[]) {
     int fd;
@@ -483,7 +483,7 @@ int main(int argc, char *argv[]) {
 
 运行:
 ```bash
-$ gcc -o setns setns.c 
+$ gcc -o setns setns.c
 $ sudo ./setns /proc/8432/ns/net /bin/bash
 $ sudo ps -ef|grep /bin/bash
 root       441 32530  0 23:32 pts/2    00:00:00 sudo ./setns /proc/8432/ns/net /bin/bash
