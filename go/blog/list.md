@@ -25,6 +25,9 @@
 - [深入理解channel：设计+源码](http://lessisbetter.site/2019/03/03/golang-channel-design-and-source/)
 - [Go 编程： 交叉编译 vs 条件编译](https://www.gitdig.com/go-compatible/)
 - [从垃圾回收解开Golang内存管理的面纱共3篇](https://zhuanlan.zhihu.com/p/53925833)
+- [Golang 内存管理](https://zhuanlan.zhihu.com/p/27807169)
+- [图解Go语言内存分配](https://www.cnblogs.com/qcrao-2018/p/10520785.html)
+- [深入研究goroutine栈](http://www.huamo.online/2019/06/25/%E6%B7%B1%E5%85%A5%E7%A0%94%E7%A9%B6goroutine%E6%A0%88/)
 
 ## RPC
  - ~~[Thrift RPC 使用指南实战(附golang&PHP代码)](http://blog.csdn.net/liuxinmingcode/article/details/45696237)~~
