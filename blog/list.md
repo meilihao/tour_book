@@ -67,8 +67,9 @@
 ## English
 - [程序员英语学习指引](https://linux.cn/article-6358-1.html)
 
-## 招聘
+## 面试
 - [大牛在谷歌这样面试产品经理](http://lagou.baijia.baidu.com/article/182090)
+- [yangshun/tech-interview-handbook](https://github.com/yangshun/tech-interview-handbook)
 
 ## rpc
 - [你应该知道的RPC原理](http://www.cnblogs.com/LBSer/p/4853234.html)
