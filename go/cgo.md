@@ -206,3 +206,86 @@ $ go build
 
 ### could not determine kind of name for C.free
 添加头文件: `#include <stdlib.h>`
+
+### 返回内容需释放
+```go
+package main
+
+/*
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+char* GetString() { // 返回 c string
+	static const char* s = "0123456789";
+
+	int len = 10;
+	char* p = malloc(len);
+
+	memcpy(p, s, len);
+
+    return p;
+}
+*/
+import "C"
+import (
+	"fmt"
+	"log"
+	"net/http"
+	_ "net/http/pprof"
+	"os"
+	"runtime"
+	"time"
+	"unsafe"
+
+	_ "github.com/mkevac/debugcharts"
+)
+
+// 通过 top 命令的RES判断
+func main() {
+	go func() {
+		// terminal: $ go tool pprof -http=:8081 http://localhost:6060/debug/pprof/heap
+		// web:
+		// 1、http://localhost:8081/ui
+		// 2、http://localhost:6060/debug/charts
+		// 3、http://localhost:6060/debug/pprof
+		log.Println(http.ListenAndServe("0.0.0.0:6060", nil))
+	}()
+
+	fmt.Println("pid: ", os.Getpid())
+
+	var ms runtime.MemStats
+	runtime.ReadMemStats(&ms)
+	fmt.Println("before, have", runtime.NumGoroutine(), "goroutines,",
+		ms.Alloc, "bytes allocated", ms.HeapObjects, "heap object",
+		"using mem", ms.Sys)
+
+	for i := 0; i < 2; i++ {
+		memTest()
+
+		time.Sleep(3 * time.Second)
+	}
+
+	runtime.GC()
+	fmt.Println("gc finish")
+	runtime.ReadMemStats(&ms)
+	fmt.Println("after gc, have", runtime.NumGoroutine(), "goroutines,",
+		ms.Alloc, "bytes allocated", ms.HeapObjects, "heap object",
+		"using mem", ms.Sys)
+
+	time.Sleep(60 * time.Second)
+}
+
+func memTest() {
+	fmt.Println("start")
+
+	for i := 0; i < 10000000; i++ {
+		str := C.GetString()
+		_ = C.GoString(str)
+		// 当cgo(GetString)调用返回后，s所占用的内存要被释放掉, 否则top's RES会持续增长导致内存泄露
+		C.free(unsafe.Pointer(str))
+	}
+
+	fmt.Println("end")
+}
+```
