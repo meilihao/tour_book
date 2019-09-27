@@ -169,6 +169,8 @@ $ systemctl list-dependencies --all nginx.service
 $ sudo systemctl enable clamd@scan.service
 # 撤销开机启动
 $ sudo systemctl disable clamd@scan.service
+# 列出开机启动项
+$ sudo systemctl list-unit-files --type=service|grep enabled
 
 ###配置文件###
 # 列出所有配置文件
