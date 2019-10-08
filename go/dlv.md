@@ -4,7 +4,10 @@
 ### [给被调试程序传入参数](https://github.com/go-delve/delve/issues/562)
 ```
 dlv debug main.go -- -conf=conf.yaml
+sudo dlv exec ./zrepl --  daemon --config=/home/jr/git/go/src/github.com/zrepl/zrepl/config/samples/push.yml
+sudo dlv debug github.com/zrepl/zrepl --  daemon --config=/home/jr/git/go/src/github.com/zrepl/zrepl/config/samples/push.yml
 ```
+> [`--`](https://stackoverflow.com/questions/39779238/using-delve-with-subcommand-and-flags)用于分隔dlv和自身的参数.
 
 ### 打断点
 ```
