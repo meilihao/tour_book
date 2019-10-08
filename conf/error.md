@@ -165,7 +165,7 @@ vmware workstation: Edit -> Preferences -> Shared VMs -> Disable "Enable virtual
 ### 百度网盘Linux启动停留在启动界面的解决办法
 先`rm -rf ~/baidunetdisk`, 再重启即可.
 
-## syslog.socket: Socket service syslog.service not loaded, refusing
+### syslog.socket: Socket service syslog.service not loaded, refusing
 启动freeswith.service报错:
 ```
 $ sudo systemctl restart freeswitch.service
@@ -187,3 +187,6 @@ $ sudo systemctl status rsyslog
 ```
 
 rsyslog启动后, syslog.socket也会自行起来.
+
+### sudo 找不到命令
+在`~/.bashrc`里追加`alias sudo='sudo env PATH=$PATH'`即可.
