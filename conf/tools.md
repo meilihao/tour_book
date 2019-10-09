@@ -19,10 +19,22 @@
 # 美化
 
 ## 桌面
-安装lxde
+安装lxde:
 ```sh
 $ sudo apt install lxde lxde-common
 ```
+
+安装xfce4:
+```sh
+$ sudo apt install xfce4
+```
+
+卸载lxqt:
+```sh
+$ sudo apt purge lxqt-* liblxqt*
+```
+
+> 查看系统当前支持的桌面环境 : `/usr/share/xsessions`
 
 ## 主题
 
