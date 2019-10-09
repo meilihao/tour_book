@@ -18,6 +18,12 @@
 
 # 美化
 
+## 桌面
+安装lxde
+```sh
+$ sudo apt install lxde lxde-common
+```
+
 ## 主题
 
 [一款很棒的GTK桌面主题：Arc](https://linux.cn/article-5614-1.html)
