@@ -38,6 +38,9 @@ $ sudo apt purge lxqt-* liblxqt*
 
 ## 主题
 
+### 字体
+xfce4 : `设置管理器 - 外观 - 字体 tab`
+
 [一款很棒的GTK桌面主题：Arc](https://linux.cn/article-5614-1.html)
 
 ###  gnome-tweak-tool
