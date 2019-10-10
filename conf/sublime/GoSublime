@@ -1,6 +1,6 @@
 {
-	// 推荐vscode
-	// gosublime更新慢, 补全已失效
+	// 推荐vscode : gosublime更新慢, 补全已失效
+	// gosublime离线安装: 将gosublime下载好解压并重命名为GoSublime, 再放到`sublime的Preferences -> Browse Packages`里即可
 	// 阅读go代码时还行, 因为配合Godef package跳转比较准确
 	"env":{
 		"GOROOT":"/usr/local/go",
