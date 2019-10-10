@@ -31,7 +31,7 @@ $ vmstat n m # n为监控间隔, m为监控次数. 注意: 监视间隔越小, �
 ### memory（内存）
 
 - swpd : 使用虚拟内存大小，如果swpd的值不为0，但是SI，SO的值长期为0，这种情况不会影响系统性能
-- free : 空闲物理内存大小
+- free : 空闲物理内存大小. 实际free = free + buff + cache
 - buff : 用作缓冲的内存大小
 - cache : 用作缓存的内存大小，如果cache的值大的时候，说明cache处的文件数多，如果频繁访问到的文件都能被cache处，那么磁盘的读IO bi会非常小
 - inact : 非活动内存数量  (-a option)

@@ -10,13 +10,13 @@ iostat 被用来报告**CPU**的统计和**设备与分区的输出/输出**的�
 
 cpu属性值说明：
 - %user：CPU处在用户模式(application)下的时间百分比
-- %nice：CPU处在带NICE值的用户模式下的时间百分比
+- %nice：CPU花费在re-nicing进程(更改进程的执行顺序和优先级)上的时间百分比
 - %system：CPU处在系统模式(kernel)下的时间百分比
 - %iowait：CPU等待I/O操作的时间的百分比
 - %steal：管理程序(hypervisor)为另一个虚拟进程提供服务而等待虚拟 CPU 的百分比
 - %idle：CPU空闲时间百分比
 
-> 如果%iowait的值过高，表示硬盘存在I/O瓶颈，%idle值高，表示CPU较空闲. 如果%idle值高但系统响应慢时，有可能是CPU等待分配内存，此时应加大内存容量. %idle值如果持续低于10，那么系统的CPU处理能力相对较低，表明系统中最需要解决的资源是CPU.
+> 如果%iowait的值过高，表示硬盘存在I/O瓶颈，%idle值高，表示CPU较空闲. 如果%idle值高但系统响应慢时，有可能是CPU等待分配内存，此时应加大内存容量. %idle值如果持续低于10，那么系统的CPU处理能力相对较低，表明系统中最需要解决的资源是CPU.%system持续较高可能是网络和驱动程序堆栈上存在瓶颈.
 
 disk属性值说明：
 - rrqm/s: 每秒进行 merge 的读操作数目. 即 rmerge/s
