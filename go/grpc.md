@@ -7,6 +7,7 @@
 - [Protobuf3 语法指南](http://colobu.com/2017/03/16/Protobuf3-language-guide/)
 - [Go使用gRPC与Protocol Buffers构建高性能API服务](http://www.tuicool.com/articles/ve6zYnf)
 - [etcd: distributed key-value store with grpc/http2](https://blog.gopheracademy.com/advent-2015/etcd-distributed-key-value-store-with-grpc-http2/)
+- [Protobuf 终极教程](https://colobu.com/2019/10/03/protobuf-ultimate-tutorial-in-go/)
 
 ## 搭建环境
 
