@@ -22,37 +22,6 @@ export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 - `$GOPATH[i]/src` ⽬录中的命令源码⽂件会被`go install`命令安装到 $GOBIN ⽬录中
 
 ## tools
-
-```shell
-gocode: go get -u -v github.com/nsf/gocode
-godef: go get -u -v github.com/rogpeppe/godef
-golint: go get -u -v github.com/golang/lint/golint
-go-find-references: go get -u -v github.com/lukehoban/go-find-references
-go-outline: go get -u -v github.com/lukehoban/go-outline
-goreturns: go get -u -v github.com/sqs/goreturns
-gorename: go get -u -v golang.org/x/tools/cmd/gorename
-gooracle: go get -u -v golang.org/x/tools/cmd/oracle
-go debug: go get -u -v github.com/derekparker/delve/cmd/dlv
-goimports: go get -u -v golang.org/x/tools/cmd/goimports
-```
-
-### sublime插件
-
-gosublime
-```
-{
-	"env":{
-		"GOROOT":"/opt/go",
-		"GOPATH":"/home/chen/git/go"
-	},
-	"fmt_cmd": ["goimports"]
-}
-```
-godef
-```
-[
-    { "keys": ["ctrl+d"], "command": "godef" },
-    { "keys": ["ctrl+f"], "command": "jump_forward"},
-    { "keys": ["ctrl+g"], "command": "jump_back"}
-]
-```
+1. vscode + golang插件, **推荐**
+1. sublime + gosublime + godef
+1. goland
