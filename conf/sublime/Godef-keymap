@@ -1,5 +1,5 @@
 [
-    { "keys": ["ctrl+w"], "command": "godef"},
-    { "keys": ["ctrl+e"], "command": "godef_prev"}
+	{ "keys": ["super+h"], "command": "godef" }, // 速度较慢?
+    { "keys": ["super+j"], "command": "jump_forward"},
+    { "keys": ["super+k"], "command": "jump_back"}
 ]
-
