@@ -19,17 +19,17 @@ cpu属性值说明：
 > 如果%iowait的值过高，表示硬盘存在I/O瓶颈，%idle值高，表示CPU较空闲. 如果%idle值高但系统响应慢时，有可能是CPU等待分配内存，此时应加大内存容量. %idle值如果持续低于10，那么系统的CPU处理能力相对较低，表明系统中最需要解决的资源是CPU.%system持续较高可能是网络和驱动程序堆栈上存在瓶颈.
 
 disk属性值说明：
-- rrqm/s: 每秒进行 merge 的读操作数目. 即 rmerge/s
-- wrqm/s: 每秒进行 merge 的写操作数目. 即 wmerge/s
-- r/s: 每秒完成的读 I/O 设备次数. 即 rio/s
-- w/s: 每秒完成的写 I/O 设备次数. 即 wio/s
+- rrqm/s: 设备请求队列中, 每秒进行 merge 的读操作数目. 即 rmerge/s
+- wrqm/s: 设备请求队列中, 每秒进行 merge 的写操作数目. 即 wmerge/s
+- r/s: 每秒完成的读请求的次数(合并后的). 即 rio/s
+- w/s: 每秒完成的写请求的次数(合并后的). 即 wio/s
 - rsec/s: 每秒读扇区数. 即 rsect/s. ssd没有该项
 - wsec/s: 每秒写扇区数. 即 wsect/s. ssd没有该项
 - rkB/s: 每秒读K字节数. 是 rsect/s 的一半，因为每扇区大小为512字节. 
 - wkB/s: 每秒写K字节数. 是 wsect/s 的一半. 
-- avgrq-sz: 平均每次设备I/O操作的数据大小 (扇区). 
+- avgrq-sz: 平均每次设备I/O操作的数据大小 (以扇区为单位). 
 - avgqu-sz: 平均I/O队列(即io等待中)长度. 
-- await: 平均每次设备I/O操作的等待时间 (毫秒). 
+- await: 平均每次设备I/O操作的等待时间 (毫秒), 包括请求在队列中的耗时和svctm. 
 - r_await: 平均每次设备read操作的等待时间 (毫秒). 
 - w_await: 平均每次设备write操作的等待时间 (毫秒). 
 - svctm: 平均每次设备I/O操作的服务(即响应)时间 (毫秒). 
@@ -39,10 +39,10 @@ disk属性值说明：
 
 tps和吞吐量:
 - tps : 每秒的I/O传输次数
-- kB_read/s : 每秒从设备读取的大小
-- kB_wrtn/s : 每秒向设备写入的大小
-- kB_read : 读取的总数据量
-- kB_wrtn : 写入的总数据量
+- kB_read/s : 每秒从设备读取的块数(512B/s)
+- kB_wrtn/s : 每秒向设备写入的块数(512B/s)
+- kB_read : 读取的总块数
+- kB_wrtn : 写入的总块数
 
 > iostat 工具是 sysstat 包的一部分
 
