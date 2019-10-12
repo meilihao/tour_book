@@ -2,6 +2,9 @@
 
 为系统的启动和管理提供一套完整的解决方案.
 
+参考:
+- [走进Linux之systemd启动过程](https://linux.cn/article-5457-1.html)
+
 ## 命令
 ### systemctl
 systemctl是 Systemd 的主命令，用于管理系统
@@ -28,6 +31,9 @@ $ sudo systemctl hybrid-sleep
 $ sudo systemctl rescue
 ```
 
+### systemd-cgtop
+查看资源的消耗状态
+
 ### systemd-analyze
 systemd-analyze命令用于查看启动耗时
 ```
@@ -36,6 +42,15 @@ $ systemd-analyze
 
 # 查看每个服务的启动耗时
 $ systemd-analyze blame
+
+# 绘制启动矢量图，得到各service启动顺序
+$ systemd-analyze plot > boot.svg
+
+# 显示内核和普通用户空间启动时所花的时间
+$ systemd-analyze time
+
+# 显示在所有系统单元中是否有语法错误
+$ systemd-analyze verify
 
 # 显示瀑布状的启动过程流
 $ systemd-analyze critical-chain
@@ -109,6 +124,9 @@ $ systemctl list-units --failed
 
 # 列出所有正在运行的、类型为 service 的 Unit
 $ systemctl list-units --type=service
+
+# 列出当前系统支持的所有等级
+$ systemctl list-units --type=target
 
 # 显示某个 Unit 是否正在运行
 $ systemctl is-active application.service

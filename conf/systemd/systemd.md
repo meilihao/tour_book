@@ -63,14 +63,17 @@ WantedBy=multi-user.target
 - Condition...：当前 Unit 运行必须满足的条件，否则不会运行
 - Assert...：当前 Unit 运行必须满足的条件，否则会报启动失败
 
-> 注意，After和Before字段只涉及启动顺序，不涉及依赖关系
+> After和Before字段只涉及启动顺序，不涉及依赖关系
+> Wants字段与Requires字段只涉及依赖关系，与启动顺序无关
 
 ### `[Install]`
-[Install]通常是配置文件的最后一个区块，用来定义如何启动，以及是否开机启动。它的主要字段如下:
+[Install]通常是配置文件的最后一个区块，用来定义如何安装这个配置文件即怎样做到开机启动. 它的主要字段如下:
 - WantedBy：表示该服务所在的 Target,它的值是一个或多个 Target，当前 Unit 激活时（enable）符号链接会放入/etc/systemd/system目录下面以 Target 名 + .wants后缀构成的子目录中
 - RequiredBy：它的值是一个或多个 Target，当前 Unit 激活时，符号链接会放入/etc/systemd/system目录下面以 Target 名 + .required后缀构成的子目录中
 - Alias：当前 Unit 可用于启动的别名
 - Also：当前 Unit 激活（enable）时，会被同时激活的其他 Unit
+
+> 事实上，systemd在运行时并不使用此小节. 只有 systemctl 的 enable 与 disable 命令在启用/停用单元时才会使用此小节.
 
 ### `[Service]`
 [Service]区块用来 Service 的配置，只有 Service 类型的 Unit 才有这个区块。它的主要字段如下:

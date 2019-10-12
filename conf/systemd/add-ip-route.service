@@ -1,0 +1,56 @@
+# 需登录后手动启动. 无法设置enable, 因为设置enable启动时, ip route命令运行时enp3s0还未`link up`. 求解???
+[Unit]
+After=network-online.target
+[Service]
+ExecStartPre=/bin/echo '--- Starting add-ip-route.service ---'
+ExecStart=/usr/local/bin/ip-route.sh
+[Install]
+WantedBy=default.target
+
+
+# /usr/local/bin/ip-route.sh:
+#```sh
+##!/bin/bash
+#echo '--- start ip-route.sh'
+#ip route add 192.168.0.0/24 via 192.168.88.2 dev enp3s0
+#ip route add 172.18.18.0/24 via 192.168.88.2 dev enp3s0
+#ip route add 192.168.16.0/24 via 192.168.88.2 dev enp3s0
+#```
+
+
+# --- 方法2 ------------------------------
+#
+# 当前使用NetworkManager, 配置在`/var/lib/NetworkManager/`下. [想使用systemd-networkd需要先切换网络管理器](https://linux.cn/article-6629-1.html).
+# systemd-networkd当前不支持无线, 需[配合iwd使用](https://xuanwo.io/2019/06/13/switch-to-systemd-networkd/).
+# 切换方法:
+# $ sudo systemctl disable NetworkManager
+# $ sudo systemctl enable systemd-networkd
+# 配置enp3s0, 再重启即可(未测试)
+#$ cat /etc/systemd/network/enp3s0.network
+#[Match]
+#Name=enp3s0
+#
+#[Network]
+#Address=192.168.88.236/24
+#Gateway=192.168.88.1
+#
+## ip route add 192.168.0.0/24 via 192.168.88.2 dev enp3s0
+#[Route]
+#Destination=192.168.0.0/24
+#Gateway=192.168.88.2
+#
+#[Route]
+#Destination=172.18.18.0/24
+#Gateway=192.168.88.2
+#
+#[Route]
+#Destination=192.168.16.0/24
+#Gateway=192.168.88.2
+
+# --- 方法3(**当前推荐**) ---
+# 1. sudo journalctl -r > log.log
+# 1. $ grep -i ${本机ip} # 这里找到是dhcp
+# 1. $ grep -i dhcp # 这里找到`dhcp4 (enp3s0): dhclient started with pid 1086`
+# 1. $ sudo ps -ef |grep 1086 # 查看启动dhclient的命令,发现网络是由NetworkManager管理的, 且通过其命令行的参数也找到了配置文件的位置(不可直接编辑,需要使用nmcli)
+# 1. $ nmcli connection 找到conn
+# 1. $ sudo nmcli connection modify c9944e1f-2dea-3fec-b539-7267cf7bdee7 +ipv4.routes "192.168.16.0/24 192.168.88.2" # 添加route, 按需多次执行即可
