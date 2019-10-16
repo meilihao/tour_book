@@ -224,8 +224,10 @@ zfs send 将文件系统的快照写入stdout，然后流式传送到文件或�
 $ sudo zfs snapshot -r mypool/projects@snap2
 $ sudo zfs send mypool/projects@snap2 > ~/projects-snap.zfs  # `-c`使用压缩(如果mypool/projects是活动的则必须使用), `-n`表示模拟send, 实际不产生数据流, `-P`表示生成流的信息, 比如全量/增量, 数据流大小.`-v`: 发送流的详细信息, 包括每秒传输多少.
 $ sudo zfs receive -F mypool/projects-copy < ~/projects-snap.zfs # 恢复, `-F`表示(此时目标必须没有快照, 目标fs是否存在没关系)忽略目标fs的改动(mypool/projects-copy), 全量的话是直接覆盖原有fs, 增量的话是回滚到该增量快照的起点后再应用增量. `-d`: (此时目标fs必须存在)去掉原快照名称中的pool name,使用目标fs name+剩余名称作为新名称.
-$ sudo zfs send -i old_snap1  ool/dana@new_snap2 # `-i`增量发送,`-I`将一组增量快照合并为一个快照,`-R`表示复制 zfs 文件系统和其后代.
+$ sudo zfs send -i @old_snap1  ool/dana@new_snap2 # `-i`增量发送,`-I`将一组增量快照合并为一个快照,`-R`表示复制 zfs 文件系统和其后代.
 $ sudo zfs send pool/dana@snap1 | ssh system2 zfs recv pool/dana
+$ zfs send ... | gzip | <network> |   gunzip | zfs recv otherpool/new-f # 中间可使用压缩, 或其他更快的压缩, 比如lz4.
+$ zfs send --compressed tank/my-fs@today | ... # 最佳方式, 前提条件是发送端dataset已启用压缩属性
 $ sudo zfs send -i system1/dana@snap2 system1/dana@snap3 | ssh sys2 zfs recv -F newsys/dana
 ```
 
@@ -242,12 +244,14 @@ $ sudo zfs send -i system1/dana@snap2 system1/dana@snap3 | ssh sys2 zfs recv -F 
 
 演示:
 ```sh
-192.168.0.41 # zfs send -Pv storage/b@zrepl_20191016_071546_000 | ssh root@192.168.0.42 zfs receive [-F]  -s mypool/test/resume # `mypool/test/resume`
+192.168.0.41 # zfs send -Pv storage/b@zrepl_20191016_071546_000 | ssh root@192.168.0.42 "zfs receive -s mypool/test/resume" # `mypool/test/resume`
 192.168.0.41 # ... 未完成就强制中断
 192.168.0.42 # zfs get -H -o value receive_resume_token mypool/test/resume # receive_resume_token 仅在zfs recv中断的情况下出现在属性中
 1-c2d6054a6-d0-789c636064000310a500c4ec50360710e72765a5269740c418b0c9a7a515a7968064ccc460f26c48f2499525a9c540fa80a39b1836fd25f9e9a599290c0cfadf0ddc972975d93920c97382e5f312735319188a4bf28b12d353f5931caa8a520b72e28d0c0c2d0d0d0ccde20dcc0d4d4d80948101030c0000c6571c90
 192.168.0.41 # zfs send -vt 1-c2d6054a6-d0-789c636064000310a500c4ec50360710e72765a5269740c418b0c9a7a515a7968064ccc460f26c48f2499525a9c540fa80a39b1836fd25f9e9a599290c0cfadf0ddc972975d93920c97382e5f312735319188a4bf28b12d353f5931caa8a520b72e28d0c0c2d0d0d0ccde20dcc0d4d4d80948101030c0000c6571c90 | ssh root@192.168.0.42 zfs receive -s mypool/test/resume
 ```
+
+如果想放弃resume 可执行`zfs receive -A otherpool/new-fs`即可清除.
 
 ### zfs share
 用于通过nfs或smb协议共享和发布zfs文件系统, 通过创建fs时设置share.nfs/share.smb属性来实现.
@@ -261,7 +265,7 @@ $ sudo zfs get share.nfs.all tank/sales # 获取所有share.nfs属性
 ```
 
 ### zfs Ditto Blocks，重复块
-Ditto blocks 创建更多的冗余拷贝. 
+Ditto blocks 创建更多的冗余拷贝.
 
 对于只有一个设备的storage pool，ditto blocks are spread across the device, trying to place the blocks at least 1/8 of the disk apart. 对于多设备的 pool，zfs 试图分布 ditto blocks 到多个独立的 VDEVs, 可设置1~3 份拷贝.
 
