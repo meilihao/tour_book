@@ -203,3 +203,21 @@ rsyslog启动后, syslog.socket也会自行起来.
 
  > 查看当前使用的term: `echo $TERM`
  > 查看系统支持的term: `tree /usr/share/terminfo`
+
+### Ubuntu `do-release-upgrade -d` 16.04 -> 18.04 报错:
+```log
+authenticate 'bionic.tar.gz' against 'bionic.tar.gz.gpg'
+gpg exited 1
+Debug information:
+
+
+gpg: Signature made Mon 01 Jul 2019 04:13:12 PM CST using RSA key ID C0B21F32
+gpg: /tmp/ubuntu-release-upgrader-yoyius5d/trustdb.gpg: trustdb created
+gpg: BAD signature from "Ubuntu Archive Automatic Signing Key (2012) <ftpmaster@ubuntu.com>"
+
+Authentication failed
+Authenticating the upgrade failed. There may be a problem with the network or with the server.
+```
+
+解决方法:
+[`sudo apt-key update`](https://ubuntuforums.org/showthread.php?t=2388040)

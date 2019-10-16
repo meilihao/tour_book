@@ -49,3 +49,8 @@ EPOLLEXCLUSIVE是4.5+内核新添加的一个 epoll 的标识, 需内核支持
 
 > [惊群效应](https://mcgrady-forever.github.io/2018/03/19/network-thundering-herd/)
 > [Ngnix 是如何解决 epoll 惊群的](https://simpleyyt.com/2017/06/25/how-ngnix-solve-thundering-herd/)
+
+1. Make sure NTP service is running and ntpstat is synchronised to NTP server
+```sh
+$ sudo systemctl start ntpd
+```
