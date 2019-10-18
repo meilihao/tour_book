@@ -1,6 +1,9 @@
 # numastat
 为进程和os显示每个NUMA(Non-Uniform Memory Architecture)节点的内存统计信息.
 
+> 信息来源于: `/sys/devices/system/node/node${n}/numastat`. numa_miss和other_node高预示着numa问题. 如果进程的内存没有分配在本地节点上, 可通过renice调整或使用cpu亲和力.
+> numa node 相关信息会在`/sys/devices/system/node/node${n}`里.
+
 ## 选项
 
 - -c ：基于数据内容动态收缩列的宽度，内存被四舍五入为MB，对更密集显示多个NUMA节点的系统有帮助

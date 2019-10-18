@@ -113,38 +113,6 @@ $ sudo ln -s  /usr/lib/samba/wbclient/libwbclient.so.0.12 /usr/lib/libwbclient.s
 ### FAQ
 
 ### 优化
-
-#### swappiness
-
-在linux里面，swappiness的值的大小对如何使用swap分区是有着很大的联系的。swappiness=0的时候表示最大限度使用物理内存，然后才是 swap空间，swappiness＝100的时候表示积极的使用swap分区，并且把内存上的数据及时的搬运到swap空间里面。两个极端，对于ubuntu的默认设置，这个值等于60，建议修改为10。具体这样做：
-
-1. 查看你的系统里面的swappiness
-
-       $ cat /proc/sys/vm/swappiness
-
-2. 修改swappiness值为10
-
-       $ sudo sysctl vm.swappiness=10
-
- 这只是临时性的修改，在你重启系统后会恢复默认的60，所以，还要做一步：
-
-       $ sudo gedit /etc/sysctl.conf
-
- 在这个文档的最后加上这样一行:
-
-       vm.swappiness=10
-
-改成10后感觉开关机,运行都慢了许多,调为50即可.
-
-swap分区:
-- `<=4G`: 内存的2倍
-- `>4G&&<=16G`: 内存大小
-- `>16G`: 不设置swap
-
-> db server建议使用大内存且关闭swap
-> 永久禁用swap: 修改`/etcd/fstab`
-> 临时禁用swap: `swapoff -a`
-
 #### tcp bbr
 要求 : linux kernel >=4.9
 
