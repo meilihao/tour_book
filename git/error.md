@@ -19,3 +19,6 @@ git remote url中的账户无权写入远程库目录，方法就是修改远程
 ### `Permission denied (publickey,gssapi-keyex,gssapi-with-mic).`
 
 今天迁移gogs,`/home/git/.ssh/authorized_keys`不存在,在gogs上重新添加公钥即可.
+
+### git diff 没有输出或仅显示"(END)"
+[解决方法](https://stackoverflow.com/questions/8544211/git-diff-gives-no-output): `git config --global core.pager 'less'`或`git config --global core.pager ''`
