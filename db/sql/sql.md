@@ -27,6 +27,16 @@
 
 满足第三范式（3NF）必须先满足第二范式（2NF）. 简而言之，第三范式（3NF）要求一个数据库表中不包含已在其它表中已包含的非主键信息. 简而言之，第三范式就是属性不依赖于其它非主属性,即**消除传递依赖**.
 
+## 表与表之间的关系（relation）
+- 一对一（one-to-one）：一种对象与另一种对象是一一对应关系，比如一个学生只能在一个班级
+- 一对多（one-to-many）： 一种对象可以属于另一种对象的多个实例，比如一张唱片包含多首歌
+- 多对多（many-to-many）：两种对象彼此都是"一对多"关系，比如一张唱片包含多首歌，同时一首歌可以属于多张唱片
+
+one_to_one               reverse one_to_one
+one_to_many              reverse many_to_one(foreign_key)
+many_to_one(foreign_key) reverse one_to_many
+many_to_many             reverse many_to_many
+
 # SQL
 
 ## SQL规则
