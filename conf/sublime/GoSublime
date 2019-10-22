@@ -6,7 +6,7 @@
 		"GOROOT":"/usr/local/go",
 		"GOPATH":"/home/chen/git/go"
 	},
-	// [goimports不起作用的解决方法](https://github.com/DisposaBoy/GoSublime/issues/862):
+	// [goimports不起作用的解决方法或提示"margo.sublime build failed"](https://github.com/DisposaBoy/GoSublime/issues/862):
 	// 1. 在Sublime text中按 `ctrl+.`,`ctrl+x` 调出margo.go文件
 	// 2. 将`golang.GoImports`的注释删除（大概在77行）,保存修改, 最后重启sublime即可
 	"fmt_cmd": ["goimports"]

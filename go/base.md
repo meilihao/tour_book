@@ -654,6 +654,17 @@ func tryTheThing() (string, error) {
 }
 ```
 
+## 接口实现
+```go
+type StreamCopier interface {
+	WriteStreamTo(w io.Writer) error
+}
+```
+
+实现:
+1. 调用者实现`WriteStreamTo`方法.
+1. 被调用者实现`Write`方法.
+
 ## 其他
 
 ```go

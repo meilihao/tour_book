@@ -221,3 +221,13 @@ Authenticating the upgrade failed. There may be a problem with the network or wi
 
 解决方法:
 [`sudo apt-key update`](https://ubuntuforums.org/showthread.php?t=2388040)
+
+### 该软件包现在的状态极为不妥
+`dpkg -i`安装报错, `apt -f install`也无法修改.
+
+解决方法:
+```
+rm -rf /var/lib/dpkg/info/${error's package}*
+dpkg --remove --force-remove-reinstreq ${error's package}
+dpkg --purge --force-remove-reinstreq ${error's package}
+```
