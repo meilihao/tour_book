@@ -16,6 +16,7 @@
 - -t : 查看内容
 - -r : 向归档文件末尾追加文件
 - -u : 更新原压缩包中的文件
+- --exclude : 排除目录或文件
 
 上面五个是独立的命令，压缩解压都要用到其中一个，可以和别的命令连用但只能用其中一个.
 
@@ -49,6 +50,7 @@ tar –cvf jpg.tar *.jpg //将目录里所有jpg文件打包成tar.jpg
 tar –czf jpg.tar.gz *.jpg   //将目录里所有jpg文件打包成jpg.tar后，并且将其用gzip压缩，生成一个gzip压缩过的包，命名为jpg.tar.gz
 tar –cjf jpg.tar.bz2 *.jpg //将目录里所有jpg文件打包成jpg.tar后，并且将其用bzip2压缩，生成一个bzip2压缩过的包，命名为jpg.tar.bz2
 tar –cZf jpg.tar.Z *.jpg   //将目录里所有jpg文件打包成jpg.tar后，并且将其用compress压缩，生成一个umcompress压缩过的包，命名为jpg.tar.Z
+tar -zcvf tomcat.tar.gz --exclude=tomcat/logs --exclude=tomcat/libs --exclude=tomcat/xiaoshan.txt tomcat # 排除logs和libs两个目录及文件xiaoshan.txt
 rar a jpg.rar *.jpg //rar格式的压缩，需要先下载rar for linux
 zip jpg.zip *.jpg //zip格式的压缩，需要先下载zip for linux
 tar -rvf data.tar /etc/fstab //在压缩过的 tar 文件中无法进行追加文件操作

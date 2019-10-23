@@ -44,6 +44,12 @@ $ sudo vim /etc/security/limits.conf # 账号需重新登录
     - 修改`group_vars/pd_servers.yml`里的pd_client_port和pd_peer_port
     - [如何自定义端口](https://pingcap.com/docs-cn/dev/how-to/deploy/orchestrated/ansible/)
 
+或直接修改inventory.ini:
+```yaml
+[pd_servers]
+172.19.136.22 pd_client_port=12379 pd_peer_port=12380
+```
+
 1. Check if the operating system supports EPOLLEXCLUSIVE : epollexclusive is not available
 EPOLLEXCLUSIVE是4.5+内核新添加的一个 epoll 的标识, 需内核支持
 

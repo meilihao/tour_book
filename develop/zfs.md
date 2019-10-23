@@ -135,15 +135,17 @@ $ zpool scrub -s <pool> # 取消正在运行的检修
 
 ## zfs
 ```sh
-$ sudo zfs list # 显示系统上pools/filesystems的列表, `-r`递归显示fs及其子fs, `-o`指定要显示的属性; `-t`指定显示的类型, 比如filesystem, volume, share, snapshot.`-H`表示脚本模式: 不输出表头并用单个tab分隔各列; `-p`:精确显示数值; `-d`: 与`-d`连用,限制递归深度; `-s`按指定列升序排序; `-S`:与`-s`类似, 但以降序排序.
-$ sudo zfs get all <pool> # 获取pool的参数. `-s`指定要显示的source类型; `-H`输出信息去掉标题, 并用tab代替空格来分隔
+$ sudo zfs list # 显示系统上pools/filesystems的列表, `-r`递归显示fs及其子fs, `-o`指定要显示的属性; `-t`指定显示的类型, 比如filesystem, volume, share, snapshot.`-H`表示脚本模式: 不输出表头并用单个tab分隔各列; `-p`:精确显示数值; `-d`: 与`-r`连用,限制递归深度; `-s`按指定列升序排序; `-S`:与`-s`类似, 但以降序排序.
+$ sudo zfs get [ all | property[,property]...] <pool> # 获取pool的参数. `-s`指定要显示的source类型; `-H`输出信息去掉标题, 并用tab代替空格来分隔
 $ sudo zfs set atime = off <pool> # 设置pool参数
 $ sudo zfs set compression=gzip-9 mypool # 设置压缩的级别
 $ sudo zfs inherit -rS atime  <pool> # 重置参数到default值. `-r`以递归的方式应用inherit子命令
 $ sudo zfs get keylocation <pool>/<filesystem> # 获取filesystem属性
 $ sudo zfs set acltype = posixacl <pool> / <filesystem> # 使用ACL
 $ sudo zfs set sharenfs=on <pool> # 通过nfs共享pool
+$ sudo zfs create -o mountpoint=none mypool/test/storage # 创建未挂载的dataset, 常用于zfs recv的场景.
 $ sudo zfs set sharenfs=on <pool>/<filesystem> # 通过nfs共享filesystem
+$ sudo zfs set mountpoint=/<pool>/... <pool>/... # 设置挂载点, 设置后会立即挂载.
 $ sudo zfs destroy <pool>/.../<filesystem> # 销毁文件系统, 此时fs必须是不活动的. `-r`表示递归销毁, `-R`表示递归销毁这些快照及其clone, `-d`销毁带保持标志的快照
 $ sudo zfs rename <old-path> <new-path> # 重命名fs
 $ sudo mount -o <pool>/.../<filesystem> # 挂载fs
@@ -222,8 +224,8 @@ zfs send 将文件系统的快照写入stdout，然后流式传送到文件或�
 ```sh
 # 创建 snapshot 然后 save 到文件
 $ sudo zfs snapshot -r mypool/projects@snap2
-$ sudo zfs send mypool/projects@snap2 > ~/projects-snap.zfs  # `-c`使用压缩(如果mypool/projects是活动的则必须使用), `-n`表示模拟send, 实际不产生数据流, `-P`表示生成流的信息, 比如全量/增量, 数据流大小.`-v`: 发送流的详细信息, 包括每秒传输多少.
-$ sudo zfs receive -F mypool/projects-copy < ~/projects-snap.zfs # 恢复, `-F`表示(此时目标必须没有快照, 目标fs是否存在没关系)忽略目标fs的改动(mypool/projects-copy), 全量的话是直接覆盖原有fs, 增量的话是回滚到该增量快照的起点后再应用增量. `-d`: (此时目标fs必须存在)去掉原快照名称中的pool name,使用目标fs name+剩余名称作为新名称.
+$ sudo zfs send mypool/projects@snap2 > ~/projects-snap.zfs  # `-c`使用压缩(如果mypool/projects是活动的则必须使用), `-n`表示模拟send, 实际不产生数据流, `-P`表示生成流的信息, 比如全量/增量, 数据流大小.`-v`: 向(stderr)发送流的详细信息, 包括每秒传输多少.
+$ sudo zfs receive -F mypool/projects-copy < ~/projects-snap.zfs # 恢复,此时目标fs必须存在. `-F`表示(此时目标必须没有快照)忽略目标fs的改动(mypool/projects-copy), 全量的话是直接覆盖原有fs, 增量的话是回滚到该增量快照的起点后再应用增量. `-d`: (此时目标fs必须存在)去掉原快照名称中的pool name,使用目标fs name+剩余名称作为新名称.
 $ sudo zfs send -i @old_snap1  ool/dana@new_snap2 # `-i`增量发送,`-I`将一组增量快照合并为一个快照,`-R`表示复制 zfs 文件系统和其后代.
 $ sudo zfs send pool/dana@snap1 | ssh system2 zfs recv pool/dana
 $ zfs send ... | gzip | <network> |   gunzip | zfs recv otherpool/new-f # 中间可使用压缩, 或其他更快的压缩, 比如lz4.

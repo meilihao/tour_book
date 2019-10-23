@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: static-server-nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: static-server-nginx
+  template:
+    metadata:
+      labels:
+        app: static-server-nginx
+    spec:
+      containers:
+      - name: static-server-nginx
+        image: nginx:1.16.1
+        ports:
+        - containerPort: 80 # 要与image使用的端口对应, 否则会无法访问
+        volumeMounts:
+        - mountPath: /var/www
+          name: files-dir
+      volumes:
+      - name: files-dir
+        hostPath:
+          path: /var/www
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: static-server
+  labels:
+    app: static-server
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    protocol: TCP
+  selector:
+    app: static-server-nginx

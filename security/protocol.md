@@ -6,6 +6,9 @@
 - rsa握手: 解密client 生成的encrypted premaster secret
 - dh握手: 签名server dh parameter(x25519是其pub key)
 
+## 部署https
+[acme.sh](https://github.com/Neilpang/acme.sh)
+
 ## ssh v2
 
 ## FAQ
