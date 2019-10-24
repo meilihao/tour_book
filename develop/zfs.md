@@ -289,3 +289,7 @@ $ sudo zfs set dedup=on mypool/projects # 启用去重
 
 ### reservation
 如果 tank/home 指定了预留空间，则 tank/home 及其所有后代都会使用该预留空间. 预留空间计入父文件系统的已用磁盘空间, 并计入父文件系统的配额和预留空间.
+
+### 文件读取很慢
+原因:
+1. pool的一块镜像盘的状态变成DEGRADED, 更换磁盘即可
