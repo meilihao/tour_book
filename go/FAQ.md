@@ -406,6 +406,76 @@ https://stackoverflow.com/questions/28370646/how-do-i-fork-a-go-process/28371586
 select : 同时管理多个通道读写
 select default : 非阻塞读写, 它是决定通道读写操作阻塞与否的关键
 
+#### 已读完的channel返回时未Close也不会leak
+****
+
+```go
+func main() {
+	test()
+
+	time.Sleep(10*time.Second)
+	fmt.Println("the number of goroutines: ", runtime.NumGoroutine())
+}
+
+func test() {
+	copierErrChan := make(chan error)
+	go func() {
+		copierErrChan <- errors.New("test")
+		// close(copierErrChan)
+	}()
+
+	copierErr := <-copierErrChan
+	fmt.Printf("copierErr: %T %s\n", copierErr, copierErr)
+}
+```
+
+output:
+```txt
+copierErr: *errors.errorString test
+the number of goroutines:  1
+```
+
+#### 未读完的channel返回时即使Closed也会leak
+```go
+func main() {
+	test()
+
+	time.Sleep(10*time.Second)
+	fmt.Println("the number of goroutines: ", runtime.NumGoroutine())
+}
+
+func test() {
+	copierErrChan := make(chan error)
+	go func() {
+		copierErrChan <- errors.New("test") // 该goroutine一直阻塞在这里
+		close(copierErrChan)
+	}()
+
+	// copierErr := <-copierErrChan
+	// fmt.Printf("copierErr: %T %s\n", copierErr, copierErr)
+}
+```
+
+output:
+```txt
+copierErr: *errors.errorString test
+the number of goroutines:  2
+```
+
+解决这个泄露最简单的办法就是将 channel 从无缓存改成容量为 1 的缓存通道, 让其不再阻塞:
+```go
+copierErrChan := make(chan error, 1)
+	go func() {
+		copierErrChan <- errors.New("test")
+		close(copierErrChan) // 此时这里无论是否关闭都不会泄露, 但好习惯是主动close.
+	}()
+```
+
+具体可参考:
+- [The Behavior Of Channels](https://www.ardanlabs.com/blog/2017/10/the-behavior-of-channels.html)
+- [*Goroutine 泄露排查](https://ms2008.github.io/2019/06/02/golang-goroutine-leak/)
+- [技术解析系列 | PouchContainer Goroutine Leak 检测实践](https://mp.weixin.qq.com/s/P3Bc2e3o12MR2HQz00PUIQ)
+
 ### 锁
 #### RWMutex
 写锁是拍他锁，加写锁时会阻塞其它协程再加读锁和写锁，读锁是共享锁，加读锁还可以允许其它协程再加读锁，但是会阻塞加写锁
