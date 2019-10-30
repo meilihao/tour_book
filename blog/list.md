@@ -36,6 +36,9 @@
 - [轻松筹1.6亿注册用户的Passport账户体系架构设计](http://www.sohu.com/a/154131834_467759)
 - [新手入门一篇就够：从零开发移动端IM](https://link.jianshu.com/?t=http://www.52im.net/thread-464-1-1.html)
 
+## 存储
+- [ceph基本架构及数据分布原理](https://www.tuicool.com/articles/VzEFRjf)
+
 ## 随思
 - [知道创宇研发技能表](http://blog.knownsec.com/Knownsec_RD_Checklist/index.html)
 - [影响一生的职业建议 - Nicholas C. Zakas](https://linux.cn/article-6250-1.html)
@@ -128,6 +131,7 @@
 - [TCP的状态转换及生产问题实操](https://www.tuicool.com/articles/uYbaUzu)
 - [百万并发下的Nginx优化，看这一篇就够了！](https://www.tuicool.com/articles/ZZRrqmY)
 - [浅谈几种常用负载均衡架构](https://www.tuicool.com/articles/qUjEBrF)
+- [UCloud 全链路大规模网络连通性检测系统详解](https://www.infoq.cn/article/yHOw0esbb3K92eoY03e2)
 
 ## do
 - [如何从零构建个人博客系统](https://gocn.io/article/532)

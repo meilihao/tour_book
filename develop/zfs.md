@@ -160,6 +160,7 @@ zfs list的属性可参考[freebsd zfs#Native Properties](https://www.freebsd.or
 
 > 物理卷(Physical Volume, PV)：操作系统识别到的物理磁盘(或者RAID提交的逻辑磁盘LUN), 物理卷可以是一个磁盘，也可以是磁盘中的一个分区.
 > volume : 通常是指逻辑卷, 是逻辑卷组(VG, 由若干PV组成)上的一块空间, 上面没有文件系统.
+> zfs fs/volume名称的parent必须是pool/fs.
 
 与大多数其他文件系统不同，zfs具有可变的记录大小，或者通常称为块大小, 默认情况下，zfs上的记录大小为128KiB，这意味着它将根据要写入的文件大小动态分配从512B到128KiB任意大小的块.
 
@@ -207,6 +208,7 @@ $ sudo zfs diff  [-FHt] <snapshot> [snapshot|filesystem] # 显示差异
 
 > 创建clone几乎是即时的, 且最初不占用其他磁盘空间. 此外, 还可以对clone进行快照.
 > 可用`zfs get/set`操作clone的属性.
+> 可通过查询dataset@sanp的clones属性获知它有哪些clone.
 
 ```sh
 # 克隆 mypool/projects，首先创建一个 snapshot 然后 clone

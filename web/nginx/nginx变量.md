@@ -1,3 +1,7 @@
+# nginx config
+参考:
+- [nginx server 如何写，如何写 nginx 配置](https://deepzz.com/post/how-to-write-nginx-server.html)
+
 ## 请求头
 
 - $host	请求Header中的Host
