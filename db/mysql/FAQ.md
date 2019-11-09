@@ -218,3 +218,10 @@ key 太长会导致一个页当中能够存放的 key 的数目变少，间接�
 
 ### MySQL 的数据如何恢复到任意时间点？
 恢复到任意时间点以定时的做全量备份，以及备份增量的 binlog 日志为前提. 恢复到任意时间点首先将全量备份恢复之后，再此基础上回放增加的 binlog 直至指定的时间点.
+
+### mariadb 10.4 系统root + root@localhost登录时无需密码
+[mariadb 10.4就是这么设计的.](https://mariadb.org/authentication-in-mariadb-10-4/)
+
+### [mariadb 离线下载地址](https://mariadb.com/downloads/)
+
+

@@ -146,11 +146,12 @@ $ sudo zfs set sharenfs=on <pool> # 通过nfs共享pool
 $ sudo zfs create -o mountpoint=none mypool/test/storage # 创建未挂载的dataset, 常用于zfs recv的场景.
 $ sudo zfs set sharenfs=on <pool>/<filesystem> # 通过nfs共享filesystem
 $ sudo zfs set mountpoint=/<pool>/... <pool>/... # 设置挂载点, 设置后会立即挂载.
-$ sudo zfs destroy <pool>/.../<filesystem> # 销毁文件系统, 此时fs必须是不活动的. `-r`表示递归销毁, `-R`表示递归销毁这些快照及其clone, `-d`销毁带保持标志的快照
+$ sudo zfs destroy <pool>/.../<filesystem> # 销毁文件系统, 此时fs必须是不活动的. `-r`表示递归销毁, `-R`表示递归销毁这些快照及其clone(此时该clone不能是busy即正在使用), `-d`销毁带保持标志的快照
 $ sudo zfs rename <old-path> <new-path> # 重命名fs
 $ sudo mount -o <pool>/.../<filesystem> # 挂载fs
 $ sudo unmount <pool>/.../<filesystem> # 取消挂载fs, 此时fs必须是不活动的. `-f`强制取消挂载
 $ sudo zfs create -V 5gb system1/vol # 创建5g大小的卷(创建卷时，会自动将预留空间设置为卷的初始大小，以确保数据完整性)
+$ sudo zfs get mountpoint mypool
 ```
 
 zfs list的属性可参考[freebsd zfs#Native Properties](https://www.freebsd.org/cgi/man.cgi?zfs(8)), `man zfs`与实际zfs包含的功能不一致, 有缺失, 比如`createtxg`, 部分属性说明:
@@ -283,6 +284,10 @@ zfs dedup 将丢弃重复数据块，并以到现有数据块的引用来替代.
 ```
 $ sudo zfs set dedup=on mypool/projects # 启用去重
 ```
+
+## 属性
+- refreservation : 创建dataset时占用大小
+- volsize(for volumn)/refquota (for filesystem): 允许dataset的最大大小, 它们应该>=refreservation.
 
 ## FAQ
 ### quota于refquota区别
