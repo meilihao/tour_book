@@ -262,3 +262,91 @@ E: 无法修正错误，因为您要求某些软件包保持现状，就是它�
 1. `apt install mariadb-server`
 
 ps: **推荐[使用在线安装mariadb](https://downloads.mariadb.org/)**
+
+### vnc4server启动时默认绑定localhost
+因为vncserver没有使用TLSVnc, 不安全启动时默认绑定到localhost.
+
+解决方法: 在`/etc/vnc.conf`中追加`$localhost = "no";`, 重启系统再重新运行`vncserver`即可.
+
+`/etc/vnc.conf`的配置项`$geometry`支持修改分辨率.
+
+ps: vnc推荐使用vnc4server.
+
+### vnc viewer登录后灰屏/没有进入桌面
+检查`$HOME/.vnc/xstartup`的配置.
+
+xfce4的配置, 高分辨率会糊(来回切换分辨率就能解决或等会自行恢复), **推荐**:
+```
+#!/bin/sh
+
+# Uncomment the following two lines for normal desktop:
+unset SESSION_MANAGER
+unset DBUS_SESSION_BUS_ADDRESS
+# exec /etc/X11/xinit/xinitrc
+
+[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup
+[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
+exec startxfce4
+```
+
+第二种xfce4配置, 有时成功有时失败:
+```text
+#!/bin/sh
+
+# Uncomment the following two lines for normal desktop:
+# unset SESSION_MANAGER
+# exec /etc/X11/xinit/xinitrc
+
+[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup
+[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
+xsetroot -solid grey
+vncconfig -iconic &
+x-terminal-emulator -geometry 80x24+10+10 -ls -title "$VNCDESKTOP Desktop" &
+x-window-manager &
+x-session-manager &
+# desktop config
+xfdesktop &
+xfce4-panel &
+xfsettingsd &
+xfconfd &
+xfce4-session &
+xfwm4 &
+```
+
+ps: 如何找到上面的`desktop config`: 正常登录到系统, 看看它启动了哪些桌面环境相关的进程, 再结合网上资料, 补充完整即可.
+
+这是网上ubuntu 19.04 + gnome的xstartup:
+```
+#!/bin/sh
+[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup
+[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
+vncconfig -iconic &
+dbus-launch --exit-with-session gnome-session & # 导致sougou输入法无法启动
+```
+
+其他:
+```
+#!/bin/sh
+
+# Uncomment the following two lines for normal desktop:
+# unset SESSION_MANAGER
+exec /etc/X11/xinit/xinitrc
+
+[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup
+[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
+```
+
+ps: 直接删除xstartup也可进入桌面.
+
+### exo-helper-1: not found
+env: ubuntu 19.04 + xfce4
+
+解决方法:
+```
+sudo apt install libexo-1-0
+```
+
+### 搜狗输入法无法运行在ubuntu 19.04 gnome/xfce4下
+使用fcitx的其他中文输入法
+
+ps: ubuntu 19.04 xfce4 用ibus也无法输入中文.
