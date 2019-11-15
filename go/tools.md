@@ -37,3 +37,13 @@ func main() {
 ```
 dot -Tpng -o a.png a.dot
 ```
+
+## IDE
+### FAQ
+#### vscode 智能提示突然消失
+vscode的go插件启用了gopls, 但gopls总是崩溃.
+
+解决方法, 关闭gopls:
+```
+"go.useLanguageServer": false
+```

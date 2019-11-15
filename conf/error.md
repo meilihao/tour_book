@@ -287,6 +287,11 @@ unset DBUS_SESSION_BUS_ADDRESS
 [ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup
 [ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
 exec startxfce4
+# 使用fcitx输入环境
+export GTK_IM_MODULE="fcitx"
+export QT_IM_MODULE="fcitx"
+export XMODIFIERS="@im=fcitx"
+fcitx-autostart &
 ```
 
 第二种xfce4配置, 有时成功有时失败:
@@ -350,3 +355,33 @@ sudo apt install libexo-1-0
 使用fcitx的其他中文输入法
 
 ps: ubuntu 19.04 xfce4 用ibus也无法输入中文.
+
+### make sure that your system can connect to api.snapcraft.io
+在`/lib/systemd/system/snapd.service`追加:
+```text
+[Service]
+Environment=http_proxy=http://proxy:port
+Environment=https_proxy=http://proxy:port
+```
+
+然后重新加载snapd服务，运行以下命令：
+```sh
+sudo systemctl daemon-reload
+sudo systemctl restart snapd.service
+```
+
+方法二:
+在/etc/environment(snapd会读取它，应用其中指定的配置信息)文件中加入以下两行：
+```text
+http_proxy=http://[服务器地址]:[端口号]
+https_proxy=http://[服务器地址]:[端口号]
+```
+然后重启snapd服务，运行以下命令：
+```sh
+sudo systemctl restart snapd
+```
+
+### `fcitx -d`: getting session bus failed: //bin/dbus-launch terminated abnormally with the following error: Autolaunch error: X11 initialization failed.
+
+执行程序的用户不对. 我是用sudo执行的程序，而session bus需要访问启动用户所在home目录的隐藏文件夹`/home/xxxxx/.dbus/`,
+该目录在用户目录xxxx下. 因此，只需要去掉sudo用普通用户执行即可.
