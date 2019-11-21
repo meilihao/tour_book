@@ -1,7 +1,9 @@
 # go mod
 Go1.11和Go1.12只能在$GOPATH以外的目录中使用Go Modules.
 
-> 依赖的包都会保存在 ${GOPATH}/pkg/mod 文件夹中
+> 目前go mod的包及相关数据均缓存在 $GOPATH/pkg/mod和 $GOPATH/pkg/sum 下，未来或将移至 $GOCACHE/mod 和$GOCACHE/sum 下(可能会在当 $GOPATH 被淘汰后)
+> 可以使用`go clean -modcache`清理所有已缓存的go mod数据
+> go mod导致`$GOPATH`的弱化甚至淘汰及`$GOBIN(go install)`的提升
 
 ## mod升级
 ```
@@ -44,6 +46,14 @@ replace (
 export GOPROXY=https://goproxy.io
 ```
 
+## GOPRIVATE
+控制哪些私有仓库和依赖(公司内部仓库)不通过 proxy 来拉取，直接走本地
+
+```sh
+# 设置不走 proxy 的私有仓库，多个用逗号相隔
+go env -w GOPRIVATE=*.example.com
+```
+
 ## FAQ
 ### go: cannot determine module path for source directory
 在 $GOPATH 之外使用 go modules, 如果是现有项目的话可以直接 go mod init, 现有项目会根据 git remote 自动识别 module 名, 但是新项目的话就会报`go: cannot determine module path for source directory`, 此时需要带上 module 名即可.
@@ -75,3 +85,28 @@ $ env GONOPROXY="code.aliyun.com" GONOSUMDB="code.aliyun.com" go build
 ```
 
 > GONOPROXY,GONOSUMDB有多项时需用`,`分隔
+
+## athens deploy
+1. build
+```sh
+git clone https://github.com/gomods/athens
+cd athens
+make build-ver VERSION="0.7.0"
+```
+
+1. config
+```
+cd athens
+cp config.dev.toml config.toml
+touch FilterFile
+echo "D" > FilterFile # 因为是直接重定向, 因此不用配置StorageType
+# edit config.toml
+FilterFile = "FilterFile"
+GlobalEndpoint = "https://mirrors.aliyun.com/goproxy/"
+```
+
+1. run
+```go
+sudo ./athens -config_file config.toml
+env GOPROXY=http://${athens_service_ip}:3000 go mod vendor # 使用
+```
