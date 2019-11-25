@@ -1,5 +1,8 @@
 # orm使用
-gorm join:
+**推荐使用xorm**.
+
+## gorm
+### join:
 ```go
 type CommentaryItem struct {
 	Commentary `gorm:"embedded"`
@@ -25,4 +28,10 @@ func CommentaryList(tdb *gorm.DB, pg *pager.Pager) []CommentaryItem {
 
 	return ls
 }
+```
+
+### 位运算
+```go
+db.Model(n).Update("status", gorm.Expr(fmt.Sprintf("status | %d", 1))).Error
+db.Model(n).Update("status", gorm.Expr(fmt.Sprintf("status & (~%d)", 1))).Error
 ```
