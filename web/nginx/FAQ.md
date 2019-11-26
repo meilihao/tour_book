@@ -298,3 +298,5 @@ brotli_buffers 16 10k;# 设置缓冲的数量和大小, 大小默认为一个内
 brotli_window 512k;   # 设置窗口大小
 brotli_min_length 20; # 设置需要进行压缩的最小响应大小
 ```
+
+### [nginx 上传大文件超时](https://my.oschina.net/ericquan8/blog/379265)
