@@ -301,3 +301,11 @@ $ sudo zfs set dedup=on mypool/projects # 启用去重
 ### 文件读取很慢
 原因:
 1. pool的一块镜像盘的状态变成DEGRADED, 更换磁盘即可
+
+### share
+1. nfs
+```
+# zfs set sharenfs=on rpool/fs1
+# zfs set acltype=posixacl rpool/fs1
+# zfs set aclinherit=posixacl rpool/fs1
+```

@@ -300,3 +300,13 @@ brotli_min_length 20; # 设置需要进行压缩的最小响应大小
 ```
 
 ### [nginx 上传大文件超时](https://my.oschina.net/ericquan8/blog/379265)
+```conf
+ location / {  
+        proxy_pass     http://xxx;
+        // for big upload
+        client_max_body_size    1000m;
+        client_body_timeout 15m;
+        proxy_connect_timeout         15m;
+	    proxy_read_timeout            15m;
+    } 
+```
