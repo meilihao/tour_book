@@ -307,5 +307,12 @@ $ sudo zfs set dedup=on mypool/projects # 启用去重
 ```
 # zfs set sharenfs=on rpool/fs1
 # zfs set acltype=posixacl rpool/fs1
-# zfs set aclinherit=posixacl rpool/fs1
+# zfs set aclinherit=passthrough rpool/fs1 # 当前openzfs 的 aclinherit属性不支持posixacl
+```
+
+nfs配置见[fs.md](fs.md)
+
+1. samba
+```
+# zfs set sharesmb=on rpool/fs1
 ```
