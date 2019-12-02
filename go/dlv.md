@@ -11,6 +11,7 @@ sudo dlv debug github.com/zrepl/zrepl --  daemon --config=/home/jr/git/go/src/gi
 
 ### 打断点
 ```
+(dlv) b 93 # 当前文件的93行
 (dlv) b /home/chen/git/go/src/golang.org/x/tools/godoc/server.go:276
 (dlv) b handlerServer.ServeHTTP // func (h *handlerServer) ServeHTTP(w http.ResponseWriter, r *http.Request)
 ```
