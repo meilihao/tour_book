@@ -32,6 +32,11 @@ NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nf
 
 >　nfs server指定使用的版本: `/etc/default/nfs-kernel-server`的`RPCMOUNTDOPTS="--manage-gids -V 4.2"`.
 
+`/ect/fatab`:
+```
+192.168.0.10:/nfs_share /mnt/nfs nfs defaults 0 0
+```
+
 ### FS系统守护进程
 - nfsd ：它是基本的NFS守护进程，主要功能是管理客户端是否能够登录服务器
 - rpc.mountd ：它是RPC安装守护进程，主要功能是管理NFS的文件系统. 当客户端顺利通过nfsd登录NFS服务器后，在使用NFS服务所提供的文件前，还必须通过文件使用权限的验证. 它会读取NFS的配置文件/etc/exports来对比客户端权限.
@@ -146,6 +151,7 @@ $ sudo apt install samba samba-common smbclient # 安装samba
 - smbtree : 列出网络内其他计算机正在分享的内容, 类似于windows 网络邻居的显示效果.
 
 > SAMBA 使用的 NetBIOS 通讯协议
+> SAMBA 仅只是 Linux 底下的一套软件，使用 SAMBA 来进行 Linux 文件系统时，还是需要以 Linux 系统下的 UID 与 GID 为准则. 也就是说，在 SAMBA 上面的使用者账号，必须要是 Linux 账号中的一个.
 
 ### 配置文件
 - /etc/samba/smb.conf
@@ -169,14 +175,15 @@ $ sudo apt install samba samba-common smbclient # 安装samba
 
 ### 使用
 ```sh
-$ smbclient -L //127.0.0.1 # 列出正在分享的内容
+$ smbclient -L //127.0.0.1 [-U josh]# 列出正在分享的内容
 $ mount -t cifs //127.0.0.1/temp /mnt # 挂载samba分享的内容
 $ sudo useradd -M -s /usr/sbin/nologin -G sambashare josh
 $ sudo smbpasswd -a josh # 设置用户密码将sadmin用户帐户添加到Samba数据库, 默认已启用账号
 $ yes password |sudo smbpasswd -a ubuntu # 不用交互输入密码
 $ sudo smbpasswd -e josh # 启用账号josh
-$ sudo pdbedit -L -vw # 查看smbpasswd创建的samba用户
+$ sudo pdbedit -L -v # 查看smbpasswd创建的samba用户
 $ sudo systemctl restart smbd # 使配置生效
+$ sudo mount -t cifs //127.0.0.1/my_dir /mnt -o username=josh -o password=xxx
 ```
 
 on windows:
@@ -184,6 +191,14 @@ on windows:
 1. 输入设置的samba账号, 进入共享目录
 
 > 清除windows网络邻居的连接(默认只能连接一个共享): `net use * /del /y`
+
+`/etc/fstab`:
+```
+//192.168.0.10/gacanepa /mnt/samba  cifs credentials=/root/smbcredentials,defaults 0 0
+# smbcredentials:
+# username=gacanepa
+# password=XXXXXX
+```
 
 ## FAQ
 ### wrong fs type, bad option, bad superblock on

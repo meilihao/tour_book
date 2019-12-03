@@ -41,10 +41,13 @@ replace (
 
 不过，需要依赖于 go module, 可通过`export GO111MODULE=on`开启 MODULE.
 
-更可喜的是，https://goproxy.io 这个开源项目帮我们实现好了我们想要的, 该项目允许开发者一键构建自己的 GOPROXY 代理服务. 它同时也提供了公用的代理服务 https://goproxy.io，我们只需设置该环境变量即可：
+更可喜的是，[https://goproxy.cn](https://github.com/goproxy/goproxy.cn/blob/master/README.zh-CN.md) 这个开源项目帮我们实现好了我们想要的, 该项目允许开发者一键构建自己的 GOPROXY 代理服务. 它同时也提供了公用的代理服务 https://goproxy.cn，我们只需设置该环境变量即可：
 ```sh
-export GOPROXY=https://goproxy.io
+export GOPROXY=https://goproxy.cn,direct
 ```
+
+如果在运行go mod vendor时，提示`Get https://sum.golang.org/lookup/xxxxxx: dial tcp 216.58.200.49:443: i/o timeout`，则是因为Go 1.13设置了默认的GOSUMDB=sum.golang.org用于验证包的有效性，而这个网站是被墙了, 可以通过命令关闭：`go env -w GOSUMDB=off`.
+
 
 ## GOPRIVATE
 控制哪些私有仓库和依赖(公司内部仓库)不通过 proxy 来拉取，直接走本地
@@ -86,7 +89,7 @@ $ env GONOPROXY="code.aliyun.com" GONOSUMDB="code.aliyun.com" go build
 
 > GONOPROXY,GONOSUMDB有多项时需用`,`分隔
 
-## athens deploy
+### athens deploy
 1. build
 ```sh
 git clone https://github.com/gomods/athens
@@ -110,3 +113,6 @@ GlobalEndpoint = "https://mirrors.aliyun.com/goproxy/"
 sudo ./athens -config_file config.toml
 env GOPROXY=http://${athens_service_ip}:3000 go mod vendor # 使用
 ```
+
+### Nexus Repository Manager 3 配置goproy需验证账号
+Setting - Security - Anonymous, 启用匿名.
