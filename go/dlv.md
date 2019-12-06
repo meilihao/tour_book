@@ -16,6 +16,24 @@ sudo dlv debug github.com/zrepl/zrepl --  daemon --config=/home/jr/git/go/src/gi
 (dlv) b handlerServer.ServeHTTP // func (h *handlerServer) ServeHTTP(w http.ResponseWriter, r *http.Request)
 ```
 
+> 可用`sources`查看用到的源码文件, 便于打断点
+
+### 远程调试
+```go
+# server
+$ dlv attach $PID --headless --listen=:8181 // `dlv connect`退出后`dlv attach`才允许退出
+# clinet
+$ dlv connect 192.168.0.139:8181
+```
+
+**此时要用远程程序编译时的文件路径打断点而非本地路径**.
+
+因为远程程序的编译路径可能和本地不一致, 就需要配置`~/.config/dlv/config.yml`, 比如:
+```yaml
+substitute-path:
+  - {from: /root, to: /home/ubuntu/git} # 远程程序编译路径的前缀`/root`会被替换成本地的`/home/ubuntu/git`
+```
+
 ### 函数调用中使用函数作为参数的调试方法
 ```go
 info := h.GetPageInfo(abspath, relpath, mode, r.FormValue("GOOS"), r.FormValue("GOARCH"))

@@ -30,4 +30,10 @@ sqlite3只支持一写多读.
 sqlite同一时间只能进行一个写操作，当同时有两个写操作的时候,后执行的只能先等待,如果等待时间超过5秒,就会产生这种错误. 同样一个文件正在写入,重复打开数据库操作更容易导致这种问题的发生.
 
 ### datetime, date类型
-sqlite3默认没有datetime和date类型, 但[SQLite支持列的亲和类型](https://www.runoob.com/sqlite/sqlite-data-types.html), 比如定义时是datetime, 实际保持时是亲和类型NUMERIC.
+sqlite3默认没有datetime和date类型, 但[SQLite支持列的亲和类型](https://www.runoob.com/sqlite/sqlite-data-types.html), 比如定义时是datetime, 实际保持时是亲和类型NUMERIC, 但无法通过`col > ${unixstamp}`之类的数值比较进行操作.
+
+操作:
+```sql
+INSERT INTO loginfo(username, created) values(?,datetime(?, 'unixepoch')) // "xxx", time.Now().Unix()
+SELECT * FROM loginfo where created > datetime(?, 'unixepoch'); // time.Now().Unix()
+```

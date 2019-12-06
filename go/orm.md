@@ -2,6 +2,11 @@
 **推荐使用xorm**.
 
 ## gorm
+### field map
+```go
+uint64 // bigint unsigned
+```
+
 ### join:
 ```go
 type CommentaryItem struct {
