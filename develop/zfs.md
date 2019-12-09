@@ -47,10 +47,10 @@ scrub : 用于一致性检验. 其他文件系统会使用fsck.
 - disk, 默认, 比如HDD, SDD, PCIe NVME等等
 - File : 预先分类的文件，为*.img的文件，可以作为一个虚拟设备载入zfs
 - Mirror : 标准的 RAID1 mirror
-- zfs 软件RAID : raidz=raidz1(raid5, >=3 disk)/2(raid6, >=4 disk)/3(>=5 disk), 非标准的基于分布式奇偶校验的软件RAID. 速度: raid0 > raid1 > raidz1 > raidz2 > raidz3
-- Hot Spare : 用于热备 zfs 的软件 raid
-- Cache : 用于2级自适应的读缓存的设备 (zfs L2ARC), 提供在 memory 和 disk的缓冲层, 用于改善静态数据的随机读写性能
-- Log : zfs Intent Log(zfs ZIL/SLOG, zfs意图日志,一种对于 data 和 metadata 的日志机制，先写入然后再刷新为写事务), 用于崩溃恢复, 最好配置并使用快速的 SSD来存储ZIL, 以获得更佳性能. ZIL支持mirror. ZIL也可认为是zfs的写缓存.
+- zfs 软件RAID : raidz=raidz1(raid5, >=3 disk)/2(raid6, >=4 disk)/3(raid7, >=5 disk), 非标准的基于分布式奇偶校验的软件RAID. 速度: raid0 > raid1 > raidz1 > raidz2 > raidz3
+- Hot Spare : 用于**热备** zfs 的软件 raid, 当正在使用的磁盘发生故障后，Spare磁盘将马上代替此故障盘.
+- Cache : 用于2级自适应的**读缓存**的设备 (zfs L2ARC), 提供在 memory 和 disk的缓冲层, 用于改善静态数据的随机读写性能
+- Log : zfs Intent Log(zfs ZIL/SLOG, zfs意图日志,一种对于 data 和 metadata 的日志机制，先写入然后再刷新为写事务), 用于崩溃恢复, 最好配置并使用快速的 SSD来存储ZIL, 以获得更佳性能. ZIL支持mirror. ZIL也可认为是zfs的**写缓存**.
 
 VDEV始终是动态条带化的. 一个 device 可以被加到 VDEV, 但是不能移除.
 
