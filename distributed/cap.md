@@ -135,6 +135,7 @@ FLP **定理**实际上说明了在允许节点失效的场景下,基于**异步
 参考:
 - [raft动画](http://thesecretlivesofdata.com/raft/)
 - [微信自研生产级paxos类库PhxPaxos实现原理介绍](http://mp.weixin.qq.com/s?__biz=MzI4NDMyNTU2Mw==&mid=2247483695&idx=1&sn=91ea422913fc62579e020e941d1d059e)
+- [号称史上最晦涩的算法Paxos，如何变得平易近人](https://yq.aliyun.com/articles/156281)
 
 因为Paxos的难理解, 这里只考虑Raft.
 
