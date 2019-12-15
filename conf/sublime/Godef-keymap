@@ -1,5 +1,5 @@
 [
-	{ "keys": ["super+h"], "command": "godef" }, // 速度较慢?
-    { "keys": ["super+j"], "command": "jump_forward"},
-    { "keys": ["super+k"], "command": "jump_back"}
+    { "keys": ["ctrl+left_button"], "command": "godef" },
+    { "keys": ["ctrl+alt+="], "command": "jump_forward"}, `plus`可表示`+`
+    { "keys": ["ctrl+alt+-"], "command": "jump_back"}
 ]
