@@ -9,6 +9,7 @@ env: go version go1.12.5 linux/amd64
 - [Go Hashmap内存布局和实现](https://studygolang.com/articles/11979)
 - [Map 在 Go runtime 中的高效实现（不使用范型）](https://studygolang.com/articles/13226)
 - [【GoLang那点事】深入Go的Map使用和实现原理](https://gocn.vip/article/1901)
+- [Go Map深度解析以便实现随机获取Map值](https://project-help.cn/thread-43.htm)
 
 Go 语言采用的是哈希查找表，并且使用链表解决哈希冲突.
 
