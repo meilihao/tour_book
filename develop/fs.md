@@ -5,12 +5,14 @@ CIFS是微软的Common Internet file system的缩写, 是 SMB 协议的一种特
 Samba 也是 SMB 协议的实现, 常用于windows与类unix间的文件共享.
 NFS是SUN为Unix开发的网络文件系统, 提供类unix间的文件共享. 目前最新版本是`v4.10`. NFSv4用户验证采用“用户名+域名”的模式，与Windows AD验证方式类似，NFSv4强制使用Kerberos验证方式.（Kerberos与Windows AD都遵循相同RFC1510标准），这样方便windows和`*nix`环境混合部署.
 
+> nfs server端权限变化后client端无需重新mount即可生效.
+
 ## NFS
 安装:
 ```
 $ sudo apt install nfs-kernel-server
-$ sudo cat /proc/fs/nfsd/versions
-$ sudo apt install nfs-common # Install NFS client 
+$ sudo cat /proc/fs/nfsd/versions # 查看nfs server支持的nfs protocol version
+$ sudo apt install nfs-common # Install NFS client
 $ sudo yum install nfs-utils # Install NFS client
 $ nfsstat -s # server使用的nfs version
 $ nfsstat -c # client使用的nfs version
@@ -23,6 +25,8 @@ $ sudo mount -t nfs4 192.168.0.83:/usr/local/mypool/p11 /mnt # 用指定版本�
 $ sudo mount -o v4.2 192.168.0.83:/usr/local/mypool/p11 /mnt # 用指定版本的nfs挂载共享
 $ df -h #查看挂载情况
 $ sudo umount /mnt
+$ cat /etc/exports
+/usr/local/files/mypool/share  *(rw,sync,all_squash,anonuid=1037)
 ```
 
 NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nfs-common 里.
@@ -138,8 +142,18 @@ NFS服务虽然不具备用户身份验证的功能，但是NFS提供了一种�
 
 ## SAMBA
 ```sh
-$ sudo apt install samba samba-common smbclient # 安装samba
+$ sudo apt install samba samba-common smbclient cifs-utils # 安装samba
 ```
+
+SMB 协议版本:
+- SMB1：SMB1（也称为 CIFS）自 Windows NT 发布以来得到支持.
+- SMB2：SMB2 自从 Windows Vista 发布以来得到支持，且为 SMB 的增强版本. SMB2 增加了将多重 SMB 操作功能组合到单个请求的功能，以减少网络数据包的数量并提高性能.
+    SMB2 和 Large MTU：最大传输单元 (MTU) 是指可通过通讯协议的最大数据单元. 为利用最快的更快的接口，如 1- 或 10-gigabit 以太网，Large MTU 将最大传输单元提高至 1 megabyte (MB). 启用 Large MTU 可提高大文件传输的速度和效率，同时降低需处理的数据包数量.
+- SMB3：SMB3 自 Windows 8 和 Windows Server 2012 发布以来得到支持, 它是 SMB 2 的增强版. SMB3 支持基于 AES 的文件加密传输，从而提高了对等文件传输的安全性.
+
+> Windows Vista、Windows Server 2008 R2、Windows 7 和以上的版本支持 SMB2.
+> Windows Server 2008 R2、Windows 7 和以上的版本支持 Large MTU.
+> 确认 kernel 是否支持 CIFS 挂载：`grep -i cifs /boot/config-4.4.58-20180615.kylin.server.YUN+-generic`，y 或 m 表示支持即`CONFIG_CIFS=m`
 
 ### 组件
 - smbd : 提供了文件和打印服务, 基于tcp.
@@ -150,40 +164,76 @@ $ sudo apt install samba samba-common smbclient # 安装samba
 - smbclient : 查看其他计算机所分享出来的目录或打印机
 - smbtree : 列出网络内其他计算机正在分享的内容, 类似于windows 网络邻居的显示效果.
 
+> 在samba服务器端,权限由共享的目录的普通权限和smb.conf配置文件共同决定.
 > SAMBA 使用的 NetBIOS 通讯协议
 > SAMBA 仅只是 Linux 底下的一套软件，使用 SAMBA 来进行 Linux 文件系统时，还是需要以 Linux 系统下的 UID 与 GID 为准则. 也就是说，在 SAMBA 上面的使用者账号，必须要是 Linux 账号中的一个.
 
 ### 配置文件
-- /etc/samba/smb.conf
+- [/etc/samba/smb.conf](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html)
 
 	samba的主要配置文件，基本上仅有这个文件，而且这个配置文件本身的说明非常详细. 主要的设置包括服务器全局设置，如工作组、NetBIOS名称和密码等级，以及共享目录的相关设置，如实际目录、共享资源名称和权限等两大部分
 
 	```conf
-	[josh] # 登录时将使用的共享名称
+	[global]
+	server min protocol = SMB2 # 同`min protocol`, 也可指定具体版本`server min protocol = SMB2_02`. [How to configure Samba to use SMBv2 and disable SMBv1 on Linux or Unix](https://www.cyberciti.biz/faq/how-to-configure-samba-to-use-smbv2-and-disable-smbv1-on-linux-or-unix/)
+	client min protocol = SMB2
+	client max protocol = SMB3
+	load printers = yes # 是否加载打印机
+	workgroup = WORKGROUP # 工作组，用来设定服务器所要加入的工作组或者域. 通常是配合windows使用的`WORKGROUP`.
+	server string = Samba Server Version %v # 服务器简单介绍字符串，%v显示samba版本号
+	interfaces = lo eth0 192.168.12.2/24 192.168.13.2/24 # 服务器所监听的网卡名、IP地址
+	hosts allow = 127. 192.168.12. 192.168.13. # 访问控制白名单，可以用一个IP表示，也可以用一个网段表示，多个参数以空格隔开
+	log file = /var/log/samba/log.%m # 设置服务器日志文件的存储位置以及存储日志文件名称，%m（宏）表示主机名，表示对每台访问服务器的机器都单独记录一个日志文件. 如果whsir访问过服务器，则就会在/var/log/samba目录下生成一个名为log.whsir的日志文件
+	log level = 3 # 0~10, 值越大越详细
+	security = user # 定义安全级别, 一共由四种级别：
+	# - share：匿名共享，用户访问服务器不需要提供用户名和口令
+	# - user：使用samba服务自我管理的帐号和密码进行用户认证，用户必须是本系统用户，但密码非/etc/shadow中的密码，而由samba自行管理的文件，其密码文件的格式由passdb bachend进行定义.
+	# - server：由第三方服务进行统一认证
+	# - domain：使用主域控制器进行认证，基于kerberos协议进行
+	passdb backend = tdbsam # tdbsam使用一个数据库文件来建立用户数据库. 可以使用smbpasswd命令建立samba用户，不过要建立的samba用户必须先是系统用户. 我们也可以使用pdbedit命令来直接建立Samba账户
+	[josh] # 挂载时将使用的共享名称
+	comment = 共享的注释信息
     path = /samba/josh # 分享路径
     browseable = yes # 是否显示在可用共享列表中
+	writeable = true #该共享路径是否可写, read only的反义词
+	write list = u1,u2 # 拥有写权限的用户列表（和writable不能同时使用）,会覆盖read only
     read only = no # 有效用户列表中指定的用户是否能够写入此共享
-    force create mode = 0660 # 为此共享中新创建的文件设置权限
+	read list = mary, @students  # 被授予对服务的只读访问权限的用户列表. 如果正在连接的用户在此列表中，则无论将`read only`选项设置什么，都将不授予他们写访问权限.
+    force create mode = 0660 # 为此共享中新创建的文件设置权限, 会覆盖 create mode 设定的权限
     force directory mode = 2770 # 设置此共享中新创建的目录的权限
-    valid users = josh @sadmin # 允许访问共享的用户和组列表. 组以`@`为前缀
+	force group = g1
+	force user = u1 #  force group和force user强制规定创建的文件或文件夹的拥有者和组拥有者是谁. 一般这两个值来空，则表示拥有者和组拥有者为创建文件者.
+    valid users = josh @sadmin # 允许访问共享的用户和组列表. 组以`@`为前缀, 其他所有用户都不能访问
     hosts allow = 192.168.115.0/24 127.0.0.1
     hosts deny = 0.0.0.0/0
+	guest ok = no # 是否允许来宾帐号访问, 默认值为NO ，即设定在没有提交帐号和口令的情况下，是否允许访问此区段中定义的共享资源. 如同意guest帐号访问时，设为YES即是否允许匿名访问
+	guest only = yes # 只允许用guest帐号访问
+	public = yes # 是否允许匿名访问
+	invalid users = root # 设定不允许访问此共享资源的用户或组
 	```
+
+	在smb.conf中<section header>中有三个特殊的NAME，分别是global、homes和printers:
+	- [global]：其属性选项是全局可见的，但是在需要的时候，我们可以在其他<section>中定义某些属性来覆盖[global]的对应选项定义.
+	- [homes]：当客户端发起访问共享服务请求时，samba服务器就查询smb.conf文件是否定义了该共享服务，如果没有指定的共享服务<section>，但smb.conf文件定义了[homes]时，samba服务器会将请求的共享服务名看做是某个用户的用户名，并在本地的password文件中查询该用户，若用户名存在并且密码正确，则samba服务器会将[homes]这个<section>中的选项定义克隆出一个共享服务给客户端，该共享的名称是用户的用户名.
+	- [printers]：用于提供打印服务. 当客户端发起访问共享服务请求时，没有特定的服务与之对应，并且[homes]也没有找到存在的用户，则samba服务器将把请求的共享服务名当做一个打印机的名称来进行处理.
+
 - /var/lib/samba/private/{passdb.tdb,secrets.tdb} 
 
 	管理 Samba 的用户账号/密码时，会用到的数据库档案
 
 ### 使用
 ```sh
+$  testparm -s # 检查smb.conf是否正确
 $ smbclient -L //127.0.0.1 [-U josh]# 列出正在分享的内容
-$ mount -t cifs //127.0.0.1/temp /mnt # 挂载samba分享的内容
 $ sudo useradd -M -s /usr/sbin/nologin -G sambashare josh
 $ sudo smbpasswd -a josh # 设置用户密码将sadmin用户帐户添加到Samba数据库, 默认已启用账号
 $ yes password |sudo smbpasswd -a ubuntu # 不用交互输入密码
 $ sudo smbpasswd -e josh # 启用账号josh
 $ sudo pdbedit -L -v # 查看smbpasswd创建的samba用户
 $ sudo systemctl restart smbd # 使配置生效
-$ sudo mount -t cifs //127.0.0.1/my_dir /mnt -o username=josh -o password=xxx
+$ sudo mount -t cifs //127.0.0.1/{samba_share_name} /mnt [-o username=josh -o password=xxx -o vers=2.0] # 挂载samba分享的内容, client端支持的smb protocol 版本可通过`man mount.cifs#vers查看`
+$ sudo mount | grep cifs # 挂载的详细参数, 可参考[通过云服务器ECS（Linux）访问SMB文件系统#挂载文件系统](https://www.alibabacloud.com/help/zh/doc-detail/128737.htm)
+$ sudo smbstatus # 查看连接到samba server的client及使用的protocol version + samba server version
 ```
 
 on windows:
@@ -219,3 +269,22 @@ on windows:
 
 ### zfs nfs mount no acl
 1. 设置acls后nfs挂载,创建目录成功, umount, 再使用samba挂载,取消挂载并重启smbd, 最后回到nfs挂载, 无法创建目录(报无权限), `getfacl`无法获取acls, 但`nfs4_getfacl`可以, 刷新nfs server(`exportfs -r`)后恢复, 但`getfacl`无法获取acls.
+
+### [是否支持 NFS 和SMB 同时挂载一个文件系统](https://www.alibabacloud.com/help/zh/doc-detail/110839.htm)
+不能以 NFS 和 SMB 同时挂载同一个文件系统.
+
+建议不要使用 Linux 作为客户端访问 SMB，因为存在一些操作上的问题, 例如支持的字符集、文件名的长度（Windows 支持255宽字符，Linux 支持255 UTF8 字节）等等. 但如果确实需要的话，可以在支持 SMB2 和kernel 3.10.0-514 及以上的系统上挂载.
+
+### `smbstatus`显示client的protocol version 是 Unknown (0x0311)
+"Unknown (0x0311)" protocol is fixed in [`Samba 4.4.0`](https://bugzilla.samba.org/show_bug.cgi?id=11472).
+
+### samba 无法创建文件???
+env:
+```
+$ Linux 5.3.0-24-generic
+$ Samba version 4.3.11-Ubuntu
+$ mount.cifs version: 6.9
+```
+明明有写权限, 还是无法创建文件, windows server 2012和Linux 4.4.131-20190505.kylin.server-generic + mount.cifs version: 6.4则正常.
+
+将mount.cifs version: 6.9降到6.4还是报同样的错.

@@ -385,3 +385,43 @@ sudo systemctl restart snapd
 
 执行程序的用户不对. 我是用sudo执行的程序，而session bus需要访问启动用户所在home目录的隐藏文件夹`/home/xxxxx/.dbus/`,
 该目录在用户目录xxxx下. 因此，只需要去掉sudo用普通用户执行即可.
+
+### qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "" even though it was found
+`sudo wireshark`时碰到的错误:
+```
+Invalid MIT-MAGIC-COOKIE-1 keyqt.qpa.xcb: could not connect to display :1.0
+qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "" even though it was found.
+This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
+
+Available platform plugins are: eglfs, linuxfb, minimal, minimalegl, offscreen, vnc, xcb.
+```
+
+解决方法: 使用普通用户权限运行wireshark.
+
+### Couldn’t run /usr/bin/dumpcap in child process: Permission denied
+```sh
+$ sudo usermod -a -G wireshark $USER
+```
+
+需注销或重启电脑.
+
+### xshell 关闭 发送键盘输入
+取消`工具`-`发送键输入到所有会话`
+
+> `发送键盘输入`功能与`查看-撰写栏`功能类似.
+
+### mktemp:failed to create file via template '/tmp/.colorlsXXX' : Read-only file system
+dmesg提示`EXT4-fs error (device sda2): ext4_lookup:1601: inode #8288969: comm grep: deleted inode referenced: 272`.
+文件系统变成只读, 通常是硬盘故障.
+
+解决:
+1. `smartctl --all /dev/sda` 查看硬盘信息
+1. `badblocks -s -v  /dev/sda` 检查坏道
+1. 尝试`mount -o remount,rw /`恢复可写
+
+重启后使用`fsck -y /dev/sdb2`修复后, 再reboot.
+
+### 麒麟系统网络配置
+麒麟默认用Network Manager进行网络管理, 即nmcli, 配置信息在`/etc/NetworkManager/system-connections`下
+
+配置完成后需`service network-manager restart`.

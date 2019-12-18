@@ -9,4 +9,8 @@ debian,ubuntu等发行版的包管理.
 ## 例
 
     # apt-cache madison pouch # 列出软件包的所有版本
-    # sudo apt install pouch=1.0.0-0~ubuntu # 安装指定版本的软件包
+    # apt install pouch=1.0.0-0~ubuntu # 安装指定版本的软件包
+    # apt-get install --only-upgrade samba # 仅更新单个package
+    # apt list -a cifs-utils # package all version
+    # apt-cache policy cifs-utils # package all version, 推荐
+    # rmadison cifs-utils # package all version, 推荐

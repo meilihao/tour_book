@@ -80,3 +80,17 @@ release(){
 这个方案是目前最优的分布式锁方案, 在单实例redis的场景下是安全的，但是如果在Redis集群环境下依然存在问题: 由于Redis集群**数据同步为异步**，假设在Master节点获取到锁后未完成数据同步情况下Master节点crash，此时在新的Master节点依然可以获取锁，所以多个Client同时获取到了锁, 除非业务场景可以接受, 那么这种小概率可以忽略. 
 
 因此不建议使用Redis集群,而是使用业务分片的单机版redis, 因为目前而言, redis已经足够稳定.
+
+### MISCONF Redis is configured to save RDB snapshots, but is currently not able to persist on disk. Commands that may modify the data set are disabled. Please check Redis logs for details about the error
+Redis被配置为保存数据库快照，但它目前不能持久化到硬盘, 通常是权限问题.
+
+> 我这里是存在所属用户是root的/var/lib/redis/dump.rdb, 导致以普通用户redis运行的redis无法替换同名文件.
+
+解决方案：
+- 关闭Redis快照持久化
+
+    `127.0.0.1:6379> config set stop-writes-on-bgsave-error no`
+- 处理权限
+
+    > CONFIG SET dir /tmp/some/directory/other/than/var # 更换redis dir
+    > CONFIG SET dbfilename temp.rdb
