@@ -2,38 +2,41 @@
 
 ### No such file or directory
 > [关于usr/bin/ld: cannot find -lxxx问题总结](http://eminzhang.blog.51cto.com/5292425/1285705)
-- gli/gli.hpp : apt-get install libgli-dev
-- glm/glm.hpp : apt-get install libglm-dev
-- assimp : apt-get install libassimp-dev
-- apt-get install libx11-xcb-dev
-- Could NOT find X11_XCB : apt-get install libx11-dev
-- Could not find X11 : apt-get install libx11-dev
+- gli/gli.hpp : apt install libgli-dev
+- glm/glm.hpp : apt install libglm-dev
+- assimp : apt install libassimp-dev
+- apt install libx11-xcb-dev
+- Could NOT find X11_XCB : apt install libx11-dev
+- Could not find X11 : apt install libx11-dev
 - Xlib:  extension "NV-GLX" missing on display : apt install mesa-vulkan-drivers # https://bbs.deepin.org/forum.php?mod=viewthread&tid=143398&page=1#pid363502
 - /usr/bin/ld: cannot find -lpng
 
 ### zlib header files not found
-sudo apt-get install zlib1g-dev
+sudo apt install zlib1g-dev
 
 ### OpenSSL header files not found
-sudo apt-get install libssl-dev
+sudo apt install libssl-dev
 
 ### curses not found
-sudo apt-get install libncurses5-dev
+sudo apt install libncurses5-dev
 
 ### libevent not found
-sudo apt-get install libevent-dev
+sudo apt install libevent-dev
 
 ### mbed TLS libraries not found
-sudo apt-get install libmbedtls-dev
+sudo apt install libmbedtls-dev
 
 ### The Sodium crypto library libraries not found
-sudo apt-get install libsodium-dev
+sudo apt install libsodium-dev
 
 ### The c-ares library libraries not found
-sudo apt-get install libc-ares-dev
+sudo apt install libc-ares-dev
 
 ### Couldn't find libev
-sudo apt-get install libev-dev
+sudo apt install libev-dev
+
+### /usr/bin/ld: 找不到 -lpam
+sudo apt install libpam0g-dev
 
 ### Cannot find asciidoc in PATH
 
@@ -127,7 +130,7 @@ curl对https服务端证书的检查未通过,解决:
 
 一般来说, 前面两种方法之一即可解决该问题, 如果还是没觉得, 可以重建info列表:
 1. 首先将info文件夹更名备份 : `sudo mv /var/lib/dpkg/info /var/lib/dpkg/info_old`
-1. 再新建一个新的info文件夹,更新缓存信息,恢复info文件夹的内容 : `sudo mkdir /var/lib/dpkg/info && sudo apt-get update, apt-get -f install`
+1. 再新建一个新的info文件夹,更新缓存信息,恢复info文件夹的内容 : `sudo mkdir /var/lib/dpkg/info && sudo apt update, apt -f install`
 1. 执行完上一步操作后会在新的info文件夹下生成一些文件，现用这些文件覆盖info_old文件夹的内容,`sudo mv /var/lib/dpkg/info/* /var/lib/dpkg/info_old`
 1. 把自己新建的info文件夹删掉,再把以前的info文件夹重新改回名字 : `sudo rm -rf /var/lib/dpkg/info && sudo mv /var/lib/dpkg/info_old /var/lib/dpkg/info`
 
@@ -182,7 +185,7 @@ $ sudo systemctl start syslog.socket
 
 原因是系统的log服务不见了, 解决方法:
 ```
-$ sudo apt-get install rsyslog
+$ sudo apt install rsyslog
 $ sudo systemctl status rsyslog
 ```
 
