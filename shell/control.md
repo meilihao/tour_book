@@ -24,7 +24,7 @@ if 语句通过关系运算符判断表达式的真假来决定执行哪个分�
        exit $1  #会使用show_usage指定的出错码退出
     }
 
-    if [ $# -ne 2 ];then
+    if [ $# -ne 2 ];then # `[`实际上是一个命令，必须将其与剩余的字符串用空格隔开
        show_usage
     else
        if [ -d $1 ];then

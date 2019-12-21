@@ -224,4 +224,13 @@ key 太长会导致一个页当中能够存放的 key 的数目变少，间接�
 
 ### [mariadb 离线下载地址](https://mariadb.com/downloads/)
 
+### Found 1 prepared transactions! It means that mysqld was not shut down properly last time and critical recovery information (last binlog or tc.log file) was manually deleted after a crash. You have to start mysqld with --tc-heuristic-recover switch to commit or rollback pending transactions.
+```sh
+# step1, 交易回滚
+# mysqld --tc-heuristic-recover=ROLLBACK
+# step2, 重新启动mysql
+# systemctl start mysql
+```
 
+### Specified key was too long; max key length is 767 bytes
+数据库表采用utf8编码，其中varchar(255)的column进行了唯一键索引,而mysql默认情况下单个列的索引不能超过767位(不同版本可能存在差异),于是utf8字符编码下，255*3 byte 超过限制.

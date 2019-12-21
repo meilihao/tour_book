@@ -26,7 +26,7 @@
     青色36
     白色37
 
-echo -e "\e[1;31m This is red test \e[0m"
+echo -e "\e[1;31m This is red test \e[0m" # `\e[0m`:将颜色重新置回
 
 背景颜色码
     重置0
@@ -46,4 +46,5 @@ echo -e "\e[1;42m Green Background \e[0m"
 ```sh
 $echo $HOME #输出当前用户的home目录
 $echo test #输出字符串
+$printf "%-5s %-10s %-4.2f\n" 3 Jeff 77.564
 ```

@@ -7,4 +7,4 @@
 ## 例
 
     # env
-    # cat /proc/$PID/environ # 查看某个进程的环境变量
+    # cat /proc/$PID/environ | tr '\0' '\n' # 查看某个进程的环境变量, `/proc/$PID/environ`由null字符（\0）分隔
