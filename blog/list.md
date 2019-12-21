@@ -86,6 +86,7 @@
 - [如何使用jaeger](2017_09_06_001.md)
 - [分布式跟踪系统Jaeger(一)：Jaeger简介和示例应用HotROD](https://blog.frognew.com/2017/11/opentracing-jaeger-1.html)
 - [最佳日志实践](https://zhuanlan.zhihu.com/p/27363484)
+- [开源分布式跟踪方案概览](https://www.infoq.cn/article/f5bBD119Zv49aak_eByE)
 
 ## webapp
 - [百度母婴技术团队—基于Reactjs实现webapp](https://github.com/my-fe/wiki/issues/1)
