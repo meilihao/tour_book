@@ -239,7 +239,7 @@ $ sudo journalctl -b -0
 $ sudo journalctl -b -1
 
 # 查看指定时间的日志
-$ sudo journalctl --since="2012-10-30 18:17:16"
+$ sudo journalctl --since "2019-12-23 09:00:00" > log.log
 $ sudo journalctl --since "20 min ago"
 $ sudo journalctl --since yesterday
 $ sudo journalctl --since "2015-01-10" --until "2015-01-11 03:00"

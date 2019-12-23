@@ -190,7 +190,9 @@ SMB 协议版本:
 	# - user：使用samba服务自我管理的帐号和密码进行用户认证，用户必须是本系统用户，但密码非/etc/shadow中的密码，而由samba自行管理的文件，其密码文件的格式由passdb bachend进行定义.
 	# - server：由第三方服务进行统一认证
 	# - domain：使用主域控制器进行认证，基于kerberos协议进行
+	# - ADS: Active Directory Service, 是samba 3.0新增的身份验证方式
 	passdb backend = tdbsam # tdbsam使用一个数据库文件来建立用户数据库. 可以使用smbpasswd命令建立samba用户，不过要建立的samba用户必须先是系统用户. 我们也可以使用pdbedit命令来直接建立Samba账户
+	map to guest = bad user # 将samba sever所不能正确识别的用户都映射成guest用户
 	[josh] # 挂载时将使用的共享名称
 	comment = 共享的注释信息
     path = /samba/josh # 分享路径
@@ -208,14 +210,44 @@ SMB 协议版本:
     hosts deny = 0.0.0.0/0
 	guest ok = no # 是否允许来宾帐号访问, 默认值为NO ，即设定在没有提交帐号和口令的情况下，是否允许访问此区段中定义的共享资源. 如同意guest帐号访问时，设为YES即是否允许匿名访问
 	guest only = yes # 只允许用guest帐号访问
-	public = yes # 是否允许匿名访问
+	public = yes # 是否允许匿名访问, 这个开关有时候也叫guest ok，所以有的配置文件中出现guest ok = yes其实和public = yes是一样的
 	invalid users = root # 设定不允许访问此共享资源的用户或组
+        sync always = no # 写操作后是否立即进行sync 
 	```
 
 	在smb.conf中<section header>中有三个特殊的NAME，分别是global、homes和printers:
 	- [global]：其属性选项是全局可见的，但是在需要的时候，我们可以在其他<section>中定义某些属性来覆盖[global]的对应选项定义.
 	- [homes]：当客户端发起访问共享服务请求时，samba服务器就查询smb.conf文件是否定义了该共享服务，如果没有指定的共享服务<section>，但smb.conf文件定义了[homes]时，samba服务器会将请求的共享服务名看做是某个用户的用户名，并在本地的password文件中查询该用户，若用户名存在并且密码正确，则samba服务器会将[homes]这个<section>中的选项定义克隆出一个共享服务给客户端，该共享的名称是用户的用户名.
 	- [printers]：用于提供打印服务. 当客户端发起访问共享服务请求时，没有特定的服务与之对应，并且[homes]也没有找到存在的用户，则samba服务器将把请求的共享服务名当做一个打印机的名称来进行处理.
+
+	example:
+	```ini
+	[exchage] # 所有人都能读写，包括guest用户，但每个人不能删除别人的文件
+	comment = Exchange File Directory
+	path = /home/samba/exchange # 再加`chmod -R 1777 /home/samba/exchange`
+	public = yes
+	writable = yes
+	[public] # 所有人只读这个文件夹的内容
+	comment = Read Only Public
+	path = /home/samba/public
+	public = yes
+	read only = yes
+	[caiwu] # caiwu组和lingdao组的人能看到，network02也可以访问，但只有caiwu01有写的权限
+	comment = caiwu
+	path = /home/samba/caiwu
+	public = no
+	valid users = @caiwu,@lingdao,network02
+	write list = caiwu01
+	printable = no
+
+	[lingdao] # 只有领导组的人可以访问并读写，还有network02也可以访问，但外人看不到那个目录
+	comment = lingdao
+	path = /home/samba/lingdao
+	public = no
+	browseable = no
+	valid users = @lingdao,network02
+	printable = no
+	```
 
 - /var/lib/samba/private/{passdb.tdb,secrets.tdb} 
 
@@ -226,7 +258,7 @@ SMB 协议版本:
 $  testparm -s # 检查smb.conf是否正确
 $ smbclient -L //127.0.0.1 [-U josh]# 列出正在分享的内容
 $ sudo useradd -M -s /usr/sbin/nologin -G sambashare josh
-$ sudo smbpasswd -a josh # 设置用户密码将sadmin用户帐户添加到Samba数据库, 默认已启用账号
+$ sudo smbpasswd -a josh # 设置用户密码将sadmin用户帐户添加到Samba数据库, 默认已启用账号. 可用`pdbedit -a -u ${user}`代替
 $ yes password |sudo smbpasswd -a ubuntu # 不用交互输入密码
 $ sudo smbpasswd -e josh # 启用账号josh
 $ sudo pdbedit -L -v # 查看smbpasswd创建的samba用户

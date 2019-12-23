@@ -10,6 +10,8 @@ exec并不启动新的shell，而是用要被执行命令替换当前的shell进
 
 ## 例子
 
+ # exec 3<input.txt # 使用文件描述符3打开并读取文件
+ # cat<&3 # 在命令中使用文件描述符3
  # exec 4>a.txt # 同理也可用`>>`代替`>`
  # echo newline >&4
  # cat a.txt

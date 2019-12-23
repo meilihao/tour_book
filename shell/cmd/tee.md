@@ -15,3 +15,4 @@
 ## 例
 
     # tee test.txt
+    #  cat a* | tee -a out.txt | cat –n
