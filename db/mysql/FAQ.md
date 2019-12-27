@@ -1,6 +1,8 @@
 ### FAQ
 
 #### 显示sql历史
+参考：
+- [mysql日志介绍](https://andblog.cn/?p=928)
 
 ```shell
 # 方法1:
@@ -12,8 +14,8 @@
 # 进入mysql console
 show variables like '%general_log%';
 set global general_log=on;
-# 注意global general_log_file在Linux中只能设置到 /tmp 或 /var 文件夹下，设置其他路径会报错
-set global general_log_file='/var/log/mysql/mysql.log';
+set global log_output={FILE|TABLE|NONE}	 #设置日志的输出方式，可以是输出到文件中：FILE，或者输出到数据库的表中，或者设置为：FILE,TABLE，两个都记录
+set global general_log_file='/var/log/mysql/mysql.log'; # 注意global general_log_file在Linux中只能设置到 /tmp 或 /var 文件夹下，设置其他路径会报错. general_log_file是相对路径时在data dir目录下(`/var/lib/mysql`)
 ```
 
 #### 修改用户密码

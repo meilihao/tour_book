@@ -359,3 +359,10 @@ nfs配置见[fs.md](fs.md)
 ```
 # zfs set sharesmb=on rpool/fs1
 ```
+
+## FAQ
+### Error
+#### libzfs.h: No such file or directory
+```sh
+$ sudo apt install libzfslinux-dev
+```

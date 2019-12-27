@@ -428,3 +428,12 @@ dmesg提示`EXT4-fs error (device sda2): ext4_lookup:1601: inode #8288969: comm 
 麒麟默认用Network Manager进行网络管理, 即nmcli, 配置信息在`/etc/NetworkManager/system-connections`下
 
 配置完成后需`service network-manager restart`.
+
+#### listen unix /run/zsysd.sock: bind: address already in use
+```
+# ss -anlp # 没看到在使用
+# rm ${unix_socket_path} # 直接删除即可
+```
+
+#### firefox清除HSTS缓存
+1. 首选项 - 隐私与安全 - 清除历史数据, 选择合适的时间段+数据tab的两个选项.

@@ -15,8 +15,9 @@ Entry tag type它有以下几个类型：
 - ACL_MASK： 	    定义了ACL_USER,ACL_GROUP_OBJ和ACL_GROUP的最大权限
 - ACL_OTHER： 	    相当于Linux里other的permission
 
->　mask即ACL_MASK，　｀#effective:...｀即当前mask限制后的权限
+> mask即ACL_MASK，　｀#effective:...｀即当前mask限制后的权限
 > 当权限位只包含"-"时，可用`-`代替`---`
+> 使用`-m`时， 指定的user，group必须存在，否则报错
 
 ## example
 ```
