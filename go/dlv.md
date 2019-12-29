@@ -1,4 +1,5 @@
 # dlv
+正常go build/install出的go程序是完全优化过的, 强行使用调试器挂接调试时, 某些local变量/lamda表达式捕获的变量会直接进入寄存器, 无法使用调试器查看, 可在build或install时加入关闭编译器优化的参数`-gcflags "-N -l"`.
 
 ## FAQ
 ### [给被调试程序传入参数](https://github.com/go-delve/delve/issues/562)

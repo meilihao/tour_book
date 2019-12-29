@@ -8,6 +8,7 @@ Go1.11和Go1.12只能在$GOPATH以外的目录中使用Go Modules.
 ## mod升级
 ```
 $ go get github.com/objcoding/testmod@v1.0.1
+$ go get -u github.com/satori/go.uuid@master
 ```
 或
 ```
