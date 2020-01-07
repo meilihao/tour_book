@@ -163,6 +163,19 @@ func main() {
 }
 ```
 
+## const
+```go
+package main
+const cl  = 100
+
+var bl    = 123
+
+func main()  {
+    println(&bl,bl)
+    println(&cl,cl) // 常量不同于变量的在运行期分配内存，常量通常会被编译器在预处理阶段直接展开，作为指令数据使用, 因此无法取地址
+}
+```
+
 ## 指针
 
 unsafe模块的文档中提到几条转换规则，理解了以后就很容易做指针运算了：

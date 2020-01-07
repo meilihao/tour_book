@@ -31,6 +31,11 @@
 - [深度解密Go语言之 scheduler](https://www.tuicool.com/articles/Mbaa2qQ)
 - [Golang Memory](https://xenojoshua.com/2019/03/golang-memory/)
 - [从零开始的 Go 内存分配器可视化指南（golang）](https://ictar.xyz/2019/02/25/trans-a-visual-guide-to-golang-memory-allocator-from-ground-up/)
+- [+changkun/Go-Questions](https://github.com/changkun/Go-Questions)
+
+## go src
+- [go-under-the-hood](https://github.com/changkun/go-under-the-hood)
+- [深入解析Go](https://legacy.gitbook.com/book/tiancaiamao/go-internals/details)
 
 ## RPC
  - ~~[Thrift RPC 使用指南实战(附golang&PHP代码)](http://blog.csdn.net/liuxinmingcode/article/details/45696237)~~
@@ -61,7 +66,6 @@
 - [Go 调度器跟踪](http://colobu.com/2016/04/19/Scheduler-Tracing-In-Go/)
 - [Go 1.6中值得关注的几个变化](http://tonybai.com/)
 - [Go,Makefile与自动程序版本号的实现](https://xiaozhou.net/go-makefile-and-auto-version-2016-06-13.html)
-- [Go Styleguide](https://github.com/bahlo/go-styleguide/pull/8/commits/d706a55f5538a97b6ed65f490a5dac22efc6f71e)
 - [像牛人一样改进你的Go代码](http://colobu.com/2017/06/27/Lint-your-golang-code-like-a-mad-man/)
 - [理解 channels - Kavya Joshi](https://blog.lab99.org/post/golang-2017-10-04-video-understanding-channels.html#jian-dan-de-fa-song-jie-shou)
 - [*Go性能监控/分析工具](http://johng.cn/go%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7%EF%BC%9Ago-tool-pprof/)
@@ -76,7 +80,6 @@
 - [*Go语言标准库](https://books.studygolang.com/The-Golang-Standard-Library-by-Example/)
 - [hacking-code/golang-tutorials](https://github.com/hacking-code/golang-tutorials)
 - [Go语言高级编程](https://legacy.gitbook.com/book/chai2010/advanced-go-programming-book/details)
-- [深入解析Go](https://legacy.gitbook.com/book/tiancaiamao/go-internals/details)
 
 ## 其他
 - [Unknwon's go-study-index](https://github.com/Unknwon/go-study-index)
