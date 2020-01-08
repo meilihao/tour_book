@@ -32,3 +32,30 @@ char *strncat(char *dest, const char *src, size_t n)
 
 ### 返回值
 返回一个指向最终的目标字符串 dest 的指针
+
+## memset
+```c
+void *memset(void *str, int c, size_t n)
+```
+复制字符 c（一个无符号字符）到参数 str 所指向的字符串的前 n 个字符.
+
+### 参数
+- 要被填充的内存块的首地址
+- 要被设置成的值
+- 要被设置的内存大小, 单位是字节
+
+### 返回值
+返回一个指向存储区 str 的指针
+
+## malloc
+```c
+void *malloc(size_t size)
+```
+
+分配所需的内存空间，并返回一个指向它的指针
+
+### 参数
+- size : 内存块的大小，以字节为单位
+
+### 返回值
+返回一个指针 ，指向已分配大小的内存. 如果请求失败，则返回 NULL.
