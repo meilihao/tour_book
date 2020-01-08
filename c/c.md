@@ -185,7 +185,7 @@ strlen(p); // 5, 因为p是字符串的首地址
 
 ### enum
 ```c
-// 没有指定值的枚举元素，其值为前一元素加 1. 也就说 spring 的值为 0，summer 的值为 3，autumn 的值为 4，winter 的值为 5
+// 第一个枚举值默认是0, 没有指定值的枚举元素，其值为前一元素加 1. 也就说 spring 的值为 0，summer 的值为 3，autumn 的值为 4，winter 的值为 5
 enum season {spring, summer=3, autumn, winter};
 ```
 
