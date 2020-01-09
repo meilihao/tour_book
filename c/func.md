@@ -19,7 +19,7 @@ char *fgets(char *str, int n, FILE *stream)
 
 ## strncat
 ```c
-char *strncat(char *dest, const char *src, size_t n)
+char *strncat(char *dest, const char *src, size_t n) // 追加字符串
 ```
 把 src 所指向的字符串追加到 dest 所指向的字符串的结尾，直到 n 字符长度为止.
 
@@ -32,6 +32,22 @@ char *strncat(char *dest, const char *src, size_t n)
 
 ### 返回值
 返回一个指向最终的目标字符串 dest 的指针
+
+## strncpy
+```c
+char *strncpy(char *dest, const char *src, size_t n)
+```
+把 src 所指向的字符串复制到 dest，最多复制 n 个字符. 当 src 的长度小于 n 时，dest 的剩余部分将用空字节填充; 如果strlen(src)的值大于或等于len，那么只有len个字符被复制到dst中, 但此时它的结果将不会以`\0`结尾.
+
+> strncpy复制时(dest和n合适的话)会包括src的`\0`.
+
+### 参数
+- dest : 指向用于存储复制内容的目标数组
+- src : 要复制的字符串
+- n : 要从源中复制的字符数
+
+###  返回值
+返回最终复制的字符串
 
 ## memset
 ```c

@@ -263,7 +263,8 @@ int main(void)
 ```
 
 #### 二维数组
-二维数组`int a[M][N]`是一维数组a[M]的扩展, a[M]的类型是`int[N]`, 数组名 a 的类型为`int(*)[N]`. 因此a=`&a[0]`, 而a[0]=`&a[0][0]`, 所以a = `&(&a[0][0])`
+二维数组`int a[M][N]`是一维数组a[M]的扩展, a[M]的类型是`int[N]`.
+参考一维数组可得a=`&a[0]`, 因此数组名 a 的类型为`int(*)[N]`, 而a[0]=`&a[0][0]`(把a[0]视为一个整体buf可轻松推导得到), 所以a = `&(&a[0][0])`
 
 ```c
 char a[3][2]={{0,1},{2,3},{4,5}}; // `a[i][j]=*(&a[i][j])=*(a[i]+j) =*(&a[i][0]+j) =*(*(a+i)+j)` // 二维数组里a[i]也是个地址,而不是类似一维数组里的值. 一维数组中`a[i]=*(a+i)`
@@ -285,7 +286,7 @@ struct tag { // tag 是结构体标签
     member-list 
     member-list  
     ...
-} variable-list ; // variable-list 结构变量，定义在结构的末尾，最后一个分号之前，您可以指定一个或多个结构变量
+} variable-list ; // variable-list 定义struct变量，最后一个分号(不能省略)之前，可以指定一个或多个struct变量
 ```
 
 > 通常编译器将没有字段的struct的sizeof()默认为1, 但gcc中是0.
@@ -364,6 +365,112 @@ char* (*pf[3])(cha* p); // pf为函数指针数组
 函数指针数组的指针:
 ```c
 char* (*(*pf)[3])(cha* p); // pf为函数指针数组的指针
+```
+
+传递数组:
+```c
+//  [二维数组作为函数参数传递剖析(C语言)(6.19更新第5种)](https://www.cnblogs.com/wuyuegb2312/archive/2013/06/14/3135277.html)
+#include <stdio.h>
+#include <stdlib.h>
+
+void myFunc1(int length, int *arr) {
+    for (int i = 0; i < length; i++) {
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
+    return;
+}
+
+void myFunc2(int length, int arr[]) {
+    for (int i = 0; i < length; i++) {
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
+    return;
+}
+
+void myFunc3(int length, int arr[length]) {
+    for (int i = 0; i < length; i++) {
+        printf("%d ", arr[i]);
+    }
+    printf("\n");
+    return;
+}
+
+void myFunc4(int row, int column, int *arr2) {
+    for (int i = 0; i < row; i++) {
+        for (int j = 0; j < column; j++) {
+            printf("arr2[%d][%d] = %d   ", i, j, *(arr2 + i*column + j));
+        }
+        printf("\n");
+    }
+    return;
+}
+
+void myFunc5(int row, int column, int arr2[][column]) {
+    for (int i = 0; i < row; i++) {
+        for (int j = 0; j < column; j++) {
+            printf("arr2[%d][%d] = %d   ", i, j, arr2[i][j]);
+        }
+        printf("\n");
+    }
+    return;
+}
+
+int main() {
+    int arr[5] = {1, 2, 3, 4, 5};
+     
+    printf("Parameter is pointer:\n");
+    myFunc1(5, &arr[0]);    // ok with arr
+     
+    printf("Parameter is array[]:\n");
+    myFunc2(5, &arr[0]);    // ok with arr
+     
+    printf("Parameter is array[length]:\n");
+    myFunc3(5, &arr[0]);    // ok with arr
+     
+    int arr2[2][3] = {{1, 2, 3}, {4, 5, 6}};
+     
+    printf("Parameter is pointer:\n");
+    myFunc4(2, 3, arr2[0]); // &arr2[0][0] is ok, but arr2 is not ok
+                            // *arr2 is ok.
+                            // but actually they have the same address
+     
+    printf("Parameter is pointer:\n");
+    myFunc5(2, 3, arr2);    // not ok with arr2[0]
+                            // not ok with &arr2[0][0]
+     
+    printf("\narr2                           = %p\n", arr2);
+    printf("arr2[0]                        = %p\n", arr2[0]);
+    printf("*arr2 = arr2[0]                = %p\n", *arr2);
+    printf("arr2[0][0]                     = %p\n", &arr2[0][0]);
+    printf("**arr2 = *arr2[0] = arr2[0][0] = %p\n\n", &arr2[0][0]);
+     
+     
+    printf("address of this two-dimentional array:\n");
+    printf("arr2           = %p\n", arr2);
+    for (int i = 0; i < 2; i++) {
+        printf("  arr2[%d]      = %p\n", i, arr2[0]);
+        for (int j = 0; j < 3; j++) {
+            printf("    arr2[%d][%d] = %p   ", i, j, &arr2[i][j]);
+        }
+        printf("\n");
+    }
+     
+    printf("we can use the unexisted element, interesting!\n");
+    printf("*arr2 means arr2[0], the first row.\n");
+    printf("**arr2 means *arr2[0] means arr2[0][0], the first element of the first row.\n");
+    printf("arr2[1][0]               = %d\n", arr2[1][0]);
+    printf("arr2[0][3]               = %d\n", arr2[0][3]);
+    printf("*(*(arr2 + 1) + 0)       = %d\n", *(*(arr2 + 1) + 0));
+    printf("*(*(arr2 + 0) + 3)       = %d\n", *(*(arr2 + 0) + 3));
+    printf("*(arr2[0] + 1*3 + 0)     = %d\n", *(arr2[0] + 1*3 + 0));
+    printf("*(*arr2 + 1*3 + 0)       = %d\n", *(*arr2 + 1*3 + 0));
+    printf("*(&arr2[0][0] + 1*3 + 0) = %d\n", *(&arr2[0][0] + 1*3 + 0));
+    printf("*(&arr2[0][0] + 3)       = %d\n", *(&arr2[0][0] + 3));
+     
+    return 0;
+}
 ```
 
 ### 指针
