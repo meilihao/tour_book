@@ -275,6 +275,8 @@ ps: **推荐[使用在线安装mariadb](https://downloads.mariadb.org/)**
 
 ps: vnc推荐使用vnc4server.
 
+vnc4server使用`vncserver`命令启动.
+
 ### vnc viewer登录后灰屏/没有进入桌面
 检查`$HOME/.vnc/xstartup`的配置.
 
