@@ -1,4 +1,8 @@
 # c++
+传统 C++ : C++98 及其之前的 C++ 特性
+现代 C++ :  C++11/14/17/20, 为传统 C++ 注入的大量特性使得整个 C++ 变得更加像一门现代化的语言.
+
+## base
 变量的名称称为标识符, 其必须以字母或下划线开头, 且仅包含`字母, 数字, 下划线`. c++是大小写敏感的.
 
 使用namespace的原因: c++有大多东西需要命名, 一个名称可能有多种定义, 为消除歧义, 将不同的项划分到不同的集合中以避免冲突.
@@ -17,11 +21,15 @@ cin运行输入时以一个或多个空格或一个换行符来分隔输入的�
 
 list:
 ```c++
+#include <array> // for 标准容器array
+#include <cctype> // for 预定义字符函数
+#include <cstdlib> // for exit
 #include <fsstream> // for file I/O
 #include <iostream> // 用于cout
 #include <istream> // 通用型流参数
-#include <cstdlib> // for exit
-#include <cctype> // for 预定义字符函数
+#include <regex> // for regexp
+#include <thread> // for 线程/并发编程
+#include <type_traits> // for decltype 用于类型推导，而 std::is_same 用于比较两个类型是否相等
 ```
 
 大多c++编译器支持`#pragma once`确保源代码文件编译时只包含一次, 也可用它代替`#ifndef`.
@@ -554,7 +562,7 @@ cout<<day6<<endl;
     public:
         Employee( );
         Employee(string theName, string theSSN);
-        string getName( ) const;
+        string getName( ) const; // 加const表示禁止修改成员变量: 编译器会自动给每一个函数加一个this指针, 该形式实际上，也就是对这个this指针加上了const修饰.
         string getSSN( ) const;
         double getNetPay( ) const;
         void setName(string newName);
@@ -690,7 +698,118 @@ void swapValues(T& variable1, T& variable2)
 
 函数模板一般不使用其声明(即不提前声明函数), 而是在使用前include其实现文件.
 
-模板还支持类模板.
+模板还支持类模板, 语法:
+```c++
+// 在类定义和成员函数的定义前用`template<class Type_Parameter>`作为开头
+template<class Type_Parameter>
+class xxx
+{
+	...
+}
+
+template<class Type_Parameter>
+void xxx<Type_Parameter>::set(int index, Type_Parameter value)
+{
+	...
+}
+
+xxx<int> t; // 为具体类名来特化类模板;
+```
+
+## 标准模板库(standard template library, STL)
+STL包含了栈, 队列和其他许多标准数据结构的实现, 是c++标准的一部分.
+
+STL中的类都是模板类. STL容器类普遍使用了迭代器, 迭代器是一种特殊对象, 简化了遍历容器中所有数据的过程.
+
+迭代器(iterator)是指针的泛化形式, 它通常通过指针来实现, 因此可隐藏实现细节, 提供在所有容器类中都一致的迭代器接口.
+每种迭代器只能用于它自己的容器类.
+
+常量迭代器(constant iterator): 提领操作符生成的元素为只读.
+可变迭代器(mutable iterator): 提领操作符生成的元素可读写.
+
+STL容器类是各种用于容纳数据的数据结构, 比如队列, 列表和栈.
+STL最简单的列表是双链表(doubly linked list).
+
+容器配接器(container adapters)是在其他类基础上实现的模板类, 比如stack模板类默认就是在deque模板类基础上实现的.
+
+泛型算法(generic algorithm)即STL模板函数.
+
+## 智能指针
+c++11用新类shared_ptr简化了内存管理以及对象在内存中的共享.shared_ptr是一个模板, 是从自由存储分配的对象的包装器.
+包装器通过引用计数来追踪其他还有多少个指针在引用对象., 计数器归零, 对象即可安全删除, 分配的内存归还给自由存储.
+
+> 堆是操作系统维护的一块内存，而自由存储是C++中通过new与delete动态分配和释放对象的抽象概念. 堆与自由存储区并不等价, 但基本上所有的C++编译器默认使用堆来实现自由存储, 同时开发者也可以通过重载操作符，改用其他内存来实现自由存储，例如全局变量做的对象池，这时自由存储区就区别于堆了.
+
+注意: shared_ptr类不是万能的, 循环引用列表会出问题, 因为引用计数永远不为0, 内存会一直无法回收. c++提供另外的weak_ptr类来解决该问题, 只要weak_ptr是唯一的对象引用, 该对象就会被销毁, 只要至少一个链接由weak_ptr连接, 整个循环列表最终都会被销毁.
+
+c++11还提供了unique_ptr类, 不能把它赋给其他任何指针.
+
+## 废弃(c++11开始)
+- 字符串字面值常量赋值和初始化应用`const char *`取代`char *`.
+- C++98 异常说明、 unexpected_handler、set_unexpected() 等相关特性被弃用，应该使用 noexcept
+- auto_ptr 被弃用，应使用 unique_ptr
+- register 关键字被弃用，可以使用但不再具备任何实际含义
+- 如果一个类有析构函数，为其生成拷贝构造函数和拷贝赋值运算符的特性被弃用了
+- C 语言风格的类型转换被弃用（即在变量前使用 (convert_type)），应该使用 static_cast、reinterpret_cast、const_cast 来进行类型转换
+- 在最新的 C++17 标准中弃用了一些可以使用的 C 标准库，例如 `<ccomplex>、<cstdalign>、<cstdbool> 与 <ctgmath>` 等
+- 还有一些其他诸如参数绑定（C++11 提供了 std::bind 和 std::function）、export 等特性也均被弃用
+
+## 与C兼容性
+在编写 C++ 时，也应该尽可能的避免使用诸如 void* 之类的程序风格. 而在不得不使用 C 时，应该注意使用 extern "C" 这种特性，将 C 语言的代码与 C++代码进行分离编译，再统一链接这种做法. 参考如下做法
+
+```c++
+// foo.h
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int add(int x, int y);
+
+#ifdef __cplusplus
+}
+#endif
+
+// foo.c
+int add(int x, int y) {
+    return x+y;
+}
+
+// 1.1.cpp
+#include "foo.h"
+#include <iostream>
+#include <functional>
+
+int main() {
+    [out = std::ref(std::cout << "Result from C code: " << add(1, 2))](){
+        out.get() << ".\n";
+    }();
+    return 0;
+}
+```
+
+```makefile
+C = gcc
+CXX = clang++
+
+SOURCE_C = foo.c
+OBJECTS_C = foo.o
+
+SOURCE_CXX = 1.1.cpp
+
+TARGET = 1.1
+LDFLAGS_COMMON = -std=c++2a
+
+all:
+	$(C) -c $(SOURCE_C)
+	$(CXX) $(SOURCE_CXX) $(OBJECTS_C) $(LDFLAGS_COMMON) -o $(TARGET)
+clean:
+	rm -rf *.o $(TARGET)
+```
+
+## modern c++ start from c++11
+### 语言可用性强化
+- nullptr 出现的目的是为了替代 NULL. 因为在某种意义上来说，传统 C++ 会把 NULL、0 视为同一种东西，这取决于编译器如何定义 NULL，有些编译器会将 NULL 定义为 ((void*)0)，有些则会直接将其定义为 0.
+- C++11 提供了 constexpr 让用户显式的声明函数或对象构造函数在编译期会成为常量表达式，这个关键字明确的告诉编译器应该去验证 len_foo 在编译期就应该是一个常量表达式．
 
 ## FAQ
 ### 编译器支持c++进度

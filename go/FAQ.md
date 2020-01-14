@@ -484,3 +484,8 @@ copierErrChan := make(chan error, 1)
 
 ### database/sql
 当数据库字段内容为`NULL`时, golang driver不会调用相应字段的`Scan()`
+
+### pem.Decode报错
+解析pem格式的rsa pubkey时报错, 原因: 将公钥嵌入代码时莫名其妙被追加了`\t`, 可用`hexdump -C xxx.go`查看.
+
+解决方法: `sed -i "s/\t//g" xxx.go`
