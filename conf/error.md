@@ -356,6 +356,27 @@ env: ubuntu 19.04 + xfce4
 sudo apt install libexo-1-0
 ```
 
+### fcitx 无输入法托盘
+```
+$ cd ~/.config
+$ rm -rf fcitx*
+$ fcitx # 不能使用sudo
+```
+
+### 随桌面环境自启动
+对于支持 xdg 标准的桌面环境，例如 gnome，kde，xfce，lxde， 可以将文件 安装目录/share/applications/fcitx.desktop 建立符号链接或者复制到 ~/.config/autostart/ 或者 /etc/xdg/autostart（/usr/local/etc/xdg/autostart/） 目录里.
+
+### 搜狗输入法卸载
+1. 使用apt卸载
+1. 删除配置
+```sh
+$ cd ~/.config
+$ sudo rm -rf SogouPY*
+$ sudo rm -rf sogou*
+$ rm -rf fcitx*
+```
+1. 重启
+
 ### 搜狗输入法无法运行在ubuntu 19.04 gnome/xfce4下
 使用fcitx的其他中文输入法
 

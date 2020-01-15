@@ -47,3 +47,16 @@ vscode的go插件启用了gopls, 但gopls总是崩溃.
 ```
 "go.useLanguageServer": false
 ```
+
+#### vscode 插件Go 安装工具
+通过`ctrl+shift+p`打开面板, 输入`go:install/Update Tools`，回车后，选择所有插件(勾一下全选)，点击确认，进行安装即可
+
+配置说明:
+```json
+"go.autocompleteUnimportedPackages": true, // 自动完成未导入的包
+"go.inferGopath": true, // 如果遇到使用标准包可以出现代码提示，但是使用自己的包或者第三方库无法出现代码提示，可以查看一下该配置项
+"http.proxy": "https://192.168.0.233:3142", // VSCode 的一些插件需要配置代理，才能够正常安装
+//  "http.proxy": "192.168.0.233:3142",
+"http.proxyStrictSSL": false,
+"go.docsTool": "gogetdoc", // 如果引用的包使用了 ( . "aa.com/text") 那这个text包下的函数也无法跳转进去, 可将 "go.docsTool" 改为 gogetdoc，默认是 godoc
+```

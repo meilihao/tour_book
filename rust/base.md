@@ -175,7 +175,155 @@ pub fn two_times_impl() -> impl Fn(i32) -> i32 {
 变量绑定支持if表达式.
 rust循环支持while, loop, for...in; 无限循环需使用loop.
 rust支持match, 其使用了模式匹配(pattern matching)技术, 支持绑定模式(bingding mode, 即使用操作符@将模式中的值绑定给一个变量, 供分支右侧的代码使用). match使用`_`来兜底.
+match表达式要求所有的分支都必须返回相同的类型.
 rust提供if let和while let表达式, 分别在某些场合代替match表达式.
+
+### 基本数据类型
+rust不支持将数值转为bool类型.
+对于原始固定长度的数组, 只有实现了Copy trait的类型可作为其元素, 即只有在栈上存放的元素才可以存放在该类型的数组中.
+slice是对一个数组(包括固定大小数组和动态数组)的引用片段.
+处于内存安全考虑, rust将字符串分为两种: str字符串(也叫字符串切片), 固定长度的字符串, 通常以不可变借用的形式存在(`&str`); String字符串, 长度可变的字符串.
+`& 'static str`是静态生命周期字符串. 静态生命周期即程序生命周期.
+str字符串类型由两部分组成: 执行字符串序列的指针和记录长度的值.
+rust字符串的本质是一段有效的utf8字节序列.
+
+unsafe块: rust编译器将内存安全交由开发者自行负责.
+
+rust指针包括 引用(reference), 原生指针(raw pointer), 函数指针(fn pointer)和智能指针(smart pointer).
+引用的本质是非空指针.
+原生指针主要用于unsafe rust中, 有两种类型: 不可变原生指针 `*const T`和可变原生指针`*mut T`.
+`Box::new(20)`表示在堆内存上存储数值20.
+never类型: 表示永远不可能有返回值的计算类型. panic!宏会返回never类型`!`. never类型可以强制转换为其他任何类型.
+
+#### 智能指针
+智能指针来自c++.
+**rust中的值默认被分配到栈**, 可通过`Box<T>`将值装箱(在堆中分配).`Box<T>`是指向T类型堆内存变量的智能指针, 当它超出作用域时, 将调用其析构函数销毁内部对象, 并自动释放堆内存.
+可通过解引用来获取`Box<T>`中的T. 因为`Box<T>`的行为像引用, 并且可以自动释放内存, 因此将其称为智能指针.
+
+### 泛型和trait
+泛型允许开发者编写一些在使用时才制定类型的代码. rust编译器会在编译期间自动为具体类型生成实现代码.
+trait借鉴了Haskell的Typeclass, 是rust实现零成本抽象的基石, 其机制如下:
+- trait是rust唯一的接口抽象方法
+- 可以静态生成 也可以动态调用
+- 可以当做标记类型拥有某些特定行为的"标签"来使用
+
+```rust
+// `<T: Debug>`表示有trait限定(trait bound)的泛型, 即只有实现了Debug trait的类型才适用. 只有实现了Debug trait的类型才拥有使用`{:?}`格式化打印的行为
+fn match_opton<T: Debug>(o: Option<T>) {
+    match o {
+        ...
+    }
+}
+
+struct Duck;
+trait Fly {
+    fn fly(&self) -> bool;
+}
+impl Fly for Duck{
+    fn fly(&self) -> bool {
+        return true;
+    }
+}
+fn fly_static<T: Fly>(s: T) -> bool {
+    s.fly()
+}
+
+fn fly_static(s: &Fly) -> bool {
+    s.fly()
+}
+
+fn main(){
+    let duck = Duck;
+    fly_static::<Duck>(duck); // 静态分发, rust编译器会为`fly_static::<Duck>(duck)`这个具体类型的调用生成特殊化的代码
+    fly_dyn(&Duck)
+}
+```
+
+rust没有传统面向对象编程语言中的继承概念. 它通过trait将类型和行为明确地进行了区分, 充分贯彻了组合优于继承和面向接口编程的编程思想.
+
+### 复合类型
+rust提供4种复合类型:
+1. 元组(Tuple) : 一种异构有序序列, 即元素类型可能不同的固定长度的序列.
+
+    通过`tuple_name.${N}`的形式访问.
+    因为let支持模式匹配, 因此可用let解构元组.
+    单元值就是空元组`()`.
+1. 结构体(Struct)
+
+    结构体名称需遵从驼峰式命名规则.
+    结构体上方的`#[derive(Debug, PartialEq)]`是属性, 可让结构体自行实现Debug trait 和 PartialEq trait, 即允许对struct实例进行打印和比较.
+
+    分三种:
+    1. 具名结构体(named-field struct)
+
+        它是rust面向对象思想的一种体现.
+    1. 元组结构体(tuple-like struct)
+
+        没有字段名称, 仅有类型. 比如`struct Color(i32, i32, i32);`
+        当一个元组结构体只有一个字段时, 称为New Type模式. 因为它把一种类型封装成了新类型.
+    1. 单元结构体(unit-like struct)
+
+        没有任何字段的结构体, 比如`strcut Empty`.
+        `std::ops::RangeFull`就是一个单元结构体.
+
+        在Release编译模式下, 单元结构体实例会被优化为同一个对象; 而在Debug模式下, 则不会进行这样的优化.
+
+    在rust中函数和方法是有区别的, 不在impl块中定义的函数是自由函数, 而在impl块中定义的函数是方法, 第一个参数通常是`&self/&mut self`, 表示对结构体实例自身的引用.
+1. 枚举体(Enum)
+
+    分三类:
+    1. 无参数枚举体
+
+        ```rust
+        enum Number {
+            Zero,
+            One,
+        }
+
+        let a = Number::One;
+        ```
+    1. 类C枚举体
+
+        ```rust
+          enum Number {
+            Zero = 1 ,
+            One = 2,
+        }
+
+        let a = Number::One as i32;
+        ```
+    1. 带类型参数的枚举体
+
+        ```rust
+          enum IpAddr {
+            V4(u8,u8,u8,u8),
+            V6(String),
+        }
+
+        let a = IpAddr::V4(127,0,0,1);
+        let b : fn(String) -> IpAddr = IpAddr::V6;//  IpAddr::V6是 `fn(String) -> IpAddr` 函数指针.
+        ```
+1. 联合体(Union)
+
+### 常用集合类型
+std::collections提供了4种通用集合类型:
+1. 线性序列: 向量(Vec), 双端队列(VecDeque), 链表(LinkedList)
+
+    向量也是一种数组, 但可动态增长.
+    `vec!`是一个宏, 用来创建向量字面量.
+    rust的VecDeque是基于可增长的RingBuffer算法实现的双端队列.
+    通常最好使用Vec或VecDeque类型, 因为它们比链表更加快速, 内存访问效率更高, 并且可以更好地利用cpu缓存.
+1. Key-Value映射: 无序哈希表(HashMap), 有序哈希表(BTreeMap)
+
+    key必须是可哈希的类型
+    value必须是在编译期已知大小的类型
+1. 集合类型: 无序集合(HashSet), 有序集合(BTreeMap)
+
+    集合类型实际就是把Key-Value映射的Value设置成空元组.
+1. 优先队列: 基于二叉最大堆(BinaryHeap)实现.
+
+### 宏
+宏语句可以使用圆括号, 中括号, 花括号, 一般使用中括号表示数组.
 
 ## FAQ
 ### 各编程语言中的类型系统
