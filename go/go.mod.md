@@ -60,7 +60,14 @@ go env -w GOPRIVATE=*.example.com
 
 ## FAQ
 ### go: cannot determine module path for source directory
-在 $GOPATH 之外使用 go modules, 如果是现有项目的话可以直接 go mod init, 现有项目会根据 git remote 自动识别 module 名, 但是新项目的话就会报`go: cannot determine module path for source directory`, 此时需要带上 module 名即可.
+在 $GOPATH 之外使用 go modules时, 如果是现有项目的话可以直接 go mod init, 现有项目会根据 git remote 自动识别 module 名, 但是新项目的话就会报`go: cannot determine module path for source directory`, 此时需要带上 module 名即可.
+
+### malformed module path "XXXX": missing dot in first path element
+go1.13  mod 要求import 后面的path 第一个元素，符合域名规范，比如code.be.mingbai.com/tools/soa
+
+即使是本项目下的其他包
+
+如果无法使用域名，可以考虑使用replace+本地路径(`replace  code.be.mingbai.com/tools/soa  =>  ../../tools/soa`)，但不建议这样做.
 
 ### go mod使用gitlab私有仓库作为项目的依赖包
 ```sh
@@ -81,12 +88,20 @@ replace xxx/saas => code.aliyun.com/xxx_backend/saas v0.0.0-20190617102944-e1b0d
 // replace xxx/saas => /home/chen/git/xxx/saas // 2. 使用本地package, 不推荐
 ```
 
-更新时直接使用`go get -u code.aliyun.com/xxx_backend/saas`会报错, 可将replace里的版本, 比如这里的`v0.0.0-20190617102944-e1b0da75851a`替换为`latest`, `go build`时会自动更新到最新版.
+更新时直接使用`go get -u code.aliyun.com/xxx_backend/saas`会报错, 可将replace里的版本, 比如这里的`v0.0.0-20190617102944-e1b0da75851a`替换为`latest`, `go build`时会自动替换成最新的`v0.0.0-20190617102944-e1b0da75851a`格式的版本.
 
 注意, go1.13运行`go build`时要使用:
 ```bash
-$ env GONOPROXY="code.aliyun.com" GONOSUMDB="code.aliyun.com" go build
+$ env GONOPROXY="code.aliyun.com" GONOSUMDB="code.aliyun.com" go build # 可先用`go build`试试, 不行再追加env GONOPROXY,GONOSUMDB
 ```
+
+其他例子：
+1. go.mod追加`replace license_client => 192.168.0.226/OtherProject/License-Client latest`
+1. git config --global url."git@192.168.0.226:OtherProject/License-Client.git".insteadOf "http://192.168.0.226/OtherProject/License-Client.git"
+1. env GOPROXY="" go get -insecure -u 192.168.0.226/OtherProject/License-Client
+1. `go build`
+
+> 更新replace的version时要先将版本改为`latest`,在运行`go get`.
 
 > GONOPROXY,GONOSUMDB有多项时需用`,`分隔
 
