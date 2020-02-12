@@ -7,6 +7,9 @@
 - 1.11, 2018.8  : 引入Go modules
 - 1.13, 2019.8  : 重新实现逃逸分析(escape analysis)使得更少地在堆上分配内存
 
+### 变化
+- [关于 Go1.14，你一定想知道的性能提升与新特性](https://gocn.vip/topics/9611)
+
 ## env
 - GOCACHE : 用于存储go build的缓存信息的目录，以便在将来的构建中重用
 
