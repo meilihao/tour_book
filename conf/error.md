@@ -11,6 +11,9 @@
 - Xlib:  extension "NV-GLX" missing on display : apt install mesa-vulkan-drivers # https://bbs.deepin.org/forum.php?mod=viewthread&tid=143398&page=1#pid363502
 - /usr/bin/ld: cannot find -lpng
 
+### 'aclocal-1.15' is missing on your system
+`sudo apt install automake`或系统存在更高版本的aclocal, 比如`aclocal-1.16`
+
 ### zlib header files not found
 sudo apt install zlib1g-dev
 

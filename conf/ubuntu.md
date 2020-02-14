@@ -2,6 +2,8 @@
 
 参考 : http://wiki.ubuntu.org.cn/UbuntuHelp:AptGet/Howto/zh
 
+推荐使用`mirrors.ustc.edu.cn`源.
+
 ### FAQ
 
 #### 查看cpu/硬盘温度,风扇转速
