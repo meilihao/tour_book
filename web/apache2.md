@@ -1,4 +1,6 @@
 # apache2
+推荐使用nginx.
+
 ## httpd.conf配置
 参考:
 - [Apache2.4之httpd.conf配置详解](https://blog.csdn.net/a88073327/article/details/80921808)

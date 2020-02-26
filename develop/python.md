@@ -6,6 +6,7 @@
     - Python编程：从入门到实践
     - Python编程快速上手
 - 进阶
+    - Python高性能编程
     - 流畅的Python
     - Python Cookbook（第3版）中文版
     - 编写高质量代码: 改善Python程序的91个建议
@@ -43,6 +44,15 @@ $ vim ~/.pip/pip.conf # [为pip换源](https://blog.csdn.net/xuezhangjun0121/art
 index-url = https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
+其他pip.conf:
+```
+[global]
+index-url = http://user:user@192.168.0.236:8081/repository/pypi-proup/simple
+
+[install]
+trusted-host=192.168.0.236 # 因为未使用https
+```
+
 > python module可在https://pypi.org上查找.
 
 vscode:
@@ -77,6 +87,7 @@ $ python -m pip  show pygame # 查找安装位置
     python的执行顺序与golang初始化类似, module 对应了 package.
     C++中一main函数为执行的起点; Python中首先执行最先出现的非函数定义和非类定义的没有缩进的代码，会从上而下顺序执行.
     程序中为了区分主动执行还是被调用，Python引入了变量__name__，当文件是被调用时，__name__的值为模块名，当文件被执行时，__name__为'__main__'.
+1. 没有接口
 
 ### [装饰器](https://www.liaoxuefeng.com/wiki/1016959663602400/1017451662295584)
 - @try_except
@@ -156,6 +167,14 @@ module搜索顺序:
 
 > 路径应为**module的上级目录**.
 
+### __init__.py
+__init__.py 文件的作用是将所在的文件夹变为一个Python模块,Python 中的每个模块的包中，都有__init__.py 文件. python在导入一个包时，实际上是导入了它的__init__.py文件.
+
+__init__.py中的__all__属性，可用于模块导入时限制，比如`from module import *`, 此时被导入模块若定义了__all__属性，则只有__all__内指定的属性、方法、类可被导入; 若没定义，则导入模块内的所有**公有**属性，方法和类. __all__对于 `from <module> import <member>`导入方式并没有影响.
+
+### 关于.pyc 文件 与 .pyo 文件
+.py文件的汇编,只有在import语句执行时进行，当.py文件第一次被导入时，它会被汇编为字节代码，并将字节码写入同名的.pyc文件中. 后来每次导入操作都会直接执行.pyc 文件（当.py文件的修改时间发生改变，这样会生成新的.pyc文件），在解释器使用-O选项时，将使用同名的.pyo文件，这个文件去掉了断言（assert）、断行号以及其他调试信息，体积更小，运行更快.（使用-OO选项，生成的.pyo文件会忽略文档信息）.
+
 ## 函数
 使用`def`定义函数.
 **关键字实参**是传递给函数的名称—值对, 此时无需考虑函数调用中的实参顺序，还清楚地指出了函数调用中各个值的用途.
@@ -205,7 +224,9 @@ my_dog.sit()
 
 > 在Python 2.7中创建类时，需要在类名后面的括号内包含单词object.
 
-类中的每个属性都必须有初始值，在方法`__init__()`内指定这种初始值是可行的；如果对某个属性这样做了，就无需包含为它提供初始值的形参.
+类中的每个属性都必须有初始值，在方法`__init__()`内指定这种初始值是可行的(等于c++的构造方法)；如果对某个属性这样做了，就无需包含为它提供初始值的形参.
+
+判断是否有属性或方法`hasattr(对象, name)`, 获取属性或方法`getattr(对象, name[, default])`, 设置属性或方法`setattr(对象,name,value)`.
 
 ```python
 """A class that can be used to represent a car."""
@@ -283,10 +304,12 @@ print(my_tesla.get_descriptive_name())
 my_tesla.battery.get_range() 
 ```
 
-创建子类时，父类必须包含在当前文件中，且位于子类前面.
-**定义子类时，必须在括号内指定父类的名称**, 且子类方法`__init__()`接受创建父类实例所需的信息.
+创建子类时，**父类必须包含在当前文件中，且位于子类前面**.
+**定义子类时，必须在括号内指定父类的名称**, 且子类方法`__init__()`接受创建父类实例所需的信息. 子类会继承父类的属性和方法.
 
-`super()`是一个特殊函数，帮助Python将父类和子类关联起来. 父类也称为超类（superclass）, 名称super因此而得名.
+`super()`是一个特殊函数，帮助Python将父类和子类关联起来. 父类也称为超类（superclass）, 名称super因此而得名. `issubclass(子类名称, 父类名称)`可判断是否继承关系, 魔法属性`类名.__bases__`可得到父类的名称(可能有多个父类); `isinstance(对象, 类名称/父类名称)`判断是否类的实例对象.
+
+> python支持多继承. 父类属性或方法名相同时, 靠前的覆盖靠后的, 同理子类会覆盖父类的.
 
 可在子类中定义一个与要重写的父类方法同名的方法, 这样, Python将不会考虑这个父类方法，而只关注你在子类中定义的相应方法.
 
@@ -296,7 +319,53 @@ my_tesla.battery.get_range()
 导入整个模块:` import car`
 导入模块中的所有类:`from module_name import * `, 不推荐, 原因和导入module相同.
 
-在属性或方法名前面添加两个下划线`__`, 成员私有化的作用，确保外部代码不能随意修改对象内部的状态，增加了代码的安全性.
+属性和方法默认是可直接访问的, 在属性或方法名前面添加两个下划线`__`, 成员私有化的作用，确保外部代码不能随意修改对象内部的状态，增加了代码的安全性.
+```python
+class Person:
+    def __init__(self, name):
+        self.__name=name
+    def __sayName(self):
+        print("name", self.__name)
+
+p=Person("chen")
+p.__name="hao" # 等同添加属性
+#p.sayName() # 不能调用
+p._Person__sayName() # 能调用, 在python中, 私有化的类方法在被编译时, 真实的的名称是`"_"+类名+私有化的方法名`,同理私有属性也是这样.
+
+import inspect
+print(inspect.getmembers(p,predicate=inspect.ismethod)) # 验证上面的说法
+print(inspect.getmembers(p))
+
+# output:
+# [('_Person__sayName', <bound method Person.__sayName of <__main__.Person object at 0x0000000002D17C70>>), ('__init__', <bound method Person.__init__ of <__main__.Person object at 0x0000000002D17C70>>)]
+# ...
+# ('__dict__', {'_Person__name': 'chen', '__name': 'hao'})
+# ...
+```
+
+类代码块:
+```python
+class myclass:
+
+    # class块中的语句(类定义到类第一个函数直接的代码块即为类代码块)，会立刻执行
+    
+    print('myclass')
+    count = 0 # 变为类的属性
+
+    def counter(self):
+        self.count += 1
+
+my = myclass()  # 实例化时会立即执行类代码块
+
+my.counter()        # 调用counter方法
+print(my.count)     # 输出结果：1
+
+my.count = 'abc'    # 将count变量改变成字符串类型
+print(my.count)     # 输出结果：abc
+
+my.name = 'hello'   # 向my对象动态添加name变量
+print(my.name)      # 输出结果：hello
+```
 
 类名应采用驼峰命名法，即将类名中的每个单词的首字母都大写，而不使用下划线. 实例名和模块名都采用小写格式，并在单词之间加上下划线.
 
@@ -311,6 +380,54 @@ class ElectricCar(Car):
     def __init__(self, make, model, year): 
         super(ElectricCar, self).__init__(make, model, year)  # 函数super()需要两个实参：子类名和对象self, 为帮助Python将父类和子类关联起来
         ...
+```
+
+父类初始化方法中有调用了父类中定义的方法，恰好这个方法又被子类所覆盖，则`super().__init__(xing, age)`调用的父类初始化方法中调用的方法将是被覆盖后的方法:
+```python
+class A():
+    def __init__(self, xing, gender):          # ！#1
+        self.namea = "aaa"                     # ！#2
+        self.xing = xing                       # ！#3
+        self.gender = gender                   # ！#4
+        self.funca()
+ 
+    def funca(self):
+        print("function a : %s" % self.namea)
+ 
+ 
+class B(A):
+    def __init__(self, xing, age):             # ！#5
+        super().__init__(xing, age)     # ！#6（age处应为gender）
+        self.nameb = "bbb"                     # ！#7
+        ##self.namea="ccc"                     # ！#8
+        ##self.xing = xing.upper()             # ！#9
+        self.age = age                         # ！#10
+ 
+    def funcb(self):
+        print("function b : %s" % self.nameb)
+ 
+    def funca(self):
+        print("(override)function a : %s" % self.namea)
+ 
+ 
+b = B("lin", 22)                               # ！#11
+print(b.nameb)
+print(b.namea)
+print(b.xing)                                  # ！#12
+print(b.age)
+print(b.gender)                                # ！#13
+b.funcb()
+b.funca()
+
+# output:
+# (override)function a : aaa
+# bbb
+# aaa
+# lin
+# 22
+# 22
+# function b : bbb
+# (override)function a : aaa
 ```
 
 ## 异常
@@ -841,3 +958,254 @@ print(numbers)
 共2种方法:
 1. File->setting->Project:xxx->Project Interpreter, 选择相应的环境, 再点击后面的图标选择"show all", 选中对应的环境, 再点击右侧工具栏中的"树形"图标, 追加需导入module的上级目录的路径即可(**推荐**).
 1. 简单项目只需将需导入module的上级目录的路径设为`source`即可, 具体方法: 找到该目录, 右键选中`Mark Directory as` -> "Sources Root".
+### refresh import after pip install in pycharm
+File -> Invalidate Caches/Restart...
+### `pip的pip.conf`和`pypirc`的区别
+`.pypirc`是多个工具使用的文件标准，但不是由pip使用的. 例如，easy_install工具reads that file和twine一样, 它包含在**发布包**时如何访问特定pypi索引服务器的配置. 因此如果不发布包，则不需要.pypirc文件, 即不能使用它为pip配置索引服务器.
+但`pip.conf`仅由pip工具使用，**pip从不发布包，而是从中下载包**. 因此，它从不查看.pypirc文件.
+
+对于--index-url和--index开关，它们用于不同的pip命令.
+--index-url是处理安装包的几个pip命令中的一个通用开关（pip install，pip download，pip list，和pip wheel），它是一组交换机的一部分（连同--extra-index-url，--no-index，--find-links和--process-dependency-links和一些不推荐的开关），它们一起配置包发现如何工作. url必须指向PEP 503 Simple Repository API位置，默认为https://pypi.org/simple.
+--index仅由pip search使用；它只需要这一条信息. 它是单独命名的，因为它应该指向公共搜索Web界面，而不是简单的存储库！对于https://pypi.org，这是https://pypi.org/pypi.
+
+## 用法
+- ConfigParser : 解析ini配置文件, 加载多个配置时, 后加载的相同键会覆盖前面的.
+- io.BytesIO() : BytesIO实现了在内存中读写bytes(二进制数据), 可像读文件一样读取. 类似的有StringIO, 它用于字符串的操作.
+- [open()](https://www.runoob.com/python/file-methods.html)
+- os.environ.get("PATH") # os.environ(x [,x]) raises an exception if the environmental variable does not exist
+- os.getenv('MYENV', "abc") # os.getenv(x) does not raise an exception ,but returns None. 但有默认值时返回默认值
+- os.path.expanduser("~/g/my.conf") # Expand the user's home directory
+- SafeConfigParser : SafeConfigParser类实现了ConfigParser相同的接口, 但新增了`set(section, option, value)`(如果给定的section存在，给option赋值；否则抛出NoSectionError异常。Value值必须是字符串（str或unicode）；如果不是，抛出TypeError异常)
+
+
+# lib
+## [multiprocessing](https://docs.python.org/zh-cn/3/library/multiprocessing.html)
+multiprocessing和multiprocessing.dummy(复制了 multiprocessing 的 API，不过是在 threading 模块之上包装了一层)是Python下两个常用的多进程和多线程模块
+
+> 其中对于多进程，multiprocessing.freeze_support()语句在windows系统上是必须的，这是因为windows的API不包含fork()等函数. 因此当子进程被创建后，会重新执行一次全局变量的初始化, 这可能就会覆盖掉主进程中已经被修改了的值.
+
+> **主进程会等待直到multiprocessing的子进程退出才退出**.
+
+启动多进程(fork):
+```python
+import os
+import multiprocessing
+
+def foo(i):
+    # 同样的参数传递方法
+    print("这里是 ", multiprocessing.current_process().name)
+    print('模块名称:', __name__)
+    print('父进程 id:', os.getppid())  # 获取父进程id
+    print('当前子进程 id:', os.getpid())  # 获取自己的进程id
+    print('------------------------')
+
+if __name__ == '__main__':
+
+    for i in range(5):
+        p = multiprocessing.Process(target=foo, args=(i,)) # 因为args要求是可迭代的
+        p.start()
+```
+
+### 要在进程之间进行数据共享可以使用Queues、Value/Array(共享内存 by mmap)和Manager(服务进程)这三个multiprocess模块提供的类.
+
+> Queues并发安全, Value、Array不是.
+
+1. 使用Manager共享数据:
+```python
+# Manager()返回的manager对象提供一个服务进程，使得其他进程可以通过代理的方式操作Python对象。manager对象支持 list, dict, Namespace, Lock, RLock, Semaphore, BoundedSemaphore, Condition, Event, Barrier, Queue, Value ,Array等多种格式
+from multiprocessing import Process, Manager
+
+def func(i, dic):
+    dic["num"] = 100+i
+    print(dic.items())
+
+if __name__ == '__main__':
+    dic = Manager().dict()
+    for i in range(10):
+        p = Process(target=func, args=(i, dic))
+        p.start()
+        p.join() # join方法将阻塞，直到调用 join() 方法的进程终止
+```
+
+
+1. 使用queues的Queue类共享数据
+```python
+from multiprocessing import Process, queues
+
+def func(i, q):
+    ret = q.get()
+    print("进程%s从队列里获取了一个%s，然后又向队列里放入了一个%s" % (i, ret, i))
+    q.put(i)
+
+if __name__ == "__main__":
+    lis = queues.Queue(20, ctx=multiprocessing)
+    lis.put(0)
+    for i in range(10):
+        p = Process(target=func, args=(i, lis,))
+        p.start()
+```
+
+### 进程锁
+为了防止和多线程一样的出现数据抢夺和脏数据的问题，同样需要设置进程锁. 与threading类似，在multiprocessing里也有同名的锁类RLock，Lock，Event，Condition和 Semaphore.
+```python
+from multiprocessing import Process, Array, RLock, Lock, Event, Condition, Semaphore
+import time
+
+def func(i,lis,lc):
+    lc.acquire()
+    lis[0] = lis[0] - 1
+    time.sleep(1)
+    print('say hi', lis[0])
+    lc.release()
+
+if __name__ == "__main__":
+    array = Array('i', 1)
+    array[0] = 10
+    lock = RLock()
+    for i in range(10):
+        p = Process(target=func, args=(i, array, lock))
+        p.start() # 非阻塞
+```
+
+### 进程池Pool类
+进程启动的开销比较大，过多的创建新进程会消耗大量的内存空间. 仿照线程池的做法，我们可以使用进程池控制内存开销.
+
+进程池内部维护了一个进程序列，需要时就去进程池中拿取一个进程，如果进程池序列中没有可供使用的进程，那么程序就会等待，直到进程池中有可用进程为止. maxtasksperchild参数可以控制一条进程最多处理的任务数，当超过这个数量时该进程会退出且pool会重新启动一个新的进程.
+
+进程池中常用的方法：
+
+apply() 同步执行（串行）
+apply_async() 异步执行（并行）
+terminate() 立刻关闭进程池
+join() 主进程等待所有子进程执行完毕. 必须在close或terminate()之后.
+close() 调用close后不能添加新的进程
+imap() 是进程函数名不变，改变的传递进去的参数，结果是进程返回的结果，有先后顺序
+
+
+```python
+from multiprocessing import Pool
+import time
+
+def func(args):
+    time.sleep(1)
+    print("正在执行进程 ", args)
+
+if __name__ == '__main__':
+    p = Pool(5)     # 创建一个包含5个进程的进程池
+
+    for i in range(30):
+        p.apply_async(func=func, args=(i,))
+
+    p.close()           # 等子进程执行完毕后关闭进程池
+    # time.sleep(2)
+    # p.terminate()     # 立刻关闭进程池
+    p.join()
+```
+
+### Manager
+参考:
+- [multiprocessing模块实现](http://www.calvinneo.com/2019/11/23/multiprocessing-implement/)
+
+Manager对象会使用一个Server进程来维护需要共享的对象，而**其他进程需要通过Proxy来访问这些共享对象**. 比如当我们调用multiprocessing.Manager()时，实际上创建了一个SyncManager，并调用它的start. 在start中，会创建一个子进程来维护共享对象.
+
+> 使用服务进程的管理器比使用共享内存对象更灵活，因为它们可以支持任意对象类型. 此外，单个管理器可以通过网络由不同计算机上的进程共享. 但是，它们比使用共享内存慢.
+
+> manager对象仅能传播一个可变对象本身所做的修改，如果一个manager.list()对象，管理列表本身的任何更改会传播到所有其他进程，但是如果容器对象内部还包括可修改对象，则内部可修改对象的任何更改都不会传播到其他进程.
+
+sever:
+```python
+from multiprocessing.managers import BaseManager
+
+BaseManager.register('get_task', callable=gettask) # register的typeid是用于标识特定类型的共享对象的“类型标识符”。这必须是字符串
+```
+
+client:
+```python
+from multiprocessing.managers import BaseManager
+BaseManager.register('get_task') # 注册要用的资源(比如函数, Class), 但不能注册服务端没有注册的资源
+```
+
+## apscheduler
+[APScheduler](https://zhuanlan.zhihu.com/p/46948464)是一个python的第三方库，提供了非常丰富而且方便易用的定时任务接口. 包含四个组件，分别是：
+- triggers： 任务触发器组件，提供任务触发方式
+
+    触发器包含调度逻辑，描述一个任务何时被触发，按**日期或按时间间隔或按 cronjob 表达式三种方式触发**. 每个作业都有它自己的触发器，除了初始配置之外，触发器是完全无状态的
+
+    ```python
+    # 在2019年11月6日16:30:05
+    sched.add_job(my_job, 'date', run_date='2009-11-06 16:30:05', id='my_job_id') # = run_date=datetime(2009, 11, 6, 16, 30, 5)
+
+    # 每两小时执行一次
+    sched.add_job(job_function, 'interval', hours=2)
+    # 在2012年10月10日09:30:00 到2014年6月15日11:00:00的时间内，每两小时执行一次
+    sched.add_job(job_function, 'interval', hours=2, start_date='2012-10-10 09:30:00', end_date='2014-06-15 11:00:00'
+
+    # 在6、7、8、11、12月的第三个周五的00:00, 01:00, 02:00和03:00 执行
+    sched.add_job(job_function, 'cron', month='6-8,11-12', day='3rd fri', hour='0-3')
+    # 在2014年5月30日前的周一到周五的5:30执行
+    sched.add_job(job_function, 'cron', day_of_week='mon-fri', hour=5, minute=30, end_date='2014-05-30')
+    ```
+- job stores： 任务store组件，提供任务保存方式
+
+    作业存储器指定了作业被存放的位置，默认情况下作业保存在内存，也可将作业保存在各种数据库中，当作业被存放在数据库中时，它会被序列化，当被重新加载时会反序列化。作业存储器充当保存、加载、更新和查找作业的中间人. **在调度器之间不能共享作业存储**.
+
+    ```python
+    MemoryJobStore # 默认内存存储
+    scheduler.add_jobstore('mongodb', collection='example_jobs')
+    scheduler.add_jobstore('redis', jobs_key='example.jobs', run_times_key='example.run_times')
+    scheduler.add_jobstore('sqlalchemy', url=url)
+    ```
+- executors： 任务执行组件，提供任务执行方式
+
+    执行器是将指定的作业（调用函数）提交到线程池或进程池中运行，当任务完成时，执行器通知调度器触发相应的事件
+- schedulers： 任务调度组件，提供任务调度方式
+
+    任务调度器，属于控制角色，**通过它配置作业存储器、执行器和触发器，添加、修改和删除任务**。调度器协调触发器、作业存储器、执行器的运行，通常只有一个调度程序运行在应用程序中，开发人员通常不需要直接处理作业存储器、执行器或触发器，配置作业存储器和执行器是通过调度器来完成的.
+
+    常用的有BackgroundScheduler（后台运行）和BlockingScheduler(阻塞式).
+
+    ```python
+    from pytz import utc
+    from apscheduler.schedulers.background import BackgroundScheduler
+    from apscheduler.jobstores.mongodb import MongoDBJobStore
+    from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+    from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
+
+
+    jobstores = {
+        'mongo': MongoDBJobStore(),
+        'default': SQLAlchemyJobStore(url='sqlite:///jobs.sqlite')
+    }
+    executors = {
+        'default': ThreadPoolExecutor(20),
+        'processpool': ProcessPoolExecutor(5)
+    }
+    job_defaults = {
+        'coalesce': False, # 当由于某种原因导致某个job积攒了好几次没有实际运行（比如说系统挂了5分钟后恢复，有一个任务是每分钟跑一次的，按道理说这5分钟内本来是“计划”运行5次的，但实际没有执行），如果coalesce为True，下次这个job被submit给executor时，只会执行1次，也就是最后这次，如果为False，那么会执行5次（不一定，因为还有其他条件，看后面misfire_grace_time的解释）
+        'max_instances': 3, # 同一个job同一时间最多有几个实例在跑
+        'misfire_grace_time': 30 # 设想和上述coalesce类似的场景，如果一个job本来14:00有一次执行，但是由于某种原因没有被调度上，现在14:01了，这个14:00的运行实例被提交时，会检查它预订运行的时间和当下时间的差值（这里是1分钟），大于我们设置的30秒限制，那么这个运行实例不会被执行
+    }
+    scheduler = BackgroundScheduler(jobstores=jobstores, executors=executors, job_defaults=job_defaults, timezone=utc)
+
+    scheduler.add_job(myfunc, 'interval', minutes=2, id='my_job_id')  # 添加任务    
+    scheduler.remove_job('my_job_id')  # 删除任务
+    scheduler.pause_job('my_job_id')  # 暂定任务
+    scheduler.resume_job('my_job_id')  # 恢复任务
+
+    job = scheduler.add_job(myfunc, 'interval', minutes=2)  # 添加任务
+    job.modify(max_instances=6, name='Alternate name') # 修改
+    scheduler.reschedule_job('my_job_id', trigger='cron', minute='*/5') # 重设
+
+    scheduler.start()
+    scheduler.shotdown(wait=True | False)
+    scheduler.pause()
+    scheduler.resume()
+
+    def my_listener(event):
+    if event.exception:
+        print('The job crashed :(')
+    else:
+        print('The job worked :)')
+
+    scheduler.add_listener(my_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR) # [监听](https://apscheduler.readthedocs.io/en/v3.3.0/modules/events.html#module-apscheduler.events)
+    ```

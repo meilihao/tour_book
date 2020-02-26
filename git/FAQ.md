@@ -168,3 +168,6 @@ git config --global http.lowSpeedTime 300
 该仓库使用`git clone –depth=1`**浅克隆**而来, 其有限制: 不能将它推送到一个新的存储库.
 
 解决方法: 先使用`git fetch --unshallow old_repo`补全再推送即可.
+
+### submodule 和 subtree的区别
+[submodule is link; subtree is copy](https://gb.yekai.net/concepts/subtree-vs-submodule)
