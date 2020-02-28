@@ -48,11 +48,13 @@ replace (
 export GOPROXY=https://goproxy.cn,direct
 ```
 
+> direct 可以在一定程度上解决私有库的问题. 这个 GOPROXY 设定的工作原理是：当 go 在抓取目标模块时，若遇见了 404 错误，那么就回退到 direct 也就是直接去目标模块的源头（即指定的url处） 去抓取.
+
 如果在运行go mod vendor时，提示`Get https://sum.golang.org/lookup/xxxxxx: dial tcp 216.58.200.49:443: i/o timeout`，则是因为Go 1.13设置了默认的GOSUMDB=sum.golang.org用于验证包的有效性，而这个网站是被墙了, 可以通过命令关闭：`go env -w GOSUMDB=off`.
 
 
 ## GOPRIVATE
-控制哪些私有仓库和依赖(公司内部仓库)不通过 proxy 来拉取，直接走本地
+控制哪些私有仓库和依赖(公司内部仓库)不通过 proxy 来拉取，直接走本地, 且跳过GOSUMDB的检查.
 
 ```sh
 # 设置不走 proxy 的私有仓库，多个用逗号相隔
@@ -139,6 +141,8 @@ $ env GONOPROXY="code.aliyun.com" GONOSUMDB="code.aliyun.com" go build # 可先�
 > GONOPROXY,GONOSUMDB有多项时需用`,`分隔
 
 ### athens deploy
+推荐使用goproxy.io, 见下面的`代理`.
+
 1. build
 ```sh
 git clone https://github.com/gomods/athens
@@ -172,3 +176,9 @@ Setting - Security - Anonymous, 启用匿名.
 
 ### go mod vendor
 vendor目录仅包含依赖到的代码, 未依赖的package会被忽略.
+
+更新vendor时重新运行`go mod vendor`即可.
+
+### 代理
+- [Go Module 来了，企业私有代理你准备好了吗？](https://gocn.vip/topics/9831)
+- [goproxy.cn - 为中国 Go 语言开发者量身打造的模块代理](https://segmentfault.com/a/1190000020293616)
