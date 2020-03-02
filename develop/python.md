@@ -154,8 +154,8 @@ Python将不能修改的值称为不可变的，而不可变的列表被称为�
 Python的布尔表达式的结果要么为True，要么为False.
 Python并不要求if-elif结构后面必须有else代码块. 在有些情况下，else代码块很有用; 而在其他一些情况下，使用一条elif语句来处理特定的情形更清晰.
 在if语句中将列表名用在条件表达式中时，Python将在列表至少包含一个元素时返回True, 并在列表为空时返回False.
-在Python中，字典是一系列键—值对, 用`{}`包裹, 每个键都与一个值相关联，可以使用键来访问与之相关联的值, Python可将任何Python对象用作字典中的值 .
-遍历字典时, Python会默认遍历所有的键.
+在Python中，字典是一系列键—值对, 用`{}`包裹, 每个键都与一个值相关联，可以使用键来访问与之相关联的值, Python可将任何Python对象用作字典中的值.
+遍历字典时, Python会默认遍历所有的键. 字典的`update()`方法用于更新字典中的键/值对
 
 条件测试:
 - and : 其他语言的`&&`
@@ -167,6 +167,8 @@ Python并不要求if-elif结构后面必须有else代码块. 在有些情况下�
 函数`int()`将数字的字符串表示转换为数值表示.
 
 > Python 2.7也包含函数input()，但它将用户输入解读为Python代码，并尝试运行它们, 其用函数`raw_input()`来提示用户输入.
+
+> any(iterable) 函数用于判断给定的可迭代参数 iterable 是否全部为 False，则返回 False，如果有一个为 True，则返回 True.
 
 for循环是一种遍历列表的有效方式，但在**for循环中不应修改列表**，否则将导致Python难以跟踪其中的元素. 要在遍历列表的同时对其进行修改，可使用while循环.
 
@@ -200,6 +202,14 @@ __init__.py中的__all__变量，可用于模块导入时限制，比如`from mo
 1. __init__.py 中被显式导入的 module 被导入
 
 __all__对于 `from <module> import <member>`导入方式并没有影响.
+
+### __import__()
+参考：
+- [Python中__import__()的fromlist参数用法](https://docs.lvrui.io/2017/10/13/Python%E4%B8%AD-import-%E7%9A%84fromlist%E5%8F%82%E6%95%B0%E7%94%A8%E6%B3%95/)
+
+当使用import导入Python模块的时候，默认调用的是__import__()函数. 直接使用该函数的情况很少见，一般用于动态加载模块.
+
+参数fromlist指明需要导入的子模块名，level指定导入方式（相对导入或者绝对导入， 默认两者都支持）．
 
 ### 关于.pyc 文件 与 .pyo 文件
 .py文件的汇编,只有在import语句执行时进行，当.py文件第一次被导入时，它会被汇编为字节代码，并将字节码写入同名的.pyc文件中. 后来每次导入操作都会直接执行.pyc 文件（当.py文件的修改时间发生改变，这样会生成新的.pyc文件），在解释器使用-O选项时，将使用同名的.pyo文件，这个文件去掉了断言（assert）、断行号以及其他调试信息，体积更小，运行更快.（使用-OO选项，生成的.pyo文件会在`-O`的基础上再去除__doc__ string(文档信息)).
@@ -874,6 +884,7 @@ x = input("x: ")  # 获取用户输入
 ' xxx '.strip() # 删除两边空格, 单边用`lstrip()/rstrip()`
 'x y z'.split() # 以空格为分隔符将字符串分拆成多个部分，并将这些部分都存储到一个列表中
 str(12) # 将非字符串转换成字符串
+':'.join(["a","B"]) # "a:B"
 endings = ['st', 'nd', 'rd'] + 2 * ['th']  # => `['st', 'nd', 'rd', 'th', 'th']`
 motorcycles = ['honda', 'yamaha', 'suzuki'] 
 motorcycles.append('ducati')  # 追加一个元素

@@ -107,6 +107,7 @@
 
 ## 爬虫
 - [爬虫技术浅析](http://drops.wooyun.org/tips/3915)
+- [Python3 反爬虫原理与绕过实战](https://www.tuicool.com/articles/Zz2u2m3)
 
 ## 进阶
 - [那些值得关注的 Web 开发者成长路线](http://www.oschina.net/news/75434/web-developer-growth-path)
