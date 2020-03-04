@@ -30,7 +30,7 @@ $ sudo vim /etc/security/limits.conf # 账号需重新登录
 1. This machine does not have sufficient CPU to run TiDB, at least 8 cores.
 解决方法:
     - 将`group_vars/all.yml`里的`dev_mode`设为`True`, 这样bootstrap.yml 阶段会跳过磁盘检测、CPU、内存容量检测, **开发阶段推荐此配置**
-    - 修改`roles/check_system_optional/defaults/main.yml`里的`tidb_min_cpu`
+    - 修改`roles/check_system_optional/defaults/main.yml`里的`tidb_min_cpu` (**在v4.0时不用修改, dev_mode=True后会跳过**)
 
 参考:
 - [Deploy 2.0GA failed #6423](https://github.com/pingcap/tidb/issues/6423)
@@ -60,3 +60,5 @@ EPOLLEXCLUSIVE是4.5+内核新添加的一个 epoll 的标识, 需内核支持
 ```sh
 $ sudo systemctl start ntpd
 ```
+
+1. [wait for region replication complete](https://github.com/pingcap/tidb-ansible/issues/846)

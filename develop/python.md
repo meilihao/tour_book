@@ -103,6 +103,8 @@ $ python -m pip  show pygame # 查找安装位置
     'string'
     ```
 
+    在 python 中赋值语句总是建立对象的引用值，而不是复制对象. 因此，python 变量更像是指针，而不是数据存储区域.
+
 ### [装饰器](https://www.liaoxuefeng.com/wiki/1016959663602400/1017451662295584)
 - @try_except
 
@@ -171,6 +173,53 @@ Python并不要求if-elif结构后面必须有else代码块. 在有些情况下�
 > any(iterable) 函数用于判断给定的可迭代参数 iterable 是否全部为 False，则返回 False，如果有一个为 True，则返回 True.
 
 for循环是一种遍历列表的有效方式，但在**for循环中不应修改列表**，否则将导致Python难以跟踪其中的元素. 要在遍历列表的同时对其进行修改，可使用while循环.
+
+### 引用
+list引用:
+```py
+def add_list(p):
+    p = p + [1]
+p1 = [1,2,3]
+add_list(p1)
+print(p1)
+>>> [1, 2, 3]
+
+def add_list(p):
+    p += [1]
+p2 = [1,2,3]
+add_list(p2)
+print(p2)
+>>>[1, 2, 3, 1]
+
+a = []
+b = {'num':0, 'sqrt':0}
+resurse = [1,2,3]
+for i in resurse:
+  b['num'] = i
+  b['sqrt'] = i * i
+  a.append(b)
+print(a) # 这是由于a中的元素就是b的引用
+>>> [{'num': 3, 'sqrt': 9}, {'num': 3, 'sqrt': 9}, {'num': 3, 'sqrt': 9}]
+
+a = []
+resurse = [1,2,3]
+for i in resurse:
+   a.append({"num": i, "sqrt": i * i})
+>>> [{'num': 1, 'sqrt': 1}, {'num': 2, 'sqrt': 4}, {'num': 3, 'sqrt': 9}]
+
+>>> values = [0, 1, 2]
+>>> values[1] = values
+>>> values
+[0, [...], 2]       # 实际结果. 可以说 Python 没有赋值，只有引用.  这样相当于创建了一个引用自身的结构，所以导致了无限循环.
+[0, [0, 1, 2], 2]   # 预想结果
+
+>>> values = [0, 1, 2]
+>>> values[1] = values[:] # values[:] 生成对象的拷贝或者是复制序列，不再是引用和共享变量，但此法只能顶层复制. 深复制的方法是`copy.deepcopy(a)`
+>>> values
+[0, [0, 1, 2], 2]
+```
+
+这区别主要是由于`=`操作符会新建一个新的变量保存赋值结果，然后再把引用名指向`=`左边，即修改了原来的p引用，使p成为指向新赋值变量的引用. 而+=不会，直接修改了原来p引用的内容. **事实上+=和=在python内部使用了不同的实现函数**.
 
 ## 模块
 import语句允许在当前运行的程序文件中使用模块中的代码.
@@ -1025,6 +1074,8 @@ File -> Invalidate Caches/Restart...
 对于--index-url和--index开关，它们用于不同的pip命令.
 --index-url是处理安装包的几个pip命令中的一个通用开关（pip install，pip download，pip list，和pip wheel），它是一组交换机的一部分（连同--extra-index-url，--no-index，--find-links和--process-dependency-links和一些不推荐的开关），它们一起配置包发现如何工作. url必须指向PEP 503 Simple Repository API位置，默认为https://pypi.org/simple.
 --index仅由pip search使用；它只需要这一条信息. 它是单独命名的，因为它应该指向公共搜索Web界面，而不是简单的存储库！对于https://pypi.org，这是https://pypi.org/pypi.
+###  SyntaxError: Missing parentheses in call to 'exec'
+`sudo python -m pip install Pyro`报错.  Pyro是python2的.
 
 ## 用法
 - ConfigParser : 解析ini配置文件, 加载多个配置时, 后加载的相同键会覆盖前面的.
@@ -1037,6 +1088,43 @@ File -> Invalidate Caches/Restart...
 
 
 # lib
+## Pyro
+ - [Pyro简单使用(一)](https://www.cnblogs.com/flyingzl/articles/1870799.html)
+
+ >[Pyro4/5 is for python3.x](https://python-parallel-programmning-cookbook.readthedocs.io/zh_CN/latest/chapter5/06_Remote_Method_Invocation_with_Pyro4.htmls)
+
+Pyro即Python Remote Object，类似于Hessian，可以进行远程对象(方法)调用. 不过和Hessian不一样，Pyro利用python本身的pickle模块进行序列化、反序列化，更pythonic，也更方便.
+
+```python
+# python2
+# server:
+import Pyro.core
+
+class JokeGen(Pyro.core.ObjBase):
+        def __init__(self):
+                Pyro.core.ObjBase.__init__(self)
+        def joke(self, name):
+                return "Sorry "+name+", I don't know any jokes."
+
+Pyro.core.initServer()
+daemon=Pyro.core.Daemon()
+uri=daemon.connect(JokeGen(),"jokegen")
+
+print "The daemon runs on port:",daemon.port
+print "The object's uri is:",uri
+
+daemon.requestLoop()
+
+# client:
+import Pyro.core
+
+# you have to change the URI below to match your own host/port.
+jokes = Pyro.core.getProxyForURI("PYROLOC://localhost:7766/jokegen")
+
+print jokes.joke("Irmen")
+```
+
+
 ## [multiprocessing](https://docs.python.org/zh-cn/3/library/multiprocessing.html)
 multiprocessing和multiprocessing.dummy(复制了 multiprocessing 的 API，不过是在 threading 模块之上包装了一层)是Python下两个常用的多进程和多线程模块
 
