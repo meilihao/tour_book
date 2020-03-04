@@ -21,7 +21,7 @@ $ sudo apt install python-pip # pip2 for python2.7
 
 > [pip安装, 未测试](https://pip.pypa.io/en/stable/installing/)
 
-> 作为过渡, python3有很多特性被移植到了python2.7(将于2020.1.1终止支持), 因此如果程序可在python2.7运行就可通过python3自带的转换工具2to3无缝迁移到Python3.
+> 作为过渡, python3有很多特性被移植到了python2.7(将于2020.1.1终止支持), 因此如果程序可在python2.7运行就可通过python3自带的转换工具2to3(`python -m pip install  2to3`/`sudo apt install 2to3`)无缝迁移到Python3.
 
 python解析器:
 1. CPython : 使用C实现的解析器, 最常用的解析器, 通常说的python解析器就是指它.
