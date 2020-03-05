@@ -536,6 +536,12 @@ b.funca()
 # (override)function a : aaa
 ```
 
+### 单例模式
+参考:
+- [Python中的单例模式实现](http://whosemario.github.io/2016/01/22/pattern-singleton/)
+
+利用Python的metaclass实现单例(**推荐**, 其他方法有缺陷).
+
 ## 异常
 ```python
 # 在 Windows系统中，在文件路径中使用反斜杠（\）而不是斜杠（/）.
@@ -1076,6 +1082,10 @@ File -> Invalidate Caches/Restart...
 --index仅由pip search使用；它只需要这一条信息. 它是单独命名的，因为它应该指向公共搜索Web界面，而不是简单的存储库！对于https://pypi.org，这是https://pypi.org/pypi.
 ###  SyntaxError: Missing parentheses in call to 'exec'
 `sudo python -m pip install Pyro`报错.  Pyro是python2的.
+
+### Python 函数参数前面一个星号（*）和两个星号（**）的区别
+单星号(*agrs) : 将所有参数以元组(tuple)的形式导入
+星号（**kwargs）: 将参数以字典的形式导入
 
 ## 用法
 - ConfigParser : 解析ini配置文件, 加载多个配置时, 后加载的相同键会覆盖前面的.

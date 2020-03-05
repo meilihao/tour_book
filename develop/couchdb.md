@@ -1,6 +1,7 @@
 # CouchDB
 参考:
 - [CouchDB 教程](https://www.w3cschool.cn/couchdb/)
+- [CouchDB 让人头痛的十大问题](https://www.linuxidc.com/Linux/2012-02/54134.htm)
 
 存储格式：JSON : **没有表的概念，数据直接以文档的形式存储在数据库中，每个数据库是一个独立的文档集合**, 因此其数据库就类似于sql的table.
 查询语言：JavaScript
@@ -322,6 +323,24 @@
 ```
 
 ### view函数
+`omit()`以kv形式返回.
+
+couchdb内置reduce函数:
+- `_count` : 返回map结果集中值的个数, 与查询参数`include_docs=true`冲突
+- `_sum` : 返回map结果集中数值的求和结果
+- `_stats` : 返回map结果集中数值的统计结果
+
+### key
+> v3.0.0 curl的`?key=...`有问题, 新建的view无法匹配到结果(有数据).
+
+参考:
+- [Couchbase——查询View（详细版）](https://blog.csdn.net/EntropyArrow/article/details/40858225)
+
+Couchbase Server 支持诸多筛选方式. Key筛选是在view结果产生之后（包括redution函数），也在产生结果排序之后才开始进行.
+给key筛选引擎使用的必须是JSON值. 比如说，指定一个单独的key，如果这是个字符串，那么必须包含在引号内, 比如`http://127.0.0.1:5984/testdb/_design/t/_view/all?reduce=false&key="1001"`
+
+**curl参数key匹配的是emit()返回的key, 且两者的格式必须一致**.
+
 #### map
 Map方法的参数只有一个，就是当前的文档对象. Map方法的实现需要根据文档对象的内容，确定是否要输出结果. 如果需要输出的话，可以通过emit来完成。 emit方法有两个参数，分别是key和value，分别表示输出结果的键和值.
 
@@ -357,3 +376,8 @@ $ curl 'http://127.0.0.1:5984/testdb/_design/jsTest/_view/all?group=true' -u adm
 {"key":1,"value":0}
 ]}
 ```
+
+## FAQ
+### `emit(doc.phoneNumber, doc.billSeconds);`和`emit([doc.phoneNumber], doc.billSeconds);`的区别
+`emit(doc.phoneNumber, doc.billSeconds)`　：　返回的key是`"1000"`
+`emit([doc.phoneNumber], doc.billSeconds)`:   返回的key是`["1001"]`
