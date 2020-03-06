@@ -24,7 +24,7 @@ $ cmd2
 
 ## 当前shell及版本
 
-    $ echo $SHELL #查看当前是什么shell
+    $ echo $SHELL #查看当前是什么shell # $是变量符号
     /bin/bash
     $ echo $0
     bash
@@ -105,11 +105,12 @@ set +v # 禁止打印输入
 ```
 
 ## 读取命令序列的输出
+> 在bash shell中, $()与``(反引号)都是用来做命令替换(command substitution)的.
 
 1. 子shell(subshell),**推荐**
         cmd_output=$(COMMANDS)
 
-2. 反引用(其实该方法也是用子shell来运行命令)
+2. 反引用(其实该方法也是用子shell来运行命令), 唯一优点: 跟其他unix shell的兼容性高.
         cmd_output=`COMMANDS`
 
 >使用$()显然比``优越，这是因为：
@@ -124,6 +125,18 @@ echo $out  #丢失所有换行符
 out="$(cat text.txt)"
 echo $out  #保留换行符
 ```
+
+一般情况下，$var与${var}并没有啥不一样,  但是用${}会比较精准的界定变量名称的范围， 比方说:
+```sh
+$ A=B
+$ echo $AB
+
+$ A=B
+$ echo ${A}B
+$ BB
+```
+
+当然`${}`还有其他更多功能.
 
 ## 子shell
 

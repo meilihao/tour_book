@@ -44,10 +44,12 @@ $ vim ~/.pip/pip.conf # [为pip换源](https://blog.csdn.net/xuezhangjun0121/art
 index-url = https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
+> pip配置查找: `python -m  pip config list -v`
+
 其他pip.conf:
 ```
 [global]
-index-url = http://user:user@192.168.0.236:8081/repository/pypi-proup/simple
+index-url = http://user:user@192.168.0.236:8081/repository/pypi-group/simple
 
 [install]
 trusted-host=192.168.0.236 # 因为未使用https
@@ -1086,6 +1088,16 @@ File -> Invalidate Caches/Restart...
 ### Python 函数参数前面一个星号（*）和两个星号（**）的区别
 单星号(*agrs) : 将所有参数以元组(tuple)的形式导入
 星号（**kwargs）: 将参数以字典的形式导入
+
+### setup.py
+setuptools 是一个优秀的，可靠的 Pthon 包安装与分发工具.
+
+Python 库打包的格式包括 Wheel 和 Egg. Egg 格式是由 setuptools 在 2004 年引入，而 Wheel 格式是由 PEP427 在 2012 年定义. 使用 Wheel 和 Egg 安装都不需要重新构建和编译，其在发布之前就应该完成测试和构建.
+
+Egg 和 Wheel 本质上都是一个 zip 格式包，Egg 文件使用 .egg 扩展名，Wheel 使用 .whl 扩展名. **Wheel 的出现是为了替代 Egg，其现在被认为是 Python 的二进制包的标准格式**.
+
+### ImportError: No module named Cython.Build
+
 
 ## 用法
 - ConfigParser : 解析ini配置文件, 加载多个配置时, 后加载的相同键会覆盖前面的.
