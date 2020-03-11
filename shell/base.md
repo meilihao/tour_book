@@ -167,7 +167,7 @@ cmd << delimiter // 此处如果使用了`-delimiter`则结尾的delimiter可不
   Here Document Content
 delimiter
 ```
-它的作用就是将两个 delimiter 之间的内容(Here Document Content 部分) 传递给cmd 作为输入参数.
+它的作用就是将两个 delimiter 之间的内容(Here Document Content 部分) 作为标准输入的内容传递给cmd.
 
 注意:
 - EOF 只是一个标识而已，可以替换成任意的合法字符
@@ -213,3 +213,6 @@ alias ll='ls -l'
 - 执行当前可执行程序加`./`的原因：
 
 	主要是安全原因，因为在linux中执行程序时，会先搜索当前目录然后是系统目录，所以如果当前目录中有与系统可执行程序重名的程序，比如cp，她就会优先执行当前目录中的cp，但是如果当前目录的cp是木马，就会威胁到系统安全，所以这是Linux的一种安全策略，所以默认并没有把当前目录加到环境变量PATH中去.
+
+## `. FILE`
+`. ./buildenv.mk`(`.`+空格+路径)作用: 点是内置命令` source`的快捷方式，该命令是在当前bash进程中运行脚本.

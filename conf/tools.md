@@ -226,6 +226,19 @@ REGEDIT4
 
 # 其他
 
+### iso
+```sh
+$ sudo mount cd.iso {mount_dir} # 挂载iso, 只读
+$ sudo apt-get install isomaster # isomaster可修改iso, 保存时需要另存为
+```
+
+### qcow2
+```
+$ sudo apt-get install libguestfs-tools
+$ guestmount  -a  x.qcow2 -i  --rw  {mount_dir} # 挂载qcow2
+$ sudo umount {mount_dir}
+```
+
 ### flash
 
     sudo dnf install flash-plugin
