@@ -171,3 +171,6 @@ git config --global http.lowSpeedTime 300
 
 ### submodule 和 subtree的区别
 [submodule is link; subtree is copy](https://gb.yekai.net/concepts/subtree-vs-submodule)
+
+### git中Untracked files如何清除
+`git clean -f -d`
