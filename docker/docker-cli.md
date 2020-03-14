@@ -48,6 +48,9 @@ docker环境信息: docker info
     - -v : 本地目录必须使用绝对路径,但本地文件可以使用相对路径,**推荐使用目录**
 1. docker start [OPTIONS] CONTAINER [CONTAINER...]
 
-### 删除镜像
-sudo docker rmi $(sudo docker images | awk '/^<none>/ { print $3 }')
-
+### 批量操作
+docker rmi -f $(docker images | grep "none" | awk '{print $3}')
+docker rmi -f $(docker images -q)
+docker  image   rm   $(docker  image  ls   -a  -q)
+docker container   stop   $(docker  container  ls   -a  -q)
+docker   container   rm  $(docker  container  ls   -a  -q)
