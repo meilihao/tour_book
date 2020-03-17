@@ -1,7 +1,7 @@
 # docker cli
 
 ## 常用操作
-下载镜像 ： docker pull [registry_hostname/[group/]]namespace/name[:tag]
+下载镜像 ： docker pull [registry_hostname/[group/]]namespace/name[:tag], 比如`docker pull ubuntu@sha256:c7ca486dce6710697a81e2d08796a865f48c6525a3f81f3aa936a4905c9846be`
 给镜像打tag : docker tag SOURCE_IMAGE[:TAG] TARGET_IMAGE[:TAG] # 镜像的ID相同,仅创建别名而已
 镜像/容器的详细信息 : docker inspect [OPTIONS] NAME|ID [NAME|ID...]
 镜像查找 : docker search [OPTIONS] TERM

@@ -14,3 +14,7 @@ debian,ubuntu等发行版的包管理.
     # apt list -a cifs-utils # package all version
     # apt-cache policy cifs-utils # package all version, 推荐
     # rmadison cifs-utils # package all version, 推荐
+
+## FAQ
+### apt install报`Size mismatch`
+下载到的deb软件包信息和源信息列表Packages记录(Packages.gz)的数据不相符, 可用`dpkg -i`安装
