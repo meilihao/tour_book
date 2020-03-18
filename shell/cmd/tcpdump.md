@@ -41,8 +41,9 @@ tcpdump停止捕获数据包时:
     # tcpdump ip host 210.27.48.1 and ! 210.27.48.2 # 获取主机210.27.48.1除了和主机210.27.48.2之外所有主机通信的ip包
     # tcpdump –i eth0 host hostname and dst port 80  目的端口是80 # 列出送到80端口的数据包
     # tcpdump -i eth1 src host 211.167.237.199 and dst port 1467 # 211.167.237.199通过ssh源端口连接到221.216.165.189的1467端口
+    # tcpdump -vv -eqtnni ens160 arp # 截获收到的arp
 
-注意: 
+注意:
 1. 主机有多个网卡时(比如192.168.0.166, 192.168.0.168), 发生数据包的ip是不确定的.
 1. 即使主机的端口没有被监听但也能收到SYN包.
 
@@ -58,3 +59,10 @@ tcpdump停止捕获数据包时:
 - [W] : (ECN CWR)
 - [E] : (ECN-Echo)
 
+### arp解读
+```
+52:54:00:fc:28:03 > ff:ff:ff:ff:ff:ff, ARP, length 60: Ethernet (len 6), IPv4 (len 4), Request who-has 192.168.0.67 tell 192.168.0.167, length 46 # 192.168.0.167发出arp req因此192.168.0.167对应52:54:00:fc:28:03
+...
+00:50:56:84:83:bd > 52:54:00:fc:28:03, ARP, length 60: Ethernet (len 6), IPv4 (len 4), Request who-has 192.168.0.167 (52:54:00:fc:28:03) tell 192.168.0.197, length 46 # 同上192.168.0.197对应00:50:56:84:83:bd 
+52:54:00:fc:28:03 > 00:50:56:84:83:bd, ARP, length 60: Ethernet (len 6), IPv4 (len 4), Reply 192.168.0.167 is-at 52:54:00:fc:28:03, length 46 # 192.168.0.167 响应我是 52:54:00:fc:28:03
+```

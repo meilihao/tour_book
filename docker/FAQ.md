@@ -36,6 +36,8 @@ import/load用于导入镜像,但import用于操作export导出的容器,load用
 
 **一般优先使用 COPY,因为它比 ADD 更透明**
 
+> COPY的目标目录必须带`/`, 否则创建的文件会没有进入权限.
+
 ## Dockerfile RUN/ENTRYPOINT/CMD
 RUN是只在build镜像时运行，固化在image中, 其先于CMD和ENTRYPOINT的. CMD会在每次启动容器的时候运行.
 
