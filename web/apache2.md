@@ -1,6 +1,8 @@
 # apache2
 推荐使用nginx.
 
+Apache提供了方便的工具用于切换站点，就是a2ensite和a2dissite，它们都在apache2-common包里.  a2ensite可以激活apache文件夹下sites-available里包含配置文件的站点，a2dissite的作用正好相反.
+
 ## httpd.conf配置
 参考:
 - [Apache2.4之httpd.conf配置详解](https://blog.csdn.net/a88073327/article/details/80921808)

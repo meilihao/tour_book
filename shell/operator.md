@@ -5,6 +5,7 @@
 - `[ -d file ]` : file存在且是目录
 - `[ -e file ]` : file存在
 - `[ -f file ]` : file存在且是普通文件
+- `[ -h file ]` : 如果文件是软链接，则为真
 - `[ -L file ]` : file存在且是符号连接
 - `[ -s file ]` : file存在且大小不为零
 - `[ -r file ]` : file存在且用户可读

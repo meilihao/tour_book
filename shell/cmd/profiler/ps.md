@@ -32,6 +32,7 @@
     # ps lax // 比`ps aux`实用
     # ps aux
     # ps -elf
+    # ps auxf # 输出进程树
 
 ## 扩展
 
