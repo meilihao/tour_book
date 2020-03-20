@@ -18,3 +18,6 @@
 ## FAQ
 ### 能ping通, 但对端不能接受数据包(包括SYN)
 本机的ARP表中的对端mac可能错误
+
+### ifconfig bond ip显示不完整
+用`ip addr`, `ifconfig`已淘汰.

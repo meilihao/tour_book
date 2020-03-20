@@ -12,3 +12,41 @@ $ echo "PACKAGE install" | sudo dpkg --set-selections  ##解除对软件包的�
 ```
 
 按文件搜索package也可直接使用[debian package服务](https://www.debian.org/distrib/packages)
+
+
+## deb
+参考:
+- [Ubuntu下制作deb包的方法详解](https://blog.csdn.net/gatieme/article/details/52829907)
+- [对一个deb包的解压、修改、重新打包全过程方法](https://blog.csdn.net/yygydjkthh/article/details/36695243), 重新打包后apt install遇到`Failed to fetch ....deb  Size mismatch`, 改用dpkg安装即可, 因为"Packages.gz"里的元信息是旧的.
+
+
+deb包本身有三部分组成：
+- 数据包，包含实际安装的程序数据，文件名为 data.tar.XXX
+
+    data.tar.gz包含的是实际安装的程序数据，而在安装过程中，该包里的数据会被直接解压到根目录(即 / )，因此在打包之前需要根据文件所在位置设置好相应的文件/目录树
+- 安装所需的信息及控制脚本包, 包含deb的安装说明，标识，脚本等，文件名为 control.tar.gz
+
+    一般有 5 个文件：
+    控制文件 	描述
+    control 	用了记录软件标识，版本号，平台，依赖信息等数据
+    preinst 	在解包data.tar.gz前运行的脚本
+    postinst 	在解包数据(即安装)后运行的脚本
+    prerm 	卸载时, 在删除文件之前运行的脚本
+    postrm 	卸载时, 在删除文件之后运行的脚本
+
+- 最后一个是deb文件的一些二进制数据，包括文件头等信息，一般看不到，在某些软件中打开可以看到
+
+deb本身可以使用不同的压缩方式. tar格式并不是一种压缩格式，而是直接把分散的文件和目录集合在一起，并记录其权限等数据信息. 之前提到过的 data.tar.XXX，这里 XXX 就是经过压缩后的后缀名. deb默认使用的压缩格式为gzip格式，所以最常见的就是 data.tar.gz. 常有的压缩格式还有 bzip2 和 lzma，其中 lzma 压缩率最高，但压缩需要的 CPU 资源和时间都比较长.
+
+## FAQ
+### dpkg-deb: error: archive '<file>.deb' has premature member 'data.tar.gz' before
+dpkg的bug: [dpkg无法解析tar.xz格式-xz compressed control.tar files not supported](https://bugs.launchpad.net/ubuntu/+source/dpkg/+bug/1730627)
+
+升级dpkg版本(>=1.17.5)即可.
+
+原因:
+对于软件安装包的提供者而言, 一定是希望安装包具有更好的兼容性. 最好可以使用xz压缩data部分, 仍然用gzip打control部分. 旧版的dpkg-deb, 默认会把control和data分开用不同的格式打包, control默认始终使用gzip的格式打包. 而新版的dpkg-deb(1.19.0)之后都会使用相同的格式压缩control和data. 如果你指定了-Z xz , 那就都是xz. 
+
+还好, dpkg-deb提供了一个参数：--no-uniform-compression加上这一句就可以了. 
+
+默认是：--uniform-compression, 代表使用统一的格式进行压缩. 加上--no-uniform-compression后不再统一, control使用gz压缩. 

@@ -65,6 +65,7 @@ vscode:
 $ python -m pip install -U pygame --user # 安装pygame, 无法安装成功, 缺少依赖. 但系统自带的python3.7可以安装成功并运行demo
 $ python -m pygame.examples.aliens # 运行pygame demo
 $ python -m pip  show pygame # 查找安装位置
+$ pip install --target /usr/lib/python3.7/dist-packages netifaces # 指定pip安装目录
 ```
 
 > 可使用`apt-file search "sdl-config"`查找pygame的依赖
@@ -584,6 +585,14 @@ try:
     print(5/0) 
 except ZeroDivisionError: 
     print("You can't divide by zero!") 
+
+###
+def MachineID():
+    try:
+        with open("/etc/machine-id", 'r') as f:
+            return f.read().strip()
+    except Exception as e:
+        raise e
 ###
 filename = 'alice.txt' 
 try: 

@@ -37,6 +37,42 @@ ps:
 ### openssl x509
 - -x509toreq             基于当前证书创建一个CSR文件
 
+### rsa
+参考:
+- [ 利用openssl进行RSA加密解密](https://www.cnblogs.com/alittlebitcool/archive/2011/09/22/2185418.html)
+
+```sh
+$ openssl rsautl -encrypt -in hello -inkey test_pub.key -pubin -out hello.en # 公钥加密
+$ openssl rsautl -decrypt -in hello.en -inkey test.key -out hello.de # 私钥解密
+$ cat license.dat |base64 -d - |openssl rsautl -verify -in - -inkey licens.key.pub -pubin -out clear_text # 公钥解密. -pubin：表明输入的是一个公钥文件，默认输入为私钥文件
+```
+
+### rsa解密
+参考:
+- [RSA填充方式](https://www.jianshu.com/p/205abb4b9dc6)
+
+```python
+# from PKCS1_v1_5.new(RSA.importKey(pubKey)).verify(h, base64.b64decode(signature))
+def rsaPublicDecrypt(S):
+    key = RSA.importKey(pubKey)
+
+    modBits = Crypto.Util.number.size(key.n)
+    k = ceil_div(modBits,8) # Convert from bits to bytes
+    # Step 1
+    if len(S) != k:
+        return ""
+        # Step 2a (O2SIP) and 2b (RSAVP1)
+        # Note that signature must be smaller than the module
+        # but RSA.py won't complain about it.
+        # TODO: Fix RSA object; don't do it here.
+    m = key.encrypt(S, 0)[0]
+    if len(m) > 0 and m[0] == '\x01': # rsa encrypt的输出编码(RSA_padding_add_PKCS1_type_1): 01 FF ... FF 00 + data
+            pos = m.find('\x00')
+            if pos > 0:
+                m=m[pos+1:]
+    return str(m)
+```
+
 ## FAQ
 ### 查看Server host key即远程主机的key fingerprint
 ```
@@ -102,3 +138,5 @@ openssl: /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1: version `OPENSSL_1_1_1' not
 `make`后运行`make test`时报该错误.
 
 阅读官方repo的[INSTALL](https://github.com/openssl/openssl/blob/master/INSTALL),上面有关于perl的要求,具体在[NOTES.PERL](https://github.com/openssl/openssl/blob/master/NOTES.PERL)里.
+
+### [openssl rsa/pkey(查看私钥、从私钥中提取公钥、查看公钥)](https://www.cnblogs.com/wyzhou/p/9738964.html)

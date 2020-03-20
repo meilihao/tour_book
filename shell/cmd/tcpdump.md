@@ -41,6 +41,7 @@ tcpdump停止捕获数据包时:
     # tcpdump ip host 210.27.48.1 and ! 210.27.48.2 # 获取主机210.27.48.1除了和主机210.27.48.2之外所有主机通信的ip包
     # tcpdump –i eth0 host hostname and dst port 80  目的端口是80 # 列出送到80端口的数据包
     # tcpdump -i eth1 src host 211.167.237.199 and dst port 1467 # 211.167.237.199通过ssh源端口连接到221.216.165.189的1467端口
+    # tcpdump -e -i ens160 arp # 截获arp
     # tcpdump -vv -eqtnni ens160 arp # 截获收到的arp
 
 注意:
@@ -66,3 +67,15 @@ tcpdump停止捕获数据包时:
 00:50:56:84:83:bd > 52:54:00:fc:28:03, ARP, length 60: Ethernet (len 6), IPv4 (len 4), Request who-has 192.168.0.167 (52:54:00:fc:28:03) tell 192.168.0.197, length 46 # 同上192.168.0.197对应00:50:56:84:83:bd 
 52:54:00:fc:28:03 > 00:50:56:84:83:bd, ARP, length 60: Ethernet (len 6), IPv4 (len 4), Reply 192.168.0.167 is-at 52:54:00:fc:28:03, length 46 # 192.168.0.167 响应我是 52:54:00:fc:28:03
 ```
+
+### ARP 广播拿到错误 MAC 地址
+参考:
+-  [ARP 广播拿到错误 MAC 地址](http://xy.am/2015/04/19/arp/)
+- [arp_filter](https://lwn.net/Articles/45386/#arp_filter)
+
+当有一个 ARP 广播请求一个 MAC 地址时，本机会查看自己是否拥有这个 IP，只要本机任何端口拥有该IP，就会随机返回一个网口的 MAC 地址, 即机器不管你的请求通过哪个网卡进来，反正请求能进到这台机器，就行了.
+
+处理方法: 将 /proc/sys/net/ipv4/conf/all/arp_filter 设为 1 即可
+
+> 也有可能是ip冲突, 解决方法: 关掉相关的电脑, 看还能否收到错误的arp, 如果还能收到则再用linux/windows远程去连接(发送错误mac的ip)一下看看.
+
