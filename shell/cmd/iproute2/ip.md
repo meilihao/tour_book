@@ -21,3 +21,25 @@
 
 ### ifconfig bond ip显示不完整
 用`ip addr`, `ifconfig`已淘汰.
+
+### 多网卡同IP和同网卡多IP技术
+参考:
+- [多网卡同IP和同网卡多IP技术](https://www.jianshu.com/p/c3278e44ee9d)
+
+#### 多网卡同IP技术
+将多个网卡端口绑定为一个，可以提升网络的性能. 在linux系统上有两种技术可以实现:Linux 网络组和bond.
+
+网络组(Teaming, RHEL7开始使用): 是将多个网卡聚合在一起方法，从而实现冗错和提高吞吐量,网络组不同于旧版中bonding 技术，能提供**更好的性能和扩展性**，网络组由内核驱动和teamd 守护进程实现.
+
+确定内核是否支持 bonding:
+```sh
+# cat /boot/config-4.15.0-30deepin-generic |grep -i bonding
+CONFIG_BONDING=m
+```
+
+#### 同网卡多IP技术
+有两种实现：
+- 早期的 ip alias
+- 现在的secondary ip
+
+ifconfig显示的格式为`eth0:N`(即单独的网络接口),`ip addr`则是网络接口属性里的一条记录.
