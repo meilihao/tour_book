@@ -965,11 +965,11 @@ motorcycles.index("honda") # 在列表中查找指定值第一次出现的索引
 b = motorcycles.copy() # 复制list, 效果与用a[:]或list(a)类似
 [[1, 2], 1, 1, [2, 1, [1, 2]]] .count(1) # =>2.  计算指定的元素在列表中出现了多少次
 motorcycles.extend([1,2]) # 能够同时将多个值附加(复制)到列表末尾,
-motorcycles.sort() # 就地排序, 调用后motorcycles即变成了sorted列表
+motorcycles.sort() # 就地排序, 调用后motorcycles即变成了sorted列表, 没有返回值
  motorcycles.sort(key=len) # 法sort接受两个可选参数：key和reverse, key用于排序的函数, 用该函数的结果作为排序依据. `reverse=True`表示逆向排序.
 motorcycles.reverse() # 反向排序
 list(reversed(motorcycles))  # 用list将返回的对象(迭代器)转换为列表
-sorted(motorcycles) # motorcycles不变, 输出排序后的内容. 该方法支持传递参数`reverse=True`进行反向排序.
+sorted(motorcycles) # motorcycles不变, 返回排序后的内容. 该方法支持传递参数`reverse=True`进行反向排序. 
 len(motorcycles) # 获取列表的长度
 list('Hello')  # list() 方法用于将元组转换为列表
 tuple([1, 2, 3])  # 将list转为元组

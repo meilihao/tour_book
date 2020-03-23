@@ -42,6 +42,8 @@ ps:
 - [ 利用openssl进行RSA加密解密](https://www.cnblogs.com/alittlebitcool/archive/2011/09/22/2185418.html)
 
 ```sh
+$ openssl rsa -noout -text -in my.key # 查看私钥内容
+$ openssl rsa -noout -text -pubin -in my.key.pub # 查看公钥内容
 $ openssl rsautl -encrypt -in hello -inkey test_pub.key -pubin -out hello.en # 公钥加密
 $ openssl rsautl -decrypt -in hello.en -inkey test.key -out hello.de # 私钥解密
 $ cat license.dat |base64 -d - |openssl rsautl -verify -in - -inkey licens.key.pub -pubin -out clear_text # 公钥解密. -pubin：表明输入的是一个公钥文件，默认输入为私钥文件

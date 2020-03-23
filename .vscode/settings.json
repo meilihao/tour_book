@@ -3,5 +3,6 @@
         "iosfwd": "cpp",
         "ostream": "cpp",
         "typeinfo": "cpp"
-    }
+    },
+    "python.pythonPath": "/bin/python2.7"
 }
