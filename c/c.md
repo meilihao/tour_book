@@ -374,7 +374,9 @@ int main(void)
     struct student stu1={ "wit",20 }; // 在标准 C 中，结构体变量的初始化也要按照固定的顺序
     printf("%s:%d\n",stu1.name,stu1.age);
 
-    struct student stu2= // 在 GNU C 中也可以通过结构域来初始化指定某个成员. 在 Linux 内核驱动中，大量使用 GNU C 的这种指定初始化方式.
+    // 在 GNU C 中也可以通过结构域来初始化指定某个成员. 在 Linux 内核驱动中，大量使用 GNU C 的这种指定初始化方式.
+    // 优势: 无论file_operations 结构体类型如何变化，添加成员也好、减少成员也好、调整成员顺序也好，都不会影响其它文件的使用
+    struct student stu2=
     {
         .name = "wanglitao",
         .age  = 28
@@ -779,6 +781,65 @@ const也可修饰函数的返回值, 即返回值不可改变.
 `extern char a[]`和`extern char a[100]`没有区别, 因为仅是声明不分配空间, 因此编译器无需知道数组的长度.
 
 ## FAQ
+### 语句表达式
+GNU C 对 C 标准作了扩展，允许在一个表达式里内嵌语句，允许在表达式内部使用局部变量、for 循环和 goto 跳转语句. 语句表达式的格式如下：
+```c
+({ 表达式1; 表达式2; 表达式3; })
+```
+语句表达式最外面使用小括号()括起来，里面一对大括号{}包起来的是代码块，代码块里允许内嵌各种语句. 语句的格式可以是 “表达式;”这种一般格式的语句，也可以是循环、跳转等语句.
+
+```c
+int main(void)
+{
+    int sum = 0;
+    sum = 
+    ({
+        int s = 0;
+        for( int i = 0; i < 10; i++)
+            s = s + i;
+            s; // 语句表达式的值总等于最后一个表达式的值
+    });
+    printf("sum = %d\n",sum);
+    return 0;
+}
+
+int main(void)
+{
+    int sum = 0;
+    sum = 
+    ({
+        int s = 0;
+        for( int i = 0; i < 10; i++)
+            s = s + i;
+            goto here;
+            s;  
+    });
+    printf("sum = %d\n",sum);
+here:
+    printf("here:\n");
+    printf("sum = %d\n",sum);
+    return 0;
+}
+
+// 在宏中使用语句表达式: 求两个数的最大值
+// i++ 返回原来的值(即先赋值后加1)，++i 返回加1后的值(先加1后赋值); i++ 不能作为左值，而++i 可以. 参考: [为什么(i++)不能做左值，而(++i)可以](为什么(i++)不能做左值，而(++i)可以), 因为i++ 最后返回的是一个临时变量，而临时变量是右值.
+// 左值与右值的根本区别在于是否允许取地址&运算符获得对应的内存地址
+#define MAX(x,y) ((x) > (y) ? (x) : (y)) //一般. int i = 2; int j = 6; int max = MAX(i++,j++) => max=7, 因为判断(x) > (y) 后导致j+1=>7
+#define MAX(type,x,y)({     \
+    type _x = x;        \
+    type _y = y;        \
+    _x > _y ? _x : _y; \
+}) // 优秀
+int main(void)
+{
+    int i = 2;
+    int j = 6;
+    printf("max=%d\n",MAX(int,i++,j++));
+    printf("max=%f\n",MAX(float,3.14,3.15));
+    return 0;
+}
+```
+
 ### 行末尾的`\`(断行)
 如果一行代码有很多内容，导致太长影响阅读，可以通过在结尾加`\`的方式实现换行，编译时会忽略\及其后的换行符，并当做一行处理.
 
