@@ -90,6 +90,26 @@ B 分支结构（5个）
    
 > 建议switch必须带default分支(即使程序不需要), 以避免忘记default的处理; switch case组合中禁止使用return.
 
+```c
+int main(void)
+{
+    int i = 4;
+    switch(i)
+    {
+        case 1:
+            printf("1\n");
+            break;
+        case 2 ... 8: // 当 case 值为2到8时，都执行相同的 case 分支. 注意"..."两边有空格
+            printf("%d\n",i);
+            break;
+        default:
+            printf("default!\n");
+            break;
+    }
+    return 0;
+}
+```
+
 C 循环结构（3个）
 
     1.for ：for循环结构，for(1;2;3)4;的执行顺序为1->2->4->3->2…循环，其中2为循环条件
@@ -222,6 +242,8 @@ int IsLittleEndian()//原理：联合体union的存放顺序是所有成员都�
 ### 数组
 ```c
 // 省略掉了数组的大小时, 数组的大小为初始化时元素的个数
+// 不完全初始化时(只给一部分元素赋值)，没有被初始化的元素自动为 0
+// "不完全初始化"和"完全不初始化"不一样. 如果“完全不初始化”，即只定义"int a[5];"而不初始化，那么各个元素的值就不是0了，所有元素都是垃圾值.
 type arrayName [ arraySize ];
 ```
 
@@ -262,6 +284,47 @@ int main(void)
 }
 ```
 
+```c
+// C99 标准(GNU C 支持 C99 标准)改进了数组的初始化方式，支持指定任意元素初始化，不再按照固定的顺序初始化. 
+int array[10] =
+{
+        [0 ... 9] = 0, // 使用 [0 … 9] 表示一个索引范围，相当于给 a[0] 到 a[9] 之间的10个数组元素赋值为0
+        [8] = 8,
+        [2 ... 2] = 2,
+        [5 ... 7] = 5
+};
+```
+
+C语言中，数组初始化的方式主要有三种：
+1. 声明时，使用 {0} 初始化
+2. 使用memset
+3. 用for循环赋值
+
+```c
+#define ARRAY_SIZE_MAX  (1*1024*1024)  
+    
+void function1()  
+{  
+    char array[ARRAY_SIZE_MAX] = {0};  //声明时使用{0}初始化为全0, 有移植性问题，虽然绝大多数编译器看到{0} 都是将数组全部初始化为0， 但是不保证所有编译器都是这样实现的, 但还是推荐这种写法, 毕竟编译器都在进步
+}  
+    
+void function2()  
+{  
+    char array[ARRAY_SIZE_MAX];  
+    memset(array, 0, ARRAY_SIZE_MAX);  //使用memset方法  
+}  
+    
+void function3()  
+{  
+    int i = 0;  
+    char array[ARRAY_SIZE_MAX];  
+    for (i = 0; i < ARRAY_SIZE_MAX; i++)  //for循环赋值, 最浪费时间，不建议
+    {  
+        array[i] = 0;  
+    }  
+}  
+```
+
 #### 二维数组
 二维数组`int a[M][N]`是一维数组a[M]的扩展, a[M]的类型是`int[N]`.
 参考一维数组可得a=`&a[0]`, 因此数组名 a 的类型为`int(*)[N]`, 而a[0]=`&a[0][0]`(把a[0]视为一个整体buf可轻松推导得到), 所以a = `&(&a[0][0])`
@@ -296,6 +359,29 @@ struct tag { // tag 是结构体标签
 struct {
    int age;
    void (*pFunc)(void); // 函数指针, 指向void func(void), 类似class 的成员方法
+}
+```
+
+```c
+// 指定初始化结构体成员变量
+struct student{
+    char name[20];
+    int age;
+};
+
+int main(void)
+{
+    struct student stu1={ "wit",20 }; // 在标准 C 中，结构体变量的初始化也要按照固定的顺序
+    printf("%s:%d\n",stu1.name,stu1.age);
+
+    struct student stu2= // 在 GNU C 中也可以通过结构域来初始化指定某个成员. 在 Linux 内核驱动中，大量使用 GNU C 的这种指定初始化方式.
+    {
+        .name = "wanglitao",
+        .age  = 28
+    };
+    printf("%s:%d\n",stu2.name,stu2.age);
+
+    return 0;
 }
 ```
 
