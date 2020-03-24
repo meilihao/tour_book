@@ -830,6 +830,11 @@ here:
     type _y = y;        \
     _x > _y ? _x : _y; \
 }) // 优秀
+#define MAX(x,y)({     \
+    typeof(x) _x = x;        \
+    typeof(x) _y = y;        \
+    _x > _y ? _x : _y; \
+}) // 同样优秀
 int main(void)
 {
     int i = 2;
@@ -915,7 +920,7 @@ const定义常量从汇编的角度来看，只是给出了对应的内存地址
 1. 提高了效率
 编译器通常不为普通const常量分配存储空间，而是将它们保存在符号表中，这使得它成为一个编译期间的常量，没有了存储与读内存的操作，使得它的效率也很高.
 
-1. 宏替换只作替换，不做计算，不做表达式求解;
+1. **宏替换只作替换，不做计算，不做表达式求解**;
 宏预编译时就替换了，程序运行时，并不分配内存
 
 ### enum与`#define`区别
@@ -978,3 +983,92 @@ struct的成员默认的属性是public, 而class成员的默认是private.
 数组指针: 是指针, 指向一个数组, 比如`int (*p2)[10]`.
 
 记忆: `[]`的优先级比`*`高.
+
+### typeof
+GNU C 扩展了一个关键字 typeof，用来获取一个变量或表达式的类型. 因为 typeof 还没有被写入 C 标准，但也算是 GCC 扩展的一个关键字.
+
+快速记忆: 删除typeof和变量名, 剩余的即为变量的数据类型.
+
+typeof构造中的类型名不能包含存储类说明符，如extern或static。不过允许包含类型限定符，如const或volatile.
+
+```c
+int i ;
+typeof(i) j = 20; // int j =20
+
+int f();
+typeof(f()) k; // 函数的类型即其返回值类型, 因此是int k 
+
+typeof (int *) x,y;   // =(等价于)int *x,*y;
+typeof (int)  *x,y;   // = int *x, int y
+typeof (*x) y;      //定义一个指向 x 类型的指针变量y, 即x* y
+typeof (int) y[4];  //相当于定义一个：int y[4]
+typeof (*x) y[4];   //把 y 定义为一个成员是指向x数据类型的指针的数组
+typeof (typeof (char *)[4]) y;//相当于定义一个字符指针的数组：char *y[4];
+typeof(int x[4]) y;  //相当于定义：int y[4]
+
+#define array(type, size) typeof(type [size])
+int func(int num)
+{
+    return num + 5;
+}
+
+int main(void)
+{
+    typeof (func) *pfunc = func; //等价于int (*pfunc)(int) = func;
+    printf("pfunc(10) = %d\n", (*pfunc)(10));
+ 
+    array(char, ) charray = "hello world!"; //等价于char charray[] = "hello world!";
+    typeof (char *) charptr = charray; //等价于char *charptr = charray;
+ 
+    printf("%s\n", charptr);
+    return 0;
+}
+
+// 内核中，min宏的定义：
+#define min(x, y) ({                \
+    typeof(x) _min1 = (x);          \
+    typeof(y) _min2 = (y);          \
+    (void) (&_min1 == &_min2);      \ //很巧妙, 是用来检测宏的两个参数 x 和 y 的数据类型是否相同(因为要比较, 数据类型需相同). 如果不相同，编译器会给一个警告信息(warning：comparison of distinct pointer types lacks a cast)，提醒程序开发人员; 相同时结果为false/true, 什么也不做.
+    _min1 < _min2 ? _min1 : _min2; })
+```
+
+### container_of
+因为在 Linux 内核中应用甚广, container_of有Linux 内核第一宏之称. 它返回的是某结构体的首地址, 更具体的是根据一个结构体的类型和结构体内某一成员的地址，就可以直接获得到这个结构体的首地址.
+
+这个宏有三个参数，它们分别是:
+- ptr：结构体内成员member的地址
+- type：结构体类型
+- member：结构体内的成员
+
+container_of 宏实现基础: 假设结构体首地址为0，那么结构体中每个成员变量的地址即为该成员相对于结构体首地址的偏移.
+
+```c
+#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
+#define  container_of(ptr, type, member) ({    \
+     const typeof( ((type *)0)->member ) *__mptr = (ptr); \
+     (type *)( (char *)__mptr - offsetof(type,member) );})
+
+struct student
+{
+    int age;
+    int num;
+    int math;
+};
+int main(void)
+{
+    struct student stu;
+    struct student *p;
+    p = container_of( &stu.num, struct student, num);
+    return 0;
+}
+
+int main(void)
+{
+    // 计算成员变量在结构体内的偏移
+    // 当结构体的首地址为0时，结构体中的各成员地址在数值上等于结构体各成员相对于结构体首地址的偏移
+    printf("&age = %p\n",&((struct student*)0)->age);
+    printf("&num = %p\n",&((struct student*)0)->num);
+    printf("&math= %p\n",&((struct student*)0)->math);
+    return 0;   
+}
+```

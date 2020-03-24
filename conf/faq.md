@@ -167,7 +167,7 @@ $ echo $SSH_AUTH_SOCK
 
 虽然ssh-add无法添加, 但`ssh xxx`还是可正常使用
 
-### ssh自动断开
+### ssh 超时自动断开
 1. 服务端设置
     找到/etc/ssh/sshd_config, 并修改数值
 
@@ -185,6 +185,8 @@ $ echo $SSH_AUTH_SOCK
         ServerAliveInterval 30
         ServerAliveCountMax 3
         TCPKeepAlive yes
+
+> 也有可能是防火墙掐掉空闲连接导致: [Linux使用ssh超时断开连接的真正原因](http://bluebiu.com/blog/linux-ssh-session-alive.html)
 
 ## linux 搜狗输入法 禁用半角切换
 打开Fcitx配置界面 -> 全局配置, 选中左下角的`显示高级选项`, 重新定义`切换全角`的快捷键即可.
