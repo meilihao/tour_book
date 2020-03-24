@@ -28,7 +28,7 @@ secure.gravatar.com          gravatar.lug.ustc.edu.cn
 类似:
 - [ReplaceGoogleCDN](https://github.com/justjavac/ReplaceGoogleCDN)
 
-## linux 忘记密码
+## linux 忘记/重置密码
 - dedpin 15.4.1
 ```
 1、首先开机选择"Advanced options for *****"这一行按回车

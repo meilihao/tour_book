@@ -14,6 +14,12 @@
 - `[ file1 -nt file2 ]` : file1比file2新(file1存在且file2不存在为真)
 - `[ file1 -ot file2 ]` : file1比file2旧(file2存在且file1不存在为真)
 - `[ file1 -ef file2 ]` : file1和file2是否硬连接到同一个文件
+
+测试:
+```sh
+$  [ -e /dev/cdrom ] && echo "Exist" 
+Exist
+```
 ### 数值
 - `-ne` : 数值不相等
 - `-eq` : 数值等于

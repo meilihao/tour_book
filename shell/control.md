@@ -15,34 +15,34 @@ if 语句通过关系运算符判断表达式的真假来决定执行哪个分�
 
 > 注意:[]中判断条件两侧的空格不可省略
 
-## 例
+## if
 ```shell
-    #!/bin/bash
+#!/bin/bash
 
-    function show_usage {
-       echo "Usage: $0 source_dir dest_dir"
-       exit $1  #会使用show_usage指定的出错码退出
-    }
+function show_usage {
+   echo "Usage: $0 source_dir dest_dir"
+   exit $1  #会使用show_usage指定的出错码退出
+}
 
-    if [ $# -ne 2 ];then # `[`实际上是一个命令，必须将其与剩余的字符串用空格隔开
-       show_usage
-    else
-       if [ -d $1 ];then
-     	  source_dir=$1
-       else
-          echo "Invalid source directory"
-          show_usage 1 #给函数一个确定的出错码值1
-      fi
-      if [ -d $2 ];then
-         dest_dir=$2
-      else
-         echo "Invalid destination directory"
-         show_usage 2
-      fi
-    fi
+if [ $# -ne 2 ];then # `[`实际上是一个命令，必须将其与剩余的字符串用空格隔开
+   show_usage
+else
+   if [ -d $1 ];then
+   source_dir=$1
+   else
+      echo "Invalid source directory"
+      show_usage 1 #给函数一个确定的出错码值1
+fi
+if [ -d $2 ];then
+   dest_dir=$2
+else
+   echo "Invalid destination directory"
+   show_usage 2
+fi
+fi
 
-    printf "Source directory is ${source_dir}\n"
-    printf "Destinatin directory is ${dest_dir}\n"
+printf "Source directory is ${source_dir}\n"
+printf "Destinatin directory is ${dest_dir}\n"
 ```
 ```shell
 # 用逻辑运算符进行简化, 短路运算更简洁
@@ -63,19 +63,21 @@ if [[ $a > $b ]] || [[ $a < $c ]] <=>  if [ $a -gt $b -o $a -lt $c ]
 允许通过判断来选择代码块中多条路径中的一条,类似c中的switch.
 
 格式:
-
-    case $var in
-    模式1)
-     	命令1
-     	...
-     	;;
-    模式2)
-        命令2
-        ...
-        ;;
-    ......
-    esac
-
+```sh
+case $var in
+模式1)
+   命令1
+   ...
+   ;;
+模式2)
+   命令2
+   ...
+   ;;
+*)
+   其他
+......
+esac
+```
 # for
 
 循环

@@ -16,5 +16,5 @@
 ## 例
 
 ```sh
-$ killall vim
+$ killall httpd # httpd有多个进程协同为用户提供服务
 ```

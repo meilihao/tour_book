@@ -12,6 +12,7 @@ grep [OPTIONS] 关键词 [FILE...]
 
 ## 选项
 
+- -b : 将可执行文件（binary）当作文本文件（text）来搜索
 - -c : 统计文件中包含文本的次数
 - -e : 使用模式匹配
 - -E : 使用extended regular expression(ERE,扩展的正则表达式)模式进行匹配,默认是使用基本正则表达式(BRE)

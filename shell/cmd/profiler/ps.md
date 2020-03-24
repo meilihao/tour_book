@@ -62,6 +62,7 @@ This is just the PID of the session leader. **If PID == SID, then this process i
 - SZ : 进程在主存的大小(按页面数计算)
 - NI : nice值
 - PRI : 调度优先级(内核的内部表示,与nice不同)
+- STAT : 进程状态
 
 ### 进程状态
 
@@ -75,11 +76,11 @@ linux上进程有5种状态:
 
 ps工具标识进程的5种状态码:
 
-- D 不可中断睡眠 uninterruptible sleep (usually IO),进程繁忙或挂起，不响应信号，通常是等待io
-- R 正在运行或可运行 (on run queue)
+- D 不可中断睡眠 uninterruptible sleep (usually IO),进程繁忙或挂起，不响应信号，此时即便用 kill 命令也不能将其中断, 通常是等待io
+- R 正在运行或在运行队列中等待(on run queue)
 - I TASK_INTERRUPTIBLE：进程处于睡眠状态，正在等待某些事件发生, 进程可以被信号中断. 接收到信号或被显式的唤醒呼叫唤醒之后，进程将转变为 TASK_RUNNING 状态
-- S 可中断的sleeping,例如，终端进程和 Bash 通常处于此状态，等待你键入某些内容
-- T 由任务控制信号停止
+- S 可中断的sleeping, 当某个条件形成后或者接收到信号时，则脱离该状态. 例如，终端进程和 Bash 通常处于此状态，等待键入某些内容
+- T 由任务控制信号停止, 即进程收到停止信号后停止运行
 - t 在跟踪期间由调试器停止
 - X 死亡（不应该看到)
 - Z 僵死进程, 已经终止但是其父进程还没回收

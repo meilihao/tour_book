@@ -1,6 +1,9 @@
 # SHELL
 当前使用的是哪种shell
 
+# HOME
+用户的主目录
+
 # TIME_STYLE
 
 自定义显示时间格式,例如控制ls命令输出时间的格式
@@ -67,6 +70,14 @@ done <<< "$IN"
 # LANG
 当前系统使用的字符集, 在`/etc/default/locale`里.
 可通过`locale -a`查看可用的字符集.
+
+# 其他环境变量
+- HISTSIZE : 输出的历史命令记录条数
+- HISTFILESIZE : 保存的历史命令记录条数
+- LANG : 系统语言、语系名称
+- RANDOM 生成一个随机数字
+- PATH 定义解释器搜索用户执行命令的路径
+- EDITOR 用户默认的文本编辑器
 
 # 配置文件
 `bashrc`与`profile`都用于保存用户的环境信息，`bashrc`用于非交互式`no-login shell`,比如x-window下启动的终端，而profile用于交互式`login shell`.
