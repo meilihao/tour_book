@@ -17,4 +17,5 @@
 ```sh
 $ dd if=/dev/zero of=test bs=1M count=1000 # 在当前目录下会生成一个1000M的test文件，文件内容为全0, 但是这样为实际写入硬盘，文件产生速度取决于硬盘读写速度
 $ seq 1000000 | xargs -i dd if=/dev/zero of={}.dat bs=1024 count=1 # 随机生成1百万个1K的文件
+$ dd if=/dev/cdrom of=centos.iso # 将光驱设备中的光盘制作成 iso 格式的镜像文件
 ```

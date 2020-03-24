@@ -5,6 +5,19 @@
 参考:
 - [走进Linux之systemd启动过程](https://linux.cn/article-5457-1.html)
 
+### systemd 与 System V init 的区别以及作用
+|System V init 运行级别|systemd 目标名称|作用|
+|0| runlevel0.target, poweroff.target |关机|
+|1| runlevel1.target, rescue.target |单用户模式|
+|2| runlevel2.target, multi-user.target |等同于级别 3 |
+|3| runlevel3.target, multi-user.target |多用户的文本界面|
+|4| runlevel4.target, multi-user.target |等同于级别 3 |
+|5| runlevel5.target, graphical.target |多用户的图形界面|
+|6| runlevel6.target, reboot.target |重启|
+|emergency |emergency.target |紧急 Shell |
+
+修改默认运行级别: ` ln -sf /lib/systemd/system/multi-user.target /etc/systemd/system/default.target`
+
 ## 命令
 ### systemctl
 systemctl是 Systemd 的主命令，用于管理系统
@@ -194,7 +207,7 @@ $ sudo systemctl list-unit-files --type=service|grep enabled
 # 列出所有配置文件
 $ systemctl list-unit-files
 
-# 列出指定类型的配置文件
+# 列出指定类型的配置文件, 及其启动与禁用情况
 $ systemctl list-unit-files --type=service
 
 # 查看配置文件的内容

@@ -28,6 +28,32 @@
 
 >重构man数据库的方法:RedHat:makewhatis命令;Ubuntu,SUSE:mandb命令.
 
+man 命令中常用按键以及用途:
+空格键 向下翻一页
+PaGe down 向下翻一页
+PaGe up 向上翻一页
+home 直接前往首页
+end 直接前往尾页
+/ 从上至下搜索某个关键词，如“/linux”
+? 从下至上搜索某个关键词，如“?linux”
+n 定位到下一个搜索到的关键词
+N 定位到上一个搜索到的关键词
+q 退出帮助文档
+
+man 命令帮助信息的结构以及意义:
+结构名称 代表意义
+NAME 命令的名称
+SYNOPSIS 参数的大致使用方法
+DESCRIPTION 介绍说明
+EXAMPLES 演示（附带简单说明）
+OVERVIEW 概述
+DEFAULTS 默认的功能
+OPTIONS 具体的可用选项（带介绍）
+ENVIRONMENT 环境变量
+FILES 用到的文件
+SEE ALSO 相关的资料
+HISTORY 维护历史与联系方式
+
 ## 例
 ```sh
 $man 3 printf
