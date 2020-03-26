@@ -264,7 +264,7 @@ __all__对于 `from <module> import <member>`导入方式并没有影响.
 参数fromlist指明需要导入的子模块名，level指定导入方式（相对导入或者绝对导入， 默认两者都支持）．
 
 ### 关于.pyc 文件 与 .pyo 文件
-.py文件的汇编,只有在import语句执行时进行，当.py文件第一次被导入时，它会被汇编为字节代码，并将字节码写入同名的.pyc文件中. 后来每次导入操作都会直接执行.pyc 文件（当.py文件的修改时间发生改变，这样会生成新的.pyc文件），在解释器使用-O选项时，将使用同名的.pyo文件，这个文件去掉了断言（assert）、断行号以及其他调试信息，体积更小，运行更快.（使用-OO选项，生成的.pyo文件会在`-O`的基础上再去除__doc__ string(文档信息)).
+.py文件的字节码形式,只有在import语句执行时进行，当.py文件**第一次被导入**时，它会被编码为字节代码，并将字节码写入同名的.pyc文件中. 后来每次导入操作都会直接执行.pyc 文件（当.py文件的修改时间发生改变，这样会生成新的.pyc文件），在解释器使用-O选项时，将使用同名的.pyo文件，这个文件去掉了断言（assert）、断行号以及其他调试信息，体积更小，运行更快.（使用-OO选项，生成的.pyo文件会在`-O`的基础上再去除__doc__ string(文档信息)).
 
 pyc的生成时机是在执行了 import 指令之后. import时已经存在 pyc 的话，就可以直接载入而省去编译过程, python还会在 pyc 文件中存储的创建时间信息来保证pyc文件是最新的. 当执行 import 指令的时候，如果已存在 pyc 文件，Python 会检查创建时间是否晚于代码文件的修改时间，这样就能判断是否需要重新编译，还是直接载入了; 如果不存在 pyc 文件，就会先将 py 文件编译.
 
@@ -1097,6 +1097,9 @@ File -> Invalidate Caches/Restart...
 ### Python 函数参数前面一个星号（*）和两个星号（**）的区别
 单星号(*agrs) : 将所有参数以元组(tuple)的形式导入
 星号（**kwargs）: 将参数以字典的形式导入
+
+### ImportError: No module named license.LicenseManager
+明明`license.LicenseManager.py`却提示找不到, 因为LicenseManager.py同目录的`__init__.py`被删除了.
 
 ### setup.py
 setuptools 是一个优秀的，可靠的 Pthon 包安装与分发工具.

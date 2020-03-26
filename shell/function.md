@@ -1,14 +1,18 @@
 # function
 
 定义:
-
-    [function] fname（）    
-    {
-    	statements;    
-    	[return]    
-    }
+```bash
+[function] fname（）    
+{
+    statements;    
+    [return]    
+}
+```
 
 参数传递方式为："fname"（不需要传递参数）或"fname agr1 arg2"（需要传递两个参数）
+
+> 函数必须先定义后使用
+> 如果重新定义了函数，新的函数就会覆盖旧的函数
 
 ```bash
 prompt()

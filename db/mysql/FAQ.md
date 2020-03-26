@@ -236,3 +236,9 @@ key 太长会导致一个页当中能够存放的 key 的数目变少，间接�
 
 ### Specified key was too long; max key length is 767 bytes
 数据库表采用utf8编码，其中varchar(255)的column进行了唯一键索引,而mysql默认情况下单个列的索引不能超过767位(不同版本可能存在差异),于是utf8字符编码下，255*3 byte 超过限制.
+
+### json操作
+```sql
+-- conds = conds.And(Expr(`JSON_CONTAINS(mcode,'["` + code + `"]','$')`))
+select * FROM `raw_license` WHERE JSON_CONTAINS(mcode,'["04932265479995"]') ;  -- mcode是array, 检索成员的格式必须是`'[xxx ,...]'`
+```

@@ -9,7 +9,7 @@
 分布式的特点:
 - 分布性 ：系统中的机器随意分布
 - 对等性：组成分布式系统的所有节点都是对等或相对对等的
-- 并发性：需要协调并发操作一些共享资源
+- 并发性：需要协调并发操作一些共享资源git
 - 缺乏全局时钟：在分布式系统中，很难定义两件事情谁先谁后
 - 故障总是会发生：任何在设计阶段考虑到的异常情况，一定会在系统实际运行中发生
 
@@ -137,6 +137,44 @@ FLP **定理**实际上说明了在允许节点失效的场景下,基于**异步
 - [微信自研生产级paxos类库PhxPaxos实现原理介绍](http://mp.weixin.qq.com/s?__biz=MzI4NDMyNTU2Mw==&mid=2247483695&idx=1&sn=91ea422913fc62579e020e941d1d059e)
 - [号称史上最晦涩的算法Paxos，如何变得平易近人](https://yq.aliyun.com/articles/156281)
 
+分布式协议Paxos和Raft算法演进过程:
+1. Basic-Paxos解决的问题：在一个分布式系统中，如何就一个提案达成一致
+
+    需要借助两阶段提交实现：
+    1. Prepare阶段：
+
+    Proposer选择一个提案编号n并将prepare请求发送给 Acceptor
+    Acceptor收到prepare消息后，如果提案的编号大于它已经回复的所有prepare消息，则Acceptor将自己上次接受的提案回复给Proposer，并承诺不再回复小于n的提案
+
+    2. Accept阶段：
+
+    当一个Proposer收到了多数Acceptor对prepare的回复后，就进入批准阶段. 它要向回复prepare请求的Acceptor发送accept请求，包括编号n和根据prepare阶段决定的value（如果根据prepare没有已经接受的value，那么它可以自由决定value）.
+    在不违背自己向其他Proposer的承诺的前提下，Acceptor收到accept请求后即接受这个请求.
+2. Mulit-Paxos解决的问题：在一个分布式系统中，如何就一批提案达成一致
+
+    当存在一批提案时，用Basic-Paxos一个一个决议当然也可以，但是每个提案都经历两阶段提交，显然效率不高. Basic-Paxos协议的执行流程针对每个提案（每条redo log）都至少存在三次网络交互：1. 产生log ID；2. prepare阶段；3. accept阶段
+
+    所以，Mulit-Paxos基于Basic-Paxos做了优化，**在Paxos集群中利用Paxos协议选举出唯一的leader，在leader有效期内所有的议案都只能由leader发起**.
+
+    这里强化了协议的假设：即leader有效期内不会有其他server提出的议案. 因此，对于后续的提案，我们可以简化掉产生log ID阶段和Prepare阶段，而是由唯一的leader产生log ID，然后直接执行Accept，得到多数派确认即表示提案达成一致（每条redo log可对应一个提案）.
+
+    > 相关产品: X-DB、OceanBase、Spanner,  MySQL Group Replication的xcom都是使用Multi-Paxos来保障数据一致性.
+3. Raft
+
+    Raft也使用了分而治之的思想，把算法分为三个子问题:
+
+    1. 选举（Leader election）
+    1. 日志复制（Log replication）
+    1. 安全性（Safety）
+
+    分解后，整个raft算法变得易理解、易论证、易实现
+4. Mulit-Raft
+
+    许多NewSQL数据库的数据规模上限都定位在100TB以上，为了负载均衡，都会对数据进行分片（sharding），所以就需要使用多个Raft集群（即Multi-Raft），每个Raft集群对应一个分片.
+    在多个Raft集群间可增加协同来减少资源开销、提升性能（如：共享通信链接、合并消息等）.
+
+    > 相关产品: TiDB、CockroachDB、PolarDB都是使用Mulit-Raft来保障数据一致性
+
 因为Paxos的难理解, 这里只考虑Raft.
 
 Raft 算法主要使用两种方法来提高可理解性: 问题分解和减少状态空间.
@@ -158,3 +196,27 @@ Raft 算法采用的是非对称节点关系模型, 在一个由 Raft 协议组�
 - Leader (领袖)
 - Candidate (候选人)
 - Follower (群众)
+
+#### Raft选举过程
+Raft协议中，一个节点有三个状态：Leader、Follower和Candidate，但同一时刻只能处于其中一种状态。Raft选举实际是指选举Leader，选举是由候选者（Candidate）主动发起，而不是由其它第三者。
+
+并且约束只有Leader才能接受写和读请求，只有Candidate才能发起选举。如果一个Follower和它的Leader失联（失联时长超过一个Term），则它自动转为Candidate，并发起选举。
+
+发起选举的目的是Candidate请求（Request）其它所有节点投票给自己，如果Candidate获得多数节点（a majority of nodes）的投票（Votes），则自动成为Leader，这个过程即叫Leader选举。
+
+在Raft协议中，正常情况下Leader会周期性（不能大于Term）的向所有节点发送AppendEntries RPC，以维持它的Leader地位。
+
+相应的，如果一个Follower在一个Term内没有接收到Leader发来的AppendEntries RPC，则它在延迟随机时间（150ms~300ms）后，即向所有其它节点发起选举。
+
+采取随机时间的目的是避免多个Followers同时发起选举，而同时发起选举容易导致所有Candidates都未能获得多数Followers的投票（脑裂，比如各获得了一半的投票，谁也不占多数，导致选举无效需重选），因而延迟随机时间可以提高一次选举的成功性
+
+## FAQ
+### Raft和Multi-Paxos的区别
+Raft是基于对Multi-Paxos的两个限制形成的：
+
+发送的请求的是连续的, 也就是说Raft的append 操作必须是连续的， 而Paxos可以并发 (这里并发只是append log的并发, 应用到状态机还是有序的).
+Raft选主有限制,必须包含最新、最全日志的节点才能被选为leader. 而Multi-Paxos没有这个限制，日志不完备的节点也能成为leader.
+
+Raft可以看成是简化版的Multi-Paxos.
+
+Multi-Paxos允许并发的写log,当leader节点故障后，剩余节点有可能都有日志空洞. 所以选出新leader后, 需要将新leader里没有的log补全,在依次应用到状态机里.
