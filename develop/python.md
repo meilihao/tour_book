@@ -1101,15 +1101,36 @@ File -> Invalidate Caches/Restart...
 ### ImportError: No module named license.LicenseManager
 明明`license.LicenseManager.py`却提示找不到, 因为LicenseManager.py同目录的`__init__.py`被删除了.
 
-### setup.py
+### ImportError: No module named Cython.Build
+
+### [Python 中如何将字节 bytes 转换为整数 int](https://www.delftstack.com/zh/howto/python/how-to-convert-bytes-to-integers/)
+参考:
+- [Python中struct.pack()和struct.unpack()用法](https://cloud.tencent.com/developer/article/1406350)
+
+python2.7:
+```python
+import struct
+
+# native byteorder
+buffer = struct.pack("ihb", 1, 2, 3) # "ihb"表示有三个成员, 分别指明它们的编码方式
+print(repr(buffer))
+'''
+b'\x01\x00\x00\x00\x02\x00\x03'
+'''
+print(struct.unpack("ihb", buffer))
+'''
+(1, 2, 3)
+'''
+```
+
+python3的: `int.from_bytes() `
+
+## setup.py
 setuptools 是一个优秀的，可靠的 Pthon 包安装与分发工具.
 
 Python 库打包的格式包括 Wheel 和 Egg. Egg 格式是由 setuptools 在 2004 年引入，而 Wheel 格式是由 PEP427 在 2012 年定义. 使用 Wheel 和 Egg 安装都不需要重新构建和编译，其在发布之前就应该完成测试和构建.
 
 Egg 和 Wheel 本质上都是一个 zip 格式包，Egg 文件使用 .egg 扩展名，Wheel 使用 .whl 扩展名. **Wheel 的出现是为了替代 Egg，其现在被认为是 Python 的二进制包的标准格式**.
-
-### ImportError: No module named Cython.Build
-
 
 ## 用法
 - ConfigParser : 解析ini配置文件, 加载多个配置时, 后加载的相同键会覆盖前面的.
