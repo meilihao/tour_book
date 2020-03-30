@@ -43,3 +43,10 @@ CONFIG_BONDING=m
 - 现在的secondary ip
 
 ifconfig显示的格式为`eth0:N`(即单独的网络接口),`ip addr`则是网络接口属性里的一条记录.
+
+## 配置网络的工具
+nmtui 通过字符界面来配置网络.
+
+> nmtui配置后需`vim /etc/sysconfig/network-scripts/ifcfg-eno16777736`配置`ONBOOT=yes`来支持重启仍激活网卡
+
+> 配置网络需激活: `systemctl restart network`
