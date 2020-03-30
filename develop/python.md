@@ -1410,3 +1410,63 @@ BaseManager.register('get_task') # 注册要用的资源(比如函数, Class), �
 
     scheduler.add_listener(my_listener, EVENT_JOB_EXECUTED | EVENT_JOB_ERROR) # [监听](https://apscheduler.readthedocs.io/en/v3.3.0/modules/events.html#module-apscheduler.events)
     ```
+
+## demo
+### http_auth.py 
+```python
+# from https://gist.github.com/mrchrisadams/169102
+# Copyright (c) 2008 Twisted Matrix Laboratories.
+# See LICENSE for details.
+
+import sys
+
+from zope.interface import implements
+
+from twisted.python import log
+from twisted.internet import reactor
+from twisted.web import server, resource, guard
+from twisted.cred.portal import IRealm, Portal
+from twisted.cred.checkers import FilePasswordDB
+
+
+
+class GuardedResource(resource.Resource):
+    """
+    A resource which is protected by guard and requires authentication in order
+    to access.
+    """
+    def getChild(self, path, request):
+        return self
+
+    def render(self, request):
+        # is served on root
+        return "Authorized!"
+
+class SimpleRealm(object):
+    """
+    A realm which gives out L{GuardedResource} instances for authenticated
+    users.
+    """
+    implements(IRealm)
+    # requestAvatar supplies the username, and checks against the corresponding password 
+    def requestAvatar(self, avatarId, mind, *interfaces):
+        if resource.IResource in interfaces:
+            # somewhat confused here...
+            return resource.IResource, GuardedResource(), lambda: None
+        raise NotImplementedError()
+
+
+
+# compare password, 
+def cmp_pass(uname, password, storedpass):
+   return crypt.crypt(password, storedpass[:2])
+
+# checker  opens a file called htpasswd, and passing in the hash as defined by the method cmp_pass 
+checkers = [FilePasswordDB(path_to_htpasswd, hash=cmp_pass)]
+
+# guard acts like middleware, forcing all incoming requests to 'yoursite.com' be checked the file defined in checkers
+wrapper = guard.HTTPAuthSessionWrapper(Portal(SimpleRealm(), checkers), [guard.BasicCredentialFactory('yoursite.com')])
+
+# serves the this as a resource on port 8080
+return internet.TCPServer(8080, server.Site(resource=wrapper))
+```
