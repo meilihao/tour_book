@@ -1043,10 +1043,16 @@ int main(void)
 container_of 宏实现基础: 假设结构体首地址为0，那么结构体中每个成员变量的地址即为该成员相对于结构体首地址的偏移.
 
 ```c
-#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER) // 成员在结构体内的偏移
+// 成员在结构体内的偏移. size_t： 无符号整型
+#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
+// 因为结构体的成员数据类型可以是任意数据类型，所以为了让这个宏兼容各种数据类型, 我们定义了一个临时指针变量 __mptr，该变量用来存储结构体成员 MEMBER 的地址，即存储 ptr 的值. typeof( ((type *)0)->member ) 表达式使用 typeof 关键字，用来获取结构体成员 member 的数据类型
+// 用结构体成员的地址，减去该成员在结构体内的偏移，就可以得到该结构体的首地址. 在语句表达式的最后，因为返回的是结构体的首地址，所以数据类型还必须强制转换一下，转换为 TYPE*
+// 宏后添加`//`注释会导致gcc报错
+// 宏的`\`后应该没有空格, 否则gcc会warning
 #define  container_of(ptr, type, member) ({    \
-     const typeof( ((type *)0)->member ) *__mptr = (ptr); \ // 因为结构体的成员数据类型可以是任意数据类型，所以为了让这个宏兼容各种数据类型, 我们定义了一个临时指针变量 __mptr，该变量用来存储结构体成员 MEMBER 的地址，即存储 ptr 的值. typeof( ((type *)0)->member ) 表达式使用 typeof 关键字，用来获取结构体成员 member 的数据类型
-     (type *)( (char *)__mptr - offsetof(type,member) );}) // 用结构体成员的地址，减去该成员在结构体内的偏移，就可以得到该结构体的首地址. 在语句表达式的最后，因为返回的是结构体的首地址，所以数据类型还必须强制转换一下，转换为 TYPE*
+     const typeof( ((type *)0)->member ) *__mptr = (ptr); \
+     (type *)( (char *)__mptr - offsetof(type,member) );})
+// `char *`是为计算获取字节级地址.否则,指针算法将根据所指向的类型进行, 比如指针算法`(float *)__mptr -1`换算成整数算法是`__mptr - 4`, 因为一个float是4B
 
 struct student
 {
