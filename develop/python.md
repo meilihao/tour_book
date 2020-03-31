@@ -35,6 +35,14 @@ python解析器:
     $ alias python='/usr/bin/python3.8'
     ```
 
+### style
+[git hook](https://github.com/cbrueffer/pep8-git-hook/blob/master/pre-commit)
+
+```bash
+$ pycodestyle --ignore E501 *.py # pycodestyle原名pep8, python code style checker
+$ autopep8 --in-place --aggressive --aggressive *.py # style 修正
+```
+
 ### 其他
 ```sh
 $ python -m pip -V # 检查是否安装pip成功
@@ -1422,6 +1430,8 @@ BaseManager.register('get_task') # 注册要用的资源(比如函数, Class), �
 # Copyright (c) 2008 Twisted Matrix Laboratories.
 # See LICENSE for details.
 
+# 参考: [Configuring and Using the Twisted Web Server](https://blog.csdn.net/xiarendeniao/article/details/9844117)
+# curl  http://192.168.0.112:8080/ab -u joe:blow
 import sys
 
 from zope.interface import implements
@@ -1430,11 +1440,12 @@ from twisted.python import log
 from twisted.internet import reactor
 from twisted.web import server, resource, guard
 from twisted.cred.portal import IRealm, Portal
-from twisted.cred.checkers import FilePasswordDB
+#from twisted.cred.checkers import FilePasswordDB
+from twisted.cred.checkers import InMemoryUsernamePasswordDatabaseDontUse
 
 
 
-class GuardedResource(resource.Resource):
+class GuardedResource(resource.Resource): # 通过验证后执行: getChild() -> render()
     """
     A resource which is protected by guard and requires authentication in order
     to access.
@@ -1466,11 +1477,12 @@ def cmp_pass(uname, password, storedpass):
    return crypt.crypt(password, storedpass[:2])
 
 # checker  opens a file called htpasswd, and passing in the hash as defined by the method cmp_pass 
-checkers = [FilePasswordDB(path_to_htpasswd, hash=cmp_pass)]
+checkers = [InMemoryUsernamePasswordDatabaseDontUse(joe='blow')]# [FilePasswordDB(path_to_htpasswd, hash=cmp_pass)]
 
 # guard acts like middleware, forcing all incoming requests to 'yoursite.com' be checked the file defined in checkers
-wrapper = guard.HTTPAuthSessionWrapper(Portal(SimpleRealm(), checkers), [guard.BasicCredentialFactory('yoursite.com')])
+wrapper = guard.HTTPAuthSessionWrapper(Portal(SimpleRealm(), checkers), [guard.BasicCredentialFactory('auth')])
 
 # serves the this as a resource on port 8080
-return internet.TCPServer(8080, server.Site(resource=wrapper))
+reactor.listenTCP(8080, server.Site(resource=wrapper))
+reactor.run()
 ```

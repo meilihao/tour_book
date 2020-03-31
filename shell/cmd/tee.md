@@ -18,3 +18,4 @@
 
     # tee test.txt
     #  cat a* | tee -a out.txt | cat –n
+    # ./a.sh  2>&1 | tee  l.log # 测试script常用, 但不适合用于内含dialog命令的script.
