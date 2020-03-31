@@ -190,3 +190,8 @@ $ echo $SSH_AUTH_SOCK
 
 ## linux 搜狗输入法 禁用半角切换
 打开Fcitx配置界面 -> 全局配置, 选中左下角的`显示高级选项`, 重新定义`切换全角`的快捷键即可.
+
+### 查找域名对应的ip
+`http://IPAddress.com`
+
+> [for github被屏蔽](https://zhuanlan.zhihu.com/p/65154116)

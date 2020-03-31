@@ -70,7 +70,7 @@ $ cmd2
 cmd > &m // 将标准输出定向到文件描述符m中.
 cmd <&- // 关闭标准输入
 
-# mail -s "Readme" root@example.com << over 
+# mail -s "Readme" root@example.com << over
 > hello chen
 > over
 ```

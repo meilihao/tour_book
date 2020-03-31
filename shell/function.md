@@ -2,10 +2,10 @@
 
 定义:
 ```bash
-[function] fname（）    
+[function] fname（)
 {
-    statements;    
-    [return]    
+    statements;
+    [return]
 }
 ```
 

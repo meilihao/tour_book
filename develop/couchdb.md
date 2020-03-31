@@ -35,7 +35,7 @@
     支持针对行的原子性修改（concurrent modifications of single documents），但不支持更多的复杂事务操作.
 - 数据可靠性
 
-    CouchDB是一个”crash-only”的系统，你可以在任何时候停掉CouchDB并能保证数据的一致性.
+    CouchDB是一个`crash-only`的系统，你可以在任何时候停掉CouchDB并能保证数据的一致性.
 - 最终一致性
     
     CouchDB保证最终一致性，使其能够同时提供可用性和分割容忍.

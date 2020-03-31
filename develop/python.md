@@ -1125,6 +1125,10 @@ print(struct.unpack("ihb", buffer))
 
 python3的: `int.from_bytes() `
 
+### pep8
+#### W291 trailing whitespace
+行尾有多余的空格
+
 ## setup.py
 setuptools 是一个优秀的，可靠的 Pthon 包安装与分发工具.
 
