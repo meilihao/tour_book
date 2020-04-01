@@ -274,7 +274,7 @@ ps: **推荐[使用在线安装mariadb](https://downloads.mariadb.org/)**
 
 解决方法: 在`/etc/vnc.conf`中追加`$localhost = "no";`, 重启系统再重新运行`vncserver`即可.
 
-`/etc/vnc.conf`的配置项`$geometry`支持修改分辨率.
+`/etc/vnc.conf`的配置项`$geometry`支持修改分辨率, 比如`$geometry = "1850x900";`
 
 ps: vnc推荐使用vnc4server.
 

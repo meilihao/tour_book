@@ -35,6 +35,9 @@ bind 服务程序中有下面这三个比较关键的文件:
 
 互联网中的绝大多数 DNS 服务器（超过 95%）都是基于 BIND 域名解析服务搭建的，而bind 服务程序通过 TSIG (RFC 2845) 保证了 DNS 服务器之间传输域名区域信息的安全性. TSIG主要是利用了密码编码的方式来保护区域信息的传输（Zone Transfer）.
 
+## DHCP
+
+
 ## 方案
 - DNS over TLS
 - DNS over HTTPS

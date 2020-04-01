@@ -36,7 +36,7 @@ python解析器:
     ```
 
 ### style
-[git hook](https://github.com/cbrueffer/pep8-git-hook/blob/master/pre-commit)
+[git hook, 脚本是Python3的, 需要注意pycodestyle的路径, 这里是`args = ['/home/ubuntu/.local/lib/python2.7/site-packages/pycodestyle.py']`](https://github.com/cbrueffer/pep8-git-hook/blob/master/pre-commit)
 
 ```bash
 $ pycodestyle --ignore E501 *.py # pycodestyle原名pep8, python code style checker
