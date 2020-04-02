@@ -291,3 +291,10 @@ PDF编辑器: LibreOffice Draw
 ```
 sudo apt install alacarte
 ```
+
+## PXE(Preboot eXecute Environment,预启动执行环境)
+PXE可以让计算机通过网络来启动操作系统(前提是计算机上安装的网卡支持 PXE 技术),主要用于在无人机值守安装系统中引导客户端主机安装 Linux 操作系统.
+
+Kickstart 是一种无人值守的安装方式,其工作原理是预先把原本需要运维人员手工填写的参数保存成一个ks.cfg 文件,当安装过程中需要填写参数时则自动匹配 Kickstart 生成的文件即可.
+
+> system-config-kickstart 是一款图形化的 Kickstart 应答文件生成工具,可以根据自己的需求生成自定义的应答文件.

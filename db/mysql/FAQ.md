@@ -242,3 +242,12 @@ key 太长会导致一个页当中能够存放的 key 的数目变少，间接�
 -- conds = conds.And(Expr(`JSON_CONTAINS(mcode,'["` + code + `"]','$')`))
 select * FROM `raw_license` WHERE JSON_CONTAINS(mcode,'["04932265479995"]') ;  -- mcode是array, 检索成员的格式必须是`'[xxx ,...]'`
 ```
+
+### grant
+GRANT 命令的常见格式以及解释
+命令 作用
+GRANT 权限 ON 数据库.表单名称 TO 账户名@主机名 | 对某个特定数据库中的特定表单给予授权
+GRANT 权限 ON 数据库.*TO 账户名@主机名 | 对某个特定数据库中的所有表单给予授权
+GRANT 权限 ON*.*TO 账户名@主机名 | 对所有数据库及所有表单给予授权
+GRANT 权限 1,权限 2 ON 数据库.*TO 账户名@主机名 | 对某个数据库中的所有表单给予多个授权
+GRANT ALL PRIVILEGES ON *.*TO 账户名@主机名 | 对所有数据库及所有表单给予全部授权(需谨慎操作)
