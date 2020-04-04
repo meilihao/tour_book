@@ -37,5 +37,5 @@
 
 ## 例
 ```sh
-$ln -s /usr/mengqc/mub1 /usr/liu/abc # 在目录/usr/liu下建立一个符号链接文件abc，使它指向目录/usr/mengqc/mub1
+# ls -Al --time-style=+"" #  不显示时间
 ```

@@ -127,6 +127,10 @@ set +v # 禁止打印输入
 1. 子shell(subshell),**推荐**
         cmd_output=$(COMMANDS)
 
+        ```bash
+        $  (find . | grep -v ".so" |xargs ls -al --time-style=+"" ) > my.log
+        ```
+
 2. 反引用(其实该方法也是用子shell来运行命令), 唯一优点: 跟其他unix shell的兼容性高.
         cmd_output=`COMMANDS`
 

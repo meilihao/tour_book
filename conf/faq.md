@@ -195,3 +195,6 @@ $ echo $SSH_AUTH_SOCK
 `http://IPAddress.com`
 
 > [for github被屏蔽](https://zhuanlan.zhihu.com/p/65154116)
+
+### linux 字符界面输入出现`]`等乱码
+用`shift + backspace`来删除

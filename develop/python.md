@@ -1,5 +1,9 @@
 # python
 
+缺点:
+1. json序列化/反序列化没有go简单
+1. 不能静态检查
+
 [书单](https://zhuanlan.zhihu.com/p/34378860):
 - 入门
     - Python基础教程（第3版）
@@ -10,6 +14,7 @@
     - 流畅的Python
     - Python Cookbook（第3版）中文版
     - 编写高质量代码: 改善Python程序的91个建议
+
 
 ## 环境
 ### 安装
@@ -555,6 +560,16 @@ b.funca()
 
 ## 异常
 ```python
+filename = "/etc/default/corosync"
+tempfile = "/etc/default/corosync.tmp"
+with open(filename) as f, open(tempfile, "w") as working:
+    for line in f:
+        if "START" in line:
+            working.write("START=no")
+        else:
+            working.write(line)
+os.rename(tempfile, filename)
+
 # 在 Windows系统中，在文件路径中使用反斜杠（\）而不是斜杠（/）.
 with open('pi_digits.txt') as file_object:  # open('pi_digits.txt')返回一个表示文件pi_digits.txt的对象；然后将这个对象存储在后面使用的变量file_object中
     contents = file_object.read()  # 读取这个文件的全部内容，并将其作为一个长长的字符串存储在变量contents中
@@ -1110,6 +1125,9 @@ File -> Invalidate Caches/Restart...
 明明`license.LicenseManager.py`却提示找不到, 因为LicenseManager.py同目录的`__init__.py`被删除了.
 
 ### ImportError: No module named Cython.Build
+
+### 编译成so的源py文件被修改并重启应用后代码未生效
+应先删除so, 否则应用还是用旧的so代码来运行
 
 ### [Python 中如何将字节 bytes 转换为整数 int](https://www.delftstack.com/zh/howto/python/how-to-convert-bytes-to-integers/)
 参考:

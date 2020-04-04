@@ -105,8 +105,10 @@ systemd-ask-password-conso
 # systemctl start httpd.service
 # systemctl restart httpd.service
 # systemctl stop httpd.service
-# systemctl reload httpd.service
+# systemctl reload httpd.service # 重新载入httpd配置而不中断服务
+# systemctl condrestart httpd.service # condrestart会检查服务是否已运行, 如果已运行则重启; 否则忽略
 # systemctl status httpd.service
+# ls /etc/systemd/system/*.wants/httpd.service 查看httpd服务在各个运行级别下的启用和禁用情况
 ```
 注意：当我们使用systemctl的start，restart，stop和reload命令时，我们不会从终端获取到任何输出内容，只有status命令可以打印输出。
 
@@ -215,16 +217,16 @@ systemd-ask-password-conso
 1. 设置多用户模式或图形模式为默认运行等级
        # systemctl set-default runlevel3.target
        # systemctl set-default runlevel5.target
-1. 重启、停止、挂起、休眠系统或使系统进入混合睡眠
+1. 重启、停止、挂起、休眠系统或使系统进入混合休眠
 ```shell
 # systemctl reboot
 # systemctl halt
-# systemctl suspend
-# systemctl hibernate
-# systemctl hybrid-sleep
+# systemctl suspend # 待机/挂起
+# systemctl hibernate # 休眠
+# systemctl hybrid-sleep # 混合休眠
 ```
 
- 对于不知运行等级为何物的人，说明如下:
+ 对于不知运行等级为何物的人，参考`ls -al /lib/systemd/system/runlevel`, 说明如下:
 
  Runlevel 0 : 关闭系统(runlevel0.target, poweroff.target)
 Runlevel 1 : 救援/维护模式(runlevel1.target, rescue.target)

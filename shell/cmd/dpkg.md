@@ -38,6 +38,18 @@ deb包本身有三部分组成：
 
 deb本身可以使用不同的压缩方式. tar格式并不是一种压缩格式，而是直接把分散的文件和目录集合在一起，并记录其权限等数据信息. 之前提到过的 data.tar.XXX，这里 XXX 就是经过压缩后的后缀名. deb默认使用的压缩格式为gzip格式，所以最常见的就是 data.tar.gz. 常有的压缩格式还有 bzip2 和 lzma，其中 lzma 压缩率最高，但压缩需要的 CPU 资源和时间都比较长.
 
+### dpkg重新打包
+```bash
+#解压出包中的文件到extract目录下
+$ dpkg -X ../openssh-client_6.1p1_i386.deb extract/
+#解压出包的控制信息extract/DEBIAN/下：
+$ dpkg -e ../openssh-client_6.1p1_i386.deb extract/DEBIAN/
+$ dpkg-deb -b extract/ build/ # build存放打包好的deb
+$ ll build/
+-rw-r--r-- 1 ufo ufo 1020014  7月  3 20:20 openssh-client_6.1p1_i386.deb # 验证方法为：再次解开重新打包的deb文件，查看在etc/ssh/sshd_config文件是否已经被修改
+$ dpkg-scanpackages . | gzip -9c > Packages.gz #  制作本地软件源
+```
+
 ## FAQ
 ### dpkg-deb: error: archive '<file>.deb' has premature member 'data.tar.gz' before
 dpkg的bug: [dpkg无法解析tar.xz格式-xz compressed control.tar files not supported](https://bugs.launchpad.net/ubuntu/+source/dpkg/+bug/1730627)
