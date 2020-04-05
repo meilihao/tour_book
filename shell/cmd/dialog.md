@@ -7,7 +7,7 @@ shell下的对话框.
             install_platform
         ) | dialog --trace /var/log/my.log --progressbox "Installing ${PKG_NAME}" 20 70 # 将install_platform的内容显示在dialog中, `--trace`将日志记入指定文件
 
- DIALOG_CANCEL=2 dialog --yes-label "Configure" --no-label "Restore" \ # 部分错误按键可能导致该dialog返回255, 比如`ESC`, 黑屏时通过按键来唤醒屏幕等
+ DIALOG_CANCEL=2 dialog --yes-label "Configure" --no-label "Restore" \ # 部分错误按键可能导致该dialog返回255, 比如`ESC`, 黑屏时通过按键来唤醒屏幕等.
            --yesno \
            "Select 'Configure' start new system configuration\nSelect 'Restore' for old system restoration" \
            10 60 

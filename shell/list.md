@@ -16,3 +16,6 @@
 
 ## 调试/实践
 - [Bash Shell Online](http://www.tutorialspoint.com/execute_bash_online.php)
+
+## 工具
+- [linux命令查询](https://wangchujiang.com/linux-command/)

@@ -6,7 +6,14 @@
 
 ## 例
 
-    # ip route add 192.168.16.0/24 via 192.168.88.2 dev enp2s0 # 192.168.88.2为gw
+    ip route show # 显示系统路由
+    ip route add default via 192.168.1.254   # 设置系统默认路由
+    ip route list                   # 查看路由信息
+    ip route add 192.168.4.0/24  via  192.168.0.254 dev eth0 # 设置192.168.4.0网段的网关为192.168.0.254,数据走eth0接口
+    ip route add default via  192.168.0.254  dev eth0        # 设置默认网关为192.168.0.254
+    ip route del 192.168.4.0/24   # 删除192.168.4.0网段的网关
+    ip route del default          # 删除默认路由
+    ip route delete 192.168.1.0/24 dev eth0 # 删除路由
     # ip neigh # 查看显示内核的ARP表(ip-mac映射, 本机不会缓存自己ip的arp映射), 与`nmap -sP 192.168.0.0/24 `即可查到某个ip的mac
     # ip neigh add 192.168.1.100 lladdr 00:0c:29:c0:5a:ef dev eth0 # 添加arp映射
     # ip neigh flush dev wlp3s0 # 清除arp缓存
@@ -14,6 +21,21 @@
     # ip neigh show 192.168.0.167 # 查看对应ip的mac, 前提是内核的ARP表有该记录, 没有则先ping一下
     # arp 192.168.0.167 # 查看ip对应的mac, 但arp已淘汰
 
+# ip addr
+## example
+```bash
+ip -s link list # 显示更加详细的设备信息
+ip link show                     # 显示网络接口信息
+ip link set eth0 up             # 开启网卡
+ip link set eth0 down            # 关闭网卡
+ip link set eth0 promisc on      # 开启网卡的混合模式
+ip link set eth0 promisc offi    # 关闭网卡的混个模式
+ip link set eth0 txqueuelen 1200 # 设置网卡队列长度
+ip link set eth0 mtu 1400        # 设置网卡最大传输单元
+ip addr show     # 显示网卡IP信息
+ip addr add 192.168.0.1/24 dev eth0 # 设置eth0网卡IP地址192.168.0.1, 需要ip link set eth0 down/up重启网卡
+ip addr del 192.168.0.1/24 dev eth0 # 删除eth0网卡IP地址
+```
 
 ## FAQ
 ### 能ping通, 但对端不能接受数据包(包括SYN)
