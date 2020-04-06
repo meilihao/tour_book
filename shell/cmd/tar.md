@@ -4,19 +4,19 @@
 
 ## 描述
 
-解压缩
+归档工具
 
 ## 选项
 
 - -C : 执行归档动作前变更工作目录到指定路径
-- -c : 建立压缩档案
+- -c : 建立档案
 - -f : 指定要操作的归档文件名
 - -p : 保留原文件的访问权限
 - -P : 使用绝对路径来压缩
-- -x : 解压
-- -t : 查看内容
+- -x : 还原归档文件
+- -t : 查看内容即文件列表
 - -r : 向归档文件末尾追加文件
-- -u : 更新原压缩包中的文件
+- -u : 更新归档中的文件
 - --exclude : 排除目录或文件
 
 上面五个是独立的命令，压缩解压都要用到其中一个，可以和别的命令连用但只能用其中一个.
@@ -27,6 +27,10 @@
 - -Z : compress属性的(tar.Z)
 - -v : 显示所有过程
 - -O : 将文件解开到标准输出
+- -f : 归档位置, **`-f`*后不能有其他选项
+- -w : 在还原归档时, 把所有文件的修改时间设置现在时间
+- -p : 归档时, 保持文件属性不变
+- -N "yyyy/mm/dd" : 在指定日期之后的文件才会打包到归档中
 
 上面的参数是根据需要在压缩或解压档案时可选的.
 
@@ -44,9 +48,12 @@
 
 ## 例
 
-### 压缩
+### 打包/压缩
 
 ```
+tar -zcvf - /etc |tar -zxvf - # 第一个"-"表示输出到stdout, 第二个"-"是将管道传入的信息作为解压的数据来源
+tar -N "2008/7/21" -zcvf log.tar.gz /var/log # 压缩/var/log中2008/7/71以后的文件
+tar -ztvf /opt/etc.tar.gz # 查看内容
 tar –cvf jpg.tar *.jpg //将目录里所有jpg文件打包成tar.jpg
 tar –czf jpg.tar.gz *.jpg   //将目录里所有jpg文件打包成jpg.tar后，并且将其用gzip压缩，生成一个gzip压缩过的包，命名为jpg.tar.gz
 tar –cjf jpg.tar.bz2 *.jpg //将目录里所有jpg文件打包成jpg.tar后，并且将其用bzip2压缩，生成一个bzip2压缩过的包，命名为jpg.tar.bz2
@@ -55,7 +62,7 @@ tar -zcvf tomcat.tar.gz --exclude=tomcat/logs --exclude=tomcat/libs --exclude=to
 rar a jpg.rar *.jpg //rar格式的压缩，需要先下载rar for linux
 zip jpg.zip *.jpg //zip格式的压缩，需要先下载zip for linux
 tar -rvf data.tar /etc/fstab //在压缩过的 tar 文件中无法进行追加文件操作
-tar -zcvf optbackup-$(date +%Y-%m-%d).tgz /opt/ //使用 tar 命令进行定时备份
+tar -zcvpf optbackup-$(date +%Y-%m-%d).tgz /opt/ //使用 tar 命令进行定时备份
 split -b <Size-in-MB> <tar-file-name>.<extension> “prefix-name”//分割体积庞大的 tar 文件为多份小文件
 ```
 
