@@ -3,6 +3,7 @@
 缺点:
 1. json序列化/反序列化没有go简单
 1. 不能静态检查
+1. Python try...catch有时不容易定位错误位置
 
 [书单](https://zhuanlan.zhihu.com/p/34378860):
 - 入门
@@ -1126,8 +1127,8 @@ File -> Invalidate Caches/Restart...
 
 ### ImportError: No module named Cython.Build
 
-### 编译成so的源py文件被修改并重启应用后代码未生效
-应先删除so, 否则应用还是用旧的so代码来运行
+### 编译成`.so`的源py文件被修改并重启应用后代码未生效
+应先删除`.so`, 否则应用还是用旧的`.so`代码来运行
 
 ### [Python 中如何将字节 bytes 转换为整数 int](https://www.delftstack.com/zh/howto/python/how-to-convert-bytes-to-integers/)
 参考:

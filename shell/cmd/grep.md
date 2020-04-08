@@ -1,4 +1,5 @@
-# grep
+# grep/egrep
+> egrep是`grep -E "$@"`的脚本链接.
 
 ## 描述
 

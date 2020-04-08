@@ -198,3 +198,8 @@ $ echo $SSH_AUTH_SOCK
 
 ### linux 字符界面输入出现`]`等乱码
 用`shift + backspace`来删除
+
+### 你的mke2fs.conf文件中没有定义类型 xfs 的文件系统
+```bash
+# cat /proc/filesystems |grep -i xfs # 检查kernel是否支持xfs
+```

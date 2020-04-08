@@ -1,4 +1,9 @@
 # fs
+参考:
+- [NAS 最佳实践](https://help.aliyun.com/document_detail/132279.html)
+
+阿里云NAS支持情况: NFSv3.0/4.0, SMB2.1+. nfs仅支持linux, smb仅支持windows.
+
 ## CIFS, SMB, NFS
 SMB(Server Message Block，即服务(器)消息块) 是 IBM 公司在 80年代中期发明的一种文件共享协议. 它只是系统之间通信的一种方式（协议）. 目前最新版是`v3.1.1`.
 CIFS是微软的Common Internet file system的缩写, 是 SMB 协议的一种特殊实现, 不常用.
@@ -10,20 +15,26 @@ NFS是SUN为Unix开发的网络文件系统, 提供类unix间的文件共享. �
 autofs 自动挂载服务: 无论是 Samba 服务还是 NFS 服务，都要把挂载信息写入到/etc/fstab 中，这样远程共享资源就会自动随服务器开机而进行挂载. autofs 服务程序是一种 Linux 系统守护进程，当检测到用户视图访问一个尚未挂载的文件系统时，将自动挂载该
 文件系统.
 
+>  RHEL 7 开始不支持NFSv2
+
 ## NFS
+参考:
+- [管理权限组](https://help.aliyun.com/document_detail/27534.html)
+
+> NFS 客户端为内核的一部分，由于部分内核存在一些缺陷，会影响 NFS 的正常使用, 见[NFS 客户端已知问题](https://www.alibabacloud.com/help/zh/doc-detail/114129.htm)
+
 安装:
 ```
 $ sudo apt install nfs-kernel-server
-$ sudo yum install nfs-utils 
-$ sudo cat /proc/fs/nfsd/versions # 查看nfs server支持的nfs protocol version
 $ sudo apt install nfs-common # Install NFS client
 $ sudo yum install nfs-utils # Install NFS client
+$ sudo systemctl status nfs-kernel-server
+$ systemctl start nfs-server # from centos7, 启动nfs
+$ sudo cat /proc/fs/nfsd/versions # 查看nfs server支持的nfs protocol version, nfs服务需先启动
 $ nfsstat -s # server使用的nfs version
 $ nfsstat -c # client使用的nfs version
 $ nfsstat -m # 在client端已挂载的nfs信息
 $ nfsstat -4 # 查看NFS版本4的状态
-$ sudo systemctl status nfs-kernel-server
-$ systemctl start nfs-server # from centos7, 启动nfs
 $ showmount -e 192.168.0.83 # 在 Client 端查看server端(192.168.0.83)共享出来的目录
 
 	- -e : 显示 NFS 服务器的共享列表
@@ -36,6 +47,21 @@ $ df -h #查看挂载情况
 $ sudo umount /mnt
 $ cat /etc/exports
 /usr/local/files/mypool/share  *(rw,sync,all_squash,anonuid=1037)
+```
+
+```bash
+# from [手动挂载NFS文件系统](https://help.aliyun.com/document_detail/90529.html)
+# 有利于提高同时发起的NFS请求数量
+sudo echo "options sunrpc tcp_slot_table_entries=128" >> /etc/modprobe.d/sunrpc.conf
+sudo echo "options sunrpc tcp_max_slot_table_entries=128" >> /etc/modprobe.d/sunrpc.conf
+# 推荐使用以上命令通过 NFSv3 协议挂载，获得最佳性能. 如果应用依赖文件锁，也即需要使用多台 ECS 同时编辑一个文件时使用 NFSv4 协议挂载.
+sudo mount -t nfs -o vers=3,nolock,proto=tcp,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport 3f0954ac37-kaf99.cn-shanghai.nas.aliyuncs.com:/ /mnt
+sudo mount -t nfs -o vers=4,minorversion=0,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport 3f0954ac37-kaf99.cn-shanghai.nas.aliyuncs.com:/ /mnt
+vim /etc/fstab
+# from [自动挂载NFS文件系统](https://help.aliyun.com/document_detail/91476.html)
+# 防止客户端在网络就绪之前开始挂载文件系统
+file-system-id.region.nas.aliyuncs.com:/ /mnt nfs vers=4,minorversion=0,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev,noresvport 0 0
+file-system-id.region.nas.aliyuncs.com:/ /mnt nfs vers=3,nolock,proto=tcp,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev,noresvport 0 0
 ```
 
 NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nfs-common 里.
@@ -137,6 +163,8 @@ NFS server 关机的时候一点要确保NFS服务关闭，没有客户端处于
 	    no_wdelay：若有写操作则立即执行，应与sync配合使用
 	    subtree：若输出目录是一个子目录，则nfs服务器将检查其父目录的权限(默认设置)
 	    no_subtree：即使输出目录是一个子目录，nfs服务器也不检查其父目录的权限，这样可以提高效率
+
+> nfs 支持使用no_acl来禁用acl.
 
 ### 身份映射(`/etc/idmapd.conf`)
 NFS服务虽然不具备用户身份验证的功能，但是NFS提供了一种身份映射的机制来对用户身份进行管理. 当客户端访问NFS服务时，服务器会根据情况将客户端用户的身份映射成NFS匿名用户`nobody:nogroup`. `nobody:nogroup`是由linux中自动创建的一个用户账号，该账号不能用于登录系统，**专门用作服务的匿名用户账号**.
@@ -291,9 +319,13 @@ $ sudo smbstatus # 查看连接到samba server的client及使用的protocol vers
 on windows:
 1. `win + R`, 输入`\\{samba_server_ip}`
 1. 输入设置的samba账号, 进入共享目录
+或`net use z: \\xxx-shanghai.nas.aliyuncs.com\myshare`
+
+执行`net use`命令，检查挂载结果
 
 > 清除windows网络邻居的连接(默认只能连接一个共享): `net use * /del /y`
 
+on linux:
 `/etc/fstab`:
 ```
 //192.168.0.10/gacanepa /mnt/samba  cifs credentials=/root/smbcredentials,defaults 0 0
@@ -309,6 +341,9 @@ on windows:
 # apt install nfs-common
 # yum install nfs-utils
 ```
+
+### `service nfs-kernel-server start`报 Not starting NFS kernel daemon: no exports
+`/etc/exports`为空导致.
 
 ### mount.nfs: timeout
 通常是网络问题, ping一下网络.
@@ -340,3 +375,32 @@ $ mount.cifs version: 6.9
 明明有写权限, 还是无法创建文件, windows server 2012和Linux 4.4.131-20190505.kylin.server-generic + mount.cifs version: 6.4则正常.
 
 将mount.cifs version: 6.9降到6.4还是报同样的错.
+
+### zfs xfs nas
+env: 5.3.0-26-generic
+
+> 在zfs fs (on 0.7.x)上直接使用acl容易出现莫名奇妙的问题, 且[zfs 还未支持NFSv4 ACL](https://github.com/openzfs/zfs/pull/9709). 当前思路是使用zfs vol+格式化作为磁盘, 在其上再设置nas, 整个共享使用一个账户.
+
+> xfs也未支持NFSv4 ACL.
+
+> 读写权限 : 允许授权对象对文件系统进行只读操作或读写操作. 包括只读和读写
+
+
+```bash
+# grep -i CONFIG_XFS_FS /boot/config-5.3.0-26-generic #  check kernel support xfs
+# modinfo xfs # check kernel support xfs when CONFIG_XFS_FS=m
+# modprobe xfs # kernel load xfs module
+# lsmod |grep -i xfs # check xfs mod is loaded
+# cat /proc/filesystems |grep -i xfs # check kernel support xfs
+
+# dpkg -l |grep -i xfs # check packages for xfs 
+# apt-get install xfsprogs
+
+# grep -i acl /boot/config* check kernel support for POSIX_ACL, like: CONFIG_EXT4_FS_POSIX_ACL, CONFIG_XFS_POSIX_ACL
+# grep -i nfs /boot/config* check kernel support for NFSv4. like: CONFIG_NFS_V4_1, CONFIG_NFS_V4_2
+
+# sudo zfs create -V 5gb x/vol_xfs # vol /dev/zvol/x/vol_xfs
+# mkfs -t xfs /dev/zvol/x/vol_xfs
+#  mkdir /mnt/xfs
+# mount /dev/zvol/x/vol_xfs /mnt/xfs
+```
