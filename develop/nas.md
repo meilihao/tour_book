@@ -20,7 +20,7 @@ autofs 自动挂载服务: 无论是 Samba 服务还是 NFS 服务，都要把�
 ## NFS
 参考:
 - [管理权限组](https://help.aliyun.com/document_detail/27534.html)
-- [aAmazon Elastic File System(nas) : 文件系统中文件和目录的用户和组 ID 权限](https://docs.aws.amazon.com/zh_cn/efs/latest/ug/efs-ug.pdf)
+- [aAmazon Elastic File System(nas) : 文件系统中文件和目录的用户和组 ID 权限 即 rwx模型](https://docs.aws.amazon.com/zh_cn/efs/latest/ug/efs-ug.pdf)
 
 > NFS 客户端为内核的一部分，由于部分内核存在一些缺陷，会影响 NFS 的正常使用, 见[NFS 客户端已知问题](https://www.alibabacloud.com/help/zh/doc-detail/114129.htm)
 
