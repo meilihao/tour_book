@@ -20,6 +20,7 @@ autofs 自动挂载服务: 无论是 Samba 服务还是 NFS 服务，都要把�
 ## NFS
 参考:
 - [管理权限组](https://help.aliyun.com/document_detail/27534.html)
+- [aAmazon Elastic File System(nas) : 文件系统中文件和目录的用户和组 ID 权限](https://docs.aws.amazon.com/zh_cn/efs/latest/ug/efs-ug.pdf)
 
 > NFS 客户端为内核的一部分，由于部分内核存在一些缺陷，会影响 NFS 的正常使用, 见[NFS 客户端已知问题](https://www.alibabacloud.com/help/zh/doc-detail/114129.htm)
 
@@ -375,6 +376,26 @@ $ mount.cifs version: 6.9
 明明有写权限, 还是无法创建文件, windows server 2012和Linux 4.4.131-20190505.kylin.server-generic + mount.cifs version: 6.4则正常.
 
 将mount.cifs version: 6.9降到6.4还是报同样的错.
+
+### `mount: can't find nfs in /etc/fstab`
+```
+$ mount -t nfs4 -o 192.168.0.141:/mnt/xfs nfs 
+mount: can't find nfs in /etc/fstab
+```
+
+删除多余的`-o`
+
+### refused mount request from 192.168.0.121 for /mnt/xfs (/mnt/xfs): unmatched host
+```bash
+# mount -t nfs -o vers=3,clientaddr=192.160.0.31  192.168.0.141:/mnt/xfs nfs # 报错:`unmatched host`. 192.168.0.121与192.160.0.31是同一台电脑.
+# tcpdump -i eth0 src host 192.168.0.121  and dst port 2049 # 2049是nfs server使用的端口
+```
+
+通过tcpdump发现, 即使指定了clientaddr, 但mount.nfs还是使用了192.168.0.121.
+
+> `unmatched host`仅在第一次请求时输出, 重复请求不输出, 此时重启nfs server后又可看到该错误, 预计nfsd的其他错误也会有这种情况.
+
+> clientaddr在`man 5 nfs`
 
 ### zfs xfs nas
 env: 5.3.0-26-generic
