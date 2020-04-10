@@ -2,13 +2,13 @@
 参考:
 - [NAS 最佳实践](https://help.aliyun.com/document_detail/132279.html)
 
-阿里云NAS支持情况: NFSv3.0/4.0, SMB2.1+. nfs仅支持linux, smb仅支持windows.
+阿里云NAS支持情况: NFSv3.0/4.0+, SMB2.1+. nfs仅支持linux, smb仅支持windows.
 
 ## CIFS, SMB, NFS
 SMB(Server Message Block，即服务(器)消息块) 是 IBM 公司在 80年代中期发明的一种文件共享协议. 它只是系统之间通信的一种方式（协议）. 目前最新版是`v3.1.1`.
-CIFS是微软的Common Internet file system的缩写, 是 SMB 协议的一种特殊实现, 不常用.
+CIFS是微软的Common Internet file system的缩写, 是 SMB 协议的一种特殊实现, CIFS 实现的协议至今仍很少被使用. 大多数现代存储系统不再使用 CIFS，而是使用 SMB2 或 SMB3. 在 Windows 系统环境中，SMB2 和 SMB3 是事实使用的标准.
 Samba 也是 SMB 协议的实现, 常用于windows与类unix间的文件共享.
-NFS是SUN为Unix开发的网络文件系统, 提供类unix间的文件共享. 目前最新版本是`v4.10`. NFSv4用户验证采用“用户名+域名”的模式，与Windows AD验证方式类似，NFSv4强制使用Kerberos验证方式.（Kerberos与Windows AD都遵循相同RFC1510标准），这样方便windows和`*nix`环境混合部署.
+NFS是SUN为Unix开发的网络文件系统, 提供类unix间的文件共享. 目前最新版本是`v4.2`. NFSv4用户验证采用“用户名+域名”的模式，与Windows AD验证方式类似，NFSv4强制使用Kerberos验证方式.（Kerberos与Windows AD都遵循相同RFC1510标准），这样方便windows和`*nix`环境混合部署.
 
 > nfs server端权限变化后client端无需重新mount即可生效.
 
@@ -20,8 +20,19 @@ autofs 自动挂载服务: 无论是 Samba 服务还是 NFS 服务，都要把�
 ## NFS
 参考:
 - [管理权限组](https://help.aliyun.com/document_detail/27534.html)
+- [acl](/shell/cmd/acl.md)
+- [rhel 8 Chapter 3. Exporting NFS shares](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html-single/deploying_different_types_of_servers/index#exporting-nfs-shares_Deploying-different-types-of-servers)
+- [Common NFS Mount Options](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html-single/storage_administration_guide/index#ch-nfs)
+- [Securing NFS](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html-single/storage_administration_guide/index#ch-nfs)
+- [如何在CentOS 8安装并配置NFS服务](https://www.myfreax.com/how-to-install-and-configure-an-nfs-server-on-centos-8/)
 
 > NFS 客户端为内核的一部分，由于部分内核存在一些缺陷，会影响 NFS 的正常使用, 见[NFS 客户端已知问题](https://www.alibabacloud.com/help/zh/doc-detail/114129.htm)
+
+> NFS v4.1开始支持[Parallel NFS (pNFS)](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html-single/storage_administration_guide/index#ch-nfs).
+
+> **推荐使用以上命令通过 NFSv3 协议挂载，获得最佳性能. 如果应用依赖文件锁，也即需要使用多个client 同时编辑一个文件时使用 NFSv4 协议挂载**
+
+> nfsv4不再需要rpcbind服务: `systemctl mask --now rpc-statd.service rpcbind.service rpcbind.socket`
 
 安装:
 ```
@@ -31,6 +42,7 @@ $ sudo yum install nfs-utils # Install NFS client
 $ sudo systemctl status nfs-kernel-server
 $ systemctl start nfs-server # from centos7, 启动nfs
 $ sudo cat /proc/fs/nfsd/versions # 查看nfs server支持的nfs protocol version, nfs服务需先启动
+$ nfsstat --server # nfs server status
 $ nfsstat -s # server使用的nfs version
 $ nfsstat -c # client使用的nfs version
 $ nfsstat -m # 在client端已挂载的nfs信息
@@ -54,7 +66,7 @@ $ cat /etc/exports
 # 有利于提高同时发起的NFS请求数量
 sudo echo "options sunrpc tcp_slot_table_entries=128" >> /etc/modprobe.d/sunrpc.conf
 sudo echo "options sunrpc tcp_max_slot_table_entries=128" >> /etc/modprobe.d/sunrpc.conf
-# 推荐使用以上命令通过 NFSv3 协议挂载，获得最佳性能. 如果应用依赖文件锁，也即需要使用多台 ECS 同时编辑一个文件时使用 NFSv4 协议挂载.
+# 挂载时使用了noresvport参数，以规避NFS文件系统卡住的风险, 但[部分kernel不支持需检查否则mount时会报错](https://help.aliyun.com/document_detail/121264.html)
 sudo mount -t nfs -o vers=3,nolock,proto=tcp,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport 3f0954ac37-kaf99.cn-shanghai.nas.aliyuncs.com:/ /mnt
 sudo mount -t nfs -o vers=4,minorversion=0,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,noresvport 3f0954ac37-kaf99.cn-shanghai.nas.aliyuncs.com:/ /mnt
 vim /etc/fstab
@@ -66,7 +78,7 @@ file-system-id.region.nas.aliyuncs.com:/ /mnt nfs vers=3,nolock,proto=tcp,rsize=
 
 NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nfs-common 里.
 `/etc/exports`是用来管理NFS共享目录的使用权限与安全设置的地方. 特别注意的是，NFS本身设置的是网络共享权限，整个共享目录的权限还和目录自身的系统权限有关.
-/var/lib/nfs/etab                      记录NFS共享出来的目录的完整权限设定值
+/var/lib/nfs/etab                      记录NFS共享出来的目录的完整权限设定值, from "man exportfs"
 /var/lib/nfs/xtab                      记录曾经登录过的客户端信息
 
 >　nfs server指定使用的版本: `/etc/default/nfs-kernel-server`的`RPCMOUNTDOPTS="--manage-gids -V 4.2"`.
@@ -78,6 +90,8 @@ NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nf
 
 ### FS系统守护进程
 - nfsd ：它是基本的NFS守护进程，主要功能是管理客户端是否能够登录服务器
+
+	支持`/etc/exports.d/*.exports`
 - rpc.mountd ：它是RPC安装守护进程，主要功能是管理NFS的文件系统. 当客户端顺利通过nfsd登录NFS服务器后，在使用NFS服务所提供的文件前，还必须通过文件使用权限的验证. 它会读取NFS的配置文件/etc/exports来对比客户端权限.
 - lockd : 用在管理档案的锁定 (lock) 用途. 当多个客户端同时尝试写入某个档案时， 需要lockd 来解决多客户端同时写入的问题. 但 lockd 必须要同时在客户端与服务器端都开启才行. 此外， lockd 也常与 rpc.statd 同时启用.
 - statd : 检查文件的一致性，与lockd有关. 若发生因为客户端同时使用同一档案造成档案可能有所损毁时， statd 可以用来检测并尝试恢复该档案. 与 lockd 同样的，这个功能必须要在服务器端与客户端都启动才会生效.
@@ -88,18 +102,24 @@ NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nf
 
 1. exportfs
 
+允许root用户有选择地导出或取消导出目录，而无需重新启动NFS服务.
+
 使/etc/exports的配置立刻生效，该命令格式如下：
 
 　　# exportfs [-aruv]
 
 　　-a 全部挂载或卸载 /etc/exports中的内容
-　　-r 重新读取/etc/exports 中的信息 ，并同步更新/etc/exports、/var/lib/nfs/xtab
+　　-r 重新读取/etc/exports 中的信息 ，并同步更新/var/lib/nfs/xtab
 　　-u 卸载单一目录（和-a一起使用为卸载所有/etc/exports文件中的目录）
-　　-v 在export的时候，将详细的信息输出到屏幕上。
+　　-v 输出详细信息
 
-具体例子：
-　　# exportfs -au 卸载所有共享目录
+具体例子:
+		 # exportfs # 默认输出当前已导出文件系统的列表
+　　# exportfs -au #  卸载所有共享目录
+		 # exportfs -ra # 刷新nfs export, 已挂载的fs被取消export时,mounted端操作会导致报`ls: 无法访问'xxx': 过旧的文件控柄`
+		 # exportfs -u 127.0.0.1:/scratch/test # 卸载单一目录
 　　# exportfs -rv 重新加载共享所有目录并输出详细信息
+		 # exportfs -o rw,no_root_squash 127.0.0.1:/scratch/test # 将/scratch/test共享给127.0.0.1, 信息不会写入`/etc/exports`, 但可用`showmount -e  ${nfs server ip}`查到
 
 1. nfsstat
 
@@ -123,7 +143,7 @@ NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nf
 NFS server 关机的时候一点要确保NFS服务关闭，没有客户端处于连接状态！通过showmount -a 可以查看，如果有的话用kill killall pkill 来结束.
 
 ### /etc/exports
-格式：`<输出目录> [客户端1(选项: 访问权限,用户映射,其他)] [客户端2(选项: 访问权限,用户映射,其他)] ...`
+格式：`<输出目录> [客户端1(选项: 访问权限,用户映射,其他)] [客户端2(选项: 访问权限,用户映射,其他)] ...` from `man exports`
 说明:
 - 输出目录 : NFS系统中需要共享给客户机使用的目录
 - 客户端 : 网络中可以访问这个NFS输出目录的计算机
@@ -161,8 +181,8 @@ NFS server 关机的时候一点要确保NFS服务关闭，没有客户端处于
 	    async：将数据先保存在内存缓冲区中，必要时才写入磁盘
 	    wdelay：检查是否有相关的写操作，如果有则将这些写操作一起执行，这样可以提高效率（默认设置）
 	    no_wdelay：若有写操作则立即执行，应与sync配合使用
-	    subtree：若输出目录是一个子目录，则nfs服务器将检查其父目录的权限(默认设置)
-	    no_subtree：即使输出目录是一个子目录，nfs服务器也不检查其父目录的权限，这样可以提高效率
+	    subtree_check：若输出目录是一个子目录，则nfs服务器将检查其父目录的权限. 在客户端打开文件时重命名该文件会导致许多问题. 在几乎所有情况下，最好禁用子树检查.
+	    no_subtree_check：即使输出目录是一个子目录，nfs服务器也不检查其父目录的权限，这样可以提高效率, (默认设置)
 
 > nfs 支持使用no_acl来禁用acl.
 
@@ -178,6 +198,12 @@ NFS服务虽然不具备用户身份验证的功能，但是NFS提供了一种�
 1. 严格控制NFS共享目录的系统权限，尽量不用为普通用户赋予权限
 
 ## SAMBA
+参考:
+- [如何使用CIFS在Linux上挂载Windows共享](https://www.myfreax.com/how-to-mount-cifs-windows-share-on-linux/)
+- [mount options with SMB share](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html-single/storage_administration_guide/index#ch-nfs)
+
+> 在rhel上，内核的cifs.ko文件系统模块提供了对SMB协议的支持.
+
 ```sh
 $ sudo apt install samba samba-common smbclient cifs-utils # 安装samba
 ```
@@ -376,10 +402,23 @@ $ mount.cifs version: 6.9
 
 将mount.cifs version: 6.9降到6.4还是报同样的错.
 
+### 禁用nfsv2, nfsv3, udp
+```bash
+# vim /etc/default/nfs-kernel-server
+RPCNFSDOPTS="-N 2 -N 3 -U"
+# systemctl restart nfs-kernel-server
+$ sudo  mount -t nfs -o vers=2 192.168.0.141:/mnt/xfs nfs_xfs 
+mount.nfs: Protocol not supported
+```
+
+> rhel7是`/etc/sysconfig/nfs`的`RPCNFSDARGS`
+
+> RPCNFSDCOUNT 是 nfsd使用线程数
+
 ### zfs xfs nas
 env: 5.3.0-26-generic
 
-> 在zfs fs (on 0.7.x)上直接使用acl容易出现莫名奇妙的问题, 且[zfs 还未支持NFSv4 ACL](https://github.com/openzfs/zfs/pull/9709). 当前思路是使用zfs vol+格式化作为磁盘, 在其上再设置nas, 整个共享使用一个账户.
+> 在zfs fs (on 0.7.x)上直接使用acl容易出现莫名奇妙的问题, 且[zfs 还未支持NFSv4 ACL](https://github.com/openzfs/zfs/pull/9709). 当前思路是使用zfs vol+格式化作为磁盘, 在其上再设置nas, 整个共享使用一个账户, 再将客户端的用户加入对应的组即可.
 
 > xfs也未支持NFSv4 ACL.
 
@@ -403,4 +442,16 @@ env: 5.3.0-26-generic
 # mkfs -t xfs /dev/zvol/x/vol_xfs
 #  mkdir /mnt/xfs
 # mount /dev/zvol/x/vol_xfs /mnt/xfs
+# chown -R nobody: nogroup /mnt/xfs
+# chmod 775 /mnt/xfs
+# vim /etc/exports
+/mnt/xfs 192.168.0.245(rw,all_squash,no_subtree_check,async)
+/mnt/xfs 192.168.0.131(ro,all_squash,no_subtree_check,async)
+# exportfs -ra
+
+## on client @ 192.168.0.245
+# gpasswd -a  ${USER} nogroup
+# mount -t nfs -o vers=4,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 192.168.0.141:/mnt/xfs nfs_xfs
+# cd nfs_xfs
+# touch a # is ok, 但有时第一次操作会卡几秒~几十秒钟
 ```
