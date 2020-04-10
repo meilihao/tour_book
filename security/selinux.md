@@ -18,6 +18,8 @@ SELinux 服务有三种配置模式，具体如下:
 
 ## example
 ```bash
+# /usr/sbin/sestatus -v  #如果SELinux status参数为enabled即为开启状态
+SELinux status:                 disabled
 #  getenforce  # 获得当前 SELinux服务的运行模式
 #  setenforce 0 # 修改 SELinux 当前的运行模式（0 为禁用，1 为启用）
 #  getsebool -a | grep http # 查询并过滤出所有与 HTTP 协议相关的安全策略

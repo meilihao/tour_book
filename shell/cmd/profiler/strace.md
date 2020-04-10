@@ -50,3 +50,8 @@
       输出从指定文件中读出的数据.例如:`-e read=3,5`
     - -e write=set
       输出写入到指定文件中的数据
+
+## example
+```
+# strace command arg ...
+```
