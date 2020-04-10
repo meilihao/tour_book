@@ -19,6 +19,7 @@ Entry tag type它有以下几个类型：
 > 当权限位只包含"-"时，可用`-`代替`---`
 > 使用`-m`时， 指定的user，group必须存在，否则报错
 > [POSIX/NFSv4 ACL注意事项](https://www.alibabacloud.com/help/zh/doc-detail/143242.htm)
+> [使用POSIX ACL进行权限管理](https://help.aliyun.com/document_detail/143010.html)
 
 ## example
 ```
@@ -33,6 +34,14 @@ Entry tag type它有以下几个类型：
 # setfacl -x u:tank test    # 清除tank用户在test文件acl规则
 # setfacl -m d:u:user1:rwx /test <=> setfacl -d -m u:user1:rwx /test # Default ACL是指对于一个目录进行Default ACL设置，并且在此目录下建立的文件都将继承此目录的ACL
 # setfacl --set u::rw,u:testu1:rw,g::r,o::- file1 # --set选项会把原有的ACL项都删除，用新的替代(此时会设置mask)，需要注意的是**一定要包含UGO的设置**，不能象-m一样只是添加ACL就可以了
+# ### 禁用对用户组的自动授予权限
+# setfacl -m group::--- /srv/samba/example/
+# setfacl -m default:group::--- /srv/samba/example/
+# --- 让目录中创建的新文件系统对象继承权限, 需设置default
+# setfacl -m default:group:"DOMAIN\Domain Admins":rwx /srv/samba/example/
+# setfacl -m default:group:"DOMAIN\Domain Users":r-x /srv/samba/example/
+# setfacl -m default:other::--- /srv/samba/example/
+# ###
 ```
 
 ## FAQ
@@ -58,7 +67,7 @@ NFSv4 ACL是NFSv4协议能够扩展支持的权限控制协议，提供比POSIX 
 - [NFS 4 ACL Tool](https://www.server-world.info/en/note?os=CentOS_7&p=nfs&f=5)
 - [使用NFSv4 ACL进行权限管理](https://www.alibabacloud.com/help/zh/doc-detail/143009.htm?spm=a2c63.p38356.b99.28.40225118iM9BWN)
 
-NFSv4 ACL是目前新的ACL, 比POSIX_ACL功能强大.
+NFSv4 ACL是目前新的ACL, 比POSIX_ACL功能强大. 目前xfs已支持(, ext4好像需要挂载参数未测试), 尽在nfsv4 client上有用, 因为权限就是用户产生的, 不应该在nfs server端修改.
 
 ```sh
 apt/yum install nfs4-acl-tools  # Commandline and GUI ACL utilities for the NFSv4 client
@@ -69,8 +78,6 @@ apt/yum install nfs4-acl-tools  # Commandline and GUI ACL utilities for the NFSv
 > RichACL是linux kernel 对NFSv4 ACL规范的实现. [ext4: Add richacl support patch @  13 Feb 2017 10:34:26 -0500](https://patchwork.kernel.org/patch/9570019/). [xfs: Add richacl support @ 11 Oct 2015 23:24:52 +0000](https://patchwork.kernel.org/patch/7371021/) by `mkfs.xfs -m richacl=1`. 但[**RichACL已中止开发**](https://github.com/andreas-gruenbacher/richacl/issues/9)
 
 > nfs4-acl-tools 解析已有posix acl时会自动将其转成NFSv4 ACL.
-
-> xfs  不支持 NFSv4 ACL on 5.3.0-46-generic.
 
 > [zfs 还未支持NFSv4](https://github.com/openzfs/zfs/pull/9709)
 

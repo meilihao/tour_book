@@ -8,7 +8,7 @@
 SMB(Server Message Block，即服务(器)消息块) 是 IBM 公司在 80年代中期发明的一种文件共享协议. 它只是系统之间通信的一种方式（协议）. 目前最新版是`v3.1.1`.
 CIFS是微软的Common Internet file system的缩写, 是 SMB 协议的一种特殊实现, CIFS 实现的协议至今仍很少被使用. 大多数现代存储系统不再使用 CIFS，而是使用 SMB2 或 SMB3. 在 Windows 系统环境中，SMB2 和 SMB3 是事实使用的标准.
 Samba 也是 SMB 协议的实现, 常用于windows与类unix间的文件共享.
-NFS是SUN为Unix开发的网络文件系统, 提供类unix间的文件共享. 目前最新版本是`v4.2`. NFSv4用户验证采用“用户名+域名”的模式，与Windows AD验证方式类似，NFSv4强制使用Kerberos验证方式.（Kerberos与Windows AD都遵循相同RFC1510标准），这样方便windows和`*nix`环境混合部署.
+NFS是SUN为Unix开发的网络文件系统, 提供类unix间的文件共享. 目前最新版本是`v4.2`. NFSv4用户验证采用“用户名+域名”的模式，与Windows AD验证方式类似，NFSv4可使用Kerberos验证方式.（Kerberos与Windows AD都遵循相同RFC1510标准），这样方便windows和`*nix`环境混合部署.
 
 > nfs server端权限变化后client端无需重新mount即可生效.
 
@@ -23,9 +23,10 @@ autofs 自动挂载服务: 无论是 Samba 服务还是 NFS 服务，都要把�
 - [acl](/shell/cmd/acl.md)
 - [rhel 8 Chapter 3. Exporting NFS shares](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html-single/deploying_different_types_of_servers/index#exporting-nfs-shares_Deploying-different-types-of-servers)
 - [Common NFS Mount Options](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html-single/storage_administration_guide/index#ch-nfs)
-- [Securing NFS](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html-single/storage_administration_guide/index#ch-nfs)
+- [Securing NFS](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html-single/deploying_different_types_of_servers/index#securing-nfs_Deploying-different-types-of-servers)
 - [如何在CentOS 8安装并配置NFS服务](https://www.myfreax.com/how-to-install-and-configure-an-nfs-server-on-centos-8/)
 - [aAmazon Elastic File System(nas) : 文件系统中文件和目录的用户和组 ID 权限 即 rwx模型](https://docs.aws.amazon.com/zh_cn/efs/latest/ug/efs-ug.pdf)
+- [pNFS](https://wenku.baidu.com/view/7cd3eee26294dd88d0d26b0c.html)
 
 > NFS 客户端为内核的一部分，由于部分内核存在一些缺陷，会影响 NFS 的正常使用, 见[NFS 客户端已知问题](https://www.alibabacloud.com/help/zh/doc-detail/114129.htm)
 
@@ -33,7 +34,9 @@ autofs 自动挂载服务: 无论是 Samba 服务还是 NFS 服务，都要把�
 
 > **推荐使用以上命令通过 NFSv3 协议挂载，获得最佳性能. 如果应用依赖文件锁，也即需要使用多个client 同时编辑一个文件时使用 NFSv4 协议挂载**
 
-> nfsv4不再需要rpcbind服务: `systemctl mask --now rpc-statd.service rpcbind.service rpcbind.socket`
+> [nfsv4不再需要rpcbind, rpc.statd, lockd, rpc.mountd服务](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html-single/deploying_different_types_of_servers/index#services-required-by-nfs_exporting-nfs-shares), 但其他rpc服务还是需要: `systemctl mask --now rpc-statd.service rpcbind.service rpcbind.socket`
+
+> mount.nfs不支持bind client ip, 见FAQ的"unmatch host"
 
 安装:
 ```
@@ -144,7 +147,7 @@ NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nf
 NFS server 关机的时候一点要确保NFS服务关闭，没有客户端处于连接状态！通过showmount -a 可以查看，如果有的话用kill killall pkill 来结束.
 
 ### /etc/exports
-格式：`<输出目录> [客户端1(选项: 访问权限,用户映射,其他)] [客户端2(选项: 访问权限,用户映射,其他)] ...` from `man exports`
+格式：`export host1(options1) host2(options2) host3(options3) ...` from `man exports`
 说明:
 - 输出目录 : NFS系统中需要共享给客户机使用的目录
 - 客户端 : 网络中可以访问这个NFS输出目录的计算机
@@ -202,6 +205,9 @@ NFS服务虽然不具备用户身份验证的功能，但是NFS提供了一种�
 参考:
 - [如何使用CIFS在Linux上挂载Windows共享](https://www.myfreax.com/how-to-mount-cifs-windows-share-on-linux/)
 - [mount options with SMB share](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html-single/storage_administration_guide/index#ch-nfs)
+- [SMB Mount Options](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html-single/storage_administration_guide/index#frequently_used_mount_options)
+- [SMB on rhel 8](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html-single/deploying_different_types_of_servers/index#assembly_using-samba-as-a-server_Deploying-different-types-of-servers)
+- [使用POSIX ACL控制Samba文件系统的访问](https://help.aliyun.com/document_detail/143007.html)
 
 > 在rhel上，内核的cifs.ko文件系统模块提供了对SMB协议的支持.
 
@@ -263,11 +269,12 @@ SMB 协议版本:
 	# - ADS: Active Directory Service, 是samba 3.0新增的身份验证方式
 	passdb backend = tdbsam # 定义用户后台的类型，共有 3 种:
 	# - smbpasswd：使用 smbpasswd 命令为系统用户设置 Samba 服务程序的密码
-	# - tdbsam使用一个数据库文件来建立用户数据库. 可以使用smbpasswd命令建立samba用户，不过要建立的samba用户必须先是系统用户. 我们也可以使用pdbedit命令来直接建立Samba账户(**推荐**)
+	# - tdbsam使用一个数据库文件(`/var/lib/samba/private/passdb`)来建立用户数据库. 可以使用smbpasswd命令建立samba用户，不过要建立的samba用户必须先是系统用户. 我们也可以使用pdbedit命令来直接建立Samba账户(**推荐**)
 	# - ldapsam：基于 LDAP 服务进行账户验证
 	load printers = yes #设置在 Samba 服务启动时是否共享打印机设备
 	map to guest = bad user # 将samba sever所不能正确识别的用户都映射成guest用户
-	[josh] # 挂载时将使用的共享名称
+	guest account = user_name # samba默认将guest账户映射为nobody
+	[josh] # 挂载时将使用的共享名称, 其相关的读写共权限与acl独立起作用
 	comment = 共享的描述信息
     path = /samba/josh # 分享路径
     browseable = yes # 是否在“网上邻居”中可见
@@ -281,7 +288,7 @@ SMB 协议版本:
 	force user = u1 #  force group和force user强制规定创建的文件或文件夹的拥有者和组拥有者是谁. 一般这两个值来空，则表示拥有者和组拥有者为创建文件者.
     valid users = josh @sadmin # 允许访问共享的用户和组列表. 组以`@`为前缀, 其他所有用户都不能访问
     hosts allow = 192.168.115.0/24 127.0.0.1
-    hosts deny = 0.0.0.0/0
+    hosts deny = 0.0.0.0/0 # deny优先级高于allow
 	guest ok = no # 是否允许来宾帐号访问, 默认值为NO ，即设定在没有提交帐号和口令的情况下，是否允许访问此区段中定义的共享资源. 如同意guest帐号访问时，设为YES即是否允许匿名访问
 	guest only = yes # 只允许用guest帐号访问
 	public = yes # 是否允许匿名访问, 即是否"所有人可见", 这个开关有时候也叫guest ok，所以有的配置文件中出现guest ok = yes其实和public = yes是一样的
@@ -341,6 +348,7 @@ $ sudo systemctl restart smbd # 使**配置生效**
 $ sudo mount -t cifs //127.0.0.1/{samba_share_name} /mnt [-o username=josh -o password=xxx -o vers=2.0] # 挂载samba分享的内容, client端支持的smb protocol 版本可通过`man mount.cifs#vers查看`
 $ sudo mount | grep cifs # 挂载的详细参数, 可参考[通过云服务器ECS（Linux）访问SMB文件系统#挂载文件系统](https://www.alibabacloud.com/help/zh/doc-detail/128737.htm)
 $ sudo smbstatus # 查看连接到samba server的client及使用的protocol version + samba server version
+# smbcontrol all reload-config # 重新加载Samba配置, 使授权生效
 ```
 
 on windows:
@@ -425,9 +433,16 @@ mount: can't find nfs in /etc/fstab
 删除多余的`-o`
 
 ### refused mount request from 192.168.0.121 for /mnt/xfs (/mnt/xfs): unmatched host
+参考:
+- [NFS Mount over a Specific Interface](https://www.redhat.com/archives/fedora-list/2005-September/msg03442.html)
+
 ```bash
 # mount -t nfs -o vers=3,clientaddr=192.160.0.31  192.168.0.141:/mnt/xfs nfs # 报错:`unmatched host`. 192.168.0.121与192.160.0.31是同一台电脑.
+# ### nsf server: 0.141
+# tcpdump -i bond0 src host 192.168.0.121
+# ### nfs client
 # tcpdump -i eth0 src host 192.168.0.121  and dst port 2049 # 2049是nfs server使用的端口
+# tcpdump -i eth0 src host 192.168.0.121 and dst host 192.168.0.141 # 和上面的作用一样: 判断链路情况
 ```
 
 通过tcpdump发现, 即使指定了clientaddr, 但mount.nfs还是使用了192.168.0.121.
@@ -436,16 +451,79 @@ mount: can't find nfs in /etc/fstab
 
 > clientaddr在`man 5 nfs`
 
+原因: 在mount.nfs代码中未发现bind指定ip的操作:
+```c
+// git clone -b ubuntu/trusty  https://git.launchpad.net/ubuntu/+source/nfs-utils # nfs-common 1:1.2.8-6ubuntu1.2
+// nfs-utils/utils/mount/nfsmount.c : 787~817
+// 最新版1.3.4-3也是这样
+if (nfs_mount_data_version == 1) {
+		/* create nfs socket for kernel */
+		if (nfs_pmap->pm_prot == IPPROTO_TCP)
+			fsock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+		else
+			fsock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+		if (fsock < 0) {
+			perror(_("nfs socket"));
+			goto fail;
+		}
+		if (bindresvport(fsock, 0) < 0) {
+			perror(_("nfs bindresvport"));
+			goto fail;
+		}
+	}
+
+#ifdef NFS_MOUNT_DEBUG
+	printf(_("using port %lu for nfs deamon\n"), nfs_pmap->pm_port);
+#endif
+	nfs_saddr->sin_port = htons(nfs_pmap->pm_port);
+	/*
+	 * connect() the socket for kernels 1.3.10 and below only,
+	 * to avoid problems with multihomed hosts.
+	 * --Swen
+	 */
+	if (linux_version_code() <= MAKE_VERSION(1, 3, 10) && fsock != -1
+	    && connect(fsock, (struct sockaddr *) nfs_saddr,
+		       sizeof (*nfs_saddr)) < 0) {
+		perror(_("nfs connect"));
+		goto fail;
+	}
+```
+
+
+### nfs debug
+```bash
+# rpcdebug -vh
+# rpcdebug -m nfs -s all # Enable all NFS (client-side) debugging
+# rpcdebug -m rpc -s call # only Enable RPC Call (client-side) debugging
+# rpcdebug -m nfsd -s all # Enable NFSD (server-side) debugging
+# ### Disable debugging
+# rpcdebug -m nfs -c all
+# rpcdebug -m nfsd -c all
+```
+
+rpcdebug module:
+- nfs 	NFS client
+- nfsd 	NFS server
+- nlm 	Network Lock Manager Protocol(NLM)
+- rpc 	Remote Procedure Call
+
+rpcdebug选项:
+- -m : module name to set or clear kernel debug flags
+- -s : To set available kernel debug flag for a module
+- -c : Clear Kernel debug flags
+
+> 将nfsd日志输入syslog: `RPCNFSDOPTS="-d -s"`
+
 ### zfs xfs nas
-env: 5.3.0-26-generic
+env: 5.3.0-26-generic/4.4
 
 > 在zfs fs (on 0.7.x)上直接使用acl容易出现莫名奇妙的问题, 且[zfs 还未支持NFSv4 ACL](https://github.com/openzfs/zfs/pull/9709). 当前思路是使用zfs vol+格式化作为磁盘, 在其上再设置nas, 整个共享使用一个账户, 再将客户端的用户加入对应的组即可.
 
-> xfs也未支持NFSv4 ACL.
+> 读写权限 : 允许授权对象对文件系统进行只读或读写.
 
-> 读写权限 : 允许授权对象对文件系统进行只读操作或读写操作. 包括只读和读写
+> nfs和smb不允许重合使用, 避免未知问题.
 
-
+nfs:
 ```bash
 # grep -i CONFIG_XFS_FS /boot/config-5.3.0-26-generic #  check kernel support xfs
 # modinfo xfs # check kernel support xfs when CONFIG_XFS_FS=m
@@ -475,4 +553,14 @@ env: 5.3.0-26-generic
 # mount -t nfs -o vers=4,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 192.168.0.141:/mnt/xfs nfs_xfs
 # cd nfs_xfs
 # touch a # is ok, 但有时第一次操作会卡几秒~几十秒钟
+## on client @ 192.168.0.131
+# gpasswd -a  ${USER} nogroup
+# mount -t nfs -o vers=4,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 192.168.0.141:/mnt/xfs nfs_xfs
+# cd nfs_xfs
+# touch b
+touch: cannot touch 'c': Read-only file system # is ok, because exported with ro
+```
+
+smb:
+```
 ```
