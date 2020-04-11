@@ -62,3 +62,113 @@ $ sudo systemctl start ntpd
 ```
 
 1. [wait for region replication complete](https://github.com/pingcap/tidb-ansible/issues/846)
+
+## tiup(**推荐**)
+```
+# generate rsa key for root@xxx
+# tiup cluster deploy tidb-test v4.0.0-rc ./topology.yaml --user root -i /home/chen/.ssh/tidb_rsa
+# tiup cluster destroy tidb-test # 它会使用deploy创建的ssh key(可用tiup cluster list获取该key)去destroy
+# mysql -u root -h 47.100.15.8 -P 4000 # 默认没密码
+> SET PASSWORD FOR 'root'@'%' = 'xxx';
+```
+
+> 部署完记得修改grafana, tidb的密码
+
+```yaml
+# Global variables are applied to all deployments and as the default value of
+# them if the specific deployment value missing.
+global:
+  user: "tidb"
+  ssh_port: 22
+  deploy_dir: "/home/tidb/tidb-deploy"
+  data_dir: "/home/tidb/tidb-data"
+
+monitored:
+  deploy_dir: "/home/tidb/tidb-deploy/monitored-9100"
+  data_dir: "/home/tidb/tidb-data/monitored-9100"
+  log_dir: "/home/tidb/tidb-deploy/monitored-9100/log"
+
+server_configs:
+  tidb:
+    log.slow-threshold: 300
+    log.level: warn
+    binlog.enable: false
+    binlog.ignore-error: false
+  tikv:
+    readpool.storage.use-unified-pool: true
+    readpool.coprocessor.use-unified-pool: true
+  pd:
+    schedule.leader-schedule-limit: 4
+    schedule.region-schedule-limit: 2048
+    schedule.replica-schedule-limit: 64
+    replication.enable-placement-rules: true
+
+
+pd_servers:
+  - host: 172.19.136.22
+    # ssh_port: 22
+    # name: "pd-1"
+    client_port: 12379
+    peer_port: 12380
+    # deploy_dir: "deploy/pd-2379"
+    # data_dir: "data/pd-2379"
+    # log_dir: "deploy/pd-2379/log"
+    # numa_node: "0,1"
+    # # Config is used to overwrite the `server_configs.pd` values
+    # config:
+    #   schedule.max-merge-region-size: 20
+    #   schedule.max-merge-region-keys: 200000
+tidb_servers:
+  - host: 172.19.136.22
+    # ssh_port: 22
+    # port: 4000
+    # status_port: 10080
+    # deploy_dir: "deploy/tidb-4000"
+    # log_dir: "deploy/tidb-4000/log"
+    # numa_node: "0,1"
+    # # Config is used to overwrite the `server_configs.tidb` values
+    # config:
+    #   log.level: warn
+    #   log.slow-query-file: tidb-slow-overwritten.log
+tikv_servers:
+  - host: 172.19.136.22
+    # ssh_port: 22
+    # port: 20160
+    # status_port: 20180
+    # deploy_dir: "deploy/tikv-20160"
+    # data_dir: "data/tikv-20160"
+    # log_dir: "deploy/tikv-20160/log"
+    # numa_node: "0,1"
+    # # Config is used to overwrite the `server_configs.tikv` values
+    #  config:
+    #    server.labels:
+    #      zone: sh
+    #      dc: sha
+    #      rack: rack1
+    #      host: host1
+tiflash_servers: # 需要很大内存, 当前见到是1.2g
+  - host: 172.19.136.22
+    # ssh_port: 22
+    # tcp_port: 9000
+    # http_port: 8123
+    # flash_service_port: 3930
+    # flash_proxy_port: 20170
+    # flash_proxy_status_port: 20292
+    # metrics_port: 8234
+    # deploy_dir: deploy/tiflash-9000
+    # data_dir: deploy/tiflash-9000/data
+    # log_dir: deploy/tiflash-9000/log
+    # numa_node: "0,1"
+    # # Config is used to overwrite the `server_configs.tiflash` values
+    #  config:
+    #    logger:
+    #      level: "info"
+    #  learner_config:
+    #    log-level: "info"
+monitoring_servers:
+  - host: 172.19.136.22
+grafana_servers:
+  - host: 172.19.136.22
+alertmanager_servers:
+  - host: 172.19.136.22
+```
