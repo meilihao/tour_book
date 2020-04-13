@@ -6,6 +6,8 @@ Apache提供了方便的工具用于切换站点，就是a2ensite和a2dissite，
 
 > 启动命令: `systemctl start httpd`
 
+> 虚拟主机以其指定的DocumentRoot为主.
+
 Linux 系统中的配置文件:
 配置文件的名称 存放位置
 服务目录 /etc/httpd 
@@ -44,11 +46,13 @@ httpd.conf:
     <Direcrory "/path/to/somewhere">
         AddType application/x-httpd-php .htm .html
         DirectoryIndex index.php /index.php # 指定默认页
-        Order Allow, Deny # 来定义 Allow或 Deny 指令起作用的顺序，其匹配原则是按照顺序进行匹配，若匹配成功则执行后面的相应指令
+        Order Allow, Deny # 来定义 Allow或 Deny 指令起作用的顺序，其匹配原则是按照顺序进行匹配，若匹配成功则不执行后面的相应指令
         Options: 开启下面哪些的哪些指令, 多个时用空格分隔
-            AllowOverride None : 忽略所有.htaccess文件
+            AllowOverride None : 是否读取目录中的.htaccess文件, 以改变原来设置的权限
+              - ALL : 允许
+              - None : 不允许
             Indexes：缺少指定的默认页面时，允许将目录中的所有文件以列表形式返回给用户；
-            FollowSymLinks：是否将符号连接所指向的文件打开；
+            FollowSymLinks：在Direcrory目录下的文件是否允许符号链接到其他目录
             None：所有选项都不启用
             All：所有选项都启用
             ExecCGI：允许使用mod_cgi模块执行CGI脚本

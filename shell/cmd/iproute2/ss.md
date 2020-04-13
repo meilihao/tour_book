@@ -31,6 +31,16 @@ ss [options] [ FILTER ]
 - -A QUERY : 指定要列出的套接字列表，通过逗号分隔。可以识别下面的标识符：all、inet、tcp、udp、raw、unix、packet、netlink、unixdgram、unixstream、packetraw、packetdgram
 - -o STATUS : 列出指定状态的套接字
 
+输出列:
+- Local Address : 本地端的地址
+
+      `[::]`和`0.0.0.0`类似, 仅协议不同
+      `[::1]`和`127.0.0.1`类似, 仅协议不同
+      `*` = all(ipv4+ipv6) ip
+
+
+
+
 其他:
 
 - 可使用-4 标志来显示IPv4链接，-6标志来显示IPv6链接

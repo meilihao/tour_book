@@ -29,6 +29,8 @@ default via 192.168.0.1 dev bond0
 # arp 192.168.0.167 # 查看ip对应的mac, 但arp已淘汰
 ```
 
+网关是路由出口的位置, 不一定和本机网段相同.
+
 # ip addr
 ## example
 ```bash

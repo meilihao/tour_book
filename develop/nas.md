@@ -120,7 +120,7 @@ NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nf
 具体例子:
 		 # exportfs # 默认输出当前已导出文件系统的列表
 　　# exportfs -au #  卸载所有共享目录
-		 # exportfs -ra # 刷新nfs export, 已挂载的fs被取消export时,mounted端操作会导致报`ls: 无法访问'xxx': 过旧的文件控柄`
+		 # exportfs -ra # 刷新nfs export, **推荐**. 已挂载的fs被取消export时,mounted端操作会导致报`ls: 无法访问'xxx': 过旧的文件控柄`
 		 # exportfs -u 127.0.0.1:/scratch/test # 卸载单一目录
 　　# exportfs -rv 重新加载共享所有目录并输出详细信息
 		 # exportfs -o rw,no_root_squash 127.0.0.1:/scratch/test # 将/scratch/test共享给127.0.0.1, 信息不会写入`/etc/exports`, 但可用`showmount -e  ${nfs server ip}`查到
@@ -345,10 +345,10 @@ $ yes password |sudo smbpasswd -a ubuntu # 不用交互输入密码
 $ sudo smbpasswd -e josh # 启用账号josh
 $ sudo pdbedit -L -v # 查看smbpasswd创建的samba用户
 $ sudo systemctl restart smbd # 使**配置生效**
+# smbcontrol all reload-config # 重新加载Samba配置, 使授权生效, **推荐**
 $ sudo mount -t cifs //127.0.0.1/{samba_share_name} /mnt [-o username=josh -o password=xxx -o vers=2.0] # 挂载samba分享的内容, client端支持的smb protocol 版本可通过`man mount.cifs#vers查看`
 $ sudo mount | grep cifs # 挂载的详细参数, 可参考[通过云服务器ECS（Linux）访问SMB文件系统#挂载文件系统](https://www.alibabacloud.com/help/zh/doc-detail/128737.htm)
 $ sudo smbstatus # 查看连接到samba server的client及使用的protocol version + samba server version
-# smbcontrol all reload-config # 重新加载Samba配置, 使授权生效
 ```
 
 on windows:

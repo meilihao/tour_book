@@ -6,6 +6,9 @@ env: k8s 1.14.1 / Rancher v2.2.3
 - [Kubernetes架构为什么是这样的？](https://www.tuicool.com/articles/J7Rbimu)
 - [k8s yaml apiVersion](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/)
 - [kubernetes/examples](https://github.com/kubernetes/examples)
+- [生产级 Kubernetes 集群管理 kops](https://www.oschina.net/p/kops)
+- [kubernetes-handbook](https://github.com/rootsongjc/kubernetes-handbook)
+- [ Kubernetes Handbook （Kubernetes指南）](https://github.com/feiskyer/kubernetes-handbook)
 
 Kubernetes 最主要的设计思想是从更宏观的角度，以统一的方式来定义任务之间的各种关系，并且为将来支持更多种类的关系留有余地.
 
