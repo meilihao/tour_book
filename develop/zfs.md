@@ -366,3 +366,9 @@ nfs配置见[fs.md](fs.md)
 ```sh
 $ sudo apt install libzfslinux-dev
 ```
+
+### zfs rename后mkfs 报`No such file or directory`
+env: zfs 0.7.7
+zfs rename volume后`/dev/zvol/{datapath}`不变, mkfs时`No such file or directory`, 怀疑是bug.
+
+zfs 0.8.1 rename后`/dev/zvol/{datapath}`会跟着变化, 且mkfs正常.

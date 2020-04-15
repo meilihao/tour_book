@@ -11,6 +11,8 @@ chown [OPTION]... [MODE] FILE...
 ```
 
 用户类型:
+- u : user
+- g : group
 - o : other
 - a : u + g + o
 操作符:

@@ -2,9 +2,10 @@
 
 #### 制作u盘启动盘(linux下)
 
+1. [Ventoy](https://www.oschina.net/p/ventoy)
 1. Rufus, 推荐, 也支持windows
 1 . [live-usb-install](http://sourceforge.net/projects/liveusbinstall/files/?source=navbar)
-1 . [UNetbootin](http://sourceforge.net/projects/unetbootin/files/UNetbootin/),推荐
+1 . [UNetbootin](https://unetbootin.org/)
 
 #### 解压缩
 

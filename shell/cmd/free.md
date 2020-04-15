@@ -22,3 +22,14 @@
 - -t : 显示内存总和列
 - -s <秒数> : 以指定的间隔持续显示内存使用情况
 - -o : 不显示系统缓冲区列
+
+## example
+```
+$ watch -n 3 -d free
+```
+
+## FAQ
+### buffer/cache区别
+buffers是指用来给**块设备**做的缓冲大小，它只记录文件系统的**metadata以及 追踪瞬时页面(tracking in-flight pages)**.
+
+cached是用来给**文件内容**做缓冲

@@ -444,6 +444,8 @@ dmesg提示`EXT4-fs error (device sda2): ext4_lookup:1601: inode #8288969: comm 
 文件系统变成只读, 通常是硬盘故障.
 
 解决:
+1. `fuser -m /dev/sda` # 查找占用
+1. `umount` # 卸载
 1. `smartctl --all /dev/sda` 查看硬盘信息
 1. `badblocks -s -v  /dev/sda` 检查坏道
 1. 尝试`mount -o remount,rw /`恢复可写
