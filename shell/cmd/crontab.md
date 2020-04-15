@@ -8,11 +8,14 @@
 
 > 同时指定weekday和day时, 满足其一就会被选中.
 > crontab使用`/etc/crontab`指定的shell执行命令.
+> 依赖环境变量时, 需在crontab中指明.
 
 ## 选项
 - l : 打印出当前用户的crontab
 - e : 为当前用户编辑crontab
+- -i : 在删除用户的crontab时提示确认
 - r : 删除当前用户的crontab
+- u <user> :指定用户
 
 ## 例
 cron的格式：
@@ -30,9 +33,15 @@ T  T  T   T   T     (仅仅用于系统
 
 说明: 可用逗号`,`来分别表示多个时间段，例如`8,9,12`表示 8 月、9 月
 和 12 月; 还可以用减号`-`来表示一段连续的时间周期, 例如字段"天"的取值为`12-15`，则表示每月的 12～15 日; 以及用除号`/`表示执行任务的间隔时间, 例如`/2`表示每隔
-2 分钟执行一次任务
+2 分钟执行一次任务; 用`*`表示所有可能的值
 
 比如:
 ```sh
 47 6	* * 7	root	test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.weekly )
 ```
+
+## FAQ
+### cron分类
+分类:
+- 系统调度: 系统周期性工作, 在`/etc/crontab`
+- 用户任务调度: 在`/var/spool/cron/crontabs/${USER}`

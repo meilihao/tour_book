@@ -1,8 +1,13 @@
 # fs
 参考:
 - [NAS 最佳实践](https://help.aliyun.com/document_detail/132279.html)
+- [NAS产品规格限制](https://www.alibabacloud.com/help/zh/doc-detail/122195.htm)
 
 阿里云NAS支持情况: NFSv3.0/4.0+, SMB2.1+. nfs仅支持linux, smb仅支持windows.
+
+总结:
+- 跨平台挂载会因为字符集导致乱码
+- smb2.0+ Protocol不支持unix通用权限, 导致mount.cifs挂载时权限显示不正确.
 
 ## CIFS, SMB, NFS
 SMB(Server Message Block，即服务(器)消息块) 是 IBM 公司在 80年代中期发明的一种文件共享协议. 它只是系统之间通信的一种方式（协议）. 目前最新版是`v3.1.1`.
@@ -27,6 +32,7 @@ autofs 自动挂载服务: 无论是 Samba 服务还是 NFS 服务，都要把�
 - [如何在CentOS 8安装并配置NFS服务](https://www.myfreax.com/how-to-install-and-configure-an-nfs-server-on-centos-8/)
 - [aAmazon Elastic File System(nas) : 文件系统中文件和目录的用户和组 ID 权限 即 rwx模型](https://docs.aws.amazon.com/zh_cn/efs/latest/ug/efs-ug.pdf)
 - [pNFS](https://wenku.baidu.com/view/7cd3eee26294dd88d0d26b0c.html)
+- [windows 支持nfs的版本](https://docs.microsoft.com/en-us/windows-server/storage/nfs/nfs-overview)
 
 > NFS 客户端为内核的一部分，由于部分内核存在一些缺陷，会影响 NFS 的正常使用, 见[NFS 客户端已知问题](https://www.alibabacloud.com/help/zh/doc-detail/114129.htm)
 
@@ -93,10 +99,10 @@ NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nf
 ```
 
 ### FS系统守护进程
-- nfsd ：它是基本的NFS守护进程，主要功能是管理客户端是否能够登录服务器
+- nfsd ：它是基本的NFS守护进程，主要功能是通过登入者ip, 用户id等管理客户端是否能够登录服务器
 
 	支持`/etc/exports.d/*.exports`
-- rpc.mountd ：它是RPC安装守护进程，主要功能是管理NFS的文件系统. 当客户端顺利通过nfsd登录NFS服务器后，在使用NFS服务所提供的文件前，还必须通过文件使用权限的验证. 它会读取NFS的配置文件/etc/exports来对比客户端权限.
+- rpc.mountd ：主要功能是管理NFS的文件系统. 当客户端顺利通过nfsd登录NFS服务器后，在使用NFS服务所提供的文件前，还必须通过文件使用权限的验证. 它会读取NFS的配置文件/etc/exports来对比客户端权限.
 - lockd : 用在管理档案的锁定 (lock) 用途. 当多个客户端同时尝试写入某个档案时， 需要lockd 来解决多客户端同时写入的问题. 但 lockd 必须要同时在客户端与服务器端都开启才行. 此外， lockd 也常与 rpc.statd 同时启用.
 - statd : 检查文件的一致性，与lockd有关. 若发生因为客户端同时使用同一档案造成档案可能有所损毁时， statd 可以用来检测并尝试恢复该档案. 与 lockd 同样的，这个功能必须要在服务器端与客户端都启动才会生效.
 - rpc.idmapd : 名字映射后台进程
@@ -170,9 +176,9 @@ NFS server 关机的时候一点要确保NFS服务关闭，没有客户端处于
 
 	1. 用户映射选项
 
-	    all_squash：将远程访问的所有普通用户及所属组都映射为匿名用户/用户组（`nobody:nogroup`）, 可由anonuid/anongid指定
+	    all_squash：将远程访问的所有普通用户及所属组都映射为匿名用户/用户组（默认是`nobody:nogroup`）, 可由anonuid/anongid指定
 	    no_all_squash：与all_squash取反（默认设置）
-	    root_squash：将root用户及所属组都映射为匿名用户或用户组（默认设置: 客户端 root 的身份会由 root_squash 的设定压缩成`nobody:nogroup`， 如此对服务器的系统会较有保障）
+	    root_squash：将root用户及所属组都映射为匿名用户/用户组（默认是`nobody:nogroup`， 如此对服务器的系统会较有保障）, 可由anonuid/anongid指定
 	    no_root_squash：与rootsquash取反, 允许使用 root 身份来操作服务器的文件系统. 这个选项会留下严重的安全隐患，一般不建议采用.
 	    anonuid=xxx：将远程访问的所有用户都映射为匿名用户，并指定该用户为本地用户（UID=xxx, 该 UID 必需要存在于你的 /etc/passwd 当中）
 	    anongid=xxx：将远程访问的所有用户组都映射为匿名用户组账户，并指定该匿名用户组账户为本地用户组账户（GID=xxx）
@@ -209,14 +215,15 @@ NFS服务虽然不具备用户身份验证的功能，但是NFS提供了一种�
 - [SMB on rhel 8](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html-single/deploying_different_types_of_servers/index#assembly_using-samba-as-a-server_Deploying-different-types-of-servers)
 - [使用POSIX ACL控制Samba文件系统的访问](https://help.aliyun.com/document_detail/143007.html)
 
-> 在rhel上，内核的cifs.ko文件系统模块提供了对SMB协议的支持.
+> 在rhel上，内核的cifs.ko文件系统模块提供了对SMB协议的支持. samba支持windows, mac, linux, 但linux推荐使用nfs.
+> linux作为samba server实现多人分组共享, 只能使用acl. 步骤是: 1. 创建共享; 2. 组织用户 3. 清除acl, 再设置acl
 
 ```sh
 $ sudo apt install samba samba-common smbclient cifs-utils # 安装samba
 ```
 
 SMB 协议版本:
-- SMB1：SMB1（也称为 CIFS）自 Windows NT 发布以来得到支持.
+- SMB1：SMB1（也称为 CIFS）自 Windows NT 发布以来得到支持, 比如windows xp.
 - SMB2：SMB2 自从 Windows Vista 发布以来得到支持，且为 SMB 的增强版本. SMB2 增加了将多重 SMB 操作功能组合到单个请求的功能，以减少网络数据包的数量并提高性能.
     SMB2 和 Large MTU：最大传输单元 (MTU) 是指可通过通讯协议的最大数据单元. 为利用最快的更快的接口，如 1- 或 10-gigabit 以太网，Large MTU 将最大传输单元提高至 1 megabyte (MB). 启用 Large MTU 可提高大文件传输的速度和效率，同时降低需处理的数据包数量.
 - SMB3：SMB3 自 Windows 8 和 Windows Server 2012 发布以来得到支持, 它是 SMB 2 的增强版. SMB3 支持基于 AES 的文件加密传输，从而提高了对等文件传输的安全性.
@@ -227,7 +234,7 @@ SMB 协议版本:
 
 ### 组件
 - smbd : 提供了文件和打印服务, 基于tcp.
-- nmbd : 提供了NetBIOS名称服务和浏览支持，帮助SMB客户定位服务器，基于UDP.
+- nmbd : 提供了NetBIOS名称服务和浏览支持，帮助SMB客户定位服务器，基于UDP. 它可以把linux系统共享的工作组名称和其ip对应起来, 否知就只能通过ip来访问共享文件.
 - smbstatus ：列出目前 Samba 的联机状况， 包括每一条 Samba 联机的 PID, 分享的资源，使用的用户来源等等
 - pdbedit : 管理用户数据
 
@@ -250,7 +257,7 @@ SMB 协议版本:
 
 	```conf
 	[global]
-	server min protocol = SMB2 # 同`min protocol`, 也可指定具体版本`server min protocol = SMB2_02`. [How to configure Samba to use SMBv2 and disable SMBv1 on Linux or Unix](https://www.cyberciti.biz/faq/how-to-configure-samba-to-use-smbv2-and-disable-smbv1-on-linux-or-unix/)
+	server min protocol = SMB2 # 同`min protocol`, 也可指定具体版本[`server min protocol = SMB2_02`](https://www.samba.org/samba/docs/current/man-html/smb.conf.5.html#SERVERMAXPROTOCOL). [How to configure Samba to use SMBv2 and disable SMBv1 on Linux or Unix](https://www.cyberciti.biz/faq/how-to-configure-samba-to-use-smbv2-and-disable-smbv1-on-linux-or-unix/)
 	client min protocol = SMB2
 	client max protocol = SMB3
 	load printers = yes # 是否加载打印机
@@ -268,8 +275,8 @@ SMB 协议版本:
 	# - domain：使用主域控制器进行认证，基于kerberos协议进行
 	# - ADS: Active Directory Service, 是samba 3.0新增的身份验证方式
 	passdb backend = tdbsam # 定义用户后台的类型，共有 3 种:
-	# - smbpasswd：使用 smbpasswd 命令为系统用户设置 Samba 服务程序的密码
-	# - tdbsam使用一个数据库文件(`/var/lib/samba/private/passdb`)来建立用户数据库. 可以使用smbpasswd命令建立samba用户，不过要建立的samba用户必须先是系统用户. 我们也可以使用pdbedit命令来直接建立Samba账户(**推荐**)
+	# - smbpasswd：使用 smbpasswd 命令为系统用户设置 Samba 服务程序的密码. 使用smbpasswd命令来管理用户，要添加/管理的用户必须先是系统用户
+	# - tdbsam使用一个数据库文件(`/var/lib/samba/private/passdb`)来建立用户数据库. 新版Samba的密码验证方式已使用tdbsam取代smbpasswd. 使用pdbedit命令来管理用户，要添加/管理的用户必须先是系统用户(**推荐**)
 	# - ldapsam：基于 LDAP 服务进行账户验证
 	load printers = yes #设置在 Samba 服务启动时是否共享打印机设备
 	map to guest = bad user # 将samba sever所不能正确识别的用户都映射成guest用户
@@ -288,7 +295,7 @@ SMB 协议版本:
 	force user = u1 #  force group和force user强制规定创建的文件或文件夹的拥有者和组拥有者是谁. 一般这两个值来空，则表示拥有者和组拥有者为创建文件者.
     valid users = josh @sadmin # 允许访问共享的用户和组列表. 组以`@`为前缀, 其他所有用户都不能访问
     hosts allow = 192.168.115.0/24 127.0.0.1
-    hosts deny = 0.0.0.0/0 # deny优先级高于allow
+    hosts deny = 0.0.0.0/0 # 当host deny 和hosts allow 字段同时出现并定义的内容相互冲突时，hosts allow 优先
 	guest ok = no # 是否允许来宾帐号访问, 默认值为NO ，即设定在没有提交帐号和口令的情况下，是否允许访问此区段中定义的共享资源. 如同意guest帐号访问时，设为YES即是否允许匿名访问
 	guest only = yes # 只允许用guest帐号访问
 	public = yes # 是否允许匿名访问, 即是否"所有人可见", 这个开关有时候也叫guest ok，所以有的配置文件中出现guest ok = yes其实和public = yes是一样的
@@ -303,6 +310,7 @@ SMB 协议版本:
 
 	example:
 	```ini
+	# 参考: [Samba共享目录的多用户权限设置案例](https://www.cnblogs.com/kevingrace/p/5569993.html)
 	[exchage] # 所有人都能读写，包括guest用户，但每个人不能删除别人的文件
 	comment = Exchange File Directory
 	path = /home/samba/exchange # 再加`chmod -R 1777 /home/samba/exchange`
@@ -338,23 +346,31 @@ SMB 协议版本:
 ```sh
 $  testparm -s # 检查smb.conf是否正确
 $ smbclient -L //127.0.0.1 [-U josh]# 列出正在分享的内容
+$ smbclient //192.168.0.141/{samba_share_name} # 默认以当前用户和字符界面模式访问samba_share_name
 $ smbclient --user=share //192.168.66.198/share # 访问共享
 $ sudo useradd -M -s /usr/sbin/nologin -G sambashare josh
-$ sudo smbpasswd -a josh # 设置用户密码将sadmin用户帐户添加到Samba数据库, 默认已启用账号. 可用`pdbedit -a -u ${user}`代替
-$ yes password |sudo smbpasswd -a ubuntu # 不用交互输入密码
-$ sudo smbpasswd -e josh # 启用账号josh
+# $ sudo smbpasswd -a josh # 设置用户密码将sadmin用户帐户添加到Samba数据库, 默认已启用账号. 可用`pdbedit -a -u ${user}`代替
+# $ yes password |sudo smbpasswd -a ubuntu # 不用交互输入密码
+# $ sudo smbpasswd -e josh # 启用账号josh
+$ pdbedit -a username    #新建Samba账户, **username必须已存在**
+$ pdbedit -x username    #删除Samba账户
+$ pdbedit -v username    #显示账户详细信息
 $ sudo pdbedit -L -v # 查看smbpasswd创建的samba用户
 $ sudo systemctl restart smbd # 使**配置生效**
 # smbcontrol all reload-config # 重新加载Samba配置, 使授权生效, **推荐**
-$ sudo mount -t cifs //127.0.0.1/{samba_share_name} /mnt [-o username=josh -o password=xxx -o vers=2.0] # 挂载samba分享的内容, client端支持的smb protocol 版本可通过`man mount.cifs#vers查看`
+$ sudo mount -t cifs //127.0.0.1/{samba_share_name} /mnt [-o username=josh -o password=xxx -o vers=2.0  -o uid=$(id -u),gid=$(id -g) ] # 挂载samba分享的内容, client端支持的smb protocol 版本可通过`man mount.cifs#vers查看`. samba使用samba_share_name, 而不像nfs那样的export路径. 未登录用户(密码登录)映射为nobody:nogroup, 否则用指定的username:username.
 $ sudo mount | grep cifs # 挂载的详细参数, 可参考[通过云服务器ECS（Linux）访问SMB文件系统#挂载文件系统](https://www.alibabacloud.com/help/zh/doc-detail/128737.htm)
-$ sudo smbstatus # 查看连接到samba server的client及使用的protocol version + samba server version
+$ sudo smbstatus # 查看连接到samba server的client及使用的protocol version + samba server version, 映射的用户及用户组. version显示`Unknown`: 客户端支持的smb协议比smbd新.
 ```
+
+注意(smbd v4.3.11):
+- **刷新前已挂载目录(可写)在刷新后(已去掉可写)权限不变(仍可写)**, 使用`service samba restart/smbcontrol all reload-config`刷新也是同样的结果. 需client重新挂载生效.
+- client 挂载时原有的ownner是root, server端`chown -R nobody:nogroup ${samba_share_name}`, client端的挂载仍是root,  `service samba restart/smbcontrol all reload-config`刷新后仍不变. 需client重新挂载生效.
 
 on windows:
 1. `win + R`, 输入`\\{samba_server_ip}`
 1. 输入设置的samba账号, 进入共享目录
-或`net use z: \\xxx-shanghai.nas.aliyuncs.com\myshare`
+或`net use z: \\xxx-shanghai.nas.aliyuncs.com\myshare [用户名密码 /user:管理员权限的用户名]` #linux/windows未登录挂载时用户会被映射为`nobody:nogroup`; 登录挂载时因为samba登录没有组的概念, 因此用户会被映射为`username:username`(可通过smbstatus查看); 如果samba server是linux, 那么它还会带上支持组的权限; 新建文件归属于映射到的用户.
 
 执行`net use`命令，检查挂载结果
 
@@ -370,6 +386,71 @@ on linux:
 ```
 
 ## FAQ
+### 注意点
+不能以 NFS 和 SMB 同时挂载同一个文件系统.
+
+建议不要使用 Linux 作为客户端访问 SMB，因为存在一些操作上的问题. 例如支持的字符集、文件名的长度（Windows 支持255宽字符，Linux 支持255 UTF8 字节）等等.
+
+但用户如果确实需要的话，可以在支持 SMB2 及以上的 kernel 上挂载.
+
+### samba挂载乱码
+根源: 支持的字符集不同.
+
+解决方案:
+- windows is server, linux mount
+
+	sudo mount -t smbfs -o username=guest,codepage=cp936,iocharset=utf8 //192.168.0.38/movie /mnt/smb/ # 未测试
+
+	参考:
+	- [关于mount/samba/字符集的两篇好文](https://blog.zengrong.net/post/1019/)
+- linux is server, windows mount
+
+	# 未测试, 也不推荐修改linux的字符集, 这样可能会在linux上出现其他问题, 比如linux开始出现乱码.
+	# locale -a | grep zh # 查找支持gbk字符集
+	# export LANG="zh_CN.gb18030"
+	#export LC_ALL="zh_CN.gb18030"
+
+
+ **推荐windows和linux不挂载同一个samba/nfs共享**
+
+### [windows挂载nfs的中文乱码问题的解决](https://support.huawei.com/enterprise/zh/knowledge/EKB1100039367)
+因是windows内置的nfs挂载工具所支持的文字编码太有限了，不支持utf-8. 
+
+使用第三方nfs 客户端，比如 ms-nfs41-client 软件.
+
+### samba client挂载显示的ownner与server上的权限不一致
+参考[文件和目录的属主及权限 from `man mount.cifs`](http://www.jinbuguo.com/man/mount.cifs.html).
+
+**核心 CIFS 协议并不提供文件和目录的 unix 属主或权限信息, 而是采用了windows权限模型**。
+正因为如此，文件和目录才会看上去像被 uid= 和 gid= 选项指定的用户和组所拥有，
+并且其权限才会看上去和 file_mode 以及 dir_mode 指定的权限一致。
+可以通过 chmod/chown 来修改这些值，但是并不会在服务器端产生真正的实际效果。
+
+> windows权限不受影响.
+
+如果服务器端支持Unix扩展，并且客户端也允许使用Unix扩展，文件和目录的 uid, gid, mode 将由服务器端提供。
+因为 CIFS 通常由同一个用户挂载，所以不管是哪个用户访问此文件系统，所使用的 credentials 文件都是同一个。
+这样，新创建的文件和目录其属主/属组就都根据同一个 credentials 文件中的连接用户来设置。
+
+如果客户端和服务器端使用的 uid 和 gid 并不匹配，那么 forceuid 和 forcegid 选项就很有用处了。
+注意，并没有强制改写 mode 的选项。
+当指定了 forceuid 和/或 forcegid 后，文件和目录的权限就可能不能反映真正的权限了。
+
+如果Unix扩展被nounix禁用(或者服务器端本身就不支持)，仍然有可能使用"dynperm"选项在服务器上模拟出来。
+使用该选项后，新创建的文件和目录将看上去拥有了正确的权限。
+不过这些权限并不真正存储在服务器端的文件系统上(仅在内存中)，因此可能会随时丢失(比如内核刷新了inode缓存)。
+因此，我们不鼓励使用此选项。
+
+还可以使用 noperm 选项在客户端完全越过权限检查。
+但是**服务器端的权限检查是无法越过的**，服务器端将始终根据 credentials 文件中提供的用户信息进行权限检查，
+而与客户端实际访问文件系统的用户无关。
+
+[unix extensions仅支持smb 1](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/managing_file_systems/assembly_mounting-an-smb-share-on-red-hat-enterprise-linux_managing-file-systems#con_unix-extensions-support_assembly_mounting-an-smb-share-on-red-hat-enterprise-linux), 因为安全问题已在之后的smb protocol中被禁用了.
+
+因此**smb的权限是由client mounted显示的权限, 登录账户, server端权限**共同作用,推荐挂载时使用`-o uid=$(id -u),gid=$(id -g)`选项(默认是挂载者的uid/gid), 或samba**仅支持windows共享**.
+
+> [SMB 1.0 由于协议设计的巨大差异导致在性能和功能上有严重的不足，并且只支持 SMB1.0 或更早协议版本的 Windows 产品已经完全退出微软支持的生命周期](https://www.alibabacloud.com/help/zh/doc-detail/122195.htm)
+
 ### wrong fs type, bad option, bad superblock on
 `是/sbin/mount下面缺少挂载nfs格式的文件，应该是mount.nfs[xxx]，而该文件由nfs-common提供，所以需要nfs-common工具`,解决方案:
 ```
@@ -537,19 +618,20 @@ nfs:
 # grep -i acl /boot/config* check kernel support for POSIX_ACL, like: CONFIG_EXT4_FS_POSIX_ACL, CONFIG_XFS_POSIX_ACL
 # grep -i nfs /boot/config* check kernel support for NFSv4. like: CONFIG_NFS_V4_1, CONFIG_NFS_V4_2
 
-# sudo zfs create -V 5gb x/vol_xfs # vol /dev/zvol/x/vol_xfs
+# sudo zfs create -V 5gb x/vol_xfs # vol@/dev/zvol/x/vol_xfs
 # mkfs -t xfs /dev/zvol/x/vol_xfs
 #  mkdir /mnt/xfs
 # mount /dev/zvol/x/vol_xfs /mnt/xfs
 # chown -R nobody: nogroup /mnt/xfs
-# chmod 775 /mnt/xfs
+# chmod 777 /mnt/xfs
 # vim /etc/exports
 /mnt/xfs 192.168.0.245(rw,all_squash,no_subtree_check,async)
 /mnt/xfs 192.168.0.131(ro,all_squash,no_subtree_check,async)
 # exportfs -ra
 
 ## on client @ 192.168.0.245
-# gpasswd -a  ${USER} nogroup
+# gpasswd -a  ${USER} nogroup # 将当前用户加入nogroup
+# id # 查看是否已加入nogroup
 # mount -t nfs -o vers=4,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 192.168.0.141:/mnt/xfs nfs_xfs
 # cd nfs_xfs
 # touch a # is ok, 但有时第一次操作会卡几秒~几十秒钟
@@ -562,5 +644,28 @@ touch: cannot touch 'c': Read-only file system # is ok, because exported with ro
 ```
 
 smb:
-```
+```bash
+# sudo zfs create -V 5gb x/vol_smb # vol@/dev/zvol/x/vol_smb
+# mkfs -t xfs /dev/zvol/x/vol_smb
+#  mkdir /mnt/smb
+# mount /dev/zvol/x/vol_smb /mnt/smb
+# chown -R nobody: nogroup /mnt/smb
+# chmod 777 /mnt/smb
+# vim /etc/samba/smb.conf
+/mnt/smb 192.168.0.245(rw,all_squash,no_subtree_check,async)
+/mnt/smb 192.168.0.131(ro,all_squash,no_subtree_check,async)
+# smbcontrol all reload-config
+
+## on client @ 192.168.0.245
+# gpasswd -a  ${USER} nogroup # 将当前用户加入nogroup
+# id # 查看是否已加入nogroup
+# mount -t nfs -o vers=4,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 192.168.0.141:/mnt/smb nfs_xfs
+# cd nfs_xfs
+# touch a # is ok, 但有时第一次操作会卡几秒~几十秒钟
+## on client @ 192.168.0.131
+# gpasswd -a  ${USER} nogroup
+# mount -t nfs -o vers=4,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 192.168.0.141:/mnt/smb nfs_xfs
+# cd nfs_xfs
+# touch b
+touch: cannot touch 'c': Read-only file system # is ok, because exported with ro
 ```

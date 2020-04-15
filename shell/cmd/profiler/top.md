@@ -70,10 +70,6 @@ top 支持显示一个定位信息，可以看到自己现在处于第几行，�
 1. 已使用的物理内存
 1. 用作buff和cache的内存
 
-> buffers是指用来给块设备做的缓冲大小，它只记录文件系统的metadata以及 tracking in-flight pages.
-
-> cached是用来给文件做缓冲
-
 第五行(Swap):
 1. swap总量
 1. 空闲的swap

@@ -23,6 +23,7 @@ Entry tag type它有以下几个类型：
 
 ## example
 ```
+# apt install acl
 # getfacl test # 查看acl
 # getfacl --omit-header ./test.sh
 # setfacl -b . # 移除所有acl

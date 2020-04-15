@@ -102,7 +102,7 @@ $ timedatectl
 # 显示所有可用的时区
 $ timedatectl list-timezones                                                                                   
 # 设置当前时区
-$ sudo timedatectl set-timezone America/New_York
+$ sudo timedatectl set-timezone America/New_York # Asia/Shanghai
 $ sudo timedatectl set-time YYYY-MM-DD
 $ sudo timedatectl set-time HH:MM:SS
 ```

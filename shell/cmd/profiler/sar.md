@@ -16,6 +16,7 @@ sudo apt-get install sysstat
 
 ## 选项
 
+- -A : 显示系统所有资源(cpu, memory, disk)的运行状况
 - -b : 统计i/o和传输速率
 - -B : 统计分页
 - -d : 统计每个设备的活动

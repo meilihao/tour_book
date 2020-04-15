@@ -3,6 +3,7 @@
 
 ## other
 ` swapon ${swap分区}`: 启用swap分区
+` swapoff ${swap分区}`: 关闭swap分区
 
 ## FAQ
 ### swap在`/etc/fstab`的格式
