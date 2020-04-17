@@ -21,8 +21,66 @@ Entry tag type它有以下几个类型：
 > [POSIX/NFSv4 ACL注意事项](https://www.alibabacloud.com/help/zh/doc-detail/143242.htm)
 > [使用POSIX ACL进行权限管理](https://help.aliyun.com/document_detail/143010.html)
 
+ACL 定义的权限是 ugo 权限的超集.
+ACL 权限与 ugo 权限的对应关系:
+- 文件的 owner 权限对应于 ACL 权限中的 ACL_USER_OBJ 条目。
+- **当 ACL 权限中具有 ACL_MASK 条目时，文件的 group 权限对应于 ACL 权限中的 ACL_MASK 条目。否则，当 ACL 权限中具没有 ACL_MASK 条目时，文件的 group 权限对应于 ACL 权限中的 ACL_GROUP_OBJ 条目**.
+
+	acl mask是ACL的默认的权限掩码, 是ACL_USER(named user), ACL_GROUP(named group), ACL_GROUP_OBJ(owning group)能够被授予的最大权限.
+	effective(实际权限) = 当前账号对应权限 & acl mask.
+
+
+- 文件的 other 权限对应于 ACL 权限中的 ACL_OTHER_OBJ 条目。
+
+posix acl按以下顺序检查：所有者、命名用户、拥有组或命名组、其他.
+
+文件的 ugo 权限总是与对应的 ACL 条目保持一致。修改文件的 ugo 权限会导致修改相关的 ACL 条目，同样的，修改这些 ACL 条目会导致修改对应的 guo 权限:
+- 当添加了 ACL_USER 或 ACL_GROUP 后，必须有一个对应的 ACL_MASK 条目. 在当前的情况下，ACL_MASK 是被自动创建的，它的权限被设置成了 group 的权限
+- 在有ACL或ACL未被完全清空的情况下，改变mask就是改变属组的权限，改变属组的权限就是改变mask.
+
+### 新建文件的 default ACL
+一个文件的 access ACL 会在通过 creat()、mkdir()、mknod()、mkfifo() 和 open() 函数创建该文件时被初始化.
+
+如果一个目录被设置了 default ACL，那么将会由文件创建函数的 mode 参数和目录的 default ACL 共通决定新文件的 ACL 权限(此时 umask 被忽略)：
+- 新的文件继承父目录的 default ACL 作为自己的 access ACL
+- 修改与 ugo 权限对应的 access ACL 条目，使其不包含文件创建函数的 mode 参数不包含的权限
+
+如果一个目录没有被设置 default ACL，那么将由文件创建函数的 mode 参数和 umask 共同决定新文件的 ACL 权限：
+- 新建文件的 access ACL 包含 ACL_USER_OBJ, ACL_GROUP_OBJ, 和 ACL_OTHER 条目。这些条目的权限被设置为由 umask 决定的权限
+- 修改与 ugo 权限对应的 access ACL 条目，使其不包含文件创建函数的 mode 参数不包含的权限
+
+### ACL MASK
+[为什么需要 ACL_MASK 条目](https://www.cnblogs.com/sparkdev/p/9694015.html).
+
+
+## setfacl
+参考:
+- [ACL 是什么](https://www.cnblogs.com/sparkdev/p/5536868.html)
+- [Linux ACL 权限之进阶篇, 有acl mask的详细说明](https://www.cnblogs.com/sparkdev/p/9694015.html)
+- [setfacl命令说明](https://wangchujiang.com/linux-command/c/setfacl.html)
+- [FilePermissionsACLs](https://help.ubuntu.com/community/FilePermissionsACLs)
+- [Handling ACLs](https://www.pks.mpg.de/~mueller/docs/suse10.2/html/opensuse-manual_en/manual/sec.acls.handle.html)
+- [权限检查算法 ACCESS CHECK ALGORITHM](http://man7.org/linux/man-pages/man5/acl.5.html)
+
+### 格式
+
+	setfacl [-bkRd] [{-m|-x} acl参数] 文件/目录名
+
+### 选项
+- -m ：配置后面的 acl 参数给文件/目录使用，不可与 -x 合用
+- -n : 不重新计算mask. setfacl默认在未明确给出mask时会重新计算acl mask. mask就是ACL的默认的权限掩码
+- -x ：删除后续的 acl 参数，不可与 -m 合用
+- -b ：移除所有的 ACL 配置参数, 包括default.
+- -k ：移除默认的 ACL 参数
+- -R ：递归配置 acl
+- -d ：配置“默认 acl 参数”，**只对目录有效**，在该目录新建的数据会引用此默认值. 它能让我们创建的子文件或者子文件夹继承父文件夹的权限设置.
+- --set : 会先清除掉原有的 ACL 权限，然后添加新的权限. 需要注意的是**一定要包含UGO的设置**，不能象-m一样只是添加ACL就可以了
+- --test: 测试模式，不会改变任何文件的acl规则，操作后的acl规则将被列出
+- --restore=file: 从文件恢复备份的acl规则，此参数只能独立执行，除了--test,备份的acl文件可由 getfacl -R产生
+
 ## example
 ```
+# su admini -c 'touch dir0/file' # for 测试权限
 # apt install acl
 # getfacl test # 查看acl
 # getfacl --omit-header ./test.sh
@@ -34,7 +92,7 @@ Entry tag type它有以下几个类型：
 # setfacl -m g:zhangying:r-w test      # 添加/修改一个组权限
 # setfacl -x u:tank test    # 清除tank用户在test文件acl规则
 # setfacl -m d:u:user1:rwx /test <=> setfacl -d -m u:user1:rwx /test # Default ACL是指对于一个目录进行Default ACL设置，并且在此目录下建立的文件都将继承此目录的ACL
-# setfacl --set u::rw,u:testu1:rw,g::r,o::- file1 # --set选项会把原有的ACL项都删除，用新的替代(此时会设置mask)，需要注意的是**一定要包含UGO的设置**，不能象-m一样只是添加ACL就可以了
+# setfacl --set u::rw,u:testu1:rw,g::r,o::- file1 # --set选项会把原有的ACL项都删除，用新的替代(此时会设置mask)
 # ### 禁用对用户组的自动授予权限
 # setfacl -m group::--- /srv/samba/example/
 # setfacl -m default:group::--- /srv/samba/example/
@@ -42,10 +100,16 @@ Entry tag type它有以下几个类型：
 # setfacl -m default:group:"DOMAIN\Domain Admins":rwx /srv/samba/example/
 # setfacl -m default:group:"DOMAIN\Domain Users":r-x /srv/samba/example/
 # setfacl -m default:other::--- /srv/samba/example/
-# ###
+# ### 备份和恢复 ACL 权限
+# getfacl -R acldir > acldir.acl
+# setfacl -R -b acldir
+# setfacl --restore acldir.acl
 ```
 
 ## FAQ
+### `setfacl: Option -m: Invalid argument near character 5`
+需设置的user/group不存在
+
 ### [File system and ACL support](https://www.ibm.com/support/knowledgecenter/en/SSEQVQ_8.1.7/client/c_bac_aclsupt.html)
 参考:
 - [NAS NFS ACL by aliyun](https://www.alibabacloud.com/help/zh/doc-detail/143242.htm?spm=a2c63.p38356.b99.25.1e294085E97WtS)
@@ -61,14 +125,16 @@ NFSv4 ACL是NFSv4协议能够扩展支持的权限控制协议，提供比POSIX 
 ### 查看ext4支持POSIX ACL
 ```bash
 # dumpe2fs -h /dev/sda1|grep -i acl
+Default mount options:                 user_xattr    acl
 ```
 
 ### NFSv4 ACL
 参考:
+- [NFSv4 ACL和POSIX ACL相关的特性](https://help.aliyun.com/document_detail/143008.html)
 - [NFS 4 ACL Tool](https://www.server-world.info/en/note?os=CentOS_7&p=nfs&f=5)
 - [使用NFSv4 ACL进行权限管理](https://www.alibabacloud.com/help/zh/doc-detail/143009.htm?spm=a2c63.p38356.b99.28.40225118iM9BWN)
 
-NFSv4 ACL是目前新的ACL, 比POSIX_ACL功能强大. 目前xfs已支持(, ext4好像需要挂载参数未测试), 尽在nfsv4 client上有用, 因为权限就是用户产生的, 不应该在nfs server端修改.
+NFSv4 ACL是目前新的ACL, 比POSIX_ACL功能强大. 目前xfs已支持(, ext4好像需要挂载参数未测试), 仅在nfsv4 client上有用, 因为权限就是用户产生的, 不应该在nfs server端修改.
 
 ```sh
 apt/yum install nfs4-acl-tools  # Commandline and GUI ACL utilities for the NFSv4 client
@@ -95,3 +161,13 @@ rsync -X # requires rsync-3.1.2-10.el7 or later on RHEL 7. RHEL 8 has rsync 3.1.
 
 ### acl 自动继承(automatic inheritance)
 对目录进行ACL更改后，该更改将传播到启用了自动继承的任何文件或目录下，除非还设置了“ protected”标志. 只要显式设置了文件的ACL或模式，就会设置“保护”标志. 这样可以避免继承覆盖已设置为其他权限的权限.
+
+### 查看文件属性
+setfattr可以设置EA(Extended Attributes)，getfattr可以获取EA，attr是一个综合命令，可以设置、获取、删除、列举所有等操作.
+
+```
+# apt install attr # 文件系统的挂载选项需要包括user_xattr选项
+# getfattr -n system.nfs4_acl . # 通过Extended Attributes查看NFSv4 ACL. `system`是namespace, 文件属性上可能有多个namespace.
+# getfattr -m.* -d . # 列举所有属性，包含命名空间
+# attr -lq . # 读取所有属性, 但在一些fs(nfs mount with xfs)上不生效, 但getfattr有输出.
+```

@@ -2,12 +2,16 @@
 参考:
 - [NAS 最佳实践](https://help.aliyun.com/document_detail/132279.html)
 - [NAS产品规格限制](https://www.alibabacloud.com/help/zh/doc-detail/122195.htm)
+- [如何选择NFS和SMB](https://help.aliyun.com/knowledge_detail/145239.html)
+- [linux用户和用户组](https://www.jianshu.com/p/584720f09228)
+- [setFileACL参考 from openmediavault](https://github.com/openmediavault/openmediavault/blob/master/deb/openmediavault/usr/share/openmediavault/engined/rpc/sharemgmt.inc)
 
 阿里云NAS支持情况: NFSv3.0/4.0+, SMB2.1+. nfs仅支持linux, smb仅支持windows.
 
 总结:
 - 跨平台挂载会因为字符集导致乱码
 - smb2.0+ Protocol不支持unix通用权限, 导致mount.cifs挂载时权限显示不正确.
+- 因为nfs和samba用户都会在linux上映射为`user:group`, 因此分享目录的权限设为`000`+acl mask为`rwx`, 此时也可避开acl mask的影响, 最后在设置user/group acl和user/group default acl即可.
 
 ## CIFS, SMB, NFS
 SMB(Server Message Block，即服务(器)消息块) 是 IBM 公司在 80年代中期发明的一种文件共享协议. 它只是系统之间通信的一种方式（协议）. 目前最新版是`v3.1.1`.
@@ -34,6 +38,8 @@ autofs 自动挂载服务: 无论是 Samba 服务还是 NFS 服务，都要把�
 - [pNFS](https://wenku.baidu.com/view/7cd3eee26294dd88d0d26b0c.html)
 - [windows 支持nfs的版本](https://docs.microsoft.com/en-us/windows-server/storage/nfs/nfs-overview)
 
+> **NFS鉴权采用的是IP安全组，不支持用户名鉴权**
+
 > NFS 客户端为内核的一部分，由于部分内核存在一些缺陷，会影响 NFS 的正常使用, 见[NFS 客户端已知问题](https://www.alibabacloud.com/help/zh/doc-detail/114129.htm)
 
 > NFS v4.1开始支持[Parallel NFS (pNFS)](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html-single/storage_administration_guide/index#ch-nfs).
@@ -43,6 +49,10 @@ autofs 自动挂载服务: 无论是 Samba 服务还是 NFS 服务，都要把�
 > [nfsv4不再需要rpcbind, rpc.statd, lockd, rpc.mountd服务](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html-single/deploying_different_types_of_servers/index#services-required-by-nfs_exporting-nfs-shares), 但其他rpc服务还是需要: `systemctl mask --now rpc-statd.service rpcbind.service rpcbind.socket`
 
 > mount.nfs不支持bind client ip, 见FAQ的"unmatch host"
+
+> 在没有设置过NFSv4 ACL时，mode other仍然保持other的语义. 设置过NFSv4 ACL后，mode other将变成everyone的语义并保持everyone语义. 强烈建议在使用NFSv4 ACL之后请勿使用mode.
+> 在互操作(NFSv4 ACL和mode)中ACL的everyone和UNIX mode中的other等价，修改mode other会直接修改ACE EVERYONE.
+> 由于POSIX ACL和NFSv4 ACL的语义不完全相同。例如：POSIX ACL继承不区分文件和目录，POSIX ACL的权限只有rwx而NFSv4 ACL更丰富。强烈建议只使用NFSv4 ACL或者只使用POSIX ACL，尽量避免混用。 
 
 安装:
 ```
@@ -217,6 +227,10 @@ NFS服务虽然不具备用户身份验证的功能，但是NFS提供了一种�
 
 > 在rhel上，内核的cifs.ko文件系统模块提供了对SMB协议的支持. samba支持windows, mac, linux, 但linux推荐使用nfs.
 > linux作为samba server实现多人分组共享, 只能使用acl. 步骤是: 1. 创建共享; 2. 组织用户 3. 清除acl, 再设置acl
+> 在设置ACL前，先规划好用户组及其权限，每个用户可属于一个或多个用户组。如果要增加、删除、修改用户权限，只需调整用户所在的用户组，只要用户组结构不变就无需修改用户组的ACL。在设置ACL时，尽量使用用户组而非单个用户，通过用户组设置ACL，简单省时，权限清晰易于管理.
+> 如果跨客户端使用POSIX ACL，需要给相同的用户名/群组名设置相同的UID/GID，因为NAS后端存储的是UID/GID.
+> 强烈建议使用NFSv4 ACL之后请勿使用mode. 因为mode没有Deny功能，如果使用Deny会使ACL与mode的互操作变得更复杂. POSIX ACL并不支持Deny，NFSv4 ACL如果包含Deny则无法转化为POSIX ACL.
+> chmod不会对linux samba client mounted造成影响, 其权限由挂载时的file_mode,dir_mode参数决定.
 
 ```sh
 $ sudo apt install samba samba-common smbclient cifs-utils # 安装samba
@@ -284,6 +298,7 @@ SMB 协议版本:
 	[josh] # 挂载时将使用的共享名称, 其相关的读写共权限与acl独立起作用
 	comment = 共享的描述信息
     path = /samba/josh # 分享路径
+	admin users = jason # 在path路径下, 权限等同于root, 格式与write list一致
     browseable = yes # 是否在“网上邻居”中可见
 	writeable = true #该共享路径是否可写, read only的反义词
 	write list = u1,u2 # 拥有写权限的用户列表（和writable不能同时使用）,会覆盖read only
@@ -346,7 +361,7 @@ SMB 协议版本:
 ```sh
 $  testparm -s # 检查smb.conf是否正确
 $ smbclient -L //127.0.0.1 [-U josh]# 列出正在分享的内容
-$ smbclient //192.168.0.141/{samba_share_name} # 默认以当前用户和字符界面模式访问samba_share_name
+$ smbclient //192.168.0.141/{samba_share_name} # 默认以当前用户和字符界面模式交互式地访问samba_share_name
 $ smbclient --user=share //192.168.66.198/share # 访问共享
 $ sudo useradd -M -s /usr/sbin/nologin -G sambashare josh
 # $ sudo smbpasswd -a josh # 设置用户密码将sadmin用户帐户添加到Samba数据库, 默认已启用账号. 可用`pdbedit -a -u ${user}`代替
@@ -370,7 +385,7 @@ $ sudo smbstatus # 查看连接到samba server的client及使用的protocol vers
 on windows:
 1. `win + R`, 输入`\\{samba_server_ip}`
 1. 输入设置的samba账号, 进入共享目录
-或`net use z: \\xxx-shanghai.nas.aliyuncs.com\myshare [用户名密码 /user:管理员权限的用户名]` #linux/windows未登录挂载时用户会被映射为`nobody:nogroup`; 登录挂载时因为samba登录没有组的概念, 因此用户会被映射为`username:username`(可通过smbstatus查看); 如果samba server是linux, 那么它还会带上支持组的权限; 新建文件归属于映射到的用户.
+或`net use z: \\xxx-shanghai.nas.aliyuncs.com\myshare [用户名密码 /user:管理员权限的用户名]` #linux/windows未登录挂载时用户会被映射为`nobody:nogroup`; 登录挂载时因为samba登录没有组的概念, 因此用户会被映射为`username:username的有效用户组`(可通过smbstatus查看); 如果samba server是linux, 那么它还会带上支持组的权限; 新建文件归属于映射到的用户.
 
 执行`net use`命令，检查挂载结果
 
@@ -450,6 +465,9 @@ on linux:
 因此**smb的权限是由client mounted显示的权限, 登录账户, server端权限**共同作用,推荐挂载时使用`-o uid=$(id -u),gid=$(id -g)`选项(默认是挂载者的uid/gid), 或samba**仅支持windows共享**.
 
 > [SMB 1.0 由于协议设计的巨大差异导致在性能和功能上有严重的不足，并且只支持 SMB1.0 或更早协议版本的 Windows 产品已经完全退出微软支持的生命周期](https://www.alibabacloud.com/help/zh/doc-detail/122195.htm)
+
+### mount.cifs: bad UNC (\192.168.0.137xxx)
+linux samba client挂载需注意斜杠是linux风格的.
 
 ### wrong fs type, bad option, bad superblock on
 `是/sbin/mount下面缺少挂载nfs格式的文件，应该是mount.nfs[xxx]，而该文件由nfs-common提供，所以需要nfs-common工具`,解决方案:
@@ -623,7 +641,7 @@ nfs:
 #  mkdir /mnt/xfs
 # mount /dev/zvol/x/vol_xfs /mnt/xfs
 # chown -R nobody: nogroup /mnt/xfs
-# chmod 777 /mnt/xfs
+# chmod 770 /mnt/xfs
 # vim /etc/exports
 /mnt/xfs 192.168.0.245(rw,all_squash,no_subtree_check,async)
 /mnt/xfs 192.168.0.131(ro,all_squash,no_subtree_check,async)
@@ -650,22 +668,21 @@ smb:
 #  mkdir /mnt/smb
 # mount /dev/zvol/x/vol_smb /mnt/smb
 # chown -R nobody: nogroup /mnt/smb
-# chmod 777 /mnt/smb
+# chmod 770 /mnt/smb
 # vim /etc/samba/smb.conf
-/mnt/smb 192.168.0.245(rw,all_squash,no_subtree_check,async)
-/mnt/smb 192.168.0.131(ro,all_squash,no_subtree_check,async)
+
 # smbcontrol all reload-config
 
-## on client @ 192.168.0.245
-# gpasswd -a  ${USER} nogroup # 将当前用户加入nogroup
-# id # 查看是否已加入nogroup
-# mount -t nfs -o vers=4,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 192.168.0.141:/mnt/smb nfs_xfs
-# cd nfs_xfs
-# touch a # is ok, 但有时第一次操作会卡几秒~几十秒钟
-## on client @ 192.168.0.131
-# gpasswd -a  ${USER} nogroup
-# mount -t nfs -o vers=4,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 192.168.0.141:/mnt/smb nfs_xfs
-# cd nfs_xfs
-# touch b
-touch: cannot touch 'c': Read-only file system # is ok, because exported with ro
+# groupadd reader
+# groupadd writer
+# groupadd users
+# useradd -M -s /sbin/nologin -g users reader1
+# useradd -M -s /sbin/nologin -g users writer1
+# echo -e "123456\n123456" | pdbedit -a -t -u reader1 # 也可修改密码
+# echo -e "123456\n123456" | pdbedit -a -t -u writer1
+# gpasswd -a reader1 -g reader
+# gpasswd -a writer1 -g writer
 ```
+
+要点:
+1. 需地方保存samba users, 与系统用户区分开来

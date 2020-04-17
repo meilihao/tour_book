@@ -43,7 +43,9 @@
 ```bash
 # mount -t vfat /dev/sda1 /mnt/usb #挂载usb
 # mount -t iso9660 /dev/hda /mnt/cdrom #挂载光盘
-#  mount  /dev/cdrom /mnt/cdrom #挂载光盘
+# mount  /dev/cdrom /mnt/cdrom #挂载光盘
+# mount -v /export/sdc_share
+mount: /srv/dev-disk-by-path-pci-0000-00-10.0-scsi-0-0-2-0-part1/test/ bound on /export/sdc_share.
 ```
 
 # umount

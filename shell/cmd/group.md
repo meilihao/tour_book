@@ -18,6 +18,9 @@
 # newgrp
 切换有效用户组.
 
+# groupmod
+修改组信息
+
 # groupdel
 删除用户组
 
@@ -25,3 +28,9 @@
 ```bash
 # groupdel abc
 ```
+
+# groupmems
+查看组内成员
+
+# groups
+查看用户所在的组

@@ -53,6 +53,6 @@ WantedBy=default.target
 # 1. $ grep -i dhcp # 这里找到`dhcp4 (enp3s0): dhclient started with pid 1086`
 # 1. $ sudo ps -ef |grep 1086 # 查看启动dhclient的命令,发现网络是由NetworkManager管理的, 且通过其命令行的参数也找到了配置文件的位置(不可直接编辑,需要使用nmcli)
 # 1. $ nmcli connection # 找到conn.
-# 1. $ sudo nmcli connection modify c9944e1f-2dea-3fec-b539-7267cf7bdee7 +ipv4.routes "192.168.16.0/24 192.168.88.2" # 添加route, 按需多次执行即可. 它会将 192.168.16.0/24 子网的流量指向位于 192.168.88.2的网关
+# 1. $ sudo nmcli connection modify c9944e1f-2dea-3fec-b539-7267cf7bdee7 +ipv4.routes "192.168.16.0/24 192.168.88.2" # 添加route, 按需多次执行即可. 它会将 192.168.16.0/24 子网的流量指向位于 192.168.88.2的网关, 再sudo nmcli connection down/up c9944e1f-2dea-3fec-b539-7267cf7bdee7即可(但sudo systemctl restart network-manager.service没效果).
 # sudo nmcli connection modify c3441692-43a5-393b-b9f8-e0e098b38b8b -ipv4.routes "192.168.16.0/24 192.168.88.2" 或找到配置文件(`/etc/NetworkManager/system-connections/'Wired connection 2'`)删除相关字段, 再`sudo systemctl restart NetworkManager`即可.
 # 可参考[使用 NetworkManager 命令行工具 nmcli](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/7/html/networking_guide/sec-using_the_networkmanager_command_line_tool_nmcli)
