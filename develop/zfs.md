@@ -29,6 +29,7 @@ mirror : 一个虚拟设备存储相同的两个或两个以上的磁盘上的�
 resilvering ：在恢复设备时将数据从一个磁盘复制到另一个磁盘的过程
 snapshot : 快照, 是文件系统或卷的只读副本. 在zfs中，快照几乎可以即时创建，而且最初不会额外占用池中的磁盘空间
 scrub : 用于一致性检验. 其他文件系统会使用fsck.
+thin: zfs支持thin provisioning, 
 
 ### 建议
 1. 使用整个磁盘来启用磁盘写入高速缓存并使维护更轻松
@@ -167,7 +168,7 @@ $ sudo zfs destroy filesystem|volume # 销毁文件系统/volume, 此时dataset�
 $ sudo zfs rename <old-path> <new-path> # 重命名fs
 $ sudo mount -o <pool>/.../<filesystem> # 挂载fs
 $ sudo unmount <pool>/.../<filesystem> # 取消挂载fs, 此时fs必须是不活动的. `-f`强制取消挂载
-$ sudo zfs create -V 5gb system1/vol # 创建5g大小的卷(创建卷时，会自动将预留空间设置为卷的初始大小，以确保数据完整性)
+$ sudo zfs create [-s] -V 5gb system1/vol # 创建5g大小的卷(创建卷时，会自动将预留空间设置为卷的初始大小，以确保数据完整性), `-s`创建精简卷, 有点类似EMC存储的thin provisioning卷, 使用时(延迟)分配空间, 因此分配的大小可超过实际存储的大小
 $ sudo zfs get mountpoint mypool
 ```
 
@@ -332,6 +333,8 @@ $ sudo zfs set dedup=on mypool/projects # 启用去重
 - volsize(for volumn)/refquota (for filesystem): 允许dataset的最大大小, 它们应该>=refreservation.
 - logicalreferenced : dataset在逻辑上使用的空间.
 - logicalused : dataset及其后代在逻辑上使用的空间.
+
+> Reservation是最小值, quota是最大值.
 
 ## FAQ
 ### quota于refquota区别

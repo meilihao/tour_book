@@ -667,8 +667,8 @@ smb:
 # mkfs -t xfs /dev/zvol/x/vol_smb
 #  mkdir /mnt/smb
 # mount /dev/zvol/x/vol_smb /mnt/smb
-# chown -R nobody: nogroup /mnt/smb
-# chmod 770 /mnt/smb
+# chown  root: users /mnt/smb # smb所有用户都属于users
+# chmod 000 /mnt/smb
 # vim /etc/samba/smb.conf
 
 # smbcontrol all reload-config
@@ -682,6 +682,38 @@ smb:
 # echo -e "123456\n123456" | pdbedit -a -t -u writer1
 # gpasswd -a reader1 -g reader
 # gpasswd -a writer1 -g writer
+# setfacl -b -m m::7 -m d:m::7 -m d:u::7 -m d:g::0 -m d:o::0 -m g:reader:5 -m d:g:reader:5   -m g:writer:7 -m d:g:writer:7 /mnt/smb
+# vim /etc/samba/smb.conf
+[test]
+path=/mnt/smb
+valid users = @reader @writer
+write list = @writer
+# smbcontrol all reload-config
+```
+
+### nas 扩容
+```
+# zfs create  -V 1gb d57a9bc700b94d7b854e3cbe70957afa/vol_test
+# mkfs -t xfs /dev/zvol/d57a9bc700b94d7b854e3cbe70957afa/vol_test
+# mount  /dev/zvol/d57a9bc700b94d7b854e3cbe70957afa/vol_test /mnt/nfs
+# df -h
+/dev/zd16                        1014M   33M  982M   4% /mnt/nfs
+#  zfs get quota,volsize,reservation d57a9bc700b94d7b854e3cbe70957afa/vol_test
+NAME                                       PROPERTY     VALUE    SOURCE
+d57a9bc700b94d7b854e3cbe70957afa/vol_test  quota        -        -
+d57a9bc700b94d7b854e3cbe70957afa/vol_test  volsize      1G       local
+d57a9bc700b94d7b854e3cbe70957afa/vol_test  reservation  none     default
+# zfs set volsize=2g d57a9bc700b94d7b854e3cbe70957afa/vol_test 
+# zfs get quota,volsize,reservation d57a9bc700b94d7b854e3cbe70957afa/vol_test
+NAME                                       PROPERTY     VALUE    SOURCE
+d57a9bc700b94d7b854e3cbe70957afa/vol_test  quota        -        -
+d57a9bc700b94d7b854e3cbe70957afa/vol_test  volsize      2G       local
+d57a9bc700b94d7b854e3cbe70957afa/vol_test  reservation  none     default
+# xfs_growfs /dev/zvol/d57a9bc700b94d7b854e3cbe70957afa/vol_test
+...
+data blocks changed from 262128 to 524256
+# df -h
+/dev/zd16                         2.0G   33M  2.0G   2% /mnt/nfs
 ```
 
 要点:

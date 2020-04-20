@@ -128,7 +128,36 @@ NFSv4 ACL是NFSv4协议能够扩展支持的权限控制协议，提供比POSIX 
 Default mount options:                 user_xattr    acl
 ```
 
-### NFSv4 ACL
+### writer1在writer中, 明明有权限却无法进入
+```bash
+$ cd d2
+-bash: cd: d2: 权限不够
+$ getfacl d2
+# file: d2
+# owner: writer1
+# group: users
+# flags: -s-
+user::---
+group::---
+group:reader:r-x
+group:writer:rwx
+mask::rwx
+other::---
+default:user::rwx
+default:group::---
+default:group:reader:r-x
+default:group:writer:rwx
+default:mask::rwx
+default:other::---
+
+$ id writer1
+uid=1001(writer1) gid=100(users) 组=100(users),1001(writer)
+```
+
+参考文件权限检查的算法(Access Check Algorithm, from `man acl`), effective user ID 与文件 owner 匹配, 但ACL_USER_OBJ 不包含请求所需的权限, 因此被拒绝.
+
+
+## NFSv4 ACL
 参考:
 - [NFSv4 ACL和POSIX ACL相关的特性](https://help.aliyun.com/document_detail/143008.html)
 - [NFS 4 ACL Tool](https://www.server-world.info/en/note?os=CentOS_7&p=nfs&f=5)
