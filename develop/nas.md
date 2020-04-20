@@ -111,7 +111,8 @@ NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nf
 ### FS系统守护进程
 - nfsd ：它是基本的NFS守护进程，主要功能是通过登入者ip, 用户id等管理客户端是否能够登录服务器
 
-	支持`/etc/exports.d/*.exports`
+	- 支持`/etc/exports.d/*.exports`
+	- 默认绑定所有ip
 - rpc.mountd ：主要功能是管理NFS的文件系统. 当客户端顺利通过nfsd登录NFS服务器后，在使用NFS服务所提供的文件前，还必须通过文件使用权限的验证. 它会读取NFS的配置文件/etc/exports来对比客户端权限.
 - lockd : 用在管理档案的锁定 (lock) 用途. 当多个客户端同时尝试写入某个档案时， 需要lockd 来解决多客户端同时写入的问题. 但 lockd 必须要同时在客户端与服务器端都开启才行. 此外， lockd 也常与 rpc.statd 同时启用.
 - statd : 检查文件的一致性，与lockd有关. 若发生因为客户端同时使用同一档案造成档案可能有所损毁时， statd 可以用来检测并尝试恢复该档案. 与 lockd 同样的，这个功能必须要在服务器端与客户端都启动才会生效.
@@ -248,6 +249,8 @@ SMB 协议版本:
 
 ### 组件
 - smbd : 提供了文件和打印服务, 基于tcp.
+
+	默认绑定所有ip
 - nmbd : 提供了NetBIOS名称服务和浏览支持，帮助SMB客户定位服务器，基于UDP. 它可以把linux系统共享的工作组名称和其ip对应起来, 否知就只能通过ip来访问共享文件.
 - smbstatus ：列出目前 Samba 的联机状况， 包括每一条 Samba 联机的 PID, 分享的资源，使用的用户来源等等
 - pdbedit : 管理用户数据
@@ -367,7 +370,7 @@ $ sudo useradd -M -s /usr/sbin/nologin -G sambashare josh
 # $ sudo smbpasswd -a josh # 设置用户密码将sadmin用户帐户添加到Samba数据库, 默认已启用账号. 可用`pdbedit -a -u ${user}`代替
 # $ yes password |sudo smbpasswd -a ubuntu # 不用交互输入密码
 # $ sudo smbpasswd -e josh # 启用账号josh
-$ pdbedit -a username    #新建Samba账户, **username必须已存在**
+$ pdbedit -a -u username    #新建Samba账户, **username必须已存在**
 $ pdbedit -x username    #删除Samba账户
 $ pdbedit -v username    #显示账户详细信息
 $ sudo pdbedit -L -v # 查看smbpasswd创建的samba用户
@@ -622,6 +625,9 @@ env: 5.3.0-26-generic/4.4
 
 > nfs和smb不允许重合使用, 避免未知问题.
 
+要点:
+1. 需地方保存samba users, 与系统用户区分开来
+
 nfs:
 ```bash
 # grep -i CONFIG_XFS_FS /boot/config-5.3.0-26-generic #  check kernel support xfs
@@ -715,6 +721,3 @@ data blocks changed from 262128 to 524256
 # df -h
 /dev/zd16                         2.0G   33M  2.0G   2% /mnt/nfs
 ```
-
-要点:
-1. 需地方保存samba users, 与系统用户区分开来

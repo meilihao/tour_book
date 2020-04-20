@@ -375,3 +375,9 @@ env: zfs 0.7.7
 zfs rename volume后`/dev/zvol/{datapath}`不变, mkfs时`No such file or directory`, 怀疑是bug.
 
 zfs 0.8.1 rename后`/dev/zvol/{datapath}`会跟着变化, 且mkfs正常.
+
+### zfs周边
+- 复制
+
+	- z3 : `pip install z3`,  Z3备份与恢复的基本原理是围绕zfs send和zfs receive的管道来实现的.
+	- zrepl
