@@ -22,3 +22,15 @@ MaxAuthTries 6 最大密码尝试次数
 MaxSessions 10 最大终端数
 PasswordAuthentication yes 是否允许密码验证
 PermitEmptyPasswords no 是否允许空密码登录（很不安全）
+
+## FAQ
+### 不检查host key, 即不检查fingerprint
+仅在安全网络下这样配置, 比如内网.
+
+```bash
+# ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" user@host
+# vim ~/.ssh/config
+Host *
+   StrictHostKeyChecking no # 初次连接时不检查host key, 但该主机的公钥还是会追加到文件 ~/.ssh/known_hosts 中
+   UserKnownHostsFile=/dev/null # host key因服务器系统重装，服务器间IP地址交换，DHCP，虚拟机重建，中间人劫持等出现变更也不提示
+```

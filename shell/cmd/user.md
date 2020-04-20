@@ -56,3 +56,14 @@ $ usermod -G root chen # 将用户 chen 加入到 root 用户组中
 ## 格式
 - -f 强制删除用户
 - -r 同时删除用户及用户主目录
+
+## FAQ
+### 多机器账户同步
+```
+/etc/subuid
+/etc/subgid
+/etc/passwd
+/etc/group
+/etc/shadow
+/etc/gshadow
+```

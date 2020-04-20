@@ -694,6 +694,7 @@ smb:
 [test]
 comment = xxx
 path=/mnt/smb
+browseable=yes
 valid users = @reader @writer
 write list = @writer
 # smbcontrol all reload-config
