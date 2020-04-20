@@ -252,7 +252,7 @@ SMB 协议版本:
 
 	默认绑定所有ip
 - nmbd : 提供了NetBIOS名称服务和浏览支持，帮助SMB客户定位服务器，基于UDP. 它可以把linux系统共享的工作组名称和其ip对应起来, 否知就只能通过ip来访问共享文件.
-- smbstatus ：列出目前 Samba 的联机状况， 包括每一条 Samba 联机的 PID, 分享的资源，使用的用户来源等等
+- smbstatus ：列出目前 **Samba 的联机状况**， 包括每一条 Samba 联机的 PID, 分享的资源，使用的用户名及来源等等
 - pdbedit : 管理用户数据
 
 	- a : 用户名 建立 Samba 账户
@@ -673,6 +673,7 @@ smb:
 # mkfs -t xfs /dev/zvol/x/vol_smb
 #  mkdir /mnt/smb
 # mount /dev/zvol/x/vol_smb /mnt/smb
+# mountpoint /mnt/smb # 检查是否mount point
 # chown  root: users /mnt/smb # smb所有用户都属于users
 # chmod 000 /mnt/smb
 # vim /etc/samba/smb.conf
@@ -691,6 +692,7 @@ smb:
 # setfacl -b -m m::7 -m d:m::7 -m d:u::7 -m d:g::0 -m d:o::0 -m g:reader:5 -m d:g:reader:5   -m g:writer:7 -m d:g:writer:7 /mnt/smb
 # vim /etc/samba/smb.conf
 [test]
+comment = xxx
 path=/mnt/smb
 valid users = @reader @writer
 write list = @writer

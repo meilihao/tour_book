@@ -53,3 +53,6 @@ mount: /srv/dev-disk-by-path-pci-0000-00-10.0-scsi-0-0-2-0-part1/test/ bound on 
 
 ## 格式
 `nmount 挂载目录`
+
+# mountpoint
+`mountpoint /mnt/smb` : 检查`/mnt/smb`是否为挂载点
