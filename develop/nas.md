@@ -11,6 +11,7 @@
 总结:
 - 跨平台挂载会因为字符集导致乱码
 - smb2.0+ Protocol不支持unix通用权限, 导致mount.cifs挂载时权限显示不正确.
+- 如果跨客户端使用POSIX ACL，需要给相同的用户名/群组名设置相同的UID/GID，因为NAS后端存储的是UID/GID.
 - 因为nfs和samba用户都会在linux上映射为`user:group`, 因此分享目录的权限设为`000`+acl mask为`rwx`, 此时也可避开acl mask的影响, 最后在设置user/group acl和user/group default acl即可.
 
 ## CIFS, SMB, NFS
