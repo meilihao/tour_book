@@ -37,6 +37,18 @@ ask_str()
     eval $2=\"$answer\"
     write_str $2
 }
+
+init_is_upstart()
+{
+   if [ -x /sbin/initctl ] && /sbin/initctl version 2>/dev/null | /bin/grep -q upstart; then
+       return 0
+   fi
+   return 1
+}
+
+if init_is_upstart; then
+     echo "----upstart" # output:"----upstart", 因为函数init_is_upstart返回0, 表示函数执行成功, 因此if的判断条件等价于`if true`
+fi
 ```
 
 ## 导出函数

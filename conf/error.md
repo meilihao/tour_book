@@ -497,3 +497,6 @@ $ rfkill unblock 1
 
 bluetoothctl命令可查看蓝牙状态, 比如`scan on`监听蓝牙设备的变化.
 blueman是管理蓝牙的gui工具.
+
+### sh: 0: getcwd() failed: No such file or directory
+刚刚把某个目录给删除了，而命令还停在原来的目录上，因此出现了这种问题, 退回到上级还存在的目录即可.

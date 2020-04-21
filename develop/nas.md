@@ -112,7 +112,8 @@ NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nf
 ### FS系统守护进程
 - nfsd ：它是基本的NFS守护进程，主要功能是通过登入者ip, 用户id等管理客户端是否能够登录服务器
 
-	支持`/etc/exports.d/*.exports`
+	- 支持`/etc/exports.d/*.exports`
+	- 默认绑定所有ip
 - rpc.mountd ：主要功能是管理NFS的文件系统. 当客户端顺利通过nfsd登录NFS服务器后，在使用NFS服务所提供的文件前，还必须通过文件使用权限的验证. 它会读取NFS的配置文件/etc/exports来对比客户端权限.
 - lockd : 用在管理档案的锁定 (lock) 用途. 当多个客户端同时尝试写入某个档案时， 需要lockd 来解决多客户端同时写入的问题. 但 lockd 必须要同时在客户端与服务器端都开启才行. 此外， lockd 也常与 rpc.statd 同时启用.
 - statd : 检查文件的一致性，与lockd有关. 若发生因为客户端同时使用同一档案造成档案可能有所损毁时， statd 可以用来检测并尝试恢复该档案. 与 lockd 同样的，这个功能必须要在服务器端与客户端都启动才会生效.
@@ -225,6 +226,7 @@ NFS服务虽然不具备用户身份验证的功能，但是NFS提供了一种�
 - [SMB Mount Options](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html-single/storage_administration_guide/index#frequently_used_mount_options)
 - [SMB on rhel 8](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html-single/deploying_different_types_of_servers/index#assembly_using-samba-as-a-server_Deploying-different-types-of-servers)
 - [使用POSIX ACL控制Samba文件系统的访问](https://help.aliyun.com/document_detail/143007.html)
+- [The Official Samba 3.5.x HOWTO and Reference Guide](https://www.samba.org/samba/docs/old/Samba3-HOWTO/index.html)
 
 > 在rhel上，内核的cifs.ko文件系统模块提供了对SMB协议的支持. samba支持windows, mac, linux, 但linux推荐使用nfs.
 > linux作为samba server实现多人分组共享, 只能使用acl. 步骤是: 1. 创建共享; 2. 组织用户 3. 清除acl, 再设置acl
@@ -249,8 +251,10 @@ SMB 协议版本:
 
 ### 组件
 - smbd : 提供了文件和打印服务, 基于tcp.
+
+	默认绑定所有ip
 - nmbd : 提供了NetBIOS名称服务和浏览支持，帮助SMB客户定位服务器，基于UDP. 它可以把linux系统共享的工作组名称和其ip对应起来, 否知就只能通过ip来访问共享文件.
-- smbstatus ：列出目前 Samba 的联机状况， 包括每一条 Samba 联机的 PID, 分享的资源，使用的用户来源等等
+- smbstatus ：列出目前 **Samba 的联机状况**， 包括每一条 Samba 联机的 PID, 分享的资源，使用的用户名及来源等等
 - pdbedit : 管理用户数据
 
 	- a : 用户名 建立 Samba 账户
@@ -358,6 +362,8 @@ SMB 协议版本:
 
 	管理 Samba 的用户账号/密码时，会用到的数据库档案
 
+> samba log: `/var/log/samba`
+
 ### 使用
 ```sh
 $  testparm -s # 检查smb.conf是否正确
@@ -368,7 +374,7 @@ $ sudo useradd -M -s /usr/sbin/nologin -G sambashare josh
 # $ sudo smbpasswd -a josh # 设置用户密码将sadmin用户帐户添加到Samba数据库, 默认已启用账号. 可用`pdbedit -a -u ${user}`代替
 # $ yes password |sudo smbpasswd -a ubuntu # 不用交互输入密码
 # $ sudo smbpasswd -e josh # 启用账号josh
-$ pdbedit -a username    #新建Samba账户, **username必须已存在**
+$ pdbedit -a -u username    #新建Samba账户, **username必须已存在**
 $ pdbedit -x username    #删除Samba账户
 $ pdbedit -v username    #显示账户详细信息
 $ sudo pdbedit -L -v # 查看smbpasswd创建的samba用户
@@ -408,6 +414,26 @@ on linux:
 建议不要使用 Linux 作为客户端访问 SMB，因为存在一些操作上的问题. 例如支持的字符集、文件名的长度（Windows 支持255宽字符，Linux 支持255 UTF8 字节）等等.
 
 但用户如果确实需要的话，可以在支持 SMB2 及以上的 kernel 上挂载.
+
+### samba启动失败
+按照samba启动脚本, 逐个测试相关组件是否正常by `echo $?`. 或使用`smbd -FS`测试(**推荐**).
+
+这里出问题的是:
+```
+#  /usr/sbin/nmbd -F --log-stdout
+nmbd version 4.3.11-Ubuntu started.
+Copyright Andrew Tridgell and the Samba Team 1992-2015
+mkdir failed on directory /var/lib/samba/private/msg.sock: No such file or directory
+```
+
+解决方法:
+```
+$ mkdir /var/lib/samba/private/msg.sock
+$ chmod 700 /var/lib/samba/private/msg.sock
+```
+
+> [Ubuntu 14.04已不推荐使用sysinit(因为sysinit script包含了init_is_upstart)](https://wiki.ubuntu.com/UpstartCompatibleInitScripts), 需使用`initctl start nmbd && initctl start smbd && initctl start samba-ad-dc`
+> `initctl list`查看所有upstart当前支持的job, 可参考[How to reliably start a service with UpStart](https://zohaib.me/how-to-reliably-start-a-service-with-upstart/)
 
 ### samba挂载乱码
 根源: 支持的字符集不同.
@@ -479,6 +505,9 @@ linux samba client挂载需注意斜杠是linux风格的.
 
 ### `service nfs-kernel-server start`报 Not starting NFS kernel daemon: no exports
 `/etc/exports`为空导致.
+
+### 查看nfs/samba使用的端口
+`/etc/ufw/applications.d/samba`
 
 ### mount.nfs: timeout
 通常是网络问题, ping一下网络.
@@ -617,11 +646,14 @@ rpcdebug选项:
 ### zfs xfs nas
 env: 5.3.0-26-generic/4.4
 
-> 在zfs fs (on 0.7.x)上直接使用acl容易出现莫名奇妙的问题, 且[zfs 还未支持NFSv4 ACL](https://github.com/openzfs/zfs/pull/9709). 当前思路是使用zfs vol+格式化作为磁盘, 在其上再设置nas, 整个共享使用一个账户, 再将客户端的用户加入对应的组即可.
+> 在zfs fs (on 0.7.x)上直接使用acl容易出现莫名奇妙的问题, 且[zfs 还未支持NFSv4 ACL](https://github.com/openzfs/zfs/pull/9709). 当前思路是使用zfs vol+格式化作为磁盘, 在其上再设置nas.
 
 > 读写权限 : 允许授权对象对文件系统进行只读或读写.
 
 > nfs和smb不允许重合使用, 避免未知问题.
+
+要点:
+1. 需地方保存samba users, 与系统用户区分开来
 
 nfs:
 ```bash
@@ -642,7 +674,7 @@ nfs:
 #  mkdir /mnt/xfs
 # mount /dev/zvol/x/vol_xfs /mnt/xfs
 # chown -R nobody: nogroup /mnt/xfs
-# chmod 770 /mnt/xfs
+# chmod 2770 /mnt/xfs
 # vim /etc/exports
 /mnt/xfs 192.168.0.245(rw,all_squash,no_subtree_check,async)
 /mnt/xfs 192.168.0.131(ro,all_squash,no_subtree_check,async)
@@ -668,8 +700,9 @@ smb:
 # mkfs -t xfs /dev/zvol/x/vol_smb
 #  mkdir /mnt/smb
 # mount /dev/zvol/x/vol_smb /mnt/smb
-# chown -R nobody: nogroup /mnt/smb
-# chmod 770 /mnt/smb
+# mountpoint /mnt/smb # 检查是否mount point
+# chown  root: users /mnt/smb # smb所有用户都属于users
+# chmod 2000 /mnt/smb
 # vim /etc/samba/smb.conf
 
 # smbcontrol all reload-config
@@ -683,7 +716,38 @@ smb:
 # echo -e "123456\n123456" | pdbedit -a -t -u writer1
 # gpasswd -a reader1 -g reader
 # gpasswd -a writer1 -g writer
+# setfacl -b -m m::7 -m d:m::7 -m d:u::7 -m d:g::0 -m d:o::0 -m g:reader:5 -m d:g:reader:5   -m g:writer:7 -m d:g:writer:7 /mnt/smb
+# vim /etc/samba/smb.conf
+[test]
+comment = xxx
+path=/mnt/smb
+browseable=yes
+valid users = @reader @writer
+write list = @writer
+# smbcontrol all reload-config
 ```
 
-要点:
-1. 需地方保存samba users, 与系统用户区分开来
+### nas 扩容
+```
+# zfs create  -V 1gb d57a9bc700b94d7b854e3cbe70957afa/vol_test
+# mkfs -t xfs /dev/zvol/d57a9bc700b94d7b854e3cbe70957afa/vol_test
+# mount  /dev/zvol/d57a9bc700b94d7b854e3cbe70957afa/vol_test /mnt/nfs
+# df -h
+/dev/zd16                        1014M   33M  982M   4% /mnt/nfs
+#  zfs get quota,volsize,reservation d57a9bc700b94d7b854e3cbe70957afa/vol_test
+NAME                                       PROPERTY     VALUE    SOURCE
+d57a9bc700b94d7b854e3cbe70957afa/vol_test  quota        -        -
+d57a9bc700b94d7b854e3cbe70957afa/vol_test  volsize      1G       local
+d57a9bc700b94d7b854e3cbe70957afa/vol_test  reservation  none     default
+# zfs set volsize=2g d57a9bc700b94d7b854e3cbe70957afa/vol_test 
+# zfs get quota,volsize,reservation d57a9bc700b94d7b854e3cbe70957afa/vol_test
+NAME                                       PROPERTY     VALUE    SOURCE
+d57a9bc700b94d7b854e3cbe70957afa/vol_test  quota        -        -
+d57a9bc700b94d7b854e3cbe70957afa/vol_test  volsize      2G       local
+d57a9bc700b94d7b854e3cbe70957afa/vol_test  reservation  none     default
+# xfs_growfs /dev/zvol/d57a9bc700b94d7b854e3cbe70957afa/vol_test
+...
+data blocks changed from 262128 to 524256
+# df -h
+/dev/zd16                         2.0G   33M  2.0G   2% /mnt/nfs
+```
