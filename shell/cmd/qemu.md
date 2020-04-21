@@ -1,0 +1,66 @@
+# qemu
+Qemu是一个广泛使用的开源计算机仿真器和虚拟机.
+
+操作:
+```
+$ sudo apt-get install qemu
+$ qemu- + <tab> 查看支持的arch
+```
+
+> qemu-x86_64: 仅仅模拟CPU; qemu-system-x86_64: 模拟整个PC
+> 在qemu新版本(比如2.8.1)中已经将qemu-kvm模块完全合并到qemu中去. 因此当需要使用专kvm特性时候，只需要qemu-system-x86_64 启动命令中增加`–enable-kvm`参数即可.
+
+## qemu-system-x86_64
+参考:
+- [qemu-system-x86_64命令总结](http://blog.leanote.com/post/7wlnk13/%E5%88%9B%E5%BB%BAKVM%E8%99%9A%E6%8B%9F%E6%9C%BA)
+
+### 选项
+- -S : 启动时cpu仅加电, 但不继续执行,必须在qemu monitor输入`c`才能继续. 未使用`-monitor`时, 按`Ctrl+Alt+2`可进入qemu的monitor界面
+- -monitor
+
+    tcp – raw tcp sockets, **推荐**.
+    telnet – the telnet protocol is used instead of raw tcp sockets. This is the preferred option over tcp as you can break out of the monitor using Ctrl-] then typing quit. You can’t break out of the monitor like this after connecting with the raw socket option
+    10.1.77.82 – Listen on this host/IP only. You can use 127.0.0.1 if you want to only allow connections locally. If you want to listen on any ip address on the server, just leave this blank so you end up with two consecutive colons ie `::`.
+    4444 – port number to listen on.
+    server – listening in server mode
+    nowait – qemu will wait for a client socket application to connect to the port before continuing unless this option is used. In most cases you’ll want to use the nowait option.
+
+
+## 操作
+### 模拟cpu加电
+```
+# qemu-system-x86_64  -S -monitor tcp::4444,server,nowait # qemu起来的窗口太小, `info registers`展示不完全, 因此使用qemu monitor来解决.
+# nc localhost 4444 # 另一个terminal
+QEMU 2.8.1 monitor - type 'help' for more information
+(qemu) info regesters
+info regesters
+unknown command: 'regesters'
+(qemu) info registers
+info registers
+EAX=00000000 EBX=00000000 ECX=00000000 EDX=00000663
+ESI=00000000 EDI=00000000 EBP=00000000 ESP=00000000
+EIP=0000fff0 EFL=00000002 [-------] CPL=0 II=0 A20=1 SMM=0 HLT=0
+ES =0000 00000000 0000ffff 00009300
+CS =f000 ffff0000 0000ffff 00009b00
+SS =0000 00000000 0000ffff 00009300
+DS =0000 00000000 0000ffff 00009300
+FS =0000 00000000 0000ffff 00009300
+GS =0000 00000000 0000ffff 00009300
+LDT=0000 00000000 0000ffff 00008200
+TR =0000 00000000 0000ffff 00008b00
+GDT=     00000000 0000ffff
+IDT=     00000000 0000ffff
+CR0=60000010 CR2=00000000 CR3=00000000 CR4=00000000
+DR0=0000000000000000 DR1=0000000000000000 DR2=0000000000000000 DR3=0000000000000000 
+DR6=00000000ffff0ff0 DR7=0000000000000400
+EFER=0000000000000000
+FCW=037f FSW=0000 [ST=0] FTW=00 MXCSR=00001f80
+FPR0=0000000000000000 0000 FPR1=0000000000000000 0000
+FPR2=0000000000000000 0000 FPR3=0000000000000000 0000
+FPR4=0000000000000000 0000 FPR5=0000000000000000 0000
+FPR6=0000000000000000 0000 FPR7=0000000000000000 0000
+XMM00=00000000000000000000000000000000 XMM01=00000000000000000000000000000000
+XMM02=00000000000000000000000000000000 XMM03=00000000000000000000000000000000
+XMM04=00000000000000000000000000000000 XMM05=00000000000000000000000000000000
+XMM06=00000000000000000000000000000000 XMM07=00000000000000000000000000000000
+```
