@@ -10,10 +10,14 @@ debian,ubuntu等发行版的包管理.
 
     # apt-cache madison pouch # 列出软件包的所有版本
     # apt install pouch=1.0.0-0~ubuntu # 安装指定版本的软件包
+    # apt-get install --reinstall aptitude # 重新安装package
     # apt-get install --only-upgrade samba # 仅更新单个package
     # apt list -a cifs-utils # package all version
     # apt-cache policy cifs-utils # package all version, 推荐
     # rmadison cifs-utils # package all version, 推荐
+    # apt-cache depends -i samba # 查看依赖
+    # apt install --simulate samba # 仅模拟不安装
+    # apt install --download-only samba # 仅下载, 不安装
 
 ## FAQ
 ### apt install报`Size mismatch`

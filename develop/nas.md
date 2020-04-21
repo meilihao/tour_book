@@ -225,6 +225,7 @@ NFS服务虽然不具备用户身份验证的功能，但是NFS提供了一种�
 - [SMB Mount Options](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html-single/storage_administration_guide/index#frequently_used_mount_options)
 - [SMB on rhel 8](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html-single/deploying_different_types_of_servers/index#assembly_using-samba-as-a-server_Deploying-different-types-of-servers)
 - [使用POSIX ACL控制Samba文件系统的访问](https://help.aliyun.com/document_detail/143007.html)
+- [The Official Samba 3.5.x HOWTO and Reference Guide](https://www.samba.org/samba/docs/old/Samba3-HOWTO/index.html)
 
 > 在rhel上，内核的cifs.ko文件系统模块提供了对SMB协议的支持. samba支持windows, mac, linux, 但linux推荐使用nfs.
 > linux作为samba server实现多人分组共享, 只能使用acl. 步骤是: 1. 创建共享; 2. 组织用户 3. 清除acl, 再设置acl
@@ -360,6 +361,8 @@ SMB 协议版本:
 
 	管理 Samba 的用户账号/密码时，会用到的数据库档案
 
+> samba log: `/var/log/samba`
+
 ### 使用
 ```sh
 $  testparm -s # 检查smb.conf是否正确
@@ -410,6 +413,26 @@ on linux:
 建议不要使用 Linux 作为客户端访问 SMB，因为存在一些操作上的问题. 例如支持的字符集、文件名的长度（Windows 支持255宽字符，Linux 支持255 UTF8 字节）等等.
 
 但用户如果确实需要的话，可以在支持 SMB2 及以上的 kernel 上挂载.
+
+### samba启动失败
+按照samba启动脚本, 逐个测试相关组件是否正常by `echo $?`. 或使用`smbd -FS`测试(**推荐**).
+
+这里出问题的是:
+```
+#  /usr/sbin/nmbd -F --log-stdout
+nmbd version 4.3.11-Ubuntu started.
+Copyright Andrew Tridgell and the Samba Team 1992-2015
+mkdir failed on directory /var/lib/samba/private/msg.sock: No such file or directory
+```
+
+解决方法:
+```
+$ mkdir /var/lib/samba/private/msg.sock
+$ chmod 700 /var/lib/samba/private/msg.sock
+```
+
+> [Ubuntu 14.04已不推荐使用sysinit(因为sysinit script包含了init_is_upstart)](https://wiki.ubuntu.com/UpstartCompatibleInitScripts), 需使用`initctl start nmbd && initctl start smbd && initctl start samba-ad-dc`
+> `initctl list`查看所有upstart当前支持的job, 可参考[How to reliably start a service with UpStart](https://zohaib.me/how-to-reliably-start-a-service-with-upstart/)
 
 ### samba挂载乱码
 根源: 支持的字符集不同.
@@ -481,6 +504,9 @@ linux samba client挂载需注意斜杠是linux风格的.
 
 ### `service nfs-kernel-server start`报 Not starting NFS kernel daemon: no exports
 `/etc/exports`为空导致.
+
+### 查看nfs/samba使用的端口
+`/etc/ufw/applications.d/samba`
 
 ### mount.nfs: timeout
 通常是网络问题, ping一下网络.
@@ -619,7 +645,7 @@ rpcdebug选项:
 ### zfs xfs nas
 env: 5.3.0-26-generic/4.4
 
-> 在zfs fs (on 0.7.x)上直接使用acl容易出现莫名奇妙的问题, 且[zfs 还未支持NFSv4 ACL](https://github.com/openzfs/zfs/pull/9709). 当前思路是使用zfs vol+格式化作为磁盘, 在其上再设置nas, 整个共享使用一个账户, 再将客户端的用户加入对应的组即可.
+> 在zfs fs (on 0.7.x)上直接使用acl容易出现莫名奇妙的问题, 且[zfs 还未支持NFSv4 ACL](https://github.com/openzfs/zfs/pull/9709). 当前思路是使用zfs vol+格式化作为磁盘, 在其上再设置nas.
 
 > 读写权限 : 允许授权对象对文件系统进行只读或读写.
 
@@ -647,7 +673,7 @@ nfs:
 #  mkdir /mnt/xfs
 # mount /dev/zvol/x/vol_xfs /mnt/xfs
 # chown -R nobody: nogroup /mnt/xfs
-# chmod 770 /mnt/xfs
+# chmod 2770 /mnt/xfs
 # vim /etc/exports
 /mnt/xfs 192.168.0.245(rw,all_squash,no_subtree_check,async)
 /mnt/xfs 192.168.0.131(ro,all_squash,no_subtree_check,async)
@@ -675,7 +701,7 @@ smb:
 # mount /dev/zvol/x/vol_smb /mnt/smb
 # mountpoint /mnt/smb # 检查是否mount point
 # chown  root: users /mnt/smb # smb所有用户都属于users
-# chmod 000 /mnt/smb
+# chmod 2000 /mnt/smb
 # vim /etc/samba/smb.conf
 
 # smbcontrol all reload-config
