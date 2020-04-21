@@ -174,3 +174,6 @@ git config --global http.lowSpeedTime 300
 
 ### git中Untracked files如何清除
 `git clean -f -d`
+
+### 查看远程分支的tag信息
+`git ls-remote -t  https://review.coreboot.org/coreboot.git`
