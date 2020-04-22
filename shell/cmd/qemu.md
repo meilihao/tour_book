@@ -3,6 +3,7 @@ Qemu是一个广泛使用的开源计算机仿真器和虚拟机.
 
 操作:
 ```
+$ sudo yum install qemu -y
 $ sudo apt-get install qemu
 $ qemu- + <tab> 查看支持的arch
 ```
@@ -10,6 +11,15 @@ $ qemu- + <tab> 查看支持的arch
 > qemu-x86_64: 仅仅模拟CPU; qemu-system-x86_64: 模拟整个PC
 > 在qemu新版本(比如2.8.1)中已经将qemu-kvm模块完全合并到qemu中去. 因此当需要使用专kvm特性时候，只需要qemu-system-x86_64 启动命令中增加`–enable-kvm`参数即可.
 
+编译选项:
+- xx-softmmu和xx-linux-user的区别和关系
+
+    xxx-softmmu将编译qemu-system-xxx,这是一个用于xxx架构(系统仿真)的仿真机器.重置时,起点将是该架构的重置向量.而xxx-linux-user则编译qemu-xxx,它允许您在xxx架构中运行用户应用程序(用户模式仿真).这将寻找用户应用程序的主要功能,并从那里开始执行
+
+编译:
+```bash
+$ ./configure --target-list=x86_64-softmmu,x86_64-linux-user
+```
 ## qemu-system-x86_64
 参考:
 - [qemu-system-x86_64命令总结](http://blog.leanote.com/post/7wlnk13/%E5%88%9B%E5%BB%BAKVM%E8%99%9A%E6%8B%9F%E6%9C%BA)
@@ -63,4 +73,11 @@ XMM00=00000000000000000000000000000000 XMM01=00000000000000000000000000000000
 XMM02=00000000000000000000000000000000 XMM03=00000000000000000000000000000000
 XMM04=00000000000000000000000000000000 XMM05=00000000000000000000000000000000
 XMM06=00000000000000000000000000000000 XMM07=00000000000000000000000000000000
+```
+
+## FAQ
+### qemu编译依赖
+```
+# sudo apt install libglib2.0-dev # RROR: glib-2.48 gthread-2.0 is required to compile QEMU
+# sudo apt-get install libpixman-1-dev # Please install the pixman devel package
 ```
