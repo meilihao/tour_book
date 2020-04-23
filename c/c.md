@@ -393,45 +393,6 @@ struct {
 }
 ```
 
-```c
-// 指定初始化结构体成员变量
-struct student{
-    char name[20];
-    int age;
-};
-
-int main(void)
-{
-    struct student stu1={ "wit",20 }; // 在标准 C 中，结构体变量的初始化也要按照固定的顺序
-    printf("%s:%d\n",stu1.name,stu1.age);
-
-    // 在 GNU C 中也可以通过结构域来初始化指定某个成员. 在 Linux 内核驱动中，大量使用 GNU C 的这种指定初始化方式.
-    // 优势: 无论file_operations 结构体类型如何变化，添加成员也好、减少成员也好、调整成员顺序也好，都不会影响其它文件的使用
-    struct student stu2=
-    {
-        .name = "wanglitao",
-        .age  = 28
-    };
-    printf("%s:%d\n",stu2.name,stu2.age);
-
-    return 0;
-}
-```
-
-#### 柔性数组(flexible array)
-c99中, strut的最后一个元素(它前面需至少有一个其他成员)允许是未知长度的数组, 该数组即是柔性数组, sizeof返回的struct大小不包括柔性数组, 该数组用malloc()函数进行动态分配.
-
-```c
-typedef struct st_type
-{
-   int i;
-   int a[];
-}type_a;
-
-type_a *p = (type_a *)malloc(sizeof(type_a)+100*sizeof(int));
-sizeof(*p) // 4, 因为sizeof(type_a)为4即type_a大小不包括柔性数组
-```
-
 ### 函数
 ```c
 // 如果函数类型是 void,则该函数最后面就不再需要 return 语句进行返回了, 即该函数没有返回值
@@ -810,6 +771,141 @@ const也可修饰函数的返回值, 即返回值不可改变.
 修饰变量或函数, 表示该对象的定义在其他文件中, 提示链接器遇到该对象时去其他模块中解析此标识符.
 
 `extern char a[]`和`extern char a[100]`没有区别, 因为仅是声明不分配空间, 因此编译器无需知道数组的长度.
+
+## gnuc c 对 ANSI C的扩展
+### 1. 柔性数组(flexible array, 也叫零长数组/变长数组)
+c99中, strut的最后一个元素(它前面需至少有一个其他成员)允许是未知长度的数组, 该数组即是柔性数组, sizeof返回的struct大小不包括柔性数组, 该数组用malloc()函数进行动态分配.
+
+```c
+typedef struct st_type
+{
+   int i;
+   int a[]; // 这里也可是`int a[0]`.
+}type_a;
+
+type_a *p = (type_a *)malloc(sizeof(type_a)+100*sizeof(int));
+sizeof(*p) // 4, 因为sizeof(type_a)为4即type_a大小不包括柔性数组
+```
+
+结构体成员a的作用与指针类似, 但替换为指针时就还需为它malloc一次. 因此它不但能减少内存空间分配的次数提高执行效率, 还可保持结构体空间的连续性.
+### 2. case关键字支持范围匹配
+```c
+case 'a' ... 'z': // from 'a'~'z'
+break;
+```
+### 3. typeof关键字获取变量类型
+```c
+typeof(x) // 通常用在宏定义上
+```
+
+### 4. 可变参数宏
+```c
+#define pr_debug(fmt,arg...) \
+        printk(fmt,##arg) 
+```
+
+如果可变参数被忽略或为空，`##`操作将使预处理器去掉它前面的那个逗号. 如果在调用宏函数时，确实提供了一些可变参数，GNU C会把这些可变参数放到逗号的后面, 使其能够正常工作.
+
+### 5. 元素编号
+标准C要求数组或结构体的初始化值必须以固定的顺序出现，在GNU C中，通过指定索引或结构体成员名，允许初始化以任意顺序出现.
+
+```c
+// 指定初始化结构体成员变量
+struct student{
+    char name[20];
+    int age;
+};
+
+int main(void)
+{
+    struct student stu1={ "wit",20 }; // 在标准 C 中，结构体变量的初始化也要按照固定的顺序
+    printf("%s:%d\n",stu1.name,stu1.age);
+
+    // 在 GNU C 中也可以通过结构域来初始化指定某个成员. 从linux 2.6开始在kernel driver中，大量使用 GNU C 的这种指定初始化方式.
+    // 优势: 无论file_operations 结构体类型如何变化，添加成员也好、减少成员也好、调整成员顺序也好，都不会影响其它文件的使用
+    struct student stu2=
+    {
+        .name = "wanglitao",
+        .age  = 28
+    };
+    printf("%s:%d\n",stu2.name,stu2.age);
+
+    unsigned char data[MAX] =
+    {
+            [0]=10,
+            [10]=100,
+    };
+
+    return 0;
+}
+```
+
+6. 当前函数名
+
+GNU C中预定义两个标志符保存当前函数的名字，`__FUNCTION__`保存函数在源码中的名字，`__PRETTY__FUNCTION __`保存带语言特色的名字. 在C函数中这两个名字是相同的.
+```c
+void func_example()
+{
+     printf("the function name is %s",__FUNCTION__);
+}
+```
+
+C99支持`__func__`宏,而`__FUNCTION__`只是`__func__`的宏别名. 因此建议使用`__func __`替代`__FUNCTION__`.
+
+7. 特殊属性声明
+
+GNU C允许使用特殊属性对函数、变量和类型加以修饰, 以便进行手工的代码优化和定制. 只需要在声明后添加`__attribute__((ATTRIBUTE))`即可指定特殊属性, 其中ATTRIBUTE为属性说明，如果存在多个属性，则以逗号分隔.GNU C 支持noreturn，noinline，always_inline， pure， const， nothrow， format， format_arg， no_instrument_function， section， constructor， destructor， used， unused， deprecated， weak， malloc， alias warn_unused_result nonnull等.
+
+- noreturn属性用来修饰函数，表示该函数从不返回, 这会让编译器优化代码并消除不必要的警告信息. 例如：
+
+    ```c
+    #define ATTRIB_NORET __attribute__((noreturn)) ....
+    asmlinkage NORET_TYPE void do_exit(long error_code) ATTRIB_NORET;  
+    ```
+
+- packed属性作用是取消变量和类型在编译时的对齐优化, 按照实际占用字节数进行对齐, 通常出现在协议包的定义中. 例如：
+
+    ```
+    // 实际内存占用是1+4+8=13
+    struct example_struct
+    {
+            char a;
+            int b;
+            long c;
+    } __attribute__((packed));    
+    ```
+- regparm属性用于指定寄存器传递参数的个数, 最多可以使用n个寄存器（rax, rdx, rcx）传递参数，n的范围是0~3，超过n时则将使用内存传递. 它只能用在函数定义和声明中且仅在x86体系下有效.
+
+    **在x64体系结构下，GUN C的默认调用约定就是使用寄存器传递参数. 无论是否采用regparm修饰, 函数都会使用寄存器来传递参数, 即使参数超过3个, 具体细节参考cdecl调用约定.**
+
+    可自行在x86/x64下, 使用`objdump -d xxx`命令反汇编进行验证.
+    ```c
+    int q = 0x5a;
+    int t1 = 1;
+    int t2 = 2;
+    int t3 = 3;
+    int t4 = 4;
+    #define REGPARM3 __attribute((regparm(3)))
+    #define REGPARM0 __attribute((regparm(0)))
+    void REGPARM0 p1(int a)
+    {
+        q = a + 1;
+    }
+
+
+    void REGPARM3 p2(int a, int b, int c, int d)
+    {
+        q = a + b + c + d + 1;
+    }
+
+
+    int main()
+    {
+        p1(t1);
+        p2(t1,t2,t3,t4);
+        return 0;
+    }  
+    ```
 
 ## FAQ
 ### 语句表达式
