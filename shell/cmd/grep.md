@@ -2,6 +2,8 @@
 > egrep是`grep -E "$@"`的脚本链接.
 
 ## 描述
+参考:
+- [Linux 命令行下搜索工具大盘点，效率提高不止一倍！](https://www.tuicool.com/articles/bMnmymY)
 
 文本检索
 

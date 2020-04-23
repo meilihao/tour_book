@@ -6,7 +6,8 @@
 
 ## 示例
 ```
-objdump –D <elf_object>  // 查看 ELF 文件中所有节的数据或代码
-objdump –d <elf_object>  // 只查看 ELF 文件中的程序代码
-objdump –tT <elf_object> // 查看所有符号
+objdump –D <elf_object>  # 查看 ELF 文件中所有节的数据或代码
+objdump –d <elf_object>  # 只查看 ELF 文件中的程序代码
+objdump -T xxx.so #  查看动态符号表
+objdump –t <elf_object> # 查看所有符号. -T 和 -t 选项在于 -T 只能查看动态符号，如库导出的函数和引用其他库的函数，而 -t 可以查看所有的符号，包括数据段的符号
 ```
