@@ -1,18 +1,39 @@
 # locale
 软件在运行时的语言环境.
 
-> 当前系统支持的所有可用locale都列在`/usr/share/i18n/SUPPORTED`.
+> localedef : 转化语言环境和字符集源文件以生成语言环境数据库, 由它创建的语言环境对象代码可被`setlocale()`使用. `setlocale()`由glibc实现, 具体会加载哪些locale要看其实现.
+
+> **locale-gen是localedef的脚本封装**.
+
+相关系统文件：
+- 在文件/usr/share/i18n/SUPPORTED : 列出了当前系统支持的所有locale与字符集的名字, 是`/usr/share/i18n/locales`和`/usr/share/i18n/charmaps`的组合结果
+- 在目录/var/lib/locales/supported.d/下，列出了当前系统已经生成的所有locale的名字
+- 在目录/usr/lib/locale/<locale_name>/LC_*，用locale-gen编译出的locale文件
+- 在文件/usr/lib/locale/locale-archive中，包含了很多本地已经生成的locale的具体内容，因此这个文件往往很大. 使用命令localedef管理这一文件. 使用locale-gen命令编译出来的locale内容默认写入该文件中
+- 在文件/etc/default/locale中，可以手动配置locale环境变量，LC_CTYPE之类
+- 在目录/usr/share/i18n/charmaps下，缺省的charmap存放路径
+- 在目录/usr/share/i18n/locales下，缺省的locale source file存放路径
+
+相关系统命令：
+- locale 列出当前采用的各项本地策略，这些由LC_*环境变量定义
+- locale charmap 列出系统当前使用的字符集
+- locale -a 列出系统中已经安装的所有locale
+- locale -m 列出系统中已经安装的所有charmap
+- locale-gen --purge 将/usr/lib/locale/里面的locale文件删掉
+- localedef --list-archive: 列出文件/usr/lib/locale/locale-archive中所有可用的locale的名字
 
 ## example
 ```bash
 $ locale # 查看当前系统的语言环境
 $ locale -m  # 查看系统支持的所有可用的字符集编码, 所有的字符集都放在 /usr/share/i18n/charmaps
 $ locale -a  # 查看系统中所有已配置的区域格式(= `localedef --list-archive` + `C,C.UTF-8,POSIX`), 在`/usr/share/locale`下， 以 zh_CN.UTF-8 locale(`/usr/share/locale/zh_CN.UTF-8`) 为例，该目录中就包含了 LC_MESSAGES
-$ localedef -f UTF-8 -i zh_CN <name> # 根据模板创建locale, 并添加进了/usr/lib/locale/locale-archive.
+$ sudo localedef -f UTF-8 -i zh_CN zh_XX.UTF-8 # 默认保存在/usr/lib/locale/locale-archive. 当locale_name未以`.UTF-8`作为结尾时`locale -a`会显示`zh_XX`和`zh_XX.utf8`两个locale???.
+$ sudo localedef -v -f UTF-8 -i zh_CN /usr/lib/locale/<locale_name> # 根据模板创建locale并放入/usr/lib/locale/<locale_name>, 比如locale_name=zh_XX.UTF-8, locale_name同时会出现在`locale -a`中. 当locale_name未以`.UTF-8`作为结尾时仅创建`zh_XX`.
 $ locale -a|grep <name> # 查看已创建的locale
-$ cp -r /usr/share/locale/zh_CN.UTF-8 /usr/share/locale/<name>.UTF-8 # 再将/usr/lib/locale下模板对应的文件复制一份并重命名
-$ strace -eopen ls / # 查看效果
-$ localedef --delete-from-archive <name> # 清理/usr/lib/locale/locale-archive
+$ env LC_ALL=zh_XX.UTF-8,LANGUAGE=  strace ls # 查看效果
+$ sudo localedef --delete-from-archive <name> <name>.utf8 # 清理/usr/lib/locale/locale-archive
+$  env LANG=C sudo localedef -v --delete-from-archive zh_BB # zh_BB被自定义放在了/usr/lib/locale下, 直接删除/usr/lib/locale/zh_BB即可
+locale "zh_BB" not in archive
 $ convmv -f iso-8859-1 -t utf-8 <filename> # 转换文件名的编码
 $ iconv -f iso-8859-1 -t utf-8 filename > newfile # 转换文件内容的编码方式即转码
 ```
@@ -26,7 +47,7 @@ char* setlocale(int category, const char* locale);
 
 category：为locale分类，表达一种locale的领域方面，通常有下面这些预定义常量：LC_ALL、LC_COLLATE、LC_CTYPE、LC_MESSAGES、LC_MONETARY、LC_NUMERIC、LC_TIME，其中 LC_ALL 表示所有其它locale分类的并集.
 
-locale：为期望设定的locale名称字符串，在Linux/Unix环境下，通常以下面格式表示locale名称：language[_territory][.codeset][@modifier]，language 为 ISO 639 中规定的语言代码，territory 为 ISO 3166 中规定的国家/地区代码(`定义文件放在/usr/share/i18n/locales`)，codeset 为字符集名称(`/usr/share/i18n/charmaps`), modifier为修正值. 它们组合之后的locale信息放在/usr/lib/locale/locale-archive里，是二进制文件. 通过格式所知，locale总是和一定的字符集相联系的, 比如:
+locale：为期望设定的locale名称字符串，在Linux/Unix环境下，通常以下面格式表示locale名称：`language[_territory][.codeset][@modifier]` from `man setlocale`，language 为 ISO 639 中规定的语言代码，territory 为 ISO 3166 中规定的国家/地区代码(`定义文件放在/usr/share/i18n/locales`)，codeset 为字符集名称(`/usr/share/i18n/charmaps`), modifier为某些 locale 变体的修正值. 它们组合之后的locale信息放在/usr/lib/locale/locale-archive里，是二进制文件. 通过格式所知，locale总是和一定的字符集相联系的, 比如:
 1. 我说中文，身处中华人民共和国，使用国标18030字符集来表达字符
 
     zh_CN.GB18030＝中文_中华人民共和国＋国标18030字符集
@@ -47,6 +68,7 @@ locale：为期望设定的locale名称字符串，在Linux/Unix环境下，通�
 locale 是一组 C 程式语言处理自然语言(文字)的显示方式， 也可以简单的说，locale 就是一组地区性语言的显示格式. 由国家语言和各地习俗影响所决定的惯例，或代表一个地理区域的定义所组成，这些惯例包含文字、日期、数字、货币格式和排序等等. 这代表着 locale 可让程式的输出可以直接反应地方区域性的文化.
 
 C 语言的 locale 定义，分为下列各大类：
+- [LANGUAGE](https://www.gnu.org/software/gettext/manual/gettext.html#The-LANGUAGE-variable) : 指定个人对语言环境值的主次偏好，比如`zh_CN:en_GB:en`, 作用是如果前面的 locale 缺少翻译，会自动使用后面的 locale 显示界面, 因此它会先使用简体中文,没有翻译时再使用英文.
 - LC_ALL : 指定所有的 Locale
 - LC_CTYPE : 字元定义 (包含字元分类与转换规则, 比如大写字母，小 写字母，大小写转换，标点符号、可打印字符和其他的字符属性等方面)
 - LC_MESSAGES : 信息显示, 包括提示信息,错误信息, 状态信息, 标题, 标签, 按钮和菜单等
@@ -62,7 +84,7 @@ C 语言的 locale 定义，分为下列各大类：
 - LC_IDENTIFICATION : 对locale自身包含信息的概述
 - LANG : 语言显示, **用于设定LC_*的默认值**, 因此除非LC_*有指定, 否则都会用LANG
 
-> 优先级的关系： LC_ALL>LC_*>LANG, LC_ALL通常为空.
+> 优先级的关系： LANGUAGE > LC_ALL>LC_*>LANG, LC_ALL通常为空.
 
 其中与一般使用者息息相关的，是字元定义 (LC_CTYPE) 与语言显示 (LANG). LC_CTYPE 直接关系到某些字元或内码(code point)在目前的 locale 下是否可列印？要如何转换字码？对应到哪一个字？.... 等等.LANG 则关系到软体的信息输出的地域格式.当 LC_MESSAGES、LC_TIME、LC_NUMERIC、 LC_MONETARY 等没有设定的时候，会直接取用 LANG 的环境设定值.
 
