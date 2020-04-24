@@ -1,0 +1,69 @@
+# locale
+软件在运行时的语言环境.
+
+> 当前系统支持的所有可用locale都列在`/usr/share/i18n/SUPPORTED`.
+
+## example
+```bash
+$ locale # 查看当前系统的语言环境
+$ locale -m  # 查看系统支持的所有可用的字符集编码, 所有的字符集都放在 /usr/share/i18n/charmaps
+$ locale -a  # 查看系统中所有已配置的区域格式(= `localedef --list-archive` + `C,C.UTF-8,POSIX`), 在`/usr/share/locale`下， 以 zh_CN.UTF-8 locale(`/usr/share/locale/zh_CN.UTF-8`) 为例，该目录中就包含了 LC_MESSAGES
+$ localedef -f UTF-8 -i zh_CN <name> # 根据模板创建locale, 并添加进了/usr/lib/locale/locale-archive.
+$ locale -a|grep <name> # 查看已创建的locale
+$ cp -r /usr/share/locale/zh_CN.UTF-8 /usr/share/locale/<name>.UTF-8 # 再将/usr/lib/locale下模板对应的文件复制一份并重命名
+$ strace -eopen ls / # 查看效果
+$ localedef --delete-from-archive <name> # 清理/usr/lib/locale/locale-archive
+$ convmv -f iso-8859-1 -t utf-8 <filename> # 转换文件名的编码
+$ iconv -f iso-8859-1 -t utf-8 filename > newfile # 转换文件内容的编码方式即转码
+```
+
+## 进阶
+Linux的glibc中的`setlocale()`:
+```c
+#include <locale.h>
+char* setlocale(int category, const char* locale);
+```
+
+category：为locale分类，表达一种locale的领域方面，通常有下面这些预定义常量：LC_ALL、LC_COLLATE、LC_CTYPE、LC_MESSAGES、LC_MONETARY、LC_NUMERIC、LC_TIME，其中 LC_ALL 表示所有其它locale分类的并集.
+
+locale：为期望设定的locale名称字符串，在Linux/Unix环境下，通常以下面格式表示locale名称：language[_territory][.codeset][@modifier]，language 为 ISO 639 中规定的语言代码，territory 为 ISO 3166 中规定的国家/地区代码(`定义文件放在/usr/share/i18n/locales`)，codeset 为字符集名称(`/usr/share/i18n/charmaps`), modifier为修正值. 它们组合之后的locale信息放在/usr/lib/locale/locale-archive里，是二进制文件. 通过格式所知，locale总是和一定的字符集相联系的, 比如:
+1. 我说中文，身处中华人民共和国，使用国标18030字符集来表达字符
+
+    zh_CN.GB18030＝中文_中华人民共和国＋国标18030字符集
+1. 我说英语，身处英国，使用ISO-8859-1字符集来表达字符
+
+    en_GB.ISO-8859-1=英语_英国.ISO-8859-1字符集
+1. 我说德语，身处德国，使用UTF-8字符集，习惯了欧洲风格
+
+    de_DE.UTF-8@euro＝德语_德国.UTF-8字符集@按照欧洲习惯加以修正
+
+
+当 locale 为 NULL 时，函数只做取当前 locale 的操作，并通过返回值传回，并不改变当前 locale.
+当 locale 为 "" 时，根据环境的设置来设定 locale，检测顺序是：环境变量 LC_ALL，每个单独的locale分类LC_*，最后是 LANG 变量. 为了使程序可以根据环境来改变活动 locale，一般都在程序的初始化阶段加入代码`setlocale(LC_ALL, "")`.
+
+当C语言程序初始化时（刚进入到 main() 时），locale 被初始化为默认的 C locale，其采用的字符编码是所有本地 ANSI 字符集编码的公共部分，是用来书写C语言源程序的最小字符集（所以才起locale名叫：C）.
+当用 setlocale() 设置活动 locale 时，如果成功，会返回当前活动 locale 的全名称；如果失败，会返回 NULL. 
+
+locale 是一组 C 程式语言处理自然语言(文字)的显示方式， 也可以简单的说，locale 就是一组地区性语言的显示格式. 由国家语言和各地习俗影响所决定的惯例，或代表一个地理区域的定义所组成，这些惯例包含文字、日期、数字、货币格式和排序等等. 这代表着 locale 可让程式的输出可以直接反应地方区域性的文化.
+
+C 语言的 locale 定义，分为下列各大类：
+- LC_ALL : 指定所有的 Locale
+- LC_CTYPE : 字元定义 (包含字元分类与转换规则, 比如大写字母，小 写字母，大小写转换，标点符号、可打印字符和其他的字符属性等方面)
+- LC_MESSAGES : 信息显示, 包括提示信息,错误信息, 状态信息, 标题, 标签, 按钮和菜单等
+- LC_TIME : 时间格式
+- LC_NUMERIC : 数字格式
+- LC_MONETARY : 货币格式
+- LC_COLLATE : 字母顺序与特殊字元比较. 比如, mysql会在`order by`中利用其排序规则.
+- LC_NAME : 姓名 书写方式
+- LC_ADDRESS : 地址书写方式
+- LC_TELEPHONE : 电话号码书写方式
+- LC_MEASUREMENT : 度量衡表达方式
+- LC_PAPER : 默认纸张尺寸大小
+- LC_IDENTIFICATION : 对locale自身包含信息的概述
+- LANG : 语言显示, **用于设定LC_*的默认值**, 因此除非LC_*有指定, 否则都会用LANG
+
+> 优先级的关系： LC_ALL>LC_*>LANG, LC_ALL通常为空.
+
+其中与一般使用者息息相关的，是字元定义 (LC_CTYPE) 与语言显示 (LANG). LC_CTYPE 直接关系到某些字元或内码(code point)在目前的 locale 下是否可列印？要如何转换字码？对应到哪一个字？.... 等等.LANG 则关系到软体的信息输出的地域格式.当 LC_MESSAGES、LC_TIME、LC_NUMERIC、 LC_MONETARY 等没有设定的时候，会直接取用 LANG 的环境设定值.
+
+当一个程式启动时，系统会预设给它一个初始 locale，称为 POSIX 或 C locale. 在此 locale 下，程式的表现会与传统的 C 语言中一样， 使用英文做信息输出，只能处理英文等 ASCII 码等等. 如果该程序需要I18N，则它在启动后就会马上调用系统函式来改变它的 locale， 如此它就摇身一变，变成可以处理该 locale 所代表的地区语言了.
