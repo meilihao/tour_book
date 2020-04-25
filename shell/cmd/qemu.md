@@ -6,6 +6,7 @@ Qemu是一个广泛使用的开源计算机仿真器和虚拟机.
 $ sudo yum install qemu -y
 $ sudo apt-get install qemu
 $ qemu- + <tab> 查看支持的arch
+$ qemu-system-x86_64 -boot menu=on,splash-time=15000 # 查看seabios version
 ```
 
 > qemu-x86_64: 仅仅模拟CPU; qemu-system-x86_64: 模拟整个PC
@@ -16,16 +17,25 @@ $ qemu- + <tab> 查看支持的arch
 
     xxx-softmmu将编译qemu-system-xxx,这是一个用于xxx架构(系统仿真)的仿真机器.重置时,起点将是该架构的重置向量.而xxx-linux-user则编译qemu-xxx,它允许您在xxx架构中运行用户应用程序(用户模式仿真).这将寻找用户应用程序的主要功能,并从那里开始执行
 
+    aarch64_be-linux-user是大端arm
+
 编译:
 ```bash
-$ ./configure --target-list=x86_64-softmmu,x86_64-linux-user
+$ ./configure --target-list="x86_64-softmmu,x86_64-linux-user,aarch64-softmmu,aarch64-linux-user,aarch64_be-linux-user,riscv64-softmmu,riscv64-linux-user" \
+			  --mandir="\${prefix}/share/man" \
+			  --enable-sdl \
+    		  --enable-opengl \
+              --enable-gtk
 ```
 ## qemu-system-x86_64
 参考:
 - [qemu-system-x86_64命令总结](http://blog.leanote.com/post/7wlnk13/%E5%88%9B%E5%BB%BAKVM%E8%99%9A%E6%8B%9F%E6%9C%BA)
 
 ### 选项
-- -S : 启动时cpu仅加电, 但不继续执行,必须在qemu monitor输入`c`才能继续. 未使用`-monitor`时, 按`Ctrl+Alt+2`可进入qemu的monitor界面
+- -cpu <cpu>/help : help可获取qemu支持模拟的cpu
+- -M <>/help : 当前版本的Qemu工具支持的开发板列表
+- -s : 设置gdbserver的监听端口, 等同于`-gdb tcp::1234`
+- -S : 启动时cpu仅加电, 但不继续执行, 相当于将断点打在CPU加电后要执行的第一条指令处，也就是BIOS程序的第一条指令. 必须在qemu monitor输入`c`才能继续. 未使用`-monitor`时, 按`Ctrl+Alt+2`可进入qemu的monitor界面,`Ctrl+Alt+1`回到qemu
 - -monitor
 
     tcp – raw tcp sockets, **推荐**.
@@ -42,9 +52,6 @@ $ ./configure --target-list=x86_64-softmmu,x86_64-linux-user
 # qemu-system-x86_64  -S -monitor tcp::4444,server,nowait # qemu起来的窗口太小, `info registers`展示不完全, 因此使用qemu monitor来解决.
 # nc localhost 4444 # 另一个terminal
 QEMU 2.8.1 monitor - type 'help' for more information
-(qemu) info regesters
-info regesters
-unknown command: 'regesters'
 (qemu) info registers
 info registers
 EAX=00000000 EBX=00000000 ECX=00000000 EDX=00000663
@@ -79,5 +86,16 @@ XMM06=00000000000000000000000000000000 XMM07=00000000000000000000000000000000
 ### qemu编译依赖
 ```
 # sudo apt install libglib2.0-dev # RROR: glib-2.48 gthread-2.0 is required to compile QEMU
-# sudo apt-get install libpixman-1-dev # Please install the pixman devel package
+# sudo apt install libpixman-1-dev # Please install the pixman devel package
+# sudo apt install flex bison
+# sudo apt install libsdl2-dev # Install SDL2-devel & VNC server running on 127.0.0.1:5900 : 缺SDL
+# 删除qemu源码, 重新解压编译 # No rule to make target 'x86_64-softmmu/config-devices.mak', needed by 'config-all-devices.mak'
 ```
+
+### qemu使用32bit寄存器 on x86_64
+QEMU prints the CPU state in the 32 bit format if the CPU is
+currently in 32-bit mode, and in 64 bit format if it is currently
+in 64-bit mode. So it simply depends what the CPU happens to be
+doing at any given time.
+
+可能是seabios最高支持到32bit的原因???.
