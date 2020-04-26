@@ -289,3 +289,105 @@ func memTest() {
 	fmt.Println("end")
 }
 ```
+
+### cgo 使用c struct
+```go
+// [Cgo中使用var声明C结构的变量是否需要释放内存？](https://segmentfault.com/q/1010000009568805)
+// C.CString() 返回的 C 字符串是在堆上新创建的并且不受 GC 的管理，使用完后需要自行调用 C.free() 释放，否则会造成内存泄露，而且这种内存泄露用前文中介绍的 pprof 也定位不出来
+// goroutine 通过 CGO 进入到 C 接口的执行阶段后，已经脱离了 golang 运行时的调度并且会独占线程，此时实际上变成了多线程同步的编程模型。如果 C 接口里有阻塞操作，这时候可能会导致所有线程都处于阻塞状态，其他 goroutine 没有机会得到调度，最终导致整个系统的性能大大较低。总的来说，只有在第三方库没有 golang 的实现并且实现起来成本比较高的情况下才需要考虑使用 CGO ，否则慎用.
+// fmt.Println()会干扰内存泄露的排查, 需提前注释掉.
+package main
+
+/*
+#include <stdlib.h>
+#include <string.h>
+typedef struct student
+{
+    int age;
+    char name[1024];
+}Student, *PStudent;
+
+typedef struct student2
+{
+    int age;
+    char* name;
+}Student2, *PStudent2;
+
+void set(Student *p) {
+	p->age = 1;
+	memset(p->name, 0, 1024);
+	strcpy(p->name, "hello world!");
+
+	return;
+}
+
+void set2(Student2 *p) {
+	p->age = 1;
+	p->name = (char*)malloc(sizeof(char)*1024);
+	memset(p->name, 0, 1024);
+	strcpy(p->name, "hello world!");
+
+	return;
+}
+*/
+import "C"
+import (
+	"fmt"
+	"time"
+	"unsafe"
+	"runtime"
+)
+
+func main() {
+	n, c := 0, 0
+	for {
+		// s1()
+		s2()
+
+		n++
+
+		if n%1000 == 0 {
+			fmt.Println("--------c:", c)
+			time.Sleep(time.Second)
+
+			c++
+		}
+
+		// if c > 180 {
+		// 	break
+		// }
+	}
+
+	runtime.GC()
+	
+	fmt.Println("--------end:", n)
+
+	select {}
+}
+
+func s1() {
+	s := (*C.Student)(C.malloc(C.sizeof_Student))
+
+	C.set(s)
+
+	// fmt.Println(s.age)
+	// fmt.Println(s.name)
+	// fmt.Println(*(*int32)(unsafe.Pointer(s)))
+	// fmt.Println(C.GoString((*C.char)(unsafe.Pointer(&((*s).name)))))
+
+	C.free(unsafe.Pointer(s))
+}
+
+// valgrind --leak-check=full ./t
+func s2() {
+	s2 := (*C.Student2)(C.malloc(C.sizeof_Student2))
+
+	C.set2(s2)
+
+	fmt.Println(s2.age)
+	fmt.Println(C.GoString(s2.name))
+
+	C.free(unsafe.Pointer(s2.name)) // 释放c申请的内存, 否则会有memory leak
+	C.free(unsafe.Pointer(s2))
+}
+```
