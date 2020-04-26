@@ -391,3 +391,150 @@ func s2() {
 	C.free(unsafe.Pointer(s2))
 }
 ```
+
+### go c换传数组
+go->c:
+```go
+package main
+/*
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+int loop(int** list_data, int leng, char** data)
+{
+  int* m = (int*)list_data;
+  int sum = 0;
+  for(int i=0; i<leng; i++)
+  {
+    sum += m[i];
+  }
+  *data = "finised task"; // "finised task"是字符串常量, 分配在静态存储区, 不用C.free()
+  return sum;
+}
+*/
+import "C"
+import (
+    "unsafe"
+    "fmt"
+)
+func GoSilence2CArray() {
+    var ids = []int32{1, 2, 3, 5}
+    var res *C.char
+    length := C.int(len(ids))
+    le := C.loop((**C.int)(unsafe.Pointer(&ids[0])), length, &res)
+    fmt.Println(le)
+    fmt.Println(C.GoString(res))
+    fmt.Println(ids)
+}
+func main() {
+    GoSilence2CArray()
+}
+```
+
+```go
+package main
+
+/*
+#include<stdio.h>
+
+void slice(int *a){
+	for(int i=0;i<4;i++){
+		printf("%d\n",a[i]);
+	}
+}
+
+*/
+import "C"
+import (
+	"fmt"
+)
+
+func main() {
+
+	intSlice := []C.int{108880, 18, 28, 83, 488} //使用cgo类型C.int
+	fmt.Println(&intSlice[0])
+	C.slice(&intSlice[0])
+}
+```
+
+c->go:
+```go
+package main
+/*
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+typedef struct{
+   char* name;
+}person;
+
+person* get_person(int n){
+   person* ret = (person*)malloc(sizeof(person) * n);
+   for(int i=0;i<n;i++){
+      ret[i].name="wu";
+   }
+   return ret;
+}
+*/
+import "C"
+import (
+    "unsafe"
+    "fmt"
+)
+func CArray2GoSilence() {
+    size := 2
+    person := C.get_person(C.int(size))
+    person_array := (*[2]C.person)(unsafe.Pointer(person))
+    var names []string
+    for i := 0; i < size; i++ {
+        name := C.GoString(person_array[i].name)
+        names = append(names, name)
+    }
+    for _, name := range names {
+        fmt.Println(name)
+    }
+    C.free(unsafe.Pointer(person))
+}
+func main() {
+    CArray2GoSilence()
+}
+```
+
+go->c, 多维数组:
+```go
+package main
+/*
+#include <stdio.h>
+#include <string.h>
+
+void fill_array(char *s) 
+{
+    strcpy(s, "cobbliu");
+}
+
+void fill_2d_array(char **arr, int columeSize) {                                                                                                                                                                  
+    strcpy((char*)(arr+0*sizeof(char)*columeSize), "hello");
+    strcpy((char*)(arr+1*sizeof(char)*columeSize/sizeof(char*)), "cgo");
+}
+*/
+import "C"
+import "fmt"
+import "unsafe"
+
+func main() {
+        var dir [10]byte
+		C.fill_array((*C.char)(unsafe.Pointer(&dir[0])))
+		fmt.Println(dir)
+        fmt.Println(string(dir[:])) // go屏蔽掉了多余的`\0`
+        //var dirs [4][16]byte                                                                                                                                                                                    
+        dirs := make([][]byte, 4)
+        for i := 0; i < 4; i++ {
+                dirs[i] = make([]byte, 16)
+        }
+
+        C.fill_2d_array((**C.char)(unsafe.Pointer(&dirs[0][0])), C.int(16))
+        fmt.Println(dirs)                   
+}
+```

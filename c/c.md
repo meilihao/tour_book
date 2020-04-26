@@ -595,7 +595,13 @@ int* p= &i;
 
 > 双引号表示字符串常量, 单引号表示字符常量.
 
-> go的string底层包含length, 不用null, 更严谨.
+go的string底层包含length, 不用null, 更严谨. 但当前c中也有类似的实现:
+```c
+typedef struct {
+    char* buffer;
+    size_t len;
+} string;
+```
 
 ### 宏
 所有的预处理器命令都是以`#`开头:
