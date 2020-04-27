@@ -1468,6 +1468,7 @@ twisted 主要概念:
 # 参考:
 # - [Configuring and Using the Twisted Web Server](https://twistedmatrix.com/documents/current/web/howto/using-twistedweb.html)
 # - [Configuring and Using the Twisted Web Server翻译](https://blog.csdn.net/xiarendeniao/article/details/9844117)
+# - [Python的Twisted框架中使用Deferred对象来管理回调函数](https://www.jb51.net/article/85041.htm)
 # curl  http://192.168.0.112:8080/ab -u joe:blow
 import sys
 
