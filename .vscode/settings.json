@@ -4,5 +4,5 @@
         "ostream": "cpp",
         "typeinfo": "cpp"
     },
-    "python.pythonPath": "/bin/python2.7"
+    "python.pythonPath": "/usr/bin/python3.8"
 }

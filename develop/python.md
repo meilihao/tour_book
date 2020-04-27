@@ -56,6 +56,9 @@ $ mkdir -p ~/.pip
 $ vim ~/.pip/pip.conf # [为pip换源](https://blog.csdn.net/xuezhangjun0121/article/details/81664260)
 [global]
 index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+$ python -m site # pip 软件包的安装位置
+$ sudo /usr/lib/python[2.7|3.8]/site.py # 这里也支持修改 USER_SITE, USER_BASE 
+ENABLE_USER_SITE = False # 将该值设置为 False 即可, 顺便可到`/home/${USER}/.local/lib`下清理已下载的package
 ```
 
 > pip配置查找: `python -m  pip config list -v`
@@ -1130,6 +1133,9 @@ File -> Invalidate Caches/Restart...
 ### 编译成`.so`的源py文件被修改并重启应用后代码未生效
 应先删除`.so`, 否则应用还是用旧的`.so`代码来运行
 
+### TypeError: Class advice impossible in Python3.  Use the @implementer class decorator instead.
+python3使用`from zope.interface import implementer`, 而python2.7使用`from zope.interface import implements`
+
 ### [Python 中如何将字节 bytes 转换为整数 int](https://www.delftstack.com/zh/howto/python/how-to-convert-bytes-to-integers/)
 参考:
 - [Python中struct.pack()和struct.unpack()用法](https://cloud.tencent.com/developer/article/1406350)
@@ -1443,17 +1449,29 @@ BaseManager.register('get_task') # 注册要用的资源(比如函数, Class), �
     ```
 
 ## demo
-### http_auth.py 
+### http_auth.py
+twisted 主要概念:
+- Site : 负责创建HTTPChannel实例来解析HTTP请求，并开始对象查找过程. 它们包含根资源，即代表该网站上的URL资源.
+
+    - requestFactory=Request ：指定了请求报文处理工厂
+- Resource : 代表一个单一的URL段. IResource接口描述了资源对象必须实现的方法，以便参与对象发布过程.
+- Resource trees : 将资源对象安排成一个资源树. 从根资源对象开始，资源对象树定义了所有有效的URL.
+- .rpy script : 是python脚本，twisted.web静态文件服务器会执行它，就像CGI一样. 但是，与CGI不同的是，它们必须创建一个Resource对象，当URL被访问时，该对象将被渲染.
+- Resource rendering : 当Twisted Web定位到一个叶子资源对象时，资源渲染就会发生. Resource可以返回一个html字符串，也可以写到请求对象.
+- Session : 允许在多个请求中存储信息. 每个使用系统的浏览器都有一个唯一的Session实例.
+
 ```python
 # from https://gist.github.com/mrchrisadams/169102
 # Copyright (c) 2008 Twisted Matrix Laboratories.
 # See LICENSE for details.
 
-# 参考: [Configuring and Using the Twisted Web Server](https://blog.csdn.net/xiarendeniao/article/details/9844117)
+# 参考:
+# - [Configuring and Using the Twisted Web Server](https://twistedmatrix.com/documents/current/web/howto/using-twistedweb.html)
+# - [Configuring and Using the Twisted Web Server翻译](https://blog.csdn.net/xiarendeniao/article/details/9844117)
 # curl  http://192.168.0.112:8080/ab -u joe:blow
 import sys
 
-from zope.interface import implements
+from zope.interface import implementer
 
 from twisted.python import log
 from twisted.internet import reactor
@@ -1462,9 +1480,7 @@ from twisted.cred.portal import IRealm, Portal
 #from twisted.cred.checkers import FilePasswordDB
 from twisted.cred.checkers import InMemoryUsernamePasswordDatabaseDontUse
 
-
-
-class GuardedResource(resource.Resource): # 通过验证后执行: getChild() -> render()
+class GuardedResource(resource.Resource): # 通过验证后执行: getChild() -> render_${Method}()/render(), render()用于兜底, 否则未匹配时会返回501
     """
     A resource which is protected by guard and requires authentication in order
     to access.
@@ -1474,14 +1490,16 @@ class GuardedResource(resource.Resource): # 通过验证后执行: getChild() ->
 
     def render(self, request):
         # is served on root
-        return "Authorized!"
+        return b"Authorized!"
+    def render_GET(self, request):
+        return b"Authorized! GET"
 
 class SimpleRealm(object):
     """
     A realm which gives out L{GuardedResource} instances for authenticated
     users.
     """
-    implements(IRealm)
+    implementer(IRealm)
     # requestAvatar supplies the username, and checks against the corresponding password 
     def requestAvatar(self, avatarId, mind, *interfaces):
         if resource.IResource in interfaces:
@@ -1495,7 +1513,8 @@ class SimpleRealm(object):
 def cmp_pass(uname, password, storedpass):
    return crypt.crypt(password, storedpass[:2])
 
-# checker  opens a file called htpasswd, and passing in the hash as defined by the method cmp_pass 
+# checker  opens a file called htpasswd, and passing in the hash as defined by the method cmp_pass
+# checkers使用requestAvatarId()校验用户授权. 这里'blow'是joe的密码.
 checkers = [InMemoryUsernamePasswordDatabaseDontUse(joe='blow')]# [FilePasswordDB(path_to_htpasswd, hash=cmp_pass)]
 
 # guard acts like middleware, forcing all incoming requests to 'yoursite.com' be checked the file defined in checkers
@@ -1505,3 +1524,19 @@ wrapper = guard.HTTPAuthSessionWrapper(Portal(SimpleRealm(), checkers), [guard.B
 reactor.listenTCP(8080, server.Site(resource=wrapper))
 reactor.run()
 ```
+
+# 调用链:
+# 1. SimpleRealm() -> GuardedResource(), 开始等待请求
+# 1. guard.HTTPAuthSessionWrapper.render() ->  guard.HTTPAuthSessionWrapper._authorizedResource()
+#                                               -> guard.BasicCredentialFactory('auth').decode()
+#                                               -> guard.HTTPAuthSessionWrapper._login()
+#                                                   -> Portal().login()
+#                                                    -> checkers.requestAvatarId
+#                                                      -> credentials.checkPassword()
+#                                                    -> SimpleRealm.requestAvatar()
+#                                               -> util.DeferredResource(self._login(credentials)).render()
+#                                                       util.DeferredResource()._cbChild()
+#
+# 1. GuardedResource.getChild()
+# 1. /usr/local/lib/python3.8/dist-packages/twisted/web/resource.py#Resource.render # 按照Resource的具体Method进行处理
+# 1. GuardedResource.render_${Method}()/render()
