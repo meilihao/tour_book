@@ -39,6 +39,8 @@ gdb中命令：
     list <函数名>：查看具体函数
 (gdb) set：设置变量的值
 
+    set environment varname [= value]  : 设置传递给调试程序的环境变量varname的值为value，不指定value时，值默认为NULL
+    unset environment varname : 取消环境变量
     set 变量名=表达式  : 可以修改变量的值
     set $cs = 0xf000 : 设置cs寄存器
     set arch i386:x86-64 : 设置arch, 不正确的arch会导致反编译出错. 因为i8086是16bit指令, i386是32bit, i386:x86-64是64bit.
@@ -52,7 +54,7 @@ gdb中命令：
 (gdb) next：单步调试（逐过程，函数直接执行）,简写n
 (gdb) step：单步调试（逐语句：跳入自定义函数内部执行）,简写s
 
-    si : 仅执行一个指令
+    si [N]: 执行N个指令, 默认是1个
 (gdb) backtrace：查看函数的调用的栈帧和层级关系,简写bt
 
     bt <-n> : 只打印栈底下n层信息
@@ -61,6 +63,10 @@ gdb中命令：
     f n : 查看某一层的栈
     up n : 向栈的上面移动
     down n : 下栈的下面移动
+(gdb) show : 显示
+
+    - show environment : 显示环境变量
+    - show paths : 显示$PATH
 (gdb) info：查看函数内部局部变量的数值,简写i
 
     info f : 打印详细的栈信息
@@ -149,7 +155,6 @@ gdb中命令：
 (gdb) set follow-fork-mode child#Makefile项目管理：选择跟踪父子进程（fork()）
       ctrl+c：退出输入
  ```
-core文件：先用`$ ulimit -c 1024`开启core，当程序出错会自动生成core文件, 调试core时用`gdb a.out core`
 
 ## FAQ
 ### [-g、-ggdb、-g3和-ggdb3, -gdwarf-4之间的区别](3.10 Options for Debugging Your Program)
@@ -170,3 +175,8 @@ $ gdb -ix gdb_init_real_mode.txt \ # 使用gdb script
 -ex 'break *0x7c00' \
 -ex 'continue'
 ```
+### gdb传递空环境变量
+`env - gdb /home/chen/hello` : 此时 gdb 环境下所包含的环境变量仅为其新增加的 LINES 和 COLUMNS.
+
+### 开启core dump
+生成core文件：先用`$ ulimit -c ${0|1024|unlimited}`(0表示关闭)开启core，当程序出错会自动生成core文件, 调试core时用`gdb a.out core`
