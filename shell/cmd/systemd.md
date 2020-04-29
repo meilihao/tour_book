@@ -4,6 +4,7 @@
 
 参考:
 - [走进Linux之systemd启动过程](https://linux.cn/article-5457-1.html)
+- [linux systemd工具学习](https://github.com/yifengyou/learn-systemd)
 
 ### systemd 与 System V init 的区别以及作用
 |System V init 运行级别|systemd 目标名称|作用|

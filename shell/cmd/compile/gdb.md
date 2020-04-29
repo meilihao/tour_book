@@ -119,6 +119,7 @@ gdb中命令：
     b filename:linenum
     b filename:func_name
     b *addr : 在该地址设置断点
+    break *_start : 在_start设置断点, 该用法常见于调试as生成的汇编程序
 (gdb) tbreak : 设置临时断点, 它会在调用一次后自动删除. 设置规则参考break
 (gdb) delete breakpoints num：删除第num个断点,简写d
 (gdb) display：追踪查看具体变量值, 简写disp
