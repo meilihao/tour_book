@@ -103,7 +103,7 @@ gdb中命令：
     print 开始表达式@连续打印空间的大小 : 还可以打印出内存的某个部分开始的连续值
     p 'file'::variable : 查看指定文件的变量
     p 'func_name'::variable : 查看指定函数的变量
-    p array@len : 打印动态数组, 静态数组可直接print. array:数组的首地址，len:数据的长度
+    p array@len : 打印动态数组, 静态数组可直接print. array:数组的首地址，len:数据的长度. 比如`p *0x6001a8@500`, 0x6001a8为数组地址
     p /<format> <name> : 打印格式, 比如`p /x $rax`
 
         x 按十六进制格式显示变量
