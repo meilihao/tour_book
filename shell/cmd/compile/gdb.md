@@ -41,6 +41,7 @@ gdb中命令：
 
     set environment varname [= value]  : 设置传递给调试程序的环境变量varname的值为value，不指定value时，值默认为NULL
     unset environment varname : 取消环境变量
+    set args 5.in.txt : 设置被调试程序的参数. `gdb ./a.out 5.in.txt`, **5.in.txt是gdb参数而不是a.out**. 或直接使用`gdb --args ./a.out 5.in.txt`
     set 变量名=表达式  : 可以修改变量的值
     set $cs = 0xf000 : 设置cs寄存器
     set arch i386:x86-64 : 设置arch, 不正确的arch会导致反编译出错. 因为i8086是16bit指令, i386是32bit, i386:x86-64是64bit.
@@ -67,6 +68,7 @@ gdb中命令：
 
     - show environment : 显示环境变量
     - show paths : 显示$PATH
+    - show args：查看设置好的参数
 (gdb) info：查看函数内部局部变量的数值,简写i
 
     info f : 打印详细的栈信息
@@ -77,6 +79,7 @@ gdb中命令：
     info registers/reg : 查看寄存器(包括浮点寄存器)
     info all-registers : 查看寄存器(除了浮点寄存器)
     info $<register_name> : 查看指定寄存器
+    info registers eflags : 查看eflags的结果
     info display : 查看display设置的自动显示的信息
 (gdb) examine : 查看内存地址中的值, 简写x
 
