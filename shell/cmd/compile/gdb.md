@@ -27,7 +27,7 @@ gdb中命令：
 
     help <命令> : 查询gdb的具体命令信息
 (gdb) file : 装入需要调试的程序
-(gdb) run：重新开始运行文件（run-text：加载文本文件，run-bin：加载二进制文件）,简写r
+(gdb) run：重新开始运行文件（run-text：加载文本文件，run-bin：加载二进制文件）,简写r. **如果在程序运行结束后再执行r, 会重新开始调试该程序**
 
      run argv[1] argv[2]：调试时命令行传参
 (gdb) start：单步执行，运行程序，停在第一执行语句, 简写st
