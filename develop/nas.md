@@ -673,7 +673,7 @@ nfs:
 # mkfs -t xfs /dev/zvol/x/vol_xfs
 #  mkdir /mnt/xfs
 # mount /dev/zvol/x/vol_xfs /mnt/xfs
-# chown -R nobody: nogroup /mnt/xfs
+# chown -R nobody:nogroup /mnt/xfs
 # chmod 2770 /mnt/xfs
 # vim /etc/exports
 /mnt/xfs 192.168.0.245(rw,all_squash,no_subtree_check,async)

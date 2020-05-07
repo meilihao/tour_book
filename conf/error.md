@@ -500,3 +500,7 @@ blueman是管理蓝牙的gui工具.
 
 ### sh: 0: getcwd() failed: No such file or directory
 刚刚把某个目录给删除了，而命令还停在原来的目录上，因此出现了这种问题, 退回到上级还存在的目录即可.
+
+### superblock last mount time ${last_mount_time, now_time} is in the future
+主板时间与`superblock last mount time`冲突
+

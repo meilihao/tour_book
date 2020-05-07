@@ -25,3 +25,4 @@ xargs是构建单行命令的重要组件之一.
     # cat args.txt | xargs -I {} ./cecho.sh -p {} 1
     # find . -type f -name "*.txt" -print0 | xargs -0 rm -f # find与xargs组合,使用`-0`以避免文件路径包含空格
     # find . -type f -name "*.go" -print0|xargs -0 wc -l # 统计代码行数
+    # ps -ef |grep  "python api/server.py" |awk '{print $2}'|xargs -I {} kill {} # 清理python 多进程框架产生的进程
