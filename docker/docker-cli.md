@@ -27,7 +27,7 @@ kill容器：docker kill [OPTIONS] CONTAINER [CONTAINER...] // 向容器进程�
 查看容器的存储层变化: docker diff CONTAINER # 最上层(读写层)和其他层(只读层)的差异
 查看当前映射的端口配置: docker port CONTAINER
 docker环境信息: docker info
-构建image: docker build [--no-cache] // --no-cache: 不使用image缓存 
+构建image: docker build [--no-cache] PATH // --no-cache: 不使用image缓存; PATH代表使用指定路径的 Dockerfile 进行构建
 查看bridge信息: docker network inspect bridge
 列出docker daemon的所有网络: docker network ls
 为容器添加网卡(比如bridge) : `docker network connect ${network_name} CONTAINER`
