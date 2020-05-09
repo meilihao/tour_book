@@ -41,6 +41,8 @@ autofs 自动挂载服务: 无论是 Samba 服务还是 NFS 服务，都要把�
 
 > **NFS鉴权采用的是IP安全组，不支持用户名鉴权**
 
+> nfs支持include的形式: `/etc/exports.d/*.exports`, 在其启动脚步中.
+
 > NFS 客户端为内核的一部分，由于部分内核存在一些缺陷，会影响 NFS 的正常使用, 见[NFS 客户端已知问题](https://www.alibabacloud.com/help/zh/doc-detail/114129.htm)
 
 > NFS v4.1开始支持[Parallel NFS (pNFS)](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html-single/storage_administration_guide/index#ch-nfs).
@@ -228,6 +230,7 @@ NFS服务虽然不具备用户身份验证的功能，但是NFS提供了一种�
 - [使用POSIX ACL控制Samba文件系统的访问](https://help.aliyun.com/document_detail/143007.html)
 - [The Official Samba 3.5.x HOWTO and Reference Guide](https://www.samba.org/samba/docs/old/Samba3-HOWTO/index.html)
 
+> samba有include指令, 能实现类似于nginx的conf.d.
 > 在rhel上，内核的cifs.ko文件系统模块提供了对SMB协议的支持. samba支持windows, mac, linux, 但linux推荐使用nfs.
 > linux作为samba server实现多人分组共享, 只能使用acl. 步骤是: 1. 创建共享; 2. 组织用户 3. 清除acl, 再设置acl
 > 在设置ACL前，先规划好用户组及其权限，每个用户可属于一个或多个用户组。如果要增加、删除、修改用户权限，只需调整用户所在的用户组，只要用户组结构不变就无需修改用户组的ACL。在设置ACL时，尽量使用用户组而非单个用户，通过用户组设置ACL，简单省时，权限清晰易于管理.
