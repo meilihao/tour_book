@@ -16,6 +16,8 @@
 
 style: [Linux kernel coding style](https://www.kernel.org/doc/Documentation/process/coding-style.rst), 其翻译版在[Linux内核编码风格 Linux kernel coding style（中英对照）](http://iyu.is-programmer.com/posts/30315.html).
 
+**接口在 C 语言中，表现为一组函数指针的集合; 放在 C++ 中，即为虚表**.
+
 ## 关键词
 由ANSI标准定义的C语言关键词共32个 :
 ```

@@ -23,9 +23,9 @@ $ qemu-system-x86_64 -boot menu=on,splash-time=15000 # 查看seabios version
 ```bash
 $ ./configure --target-list="x86_64-softmmu,x86_64-linux-user,aarch64-softmmu,aarch64-linux-user,aarch64_be-linux-user,riscv64-softmmu,riscv64-linux-user" \
 			  --mandir="\${prefix}/share/man" \
-			  --enable-sdl \
-    		  --enable-opengl \
-              --enable-gtk
+			  --enable-sdl
+    		#   --enable-opengl \
+            #   --enable-gtk
 ```
 ## qemu-system-x86_64
 参考:
@@ -45,6 +45,8 @@ $ ./configure --target-list="x86_64-softmmu,x86_64-linux-user,aarch64-softmmu,aa
     server – listening in server mode
     nowait – qemu will wait for a client socket application to connect to the port before continuing unless this option is used. In most cases you’ll want to use the nowait option.
 
+## qemu monitor
+滚屏: ctrl + 上/下
 
 ## 操作
 ### 模拟cpu加电

@@ -3,6 +3,7 @@
 注：如果如果程序编译时开启了优化选项，那么在用GDB调试被优化过的程序时，可能会发生某些变量不能访问，或是取值错误码的情况. 对付这种情况时，需要在编译程序时关闭编译优化. GCC中可以使用`-gstabs`选项来解决这个问题.
 ## 选项
 - q : 启动时不打印版本信息
+- -tui : 有窗口
 
 ## 命令模式
 ```gdb
@@ -26,11 +27,14 @@ gdb中命令：
 (gdb) help：查看命令帮助，简写h
 
     help <命令> : 查询gdb的具体命令信息
-(gdb) file : 装入需要调试的程序
+(gdb) file : 装入需要调试的程序或加载符号表
+(gdb) add-symbol-file android_test/system/bin/linker –s .text 0x6fee6180 # 将代码段(.data)段的调试信息加载到0x6fee6180上
+(gdb) where : 查看程序出错的地方
 (gdb) run：重新开始运行文件（run-text：加载文本文件，run-bin：加载二进制文件）,简写r. **如果在程序运行结束后再执行r, 会重新开始调试该程序**
 
      run argv[1] argv[2]：调试时命令行传参
 (gdb) start：单步执行，运行程序，停在第一执行语句, 简写st
+(gdb) layout src : 弹出窗口用于查看代码
 (gdb) list：查看原代码,简写l
 
     list : 默认显示当前行和之后的10行，再执行又下滚10行
@@ -74,10 +78,14 @@ gdb中命令：
 (gdb) info：查看函数内部局部变量的数值,简写i
 
     info f : 打印详细的栈信息
+    info files : 显示被调试文件的详细信息
+    info func : 显示被调试程序的所有函数名称
+    info prog : 显示被调试程序的执行状态
     info args : 打印当前函数的参数名和value
-    info locals : 打印当前函数的局部变量及其值
+    info local : 打印当前函数的局部变量及其值
+    info var : 打印被调试程序的所有全局和静态变量名称
     info catch : 打印当前函数中的异常信息调用
-    info breakpoints ：查看当前设置的所有断点
+    info breakpoints/break ：查看当前设置的所有断点
     info registers/reg : 查看寄存器(包括浮点寄存器)
     info all-registers : 查看寄存器(除了浮点寄存器)
     info $<register_name> : 查看指定寄存器
@@ -175,10 +183,14 @@ $ gdb -ex 'target remote :1234' \
 -ex 'break *0x7c00' \
 -ex 'continue' \
 -ex 'x/3i $pc'
-$ gdb -ix gdb_init_real_mode.txt \ # 使用gdb script
+$ gdb -ix gdb_init_real_mode.txt \ # 使用gdb script + 连写
 -ex 'target remote localhost:8000' \
 -ex 'break *0x7c00' \
 -ex 'continue'
+$ vim gdbinit
+target remote 127.0.0.1:1234
+file bin/kernel
+$ gdb -x gdbinit # 仅使用gdb script
 ```
 ### gdb传递空环境变量
 `env - gdb /home/chen/hello` : 此时 gdb 环境下所包含的环境变量仅为其新增加的 LINES 和 COLUMNS.
