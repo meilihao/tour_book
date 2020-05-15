@@ -34,3 +34,14 @@
 
 # groups
 查看用户所在的组
+
+# gpasswd
+维护组
+
+## 选项
+- -M, --members USER,...   :     设置组 GROUP 的成员列表, **会覆盖原有members**
+
+## example
+```bash
+$ gpasswd -M hu,hua nogroup # 将ha, hua加入nogroup
+```

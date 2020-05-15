@@ -37,3 +37,17 @@ pkg:
 ```
 
 makefile执行时, `if`即使为true, 里面的命令执行日志也不会输出, 因此建议在if中手动添加`echo`.
+
+### make xxx Is a directory. Stop
+Makefile要求每行结尾，一定要确认没有空格，直接是换行.
+
+原因:
+```makefile
+TOPDIR = $(realpath .) # in docker : `/app/xxx`
+```
+
+解决:
+```makefile
+# in docker : `TOPDIR=/app/xxx
+TOPDIR = $(realpath .)
+```

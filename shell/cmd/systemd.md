@@ -195,6 +195,7 @@ $ sudo systemctl set-property httpd.service CPUShares=500
 $ systemctl list-dependencies nginx.service
 # 有些依赖是 Target 类型（详见下文），默认不会展开显示。如果要展开 Target，就需要使用`--all`参数
 $ systemctl list-dependencies --all nginx.service
+$ systemctl list-dependencies graphical.target
 
 ###开机启动###
 # 设置开机启动

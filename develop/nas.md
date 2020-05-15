@@ -1,4 +1,4 @@
-# fs
+# nas
 参考:
 - [NAS 最佳实践](https://help.aliyun.com/document_detail/132279.html)
 - [NAS产品规格限制](https://www.alibabacloud.com/help/zh/doc-detail/122195.htm)
@@ -450,11 +450,12 @@ $ chmod 700 /var/lib/samba/private/msg.sock
 	- [关于mount/samba/字符集的两篇好文](https://blog.zengrong.net/post/1019/)
 - linux is server, windows mount
 
+	```bash
 	# 未测试, 也不推荐修改linux的字符集, 这样可能会在linux上出现其他问题, 比如linux开始出现乱码.
 	# locale -a | grep zh # 查找支持gbk字符集
 	# export LANG="zh_CN.gb18030"
-	#export LC_ALL="zh_CN.gb18030"
-
+	# export LC_ALL="zh_CN.gb18030"
+	```
 
  **推荐windows和linux不挂载同一个samba/nfs共享**
 

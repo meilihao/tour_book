@@ -1,6 +1,7 @@
 # secure protocol
 
 ## tls
+查看tls 协商过程:`curl -v https://xxx`的`TLSv1.x ([OUT|IN])`部分.
 
 ## https server key的作用
 - rsa握手: 解密client 生成的encrypted premaster secret

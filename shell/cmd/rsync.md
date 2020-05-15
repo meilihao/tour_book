@@ -4,6 +4,12 @@
 
 rsync命令是一个远程数据同步工具，可通过LAN/WAN快速同步多台主机间的文件. rsync使用所谓的`rsync算法`来使本地和远程两个主机之间的文件达到同步，这个算法只传送两个文件的不同部分，而不是每次都整份传送，因此速度相当快.
 
+## 选项
+- -a, --archive : 归档模式，表示以递归方式传输文件，并保持所有文件属性，等于-rlptgoD
+- -c, --checksum : 打开校验开关，强制对文件传输进行校验
+- -v : 显示执行细节
+- -z, --compress : 对备份的文件在传输时进行压缩处理
+
 ## 格式
 ```
 rsync [OPTION]... SRC DEST
@@ -21,3 +27,9 @@ rsync [OPTION]... rsync://[USER@]HOST[:PORT]/SRC [DEST]
 - 从远程rsync服务器中拷贝文件到本地机。当SRC路径信息包含"::"分隔符时启动该模式。如：rsync -av root@192.168.78.192::www /databack
 - 从本地机器拷贝文件到远程rsync服务器中。当DST路径信息包含"::"分隔符时启动该模式。如：rsync -av /databack root@192.168.78.192::www
 - 列远程机的文件列表。这类似于rsync传输，不过只要在命令中省略掉本地机信息即可。如：rsync -v rsync://192.168.78.192/www
+
+## example
+```bash
+$ rsync -avc --dry-run --update ./* root@192.168.0.137:/opt/test # 仅计算同步
+$ rsync -avc --update ./* root@192.168.0.137:/opt/test
+```

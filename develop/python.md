@@ -49,6 +49,8 @@ $ pycodestyle --ignore E501 *.py # pycodestyle原名pep8, python code style chec
 $ autopep8 --in-place --aggressive --aggressive *.py # style 修正
 ```
 
+pycharm设置pep8: [Pycharm配置autopep8教程，让Python代码更符合pep8规范](https://segmentfault.com/a/1190000005816556)
+
 ### 其他
 ```sh
 $ python -m pip -V # 检查是否安装pip成功
@@ -1104,7 +1106,7 @@ print(numbers)
     1. 选择`Project Interpreter`列表框右侧`设置`图标中的添加按钮
     1. 选择tab `System Interpreter`, 选择指定版本即可
 ### pycharm 导入模块时提示`unresolved reference`
-本质均是修改环境变量PYTHONPATH.
+本质均是修改环境变量PYTHONPATH(需精确到package的上级路径).
 
 共2种方法:
 1. File->setting->Project:xxx->Project Interpreter, 选择相应的环境, 再点击后面的图标选择"show all", 选中对应的环境, 再点击右侧工具栏中的"树形"图标, 追加需导入module的上级目录的路径即可(**推荐**).
@@ -1157,6 +1159,22 @@ print(struct.unpack("ihb", buffer))
 ```
 
 python3的: `int.from_bytes() `
+
+### subprocess.Popen执行`echo -e "123456\n123456" | pdbedit -a -t -u chen`报错, 未能从stdin读入密码
+subprocess.Popen默认使用sh(dash)执行命令, 而dash不支持`echo -e`.
+
+解决方法: 换用bash, 即`Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True, executable='/bin/bash')`
+
+### [`if not someobj`和`if someobj == None`的过程](https://stackoverflow.com/questions/100732/why-is-if-not-someobj-better-than-if-someobj-none-in-python)
+`if not someobj`:
+1. If the object has a __nonzero__ special method (as do numeric built-ins, int and float), it calls this method. It must either return a bool value which is then directly used, or an int value that is considered False if equal to zero.
+1. Otherwise, if the object has a __len__ special method (as do container built-ins, list, dict, set, tuple, ...), it calls this method, considering a container False if it is empty (length is zero).
+1. Otherwise, the object is considered True unless it is None in which case, it is considered False.
+
+`if someobj == None`:
+1. If the object has a __eq__ method, it is called, and the return value is then converted to a boolvalue and used to determine the outcome of the if.
+1. Otherwise, if the object has a __cmp__ method, it is called. This function must return an int indicating the order of the two object (-1 if self < other, 0 if self == other, +1 if self > other).
+1. Otherwise, the object are compared for identity (ie. they are reference to the same object, as can be tested by the is operator).
 
 ### pep8
 #### W291 trailing whitespace

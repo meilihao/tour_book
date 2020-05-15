@@ -504,3 +504,11 @@ blueman是管理蓝牙的gui工具.
 ### superblock last mount time ${last_mount_time, now_time} is in the future
 主板时间与`superblock last mount time`冲突
 
+### /bin/bash^M: bad interpreter
+文件使用了windows换行.
+
+方法:
+- 用vim打开, 再`:set ff?`查看`fileformat`是否为`doc`, 即是否使用了windows的换行.
+- 用`cat -A xxx`查看文档换行
+
+解决方法: `vim` + `:set ff=unix` + `:wq`

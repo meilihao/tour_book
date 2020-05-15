@@ -177,3 +177,15 @@ git config --global http.lowSpeedTime 300
 
 ### 查看远程分支的tag信息
 `git ls-remote -t  https://review.coreboot.org/coreboot.git`
+
+### git clone --depth导致无法checkout origin的其他分支
+origin的其他分支是基于某个历史commit开始的, 因为使用了`--depth`导致该commit不存在, 因此`git checkout -b dev origin/${branch}`会失败.
+
+解决方法:
+1. 补全commit
+1. 重新完整地clone
+
+### git diff filter
+```bash
+git diff b446759c1be2fa8a2c4532ac2bffb4b0449994bc HEAD -- ./xxx/* # 按照path过滤
+```

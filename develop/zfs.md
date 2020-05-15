@@ -32,7 +32,7 @@ scrub : 用于一致性检验. 其他文件系统会使用fsck.
 thin: zfs支持thin provisioning, 
 
 ### 建议
-1. 使用整个磁盘来启用磁盘写入高速缓存并使维护更轻松
+1. 使用整个磁盘来作为磁盘写入高速缓存(ZIL)并使维护更轻松
 1. 使用zfs冗余(raidz,mirror)
 
    1. mirror, 使用镜像磁盘对

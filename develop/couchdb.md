@@ -5,12 +5,15 @@
 
 存储格式：JSON : **没有表的概念，数据直接以文档的形式存储在数据库中，每个数据库是一个独立的文档集合**, 因此其数据库就类似于sql的table.
 查询语言：JavaScript
+存储引擎: B-Tree, 复杂度O(n)=log(N). 一个数据库是一个b-tree, 一个view也是b-tree.
+支持MVCC, 用`_rev`实现.
 
 > 每个文档都有一个全局惟一的标识符（ID）以及一个修订版本号（revision number）.
+> couchdb使用了append-only的文件(仅有追加写)
 
 内部字段解释:
 - _id : 全局惟一的标识符，用来惟一标识一个文档
-- _rev : 修订版本号，用来实现多版本并发控制（Multiversion concurrency control，MVVC）
+- _rev : 修订版本号(N-后缀, N是修订次数, 后缀是doc的md5值), 用来实现多版本并发控制（Multiversion concurrency control，MVVC）
 - _attachments : 内嵌型附件，以 base64 编码的格式作为文档的一个字段保存.
 
 特点:
@@ -43,8 +46,18 @@
 
     CoucbDB能够同步复制到可能会离线的终端设备（比如智能手机），同时当设置再次在线时处理数据同步. CouchDB内置了一个的叫做Futon的通过web访问的管理接口.
 
+冲突处理:
+在两个复制的couchdb中修改了同一个doc, couchdb会把相应的doc标记成冲突状态`doc._conflicts`, 根据一定的规则比较后, 胜出的为最新版本, 失败的为最新版本的上一个版本. couchdb会将冲突留给应用程序去解决, 而解决一个冲突的通用操作的是首先合并数据到其中一个文档，然后删除旧的数据.
+
+**注意**:
+1. 使用自己的uuid来create doc而不是由couchdb生成, 避免重试操作时创建多个uuid不同的doc.
+
 ## RESTful api
 > 单个操作用PUT, 多个用POST.
+> couchdb Futon(自带的web ui): `http://localhost:5984/_utils`.
+> CouchDB doc支持附加文件, 会自动对文件进行 base64 解码.
+> couchdb doc中以`_`作为前缀的顶层字段是由 CouchDB 保留使用的，如`_id和_rev`.
+> CouchDB 目前只支持一种角色(`系统管理员`), 拥有所有权限.
 
 - 获取数据库列表
 
@@ -52,6 +65,9 @@
 - 创建名称为testdb的数据库
 
     `curl -X PUT http://127.0.0.1:5984/testdb resp: {"ok":true}`
+- 获取数据库信息
+
+    `curl -X GET http://127.0.0.1:5984/testdb resp: {...}`
 - 删除名称为testdb的数据库
 
     `curl -X DELETE http://127.0.0.1:5984/testdb resp: {"ok":true}`
@@ -113,6 +129,8 @@
 
     **CouchDB不支持对JSON文档进行部分更新，必须是全更新. 也就是说不能添加或者删除字段，也不能仅更新某些字段的值. 更新文档的时候_rev 参数必须是最新获取的，因为任何修改操作都会引起_rev`值变化**.
 
+    当更新完成之后，返回 HTTP 状态代码 201 ；否则返回 HTTP 状态代码 409，表示有版本冲突.
+
     1. 更新单个doc
 
      `curl -X PUT http://127.0.0.1:5984/testdb/1925a2a284289df9b55b390525001ca1 -d '{"_rev":"2-8631301e81523fb6f58fa99b33f2731f", "id":1,"name":"mike"}'  -u admin:admin resp: {"ok":true,"id":"1925a2a284289df9b55b390525001ca1","rev":"3-fcaf069a73856d697af04d750228ba20"}`
@@ -125,6 +143,13 @@
             {"_id":"s2","_rev":"9-49093809c74d86493969f441efb4a1b7","desc":"小红2","age":19.36}
         ]
     }' resp: [{"ok":true,"id":"s1","rev":"10-85d31c96537e6c4e5db128b2260af897"},{"id":"s2","error":"conflict","reason":"Document update conflict."}]
+- 附件
+
+    curl -X PUT http://localhost:5984/testdb/1925a2a284289df9b55b390525001ca1/artwork.jpg?rev=3-fcaf069a73856d697af04d750228ba20 --data-binary.jpg -H 'Content-Type: image/jpg'
+
+    附件会出现在doc的`{...,"_attachments":{"artwork.jpg":{...}}`中, 默认仅显示附件的元数据, 获取doc的url请求中加`?attachments=true`会返回包含附件数据(base64编码)的内容.
+
+    curl http://localhost:5984/testdb/1925a2a284289df9b55b390525001ca1/artwork.jpg可看到附件.
 
 - 查询
 
@@ -272,6 +297,9 @@
 
 - 数据库复制
 
+    查看复制进度: http://localhost:5984/_active_tasks的progress.
+    复制时, 源和目的必须都已存在; 支持`"create_target":true`选项, 不存在目的时自动创建; 复制仅针对创建复制时的状态, 复制开始后的变更(创建/修改/删除)都不会被复制.
+
     1. 本地复制
 
     curl -X PUT http://127.0.0.1:5984/albums-replica # 创建接收者
@@ -292,13 +320,13 @@
     curl -X POST http://127.0.0.1:5984/_replicate -d '{"source":"http://example.org:5984/albums","target":"http://example.org:5984/albums-replica"}' -H "Content-Type: application/json"
 
 ## 设计文档
-设计文档是一类特殊的文档，其ID必须以`_design/`开头. 设计文档的存在是使用CouchDB开发Web应用的基础. 在CouchDB中，一个Web应用是与一个设计文档相对应的.
+设计文档是一类特殊的文档，其ID必须以`_design/`开头. 设计文档的存在是使用CouchDB开发Web应用的基础. 在CouchDB中，一个Web应用是与一个设计文档相对应的, 但一个couchdb数据库允许有多个设计文档.
 
 在设计文档中可以包含一些特殊的字段，其中包括：
 - views 包含永久的视图定义
 
     CouchDB中一般将视图称为MapReduce视图，一个MapReduce视图由两个JavaScript函数组成，一个是Map函数，这个函数必须定义；另一个是Reduce函数，这个是可选的，根据程序的需要可以进行选择性定义.
-- shows 包含把文档转换成非JSON格式的方法
+- shows 包含把文档转换成任意格式(比如非JSON)进行输出的方法
 - lists 包含把视图运行结果转换成非JSON格式的方法
 - validate_doc_update 包含验证文档更新是否有效的方法
 
@@ -323,12 +351,35 @@
 ```
 
 ### view函数
-`omit()`以kv形式返回.
+`emit()`以kv形式返回. **每个视图的定义中至少需要提供 Map 方法，Reduce 方法是可选的**. 一个doc允许有多个emit()输出, 比如`emit()`在循环中的时候.
 
 couchdb内置reduce函数:
 - `_count` : 返回map结果集中值的个数, 与查询参数`include_docs=true`冲突
 - `_sum` : 返回map结果集中数值的求和结果
 - `_stats` : 返回map结果集中数值的统计结果
+
+运行视图时的可选参数(参数, 说明):
+- key : 限定结果中只包含键为该参数值的记录
+- startkey : 限定结果中只包含键大于或等于该参数值的记录
+- endkey : 限定结果中只包含键小于或等于该参数值的记录
+- limit : 限定结果中包含的记录的数目
+- descending : 指定结果中记录是否按照降序排列
+
+    举例:
+    - `startkey=1&descending`: 读取范围是[文件开始,startkey], 且从startkey开始倒读
+    - `endkey=1&descending`: 读取范围是[endkey,文件结尾], 且到endkey为止
+- skip : 指定结果中需要跳过的记录数目
+- group : 指定是否对键进行分组
+- reduce : 指定reduce=false可以只返回 Map 方法的运行结果
+- group_level : 当key为array时, 允许使用group_level指定使用array的前n个元素作为新key来执行mapreduce.
+
+**注意**:
+1. view会对key的结果进行排序
+1. 第一次view执行时会在所有doc上执行一次并创建view索引保存到b-tree, 之后仅对变更过的doc执行一次该view, 重新生成key和value.
+
+couchdb查询view的过程:
+1. 从最顶上开始读取, 如果startkey存在, 就会从startkey的位置开始读取
+1. 一次返回一行, 直至结尾, 如果endkey存在, 就直到endkey指定的位置为止
 
 ### key
 > v3.0.0 curl的`?key=...`有问题, 新建的view无法匹配到结果(有数据).
@@ -346,7 +397,7 @@ Map方法的参数只有一个，就是当前的文档对象. Map方法的实现
 
 #### reduce
 Reduce方法的参数有三个：key、values和rereduce，分别表示键、值和是否是rereduce. 由于rereduce情况的存在，Reduce 方法一般需要处理两种情况：
-1. 传入的参数rereduce的值为false : 表明Reduce方法的输入是 Map方法输出的中间结果.
+1. 传入的参数rereduce的值为false : 表明Reduce方法的输入是 Map方法输出的中间结果(kv).
 参数key的值是一个数组，对应于中间结果中的每条记录. 该数组的每个元素都是一个包含两个元素的数组，第一个元素是在Map方法中通过emit输出的键（key），第二个元素是记录所在的文档 ID.
 参数values的值是一个数组，对应于 Map 方法中通过emit输出的值（value）.
 
