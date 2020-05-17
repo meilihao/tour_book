@@ -17,6 +17,14 @@ char *fgets(char *str, int n, FILE *stream)
 如果成功，该函数返回相同的 str 参数. 如果到达文件末尾或者没有读取到任何字符，str 的内容保持不变，并返回一个空指针.
 如果发生错误，返回一个空指针
 
+## strcmp
+按ascii逐个比较两个字符串中的各个字符, 直至出现不同的字符或遇到`\0`.
+
+比较结果:
+- 相等 : 0
+- str1 > str2 : 正整数
+- str1 < str2 : 负整数
+
 ## strncat
 ```c
 char *strncat(char *dest, const char *src, size_t n) // 追加字符串

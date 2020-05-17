@@ -27,6 +27,7 @@ gdb中命令：
 (gdb) help：查看命令帮助，简写h
 
     help <命令> : 查询gdb的具体命令信息
+(gdb) show language : 查看当前的语言环境, 默认是c
 (gdb) file : 装入需要调试的程序或加载符号表
 (gdb) add-symbol-file android_test/system/bin/linker –s .text 0x6fee6180 # 将代码段(.data)段的调试信息加载到0x6fee6180上
 (gdb) where : 查看程序出错的地方
@@ -39,8 +40,13 @@ gdb中命令：
 
     list : 默认显示当前行和之后的10行，再执行又下滚10行
     list n : 从第n行开始查看代码
-    list n1 n2 : 显示n1行和n2行之间的代码
-    list <函数名>：查看具体函数
+    list n1,n2 : 显示n1行和n2行之间的代码
+    list ,n2 : 显示当前行和n2行之间的代码
+    list <function>：查看具体函数
+    list + : 向后显示源代码
+    list - : 向前显示源代码
+    set listsize <count> : 设置一次显示源代码的行数
+    show listsize : 查看listsize的值
 (gdb) set：设置变量的值
 
     set environment varname [= value]  : 设置传递给调试程序的环境变量varname的值为value，不指定value时，值默认为NULL
@@ -56,6 +62,7 @@ gdb中命令：
     set print pretty on : 如果打开, 那么当GDB显示结构体时会比较漂亮
     set print union : 设置显示结构体时，是否显式其内的联合体数据
     set print object : 在C++中，如果一个对象指针指向其派生类，如果打开这个选项，GDB会自动按照虚方法调用的规则显示输出，如果关闭这个选项的话，GDB就不管虚函数表了
+    set language <lan> : 设在程序语言类型
 (gdb) next：单步调试（逐过程，函数直接执行）,简写n
 
     nexti/ni : 单步跳过下一条指令(不进入函数) 
@@ -78,6 +85,8 @@ gdb中命令：
 (gdb) info：查看函数内部局部变量的数值,简写i
 
     info f : 打印详细的栈信息
+    info frame : 查看当前函数的程序语言
+    info source : 查看当前文件的程序语言
     info files : 显示被调试文件的详细信息
     info func : 显示被调试程序的所有函数名称
     info prog : 显示被调试程序的执行状态
@@ -86,11 +95,12 @@ gdb中命令：
     info var : 打印被调试程序的所有全局和静态变量名称
     info catch : 打印当前函数中的异常信息调用
     info breakpoints/break ：查看当前设置的所有断点
-    info registers/reg : 查看寄存器(包括浮点寄存器)
+    info registers/reg [<regname>...]: 查看寄存器(包括浮点寄存器)
     info all-registers : 查看寄存器(除了浮点寄存器)
     info $<register_name> : 查看指定寄存器
     info registers eflags : 查看eflags的结果
     info display : 查看display设置的自动显示的信息
+    info line <filename>:<function> : 显示指定函数在文件中的行数, 内存的起始地址及终止地址
 (gdb) examine : 查看内存地址中的值, 简写x
 
     格式: `x/<n><format><size> ADDRESS`:
@@ -113,10 +123,12 @@ gdb中命令：
     - `::` : 指定一个在文件或是一个函数中的变量
     - {} : 表示一个指向内存地址的类型为type的一个对象
 
+    print x=8 : 修改变量值
     print 开始表达式@连续打印空间的大小 : 还可以打印出内存的某个部分开始的连续值
     p 'file'::variable : 查看指定文件的变量
     p 'func_name'::variable : 查看指定函数的变量
     p array@len : 打印动态数组, 静态数组可直接print. array:数组的首地址，len:数据的长度. 比如`p *0x6001a8@500`, 0x6001a8为数组地址
+    p $<regname> : 查看reg
     p /<format> <name> : 打印格式, 比如`p /x $rax`
 
         x 按十六进制格式显示变量
@@ -135,8 +147,14 @@ gdb中命令：
 (gdb) quit：退出gdb,简写q
 (gdb) break：设置断点,简写b
 
+    break <function>, c++可用`class::function`指定
+    break <linenum>
+    break +offset
+    break -offset
     b filename:linenum
-    b filename:func_name
+    b filename:function
+    break : 在下一条指令处停在
+    break ... if <condition> : 比如`break if i=100`
     b *addr : 在该地址设置断点
     break *_start : 在_start设置断点, 该用法常见于调试as生成的汇编程序
 (gdb) tbreak : 设置临时断点, 它会在调用一次后自动删除. 设置规则参考break
@@ -167,16 +185,15 @@ gdb中命令：
     disassemble /r : 可以用16进制形式显示程序的原始机器码
 (gdb) set follow-fork-mode child#Makefile项目管理：选择跟踪父子进程（fork()）
       ctrl+c：退出输入
+(gdb) signal <singal>: 产生信号量
+(gdb) jump <line>/<addr> : 修改程序的执行顺序, **不推荐**, 因为jump不会修改当前栈内容, 函数运行返回进行弹栈时必定出错, 且错误未可知.
+(gdb) call <expr>: 强制调用函数
+(gdb) return : 强制函数返回
+(gdb) shell : 使用户不离开gdb就能使用shell
+(gdb) make : 使用户不离开gdb就能使用make
  ```
 
 ## FAQ
-### [-g、-ggdb、-g3和-ggdb3, -gdwarf-4之间的区别](3.10 Options for Debugging Your Program)
--g和-ggdb之间只有细微的区别:
-具体来说，-g产生的debug信息是OS native format， GDB可以使用之, 而-ggdb产生的debug信息更倾向于给GDB使用的. 因此，如果是使用GDB调试器的话，那么使用-ggdb选项. 如果是其他调试器，则使用-g.
-
-3只是包含调试信息的级别(3已是最详细). 这个级别会产生更多的额外debug信息, 比如这个级别可以调试宏.
-
--gdwarf-<version> : debug信息的格式. 大多数target上的默认版本是4, DWARF5仅是实验性的.
 ### gdb命令连写
 ```bash
 $ gdb -ex 'target remote :1234' \
