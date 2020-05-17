@@ -53,13 +53,18 @@ pycharm设置pep8: [Pycharm配置autopep8教程，让Python代码更符合pep8�
 
 ### 其他
 ```sh
+$ pip --version
 $ python -m pip -V # 检查是否安装pip成功
 $ mkdir -p ~/.pip
-$ vim ~/.pip/pip.conf # [为pip换源](https://blog.csdn.net/xuezhangjun0121/article/details/81664260)
+$ vim ~/.pip/pip.conf # [为pip换源](https://blog.csdn.net/xuezhangjun0121/article/details/81664260), 会用到sudo时建议添加到`/etc/pip.conf`
 [global]
 index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+$ vim ~/.pip/pip.conf # aliyun pip mirror
+[global]
+trusted-host =  mirrors.aliyun.com
+index-url = https://mirrors.aliyun.com/pypi/simple
 $ python -m site # pip 软件包的安装位置
-$ sudo /usr/lib/python[2.7|3.8]/site.py # 这里也支持修改 USER_SITE, USER_BASE 
+$ sudo vim /usr/lib/python[2.7|3.8]/site.py # 这里也支持修改 USER_SITE, USER_BASE 
 ENABLE_USER_SITE = False # 将该值设置为 False 即可, 顺便可到`/home/${USER}/.local/lib`下清理已下载的package
 ```
 
