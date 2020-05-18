@@ -47,7 +47,7 @@
     CoucbDB能够同步复制到可能会离线的终端设备（比如智能手机），同时当设置再次在线时处理数据同步. CouchDB内置了一个的叫做Futon的通过web访问的管理接口.
 
 冲突处理:
-在两个复制的couchdb中修改了同一个doc, couchdb会把相应的doc标记成冲突状态`doc._conflicts`, 根据一定的规则比较后, 胜出的为最新版本, 失败的为最新版本的上一个版本. couchdb会将冲突留给应用程序去解决, 而解决一个冲突的通用操作的是首先合并数据到其中一个文档，然后删除旧的数据.
+在两个复制的couchdb中修改了同一个doc, 复制时根据一定的规则(由更长修订历史的胜出,相同时由_rev字典序大的胜出)比较后, 胜出的为最新版本, 失败的为最新版本的上一个版本, 复制完成后复制双方会拥有相同的数据, couchdb会把相应的doc标记成冲突状态`"_conflicts": true`. couchdb会将冲突留给应用程序去解决, 而解决一个冲突的通用操作的是首先合并数据到其中一个文档，然后删除旧的数据.
 
 **注意**:
 1. 使用自己的uuid来create doc而不是由couchdb生成, 避免重试操作时创建多个uuid不同的doc.
@@ -300,6 +300,9 @@
     查看复制进度: http://localhost:5984/_active_tasks的progress.
     复制时, 源和目的必须都已存在; 支持`"create_target":true`选项, 不存在目的时自动创建; 复制仅针对创建复制时的状态, 复制开始后的变更(创建/修改/删除)都不会被复制.
 
+    复制内容包括新增/已修改/已删除的doc. couchdb中每个数据库有一个序列号, 每次变更都会加一, 且会记录哪个变更对应哪个序列号. couchdb支持增量复制.
+    couchdb可使用`"continous":true`进行持续复制, 重启couchdb后是否仍生效未知.
+
     1. 本地复制
 
     curl -X PUT http://127.0.0.1:5984/albums-replica # 创建接收者
@@ -328,7 +331,9 @@
     CouchDB中一般将视图称为MapReduce视图，一个MapReduce视图由两个JavaScript函数组成，一个是Map函数，这个函数必须定义；另一个是Reduce函数，这个是可选的，根据程序的需要可以进行选择性定义.
 - shows 包含把文档转换成任意格式(比如非JSON)进行输出的方法
 - lists 包含把视图运行结果转换成非JSON格式的方法
-- validate_doc_update 包含验证文档更新是否有效的方法
+- validate_doc_update 包含验证文档更新是否有效的方法, 通过函数抛出异常`throw({...})`来取消更新
+
+    couchdb推荐使用内建函数`toJSON`来比较, 因为原生js`[] == []`返回false等行为.
 
 [设计文档结构](https://github.com/mike-zhang/mikeBlogEssays/blob/master/2014/20141007_couchDB%E6%96%87%E6%A1%A3.md)：
 ```json
@@ -372,6 +377,8 @@ couchdb内置reduce函数:
 - group : 指定是否对键进行分组
 - reduce : 指定reduce=false可以只返回 Map 方法的运行结果
 - group_level : 当key为array时, 允许使用group_level指定使用array的前n个元素作为新key来执行mapreduce.
+
+> startkey + limit + skip 可实现分页
 
 **注意**:
 1. view会对key的结果进行排序
@@ -427,6 +434,23 @@ $ curl 'http://127.0.0.1:5984/testdb/_design/jsTest/_view/all?group=true' -u adm
 {"key":1,"value":0}
 ]}
 ```
+
+## 变更通知
+
+```bash
+$ curl -X GET http://localhost/db/_changes
+```
+
+返回结果:
+- seq : 数据库变更时, couchdb生成的变更序列号
+- id : doc._id
+- changes : 数组, 默认是doc的_rev, 但可能包含文档冲突及其他信息
+
+支持参数:
+- style=all : changes数组包含更多的版本和冲突信息
+- since=1 : since起始变更序列号
+- feed=continous : 长连接, 连续获取变更
+- filter=design_name/filtername : 支持设计文档定义的`filters`过滤函数
 
 ## FAQ
 ### `emit(doc.phoneNumber, doc.billSeconds);`和`emit([doc.phoneNumber], doc.billSeconds);`的区别
