@@ -1,5 +1,5 @@
 # dialog
-shell下的对话框.
+shell下的对话框, 有点难用且不好调试.
 
 ## example
 ```bash
@@ -52,3 +52,9 @@ window 20x70 at 2,4
 # widget returns 0 # 返回的状态
 ** closed at Sat Apr  4 03:34:16 2020
 ```
+
+## terminal ui
+参考:
+- [如何开发富文本的终端UI应用](https://zhuanlan.zhihu.com/p/80356560)
+
+terminal ui是半伪需求, 在有网络的情况下可用`web ui + go`取代(**推荐**); 无网但有RJ45时, 插线互联再参照有网情况; 其他情况[jojomi/gonsole(不完善, 已停更)](https://github.com/jojomi/gonsole)
