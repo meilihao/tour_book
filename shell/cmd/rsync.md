@@ -9,6 +9,7 @@ rsync命令是一个远程数据同步工具，可通过LAN/WAN快速同步多�
 - -c, --checksum : 打开校验开关，强制对文件传输进行校验
 - -v : 显示执行细节
 - -z, --compress : 对备份的文件在传输时进行压缩处理
+- --exclude : 排除路径
 
 ## 格式
 ```
@@ -31,5 +32,5 @@ rsync [OPTION]... rsync://[USER@]HOST[:PORT]/SRC [DEST]
 ## example
 ```bash
 $ rsync -avc --dry-run --update ./* root@192.168.0.137:/opt/test # 仅计算同步
-$ rsync -avc --update ./* root@192.168.0.137:/opt/test
+$ rsync -avc --update --exclude="adapter" ./* root@192.168.0.137:/opt/test # 会排除./adapter
 ```

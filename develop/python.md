@@ -865,6 +865,8 @@ d.setdefault('a', []).append(1) <=> d["a"] = []; d["a"].append(1)
 d = defaultdict(list)
 d["a"].append(1)
 
+# set相减是集合的求差集
+
 ### 字典排序
 from collections import OrderedDict
 d = OrderedDict() # 保证插入时的顺序, 与key和value无关
@@ -1139,6 +1141,13 @@ File -> Invalidate Caches/Restart...
 
 ### 编译成`.so`的源py文件被修改并重启应用后代码未生效
 应先删除`.so`, 否则应用还是用旧的`.so`代码来运行
+
+### 被调函数输出的日志信息(by logging)中的函数名和行数都是其装饰器函数的信息
+原先代码被编译成了so, 源码更新后, 同名的`.so`未删除导致.
+
+解决方法: 删除同名的`.so`
+
+> 日志与代码无法对应, 根源在于运行中的代码不是最新代码, 检查看看是否有旧进程, `so`等在跑, 或更新错环境了等等.
 
 ### TypeError: Class advice impossible in Python3.  Use the @implementer class decorator instead.
 python3使用`from zope.interface import implementer`, 而python2.7使用`from zope.interface import implements`
