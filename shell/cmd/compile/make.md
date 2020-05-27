@@ -1,26 +1,74 @@
 # make
-最常用的构建工具
+最常用的构建工具.
+
+make和makefile是项目编译的管理方式.
 
 ## 选项
 - -B : make 命令不会编译那些自从上次编译之后就没有更改的文件, 但此参数会忽略该设定, 全部重新编译
 - -C : 将当前工作目录转移到指定的位置, 再还行该目录下的Makefile, 最后返回原目录
 - -d : 打印详细信息
+- -e : 环境变量覆盖 makefile 中的变量
 - -f : 指定Makefile文件名称
+- -k : 执行命令出错时, 放弃当前目标, 继续其他目标
+- -i : 忽略错误
+- -I : 在 <目录> 中搜索被包含的 makefile
 - M= : 当用户需要以某个内核为基础编译一个外部模块的话，需要在make modules 命令中加入`M=dir`, 程序会自动到指定的dir目录中查找模块源码，将其编译，生成ko文件
+- -n : 只打印命令过程，不实际执行
+- -p : 打印 make 的内部数据库, 即显示Makefile中所有的变量和内部规则
+- -r : 禁用内置隐含规则
+- -s : 执行但不输出命令过程, 常用于检查Makefile的正确性
+- -S : 关闭`-k`, 即执行命令出错就退出
+- -t : touch 目标（更新修改时间）
+- -V : 显示make的version
 
 ## makefile
 make主要功能就是通过makeflie来实现的. 它定义了各种源文件间的依赖关系, 阐明了源文件如何进行编译.
 
-linux下, 通常用Makefile代替makefile, 通过`configure`来生成. 在命令行执行make时, make默认会在当前目录查找Makefile. 如果使用其他文件作为Makefile则需要用`-f <makefile>`参数明确指明.
+linux下, 通常用Makefile代替makefile, 通过`configure`来生成. 在命令行执行make时, make默认会在当前目录查找Makefile或makefile. 如果使用其他文件作为Makefile则需要用`-f <makefile>`参数明确指明, make默认会执行Makefile中的第一个target, 且make或递归查找依赖, 如果被依赖的文件不存在, make就会退出.
 
 ### 规则
 ```makefile
-target ... : prerequisites ...
+targets ... : prerequisites ...
     command
     ...
     ...
 ```
-target也就是一个目标文件，可以是object file，也可以是执行文件, 还可以是一个标签（label）. prerequisites就是，要生成那个target所需要的文件或是目标. command也就是make需要执行的命令（任意的shell命令）. 这是一个文件的依赖关系，也就是说，target这一个或多个的目标文件依赖于prerequisites中的文件，其生成规则定义在 command中. 如果prerequisites中有一个以上的文件比target文件要新，那么command所定义的命令就会被执行. 这就是makefile的规则, 也就是makefile中最核心的内容.
+
+- targets : 目标文件名, 多个文件以空格分隔, 可使用通配符(`*`,`?`,`[...]`).
+- prerequisites : 目标所依赖的文件或target
+- command : 如果它不与`target : prerequisites`写在一行则必须以tab键开头, 否则和prerequisites在同一行, 用`;`分隔. 如果命令过长, 可用`\`作为换行连接.
+
+target也就是一个目标文件，可以是object file，也可以是执行文件, 还可以是一个标签（label）. prerequisites就是，要生成那个target所需要的文件或是目标. command也就是make需要执行的命令（任意的shell命令）. 这是一个文件的依赖关系，也就是说，target这一个或多个的目标文件依赖于prerequisites中的文件，其生成规则定义在 command中. 如果prerequisites中有一个以上的文件比target文件要新(修改日期)或target不存在，那么command所定义的命令就会被执行. 这就是makefile的规则, 也就是makefile中最核心的内容.
+
+常用target名称:
+- all : 表示编译所有内容, 是执行make时默认的最终目标
+- clean : 清除所有目标文件
+- distclean : 清除所有的内容
+- install : 需安装的内容
+
+make用`.PHONY`显式指明伪目标. 伪目标不是文件, 仅是一个标签, 因此Makefile不会生成伪目标对应的文件. 伪目标的特性是总能被执行.
+
+Makefile组成:
+- 显式规则
+
+	它说明了如何生成一个或多个目标, 由Makefile的书写者显示指出要生成的文件, 文件的依赖及生成的命令.
+- 隐式规则
+
+	因为make有自动推导功能, 会选择一套默认的方法进行make, 它让开发者可以比较简略地书写Makefile. **不推荐使用**.
+- 变量定义
+
+	在Makefile中定义一系列需要的变量, 类似C语言中的宏, 当Makefile执行时, 其中的变量会被扩展到相应的引用位置上.
+- 文件指示
+
+	1. 一个Makefile引用另一个Makefile
+	1. 根据某些情况指定Makefile中的有效部分
+	1. 定义一个多行的命令
+- 注释
+
+	仅有行注释, 用`#`开头
+
+
+每当target中的command执行完毕后, make会检测它们的返回码, 如果成功则继续执行, 否则中止该target. 在命令前加`-`则会忽略检查返回码, 认为都成功. 命令前加`@`表示不将要执行的命令输出到屏幕. 如果要让上一条命令的结果应用在下一条上, 则它们需要写在一行并用`;`分隔.
 
 ## FAQ
 ### 了解make时执行了哪些命令
