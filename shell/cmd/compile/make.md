@@ -27,6 +27,7 @@ make主要功能就是通过makeflie来实现的. 它定义了各种源文件间
 linux下, 通常用Makefile代替makefile, 通过`configure`来生成. 在命令行执行make时, make默认会在当前目录查找Makefile或makefile. 如果使用其他文件作为Makefile则需要用`-f <makefile>`参数明确指明, make默认会执行Makefile中的第一个target, 且make或递归查找依赖, 如果被依赖的文件不存在, make就会退出.
 
 ### 规则
+Makefile由一组规则（Rule）组成，每条规则的格式是:
 ```makefile
 targets ... : prerequisites ...
     command
@@ -42,9 +43,9 @@ target也就是一个目标文件，可以是object file，也可以是执行文
 
 常用target名称:
 - all : 表示编译所有内容, 是执行make时默认的最终目标
-- clean : 清除所有目标文件
-- distclean : 清除所有的内容
-- install : 需安装的内容
+- clean : 删除编译生成的二进制文件
+- distclean : 不仅删除编译生成的二进制文件，也删除其它生成的文件，例如配置文件和格式转换后的文档，执行make distclean之后应该清除所有这些文件，只留下源文件
+- install : 需安装的内容,即执行编译后的安装工作，把可执行文件、配置文件、文档等分别拷到不同的安装目录
 
 make用`.PHONY`显式指明伪目标. 伪目标不是文件, 仅是一个标签, 因此Makefile不会生成伪目标对应的文件. 伪目标的特性是总能被执行.
 
@@ -55,9 +56,42 @@ Makefile组成:
 - 隐式规则
 
 	因为make有自动推导功能, 会选择一套默认的方法进行make, 它让开发者可以比较简略地书写Makefile. **不推荐使用**.
+
+	如果一个目标在Makefile中的所有规则都没有命令列表，make会尝试在内建的隐含规则（Implicit Rule）数据库中查找适用的规则. make的隐含规则数据库可以用make -p命令打印.
+
+	模式规则: `%`定义对文件名的匹配, 表示任意长度的非空字符串. `%.o : %.c ; <cmd ...>`表明了从所有`.c`文件生成相应的`.o`文件的规则
 - 变量定义
 
 	在Makefile中定义一系列需要的变量, 类似C语言中的宏, 当Makefile执行时, 其中的变量会被扩展到相应的引用位置上.
+
+	使用时使用`$()`或`${}`来引入变量.
+
+	推荐使用`:=`定义变量, 保证引用的变量在前面已定义过.
+
+	`?=`表示未定义时赋值, 否则跳过.
+
+	`+=`表示给变量追加值, 会延用定义该变量时的`:=`或`=`
+
+	目标变量即Makefile的局部变量, 语法为：
+	```
+	<target...>:<variable-assignment>
+	<target...>:override <variable-assignment>
+	```
+	<variable-assignment>可以是前面讲过的各种赋值表达式，如`=`、`:=`、`+=`或是`?=`
+
+	常用的特殊变量有：
+    - $@，表示规则(Rule)中的目标
+    - $<，表示规则中的第一个条件
+    - $?，表示规则中所有比目标新的条件，组成一个列表，以空格分隔
+    - $^，表示规则中的所有条件，组成一个列表，以空格分隔
+
+	```makefile
+	main: main.o stack.o maze.o
+	gcc $^ -o $@
+	# 等价于
+	main: main.o stack.o maze.o
+	gcc main.o stack.o maze.o -o main
+	```
 - 文件指示
 
 	1. 一个Makefile引用另一个Makefile
@@ -69,6 +103,9 @@ Makefile组成:
 
 
 每当target中的command执行完毕后, make会检测它们的返回码, 如果成功则继续执行, 否则中止该target. 在命令前加`-`则会忽略检查返回码, 认为都成功. 命令前加`@`表示不将要执行的命令输出到屏幕. 如果要让上一条命令的结果应用在下一条上, 则它们需要写在一行并用`;`分隔.
+
+### 函数调用
+`$(<function> <args>)`或`${<function> <args>}`
 
 ## FAQ
 ### 了解make时执行了哪些命令

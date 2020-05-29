@@ -1,4 +1,7 @@
 # c
+参考:
+- [Linux C编程一站式学习](https://akaedu.github.io/book/index.html)
+
 特点:
 1. 效率高 : 编译型语言
 1. 灵活度高 : 指针/指针运算
