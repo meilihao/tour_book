@@ -167,7 +167,7 @@ NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nf
 NFS server 关机的时候一点要确保NFS服务关闭，没有客户端处于连接状态！通过showmount -a 可以查看，如果有的话用kill killall pkill 来结束.
 
 ### /etc/exports
-格式：`export host1(options1) host2(options2) host3(options3) ...` from `man exports`
+格式：`export host1(options1) host2(options2) host3(options3) ...` from `man exports#EXAMPLE`
 说明:
 - 输出目录 : NFS系统中需要共享给客户机使用的目录
 - 客户端 : 网络中可以访问这个NFS输出目录的计算机
@@ -569,6 +569,8 @@ mount: can't find nfs in /etc/fstab
 参考:
 - [NFS Mount over a Specific Interface](https://www.redhat.com/archives/fedora-list/2005-September/msg03442.html)
 
+nfs client存在多网卡多ip时, nfs mount使用了非nfs server export中指定的ip去连接nfs server导致权限(ip)不正确被拒绝.
+
 ```bash
 # mount -t nfs -o vers=3,clientaddr=192.160.0.31  192.168.0.141:/mnt/xfs nfs # 报错:`unmatched host`. 192.168.0.121与192.160.0.31是同一台电脑.
 # ### nsf server: 0.141
@@ -720,7 +722,7 @@ smb:
 # echo -e "123456\n123456" | pdbedit -a -t -u writer1
 # gpasswd -a reader1 -g reader
 # gpasswd -a writer1 -g writer
-# setfacl -b -m m::7 -m d:m::7 -m d:u::7 -m d:g::0 -m d:o::0 -m g:reader:5 -m d:g:reader:5   -m g:writer:7 -m d:g:writer:7 /mnt/smb
+# setfacl -b -m m::7 -m d:m::7 -m d:u::7 -m d:g::0 -m d:o::0 -m g:reader:5 -m d:g:reader:5   -m g:writer:7 -m d:g:writer:7 /mnt/smb # `-m m::7 -m d:m::7`避免acl mask影响权限计算, `-m d:u::7 -m d:g::0 -m d:o::0`仅保留所有者的默认权限
 # vim /etc/samba/smb.conf
 [test]
 comment = xxx

@@ -70,7 +70,7 @@ posix acl按以下顺序检查：所有者、命名用户、拥有组或命名�
 - -m ：配置后面的 acl 参数给文件/目录使用，不可与 -x 合用
 - -n : 不重新计算mask. setfacl默认在未明确给出mask时会重新计算acl mask. mask就是ACL的默认的权限掩码
 - -x ：删除后续的 acl 参数，不可与 -m 合用
-- -b ：移除所有的 ACL 配置参数, 包括default.
+- -b ：移除所有的 ACL 配置参数, 包括default, 会递归清除acl.
 - -k ：移除默认的 ACL 参数
 - -R ：递归配置 acl
 - -d ：配置“默认 acl 参数”，**只对目录有效**，在该目录新建的数据会引用此默认值. 它能让我们创建的子文件或者子文件夹继承父文件夹的权限设置.
@@ -90,7 +90,8 @@ posix acl按以下顺序检查：所有者、命名用户、拥有组或命名�
 # setfacl [-R] -m u:zhangy:rw- test    #  添加/修改一个用户权限, `-R`:递归修改
 # setfacl -m u::r-- a # 没有指定用户时即修改文件所有者的权限
 # setfacl -m g:zhangying:r-w test      # 添加/修改一个组权限
-# setfacl -x u:tank test    # 清除tank用户在test文件acl规则
+# setfacl -x u:tank test    # 清除tank用户在test文件的acl规则
+# setfacl -x d:u:tank test # 清除tank用户在test文件的default acl规则
 # setfacl -m d:u:user1:rwx /test <=> setfacl -d -m u:user1:rwx /test # Default ACL是指对于一个目录进行Default ACL设置，并且在此目录下建立的文件都将继承此目录的ACL
 # setfacl --set u::rw,u:testu1:rw,g::r,o::- file1 # --set选项会把原有的ACL项都删除，用新的替代(此时会设置mask)
 # ### 禁用对用户组的自动授予权限
