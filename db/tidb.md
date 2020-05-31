@@ -1,8 +1,9 @@
 # tidb
 
 ## 部署 
-### tiup(**推荐**)
+### [tiup(**推荐**)](https://github.com/pingcap-incubator/tiup-cluster)
 ```
+# tiup cluster list # 查看已部署的集群
 # generate rsa key for root@xxx
 # tiup cluster deploy tidb-test v4.0.0-rc ./topology.yaml --user root -i /home/chen/.ssh/tidb_rsa
 # tiup cluster destroy tidb-test # 它会使用deploy创建的ssh key(可用tiup cluster list获取该key)去destroy
