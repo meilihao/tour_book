@@ -109,6 +109,8 @@ rust语言组成:
 
         如std::mem,std::ptr, std::intrinsic等, 操作内存,指针, 调用编译器固有函数.
     1. 可选和错误处理类型Option和Result, 以及各种迭代器.
+
+    Rust 并没有空值，不过它确实拥有一个可以编码存在或不存在概念的枚举, 这个枚举是 Option<T>，而且它定义于标准库中.
     
 ### 语句和表达式
 rust语法分语句(statement, 要执行的一些操作和产生副作用的表达式)和表达式(expression, 主要用于计算求值).
@@ -539,7 +541,25 @@ rust提供5种复合类型:
 
         let a = IpAddr::V4(127,0,0,1);
         let b : fn(String) -> IpAddr = IpAddr::V6;//  IpAddr::V6是 `fn(String) -> IpAddr` 函数指针.
+
+        enum Message {
+            Quit,
+            Move { x: i32, y: i32 },
+            Write(String),
+            ChangeColor(i32, i32, i32),
+        }
+
+        // 上面那个枚举等同于有四个含有不同类型的成员
+        struct QuitMessage; // 类单元结构体
+        struct MoveMessage {
+            x: i32,
+            y: i32,
+        }
+        struct WriteMessage(String); // 元组结构体
+        struct ChangeColorMessage(i32, i32, i32); // 元组结构体
         ```
+
+        **结构体和枚举还有另一个相似点：可以使用 impl 在枚举上定义方法.
 1. 联合体(Union)
 
 ### 常用集合类型
