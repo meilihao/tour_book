@@ -33,6 +33,8 @@ python解析器:
 1. CPython : 使用C实现的解析器, 最常用的解析器, 通常说的python解析器就是指它.
 1. PyPy : 使用Python实现的解析器
 
+> IPython是一个python交互shell，它比默认的python shell更易于使用. 它支持自动变量完成、自动缩进、bash shell命令，并且内置了许多有用的函数和函数.
+
 ### 切换python版本
 - [update-alternatives](https://blog.csdn.net/White_Idiot/article/details/78240298)
 - alias
@@ -117,6 +119,10 @@ $ pip install --target /usr/lib/python3.7/dist-packages netifaces # 指定pip安
     程序中为了区分主动执行还是被调用，Python引入了变量__name__，当文件是被调用时，__name__的值为模块名，当文件被执行时，__name__为'__main__'.
 1. 没有接口
 1. python一切皆对象. 每个对象都有标识(id), 类型, 值. 因为该机制可以认为所有原生对象(非 C、Cython 等扩展)都在`堆`上分配
+
+    > 内置函数`dir()`可获取对象的所有属性.
+    > 内置`help()`可查看对象属性的方法doc, 比如`help(''.replace)`
+
     ```python
     >>> a = 3 # 内存形式: a(id: 8791360980704. 在栈) 引用了 object(id: 8791360980704, type: int, value: 3. 在堆). 因为object包含类型(因此python是强类型语言), 因此python变量不需要显示声明类型, 可由解析器推导. 事实上,每个对象都很 “重”。即便是简单的整数类型,都有一个标准对象头,保存类型指针和引用计数等信息。如果是变长类型(比如 str、list 等),还会记录数据项长度,然后才是对象状态数据. object大小可用`sys.getsizeof(x)`查看
     >>> a
@@ -164,12 +170,15 @@ python总是通过名字来完成 “引用传递”(pass-by-reference). 名字�
 
 在python进程启动时,gc 默认被打开,并跟踪所有可能造成循环引用的对象。相比引用计数,gc 是一种**延迟回收方式**。只有当内部预设的阈值条件满足时,才会在后台启动。虽然可忽略该条件,强制执行回收,但不建议频繁使用.
 
+> CPython 使用引用计数,PyPy 却使用了标记清理.
+
 ### 编译
-源码须编译成字节码(byte code)指令后,才能交由解释器(interpreter)解释执行. 正常情况下,源码文件在被导入(import)时完成编译. 这也是 Python 性能为人诟病的一个重要原因.
+源码须编译成字节码(byte code, 与平台无关)指令后,才能由解释器(interpreter)解释执行. 正常情况下,源码文件在被导入(import)时完成编译. 这也是 Python 性能为人诟病的一个重要原因.
 
-Python 3 使用专门的 __pycache__ 目录保存字节码缓存文件(.pyc)。这样在程序下次启动时,可避免再次编译,以提升导入速度。标准 pyc 文件大体上由两部分组成。头部存储有编译相关信息,在启动时,可判断源码文件是否被更新,是否需要重新编译。
+Python 3 使用专门的 __pycache__ 目录保存字节码缓存文件(.pyc)。这样在程序下次启动时,可避免再次编译,以提升导入速度。标准 pyc 文件大体上由两部分组成。头部存储有编译相关信息,在启动时,可判断源码文件是否被更新,是否需要重新编译.
 
-> Lib/importlib/text_bootstrap_external.py 文件里的 _code_to_bytecode 代码,可看到字节码头部信息构成
+> Lib/importlib/text_bootstrap_external.py 文件里的 _code_to_bytecode 代码,可看到字节码头部信息构成.
+> 字节码最后由python虚拟机(pvm, python virtual machine)执行.
 
 除内置 compile 函数外,标准库还有编译源码文件的相关模块:
 ```python
@@ -214,6 +223,16 @@ True
 
 格式化: f-strings
 
+Python 3 对运算符做了些调整:
+- 移除 `<>`,统一使用 `!=` 运算符
+- 移除 cmp 函数,自行重载相关运算符方法
+- 除法 `/` 表示 True Division,**总是返回浮点数**
+- 不再支持反引号 repr 操作,调用同名函数
+- 不再支持非数字类型混合比较,可自定义相关方法
+- 不再支持字典相等以外的比较操作
+
+`T if X else F : 当条件 X 为真时,返回 T,否则返回 F. 等同 X ? T : F`
+
 ## 变量和简单数据类型
 变量名只能使用字母,数字和下划线, 且不能以数字开头. 不能使用python保留用于特殊用途的单词(关键字和函数名, 在idle中可用`help() + keywords`查看)作为变量名.
 
@@ -233,7 +252,7 @@ python内置的基本数据类型: 数字(int, float), 序列(str, bytes(只读)
 
 > **python不支持常量**.
 
-> Python 3 将 2.7 里的 int、long 两种整数类型合并为 int,默认采用变长结构, 按需分配内存. 对于较长的数字,为了便于阅读, 可用下划线分隔,且不限分隔位数.
+> Python 3 将 2.7 里的 int、long 两种整数类型合并为 int,默认采用变长结构(支持无穷大), 按需分配内存. 对于较长的数字,为了便于阅读, 可用下划线分隔,且不限分隔位数. 内置函数hex(), oct(), bin()可把一个整数转换成对应进制的字符串, 而int(str,base)可把进制字符串转成一个整数.
 
 > 默认 float 类型存储双精度(double)浮点数, 可通过 `float.hex()` 方法输出实际存储值的十六进制格式字符串. 相比 float 基于硬件的二进制浮点类型,decimal.Decimal 是十进制实现,最高可提供 28 位
 有效精度, 能准确表达十进制数和运算,**不存在二进制近似值问题**.
@@ -276,11 +295,12 @@ Python为反向访问一个列表元素提供了一种特殊语法, 即通过将
 Python根据缩进来判断代码行与前一个代码行的关系.
 
 列表的部分元素——Python称之为切片, 它通过复制来创建.
-创建切片时需指定要使用的第一个元素和最后一个元素的索引.
+创建切片时需指定要使用的第一个元素和最后一个元素的索引. 完整的切片操作由三个参数构成: `start : stop : step`.
 
 > 返回切片时会创建新列表对象,并复制相关指针数据到新的数组, **除部分引用目标相同外,对列表自身的修改(插入、删除等)互不影响**.
 > 编译器将 “+=” 运算符处理成 INPLACE_ADD 操作,也就是修改原数据,而非新建对象, 因此`a = [1, 2];b = a`时`a += [3, 4]`和`a = a + [3, 4]`操作的结果分别是`b为[1, 2, 3, 4]`和`b为[1, 2]`.
 > tuple支持与列表类似的运算符操作,但没有 INPLACE,**总是返回新对象**.
+> 切片索引负值表示从右至左反向步进. 以切片方式进行序列局部赋值,相当于先删除,后插入.
 
 Python将不能修改的值称为不可变的，而不可变的列表被称为元组, 其用圆括号包裹, 想修改元组中的元素时必须给存储元组的变量重新赋值.
 元组作用:
@@ -311,7 +331,26 @@ Python并不要求if-elif结构后面必须有else代码块. 在有些情况下�
 
 > any(iterable) 函数用于判断给定的可迭代参数 iterable 是否全部为 False，则返回 False，如果有一个为 True，则返回 True.
 
+> 函数总是返回一个结果: 即便什么都不做,也会返回 None.
+
+> 在函数内访问变量,会以特定顺序依次查找不同层次作用域(LEGB: locals -> nonlocal(外层函数) -> globals -> builtins)
+
+> 除非调用`locals()`,否则函数执行期间,根本不会创建所谓名字空间字典. 也就是说,其返回的字典是按需延迟创建(by 复制).
+
 for循环是一种遍历列表的有效方式，但在**for循环中不应修改列表**，否则将导致Python难以跟踪其中的元素. 要在遍历列表的同时对其进行修改，可使用while循环.
+
+
+### 迭代器/生成器
+迭代是指重复从对象中获取数据,直至结束. 迭代器有两个基本的方法：iter() 和 next(), 迭代器只能往前不会后退. 而所谓迭代协议,概括起来就是用 __iter__ 方法返回一个实现了 __next__ 方法的迭代器对象.
+
+实现 __iter__ 方法,表示目标为可迭代(iterable)类型. 字符串，列表或元组对象都可用于创建迭代器.
+
+```python
+M=[[1,2,3],[4,5,6],[7,8,9]]                                             
+G=(sum(row) for row in M)                                              
+next(G)                                                                
+6
+```
 
 ### 引用
 list引用:
@@ -868,7 +907,12 @@ Python中，lambda函数也叫匿名函数，及即没有具体名称的函数�
 lambda语法格式：`lambda 变量 : 要执行的语句`, 比如`lambda x : x ** 2`.
 
 ## [推导式](https://blog.csdn.net/yjk13703623757/article/details/79490476)
-推导式comprehensions（又称解析式），是Python的一种独有特性. 推导式是可以从一个数据序列构建另一个新的数据序列的结构体. 共有三种推导式，在Python2和3中都有支持：
+推导式comprehensions（又称解析式），是Python的一种独有特性, 格式: `[输出表达式 数据源迭代 过滤表达式(可选)]`
+
+> 列表推导式更快一点是因为它针对 Python 解释器做了优化.
+
+
+推导式是可以从一个数据序列构建另一个新的数据序列的结构体. 共有三种推导式，在Python2和3中都有支持：
 
 - 列表(list)推导式
 
@@ -900,6 +944,19 @@ lambda语法格式：`lambda 变量 : 要执行的语句`, 比如`lambda x : x *
 ....
 ```
 
+## 性能
+对于 Python 来说,充分利用多核性能的阻碍主要在于 Python 的 全局解释器锁 (GIL). GIL 确保 Python 进程一次只能执行一条指令,无论当前有多少个核心. 该问题可以通过一些方法来避免,比如标准库的 multiprocessing,或 numexpr、Cython 等技术,或分布式计算模型等.
+
+可选的编译器总结
+Cython Shed Skin Numba Pythran PyPy
+成熟度 Y Y _ _ Y
+广泛使用性 Y _ _ _ _
+支持 Numpy Y _ Y Y _
+没有间断的代码改动 _ Y Y Y Y
+需要有 C 的知识 Y _ _ _ _
+支持 OpenMP Y _ Y Y Y
+
+> multiprocessing多线程遇到syscall阻塞时会切换线程使得在GIL存在的情况下, 也有较小的概率提升性能.
 
 ### demo
 ```python
@@ -926,6 +983,10 @@ b'Hll, wrld!'
 >>> _, shares, price, _ = data
 >>> shares
 50
+### 解包操作优先保障没有`*`前缀变量的赋值,所以右值元素不能少于此数量. 另外,星号只能有一个,否则无法界定收集边界. 星号不能单独出现,要么与其他名字一起,要么放入列表或元组内.
+>>> a, *b, c = 1, 2
+>>> a, b, c
+1, [], 2
 ### 
 >>> record = ('ACME', 50, 123.45, (12, 18, 2012))
 >>> name, *_, (*_, year) = record
@@ -1271,7 +1332,7 @@ File -> Invalidate Caches/Restart...
 
 ### Python 函数参数前面一个星号（*）和两个星号（**）的区别
 单星号(*agrs) : 将所有参数以元组(tuple)的形式导入
-星号（**kwargs）: 将参数以字典的形式导入
+双星号（**kwargs）: 将参数以字典的形式导入
 
 ### ImportError: No module named license.LicenseManager
 明明`license.LicenseManager.py`却提示找不到, 因为LicenseManager.py同目录的`__init__.py`被删除了.
@@ -1389,11 +1450,32 @@ print jokes.joke("Irmen")
 
 
 ## [multiprocessing](https://docs.python.org/zh-cn/3/library/multiprocessing.html)
-multiprocessing和multiprocessing.dummy(复制了 multiprocessing 的 API，不过是在 threading 模块之上包装了一层)是Python下两个常用的多进程和多线程模块
+multiprocessing和multiprocessing.dummy(复制了 multiprocessing 的 API，不过是在 threading 模块之上包装了一层)是Python下两个常用的多进程和多线程模块.
 
 > 其中对于多进程，multiprocessing.freeze_support()语句在windows系统上是必须的，这是因为windows的API不包含fork()等函数. 因此当子进程被创建后，会重新执行一次全局变量的初始化, 这可能就会覆盖掉主进程中已经被修改了的值.
 
 > **主进程会等待直到multiprocessing的子进程退出才退出**.
+
+
+multiprocessing的主要组件是:
+- 进程
+
+    一个当前进程的派生(forked)拷贝,创建了一个新的进程标识符,并且任务在操作系统中以一个独立的子进程运行. 可以启动并查询进程的状态并给它提供一个目标方法来运行.
+- 池
+
+    包装了进程或线程. 在一个方便的工作者线程池中共享一块工作并返回聚合的结果.
+- 队列
+    
+    一个先进先出(FIFP)的队列允许多个生产者和消费者.
+- 管理者
+
+    一个单向或双向的在两个进程间的通信渠道
+- ctypes
+
+    允许在进程派生(forked)后,在父子进程间共享原生数据类型(例如,整型数、浮点数和字节数)
+- 同步原语
+
+    锁和信号量在进程间同步控制流
 
 启动多进程(fork):
 ```python
