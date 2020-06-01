@@ -55,7 +55,9 @@ autofs 自动挂载服务: 无论是 Samba 服务还是 NFS 服务，都要把�
 
 > 在没有设置过NFSv4 ACL时，mode other仍然保持other的语义. 设置过NFSv4 ACL后，mode other将变成everyone的语义并保持everyone语义. 强烈建议在使用NFSv4 ACL之后请勿使用mode.
 > 在互操作(NFSv4 ACL和mode)中ACL的everyone和UNIX mode中的other等价，修改mode other会直接修改ACE EVERYONE.
-> 由于POSIX ACL和NFSv4 ACL的语义不完全相同。例如：POSIX ACL继承不区分文件和目录，POSIX ACL的权限只有rwx而NFSv4 ACL更丰富。强烈建议只使用NFSv4 ACL或者只使用POSIX ACL，尽量避免混用。 
+> 由于POSIX ACL和NFSv4 ACL的语义不完全相同。例如：POSIX ACL继承不区分文件和目录，POSIX ACL的权限只有rwx而NFSv4 ACL更丰富。强烈建议只使用NFSv4 ACL或者只使用POSIX ACL，尽量避免混用。
+
+nfs权限模型: `(anonuid, anonuid, ip+rw/ro)`
 
 安装:
 ```
@@ -75,7 +77,7 @@ $ showmount -e 192.168.0.83 # 在 Client 端查看server端(192.168.0.83)共享�
 	- -e : 显示 NFS 服务器的共享列表
 	- -a : 显示本机挂载的文件资源的情况
 	- -v : 显示版本号
-$ sudo mount -t nfs -o vers=4.2 192.168.0.83:/usr/local/mypool/p11 /mnt # 用指定版本的nfs挂载共享, 挂载成功后不能访问请检查nfs server端的权限
+$ sudo mount -t nfs -o vers=4.2 192.168.0.83:/usr/local/mypool/p11 /mnt # 用指定版本的nfs挂载共享
 $ sudo mount -t nfs4 192.168.0.83:/usr/local/mypool/p11 /mnt # 用指定版本的nfs挂载共享
 $ sudo mount -o v4.2 192.168.0.83:/usr/local/mypool/p11 /mnt # 用指定版本的nfs挂载共享
 $ df -h #查看挂载情况
@@ -83,6 +85,8 @@ $ sudo umount /mnt
 $ cat /etc/exports
 /usr/local/files/mypool/share  *(rw,sync,all_squash,anonuid=1037)
 ```
+
+> **挂载成功后不能访问请检查nfs server端的权限. client挂载时挂载点的权限会被覆盖为nfs server export path的权限**
 
 ```bash
 # from [手动挂载NFS文件系统](https://help.aliyun.com/document_detail/90529.html)
