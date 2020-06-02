@@ -117,6 +117,12 @@ delimiter
 - 作为结尾的delimiter后面也不能有任何的字符（包括空格）
 - 作为起始的delimiter前后的空格会被省略掉
 
+```bash
+# cat << __EOF__ | echo "abc"
+__EOF__
+abc
+```
+
 ## 管道
 ```sh
 # echo "linuxprobe" | passwd --stdin root

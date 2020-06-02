@@ -321,6 +321,12 @@
     1. 远端到远端
 
     curl -X POST http://127.0.0.1:5984/_replicate -d '{"source":"http://example.org:5984/albums","target":"http://example.org:5984/albums-replica"}' -H "Content-Type: application/json"
+- 获取couchdb配置信息
+
+    ```sh
+    $ http://localhost:5984/_config
+    $ http://localhost:5984/_config/log
+    ```
 
 ## 设计文档
 设计文档是一类特殊的文档，其ID必须以`_design/`开头. 设计文档的存在是使用CouchDB开发Web应用的基础. 在CouchDB中，一个Web应用是与一个设计文档相对应的, 但一个couchdb数据库允许有多个设计文档.
@@ -456,3 +462,6 @@ $ curl -X GET http://localhost/db/_changes
 ### `emit(doc.phoneNumber, doc.billSeconds);`和`emit([doc.phoneNumber], doc.billSeconds);`的区别
 `emit(doc.phoneNumber, doc.billSeconds)`　：　返回的key是`"1000"`
 `emit([doc.phoneNumber], doc.billSeconds)`:   返回的key是`["1001"]`
+
+### log
+`$ couchdb -c`显示配置位置及加载顺序.
