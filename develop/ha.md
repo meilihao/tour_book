@@ -1,9 +1,41 @@
+# cluster
+cluster是一组协同工作的服务集合, 用来提供比单一服务更稳定, 高效及扩展性的服务平台. 它通常由两个及以上的server组成.
+
+集群特定:
+- 高可用性
+
+    出现服务故障时, 自动从故障节点切换到备用节点(常用做法是漂移vip), 从而提供不间断的服务, 保障业务的持续性.
+- 可扩展性
+
+    动态加入节点, 增强cluster的整体性能
+
+常见ha(high availability cluster)的形式: 双机热备(active/standby), 双机互备, 多机互备等.
+常见lb(load balance cluster): haproxy ,lvs集群, F5 Networks等.
+常见分布式计算集群: hadoop, spark.
+
 # ha
 参考:
 - [pacemaker+corosync/heartbeat对比及资源代理RA脚本](https://www.cnblogs.com/clsblog/p/6202869.html)
 - [<<DRBD权威指南——基于Corosync+Heartbeat技术构建网络RAID>>]
 
 [驱动、开发者和Linux厂商，以及整个开源高可用集群社区，都已经转移到了基于Corosync 2.x+Pacemaker的HA堆栈上](http://www.linux-ha.org/wiki/Site_news), [Heartbeat](http://www.linux-ha.org)已名存实亡.
+
+## ha概念
+- node
+
+    运行心跳进程的一个独立主机(host), 即为节点(node).
+- resource
+
+    一个node可控制的实体, 当该节点发生故障时, 这些资源可被其他node接管, 常见的资源有:
+    - 磁盘, 文件系统
+    - ip
+    - 应用服务
+- event
+
+    cluster中可能发生的事
+- action
+
+    event发生时ha的响应行为, 通常使用脚本来处理.
 
 ## example
 - [ZFS High-Availability NAS](https://github.com/ewwhite/zfs-ha/wiki)
@@ -185,6 +217,135 @@ crm(live)configure# monitor webserver 30s:100s
 crm(live)configure# verify
 crm(live)configure# commit
 ```
+
+# keepalived
+linux下轻量级ha解决方案, 主要通过虚拟路由冗余来实现ha. 与heartbeat相比, 没有其功能强大, 但在某些场景下更简单合适.
+keepalived起初是为LVS设计, 专门监控(根据3~5层的交换机制)集群中各节点的状态, 通过剔除故障节点和加入正常节点来实现ha.
+keepalived支持VRRP(Virtual Router Redundancy Protocol, 虚拟路由器冗余协议, 为了解决静态路由器出现的单点故障).
+
+keepalived运行机制:
+- 网络层
+
+    使用ICMP探测节点状态
+- 传输层
+
+    利用tcp的端口连接和扫描来判断节点状态
+- 应用层
+
+    通常是自定义keepalived来处理.
+
+keepalived配置: `/etc/Keepalived/Keepalived.conf`, 可分为:
+- 全局配置(global configuration)
+- vrrpd配置
+- lvs配置
+
+## vrrp
+将两台及以上的物理路由器虚拟成一个虚拟路由器, 它有一个唯一标识vrid(与一组ip关联), 同一时刻仅有一台物理路由器对外提供服务.
+
+# lb
+## lvs(base kernel)
+参考:
+- [LVS原理篇：LVS简介、结构、四种模式、十种算法](https://blog.csdn.net/lcl_xiaowugui/article/details/81701949)
+
+LVS的模型中有两个角色：
+- 调度器:Director Server，又称为Dispatcher，Balancer
+
+    调度器主要用于接受用户请求
+- 真实主机:Real Server，简称为RS
+
+    用于真正处理用户的请求
+
+将所在角色的IP地址分为以下4种：
+- Director Virtual IP:调度器用于与客户端通信的IP地址，简称为VIP
+- Director IP:调度器用于与RealServer通信的IP地址，简称为DIP
+- Real Server : 后端主机的用于与调度器通信的IP地址，简称为RIP
+- CIP：Client IP，访问客户端的IP地址所
+
+lvs的ip负载均衡是通过ipvs实现的, 具体机制分3种:
+- NAT
+
+    用户请求LVS到达director，director将请求的报文的目的IP改为RIP和将报文的目标端口也改为realserver的相应端口，最后将报文发送到realserver上，realserver将数据返回给director，director再将响应报文的源地址和源端口换成vip和相应端口, 最后把数据发送给用户
+
+    优点:
+    - 支持端口映射
+    - RS可以使用任意操作系统
+    - 节省公有IP地址
+    
+        RIP和DIP都应该使用同一网段私有地址，而且RS的网关要指向DIP. 使用nat另外一个好处就是后端的主机相对比较安全.
+
+    缺点：
+    - 效率低: 请求和响应报文都要经过Director转发;极高负载时，Director可能成为系统瓶颈
+- FULLNAT
+
+
+    FULLNAT模式也不需要DIP和RIP在同一网段
+    FULLNAT和NAT相比的话：会保证RS的回包一定可到达LVS
+    FULLNAT需要更新源IP，所以性能正常比NAT模式下降10%
+- TUN
+
+    基于ip隧道技术.
+    用户请求LVS到达director，director通过IP-TUN技术将请求报文的包封装到一个新的IP包里面，目的IP为VIP(不变)，然后director将报文发送到realserver，realserver基于IP-TUN解析出来包的目的为VIP，检测网卡是否绑定了VIP，绑定了就处理这个包，如果在同一个网段，将请求直接返回给用户，否则通过网关返回给用户；如果没有绑定VIP就直接丢掉这个包
+
+    优点：
+
+    - RIP,VIP,DIP都应该使用公网地址，且RS网关不指向DIP
+    - 只接受进站请求，请求报文经由Director调度，但是响应报文不需经由Director, 解决了LVS-NAT时的问题，减少负载
+
+    缺点：
+    - 不指向Director所以不支持端口映射
+    - RS的OS必须支持隧道功能
+    - 隧道技术会额外花费性能，增大开销, 同时运维麻烦, 一般不用.
+
+- DR
+
+    当Director接收到请求之后，通过调度方法选举出RealServer, 将目标地址的MAC地址改为RealServer的MAC地址. RealServer接受到转发而来的请求，发现目标地址是VIP, RealServer配置在lo接口上, 处理请求之后则使用lo接口上的VIP响应CIP.
+
+    优点:
+    - RIP可以使用私有地址，也可以使用公网地址, 只要求DIP和RIP的地址在同一个网段内.
+    - 请求报文经由Director调度，但是响应报文不经由Director. 性能最高最好, 因此**最常用**.
+    - RS可以使用大多数OS
+
+    缺点：
+    - 不支持端口映射
+    - 不能跨局域网
+
+四种模式的比较:
+- 是否需要VIP和realserver在同一网段
+    
+    DR模式因为只修改包的MAC地址，需要通过ARP广播找到realserver，所以VIP和realserver必须在同一个网段，也就是说DR模式需要先确认这个IP是否只能挂在这个LVS下面；其他模式因为都会修改目的地址为realserver的IP地址，所以不需要在同一个网段内
+- 是否需要在realserver上绑定VIP
+    
+    realserver在收到包之后会判断目的地址是否是自己的IP
+    DR模式的目的地址没有修改，还是VIP，所以需要在realserver上绑定VIP
+    IP TUN模式值是对包重新包装了一层，realserver解析后的包的IP仍然是VIP，所以也需要在realserver上绑定VIP
+- 四种模式的性能比较
+    
+    DR模式、IP TUN模式都是在包进入的时候经过LVS，在包返回的时候直接返回给client；所以二者的性能比NAT高
+    但TUN模式更加复杂，所以性能不如DR
+    FULLNAT模式不仅更换目的IP还更换了源IP，所以性能比NAT下降10%
+    性能比较：DR>TUN>NAT>FULLNAT
+
+LVS的八种调度方法
+- 静态方法:仅依据算法本身进行轮询调度
+
+    - RR:Round Robin,轮调 : 均等地对待每一台服务器，不管服务器上的实际连接数和系统负载
+    - WRR:Weighted RR，加权论调 : 加权，手动让能者多劳
+    - SH:SourceIP Hash : 与目标地址散列调度算法类似，但它是根据源地址散列算法进行静态分配固定的服务器资源. 来自同一个IP地址的请求都将调度到同一个RealServer
+    - DH:Destination Hash : 根据目标 IP 地址通过散列函数将目标 IP 与服务器建立映射关系，出现服务器不可用或负载过高的情况下，发往该目标 IP 的请求会固定发给该服务器. 不管IP，请求特定的东西，都定义到同一个RS上
+
+- 动态方法:根据算法及RS的当前负载状态进行调度
+
+    - LC:least connections(最小链接数) : 链接最少，也就是Overhead最小就调度给谁; 假如都一样，就根据配置的RS自上而下调度
+    - WLC:Weighted Least Connection (加权最小连接数) : 这个是LVS的默认算法. 调度器可以自动问询真实服务器的负载情况，并动态调整权值
+    - SED:Shortest Expection Delay(最小期望延迟) : WLC算法的改进. 不考虑非活动链接，谁的权重大，优先选择权重大的服务器来接收请求，但权重大的机器会比较忙
+    - NQ:Never Queue : SED算法的改进
+    - LBLC:Locality-Based Least-Connection,基于局部的的LC算法
+
+        请求数据包的目标 IP 地址的一种调度算法，该算法先根据请求的目标 IP 地址寻找最近的该目标 IP 地址所有使用的服务器，如果这台服务器依然可用，并且有能力处理该请求，调度器会尽量选择相同的服务器，否则会继续选择其它可行的服务器
+    - lblcr, 复杂的基于局部性最少的连接算法 : 记录的不是要给目标 IP 与一台服务器之间的连接记录，它会维护一个目标 IP 到一组服务器之间的映射关系，防止单点服务器负载过高
+
+## haproxy
+基于应用实现的软负载均衡, 基于tcp和http.
 
 ## FAQ
 ### Cannot use default route w/o netmask
