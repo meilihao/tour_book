@@ -1411,6 +1411,9 @@ subprocess.Popen默认使用sh(dash)执行命令, 而dash不支持`echo -e`.
 
 解决方法: 换用bash, 即`Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True, executable='/bin/bash')`
 
+### subprocess.Popen(cmd)卡住
+使用`Popen(cmd, stdout=PIPE, stderr=PIPE)`
+
 ### [`if not someobj`和`if someobj == None`的过程](https://stackoverflow.com/questions/100732/why-is-if-not-someobj-better-than-if-someobj-none-in-python)
 `if not someobj`:
 1. If the object has a __nonzero__ special method (as do numeric built-ins, int and float), it calls this method. It must either return a bool value which is then directly used, or an int value that is considered False if equal to zero.
