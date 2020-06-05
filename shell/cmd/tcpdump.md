@@ -39,7 +39,7 @@ tcpdump停止捕获数据包时:
     # tcpdump -i lo host 127.0.0.1 and port 8210  -w out.cap # 捕获发送到127.0.0.1:8210的数据
     # tcpdump host 210.27.48.1 and / (210.27.48.2 or 210.27.48.3 /) # 截获主机210.27.48.1 和主机210.27.48.2 或210.27.48.3的通信
     # tcpdump ip host 210.27.48.1 and ! 210.27.48.2 # 获取主机210.27.48.1除了和主机210.27.48.2之外所有主机通信的ip包
-    # tcpdump –i eth0 host hostname and dst port 80  目的端口是80 # 列出送到80端口的数据包
+    # tcpdump -i eth0 host hostname and dst port 80  目的端口是80 # 列出送到80端口的数据包
     # tcpdump -i eth1 src host 211.167.237.199 and dst port 1467 # 211.167.237.199通过ssh源端口连接到221.216.165.189的1467端口
     # tcpdump -e -i ens160 arp # 截获arp
     # tcpdump -vv -eqtnni ens160 arp # 截获收到的arp
