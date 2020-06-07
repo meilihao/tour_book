@@ -168,7 +168,7 @@ a:link::after { content: " (" attr(href) ") "; }
 | 选择器 | 含义 |
 |E[att] 	    |匹配所有具有att属性的E元素，不考虑它的值.（注意：E在此处可以省略，比如"[cheacked]",以下相同）|
 |E[att=val]   |匹配所有att属性等于"val"的E元素|
-|`E[att|=val]`|匹配所有att属性以"val"或"val-"开头的E元素，主要用于lang属性，比如"en"、"en-us"、"en-gb"等等,**不推荐,用`E[att^="val"]`代替**|
+|`E[att|=val]`|匹配所有att属性为"val"或"val-"开头的E元素，主要用于lang属性，比如"en"、"en-us"、"en-gb"等等,**不推荐,用`E[att^="val"]`代替**|
 |E[att~=val]  |匹配所有att属性具有多个空格分隔的值,且其中一个值等于"val"的E元素|
 |E[att*="val"]|属性att的值包含"val"字符串的元素|
 |E[att^="val"]|属性att的值以"val"开头的元素,可用于替换E[att|="val"]|

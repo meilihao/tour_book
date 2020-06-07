@@ -94,3 +94,8 @@ $ gcc -v
 $ gcc -c -Q -O${x} --help=optimizers // 查看 Os/2/3 不同级别优化具体选项
 $ gcc -c -Q -march=native  --help=optimizers // 查看目标架构为native 及当前根据cpuid自己选择合适优化选项的具体参数
 ```
+
+### [ubuntu安装gcc-10](https://launchpad.net/~ubuntu-toolchain-r/+archive/ubuntu/ppa)
+```bash
+# sudo apt install gcc-10
+```
