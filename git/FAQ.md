@@ -189,3 +189,8 @@ origin的其他分支是基于某个历史commit开始的, 因为使用了`--dep
 ```bash
 git diff b446759c1be2fa8a2c4532ac2bffb4b0449994bc HEAD -- ./xxx/* # 按照path过滤
 ```
+
+### git查看commit提交记录详情
+git log : 查看所有的commit提交记录
+git show [commit_id] : 查看最新或指定的commit
+git show commitId fileName # 查看某次commit中具体某个文件的修改

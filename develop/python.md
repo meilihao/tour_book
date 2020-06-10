@@ -444,7 +444,7 @@ import语句允许在当前运行的程序文件中使用模块中的代码.
 
 module搜索顺序:
 - 内建模块 : 除了sys.builtin_module_names 列出的内置模块之外，还会加载其他一些标准库，都存放在sys.modules字典中
-- sys.path
+- sys.path : sys.path[0]为空字符串, 表示启动python解析器时的当前目录.
 - 环境变量PYTHONPATH
 
 > 路径应为**module的上级目录**.
@@ -633,7 +633,7 @@ my_tesla.battery.get_range()
 
 从一个模块中导入多个类:`from car import Car, ElectricCar `.
 导入整个模块:` import car`
-导入模块中的所有类:`from module_name import * `, 不推荐, 原因和导入module相同.
+导入模块中的所有类:`from module_name import *`, 不推荐, 原因和导入module相同. 此时以`_`开头的全局变量不会被导入, 但可用明确指定名称的方式来导入, 比如`from module_name import _x`.
 
 属性和方法默认是可直接访问的, 在属性或方法名前面添加两个下划线`__`, 成员私有化的作用，确保外部代码不能随意修改对象内部的状态，增加了代码的安全性.
 ```python
@@ -1424,6 +1424,28 @@ subprocess.Popen默认使用sh(dash)执行命令, 而dash不支持`echo -e`.
 1. If the object has a __eq__ method, it is called, and the return value is then converted to a boolvalue and used to determine the outcome of the if.
 1. Otherwise, if the object has a __cmp__ method, it is called. This function must return an int indicating the order of the two object (-1 if self < other, 0 if self == other, +1 if self > other).
 1. Otherwise, the object are compared for identity (ie. they are reference to the same object, as can be tested by the is operator).
+
+### 将log同时输出到console和日志文件
+```python
+import logging
+
+logger = logging.getLogger()
+logger.setLevel('DEBUG') # 从哪个level开始输出
+BASIC_FORMAT = "%(asctime)s:%(levelname)s:%(message)s"
+DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
+formatter = logging.Formatter(BASIC_FORMAT, DATE_FORMAT)
+chlr = logging.StreamHandler() # 输出到控制台的handler
+chlr.setFormatter(formatter)
+chlr.setLevel('INFO')  # 也可以不设置，不设置就默认用logger的level
+fhlr = logging.FileHandler('example.log') # 输出到文件的handler
+fhlr.setFormatter(formatter)
+logger.addHandler(chlr)
+logger.addHandler(fhlr)
+logger.info('this is info')
+logger.debug('this is debug')
+```
+
+log color可用coloredlogs.
 
 ### pep8
 #### W291 trailing whitespace

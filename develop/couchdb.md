@@ -464,4 +464,6 @@ $ curl -X GET http://localhost/db/_changes
 `emit([doc.phoneNumber], doc.billSeconds)`:   返回的key是`["1001"]`
 
 ### log
-`$ couchdb -c`显示配置位置及加载顺序.
+`$ couchdb -c`显示配置位置及加载顺序, 再从配置中找到log的位置.
+
+couchdb log中不含request url, 但可在`journalctl`中看到该url.

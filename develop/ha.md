@@ -507,6 +507,9 @@ pcs集群创建步骤:
 ```bash
 # crm_attribute --name maintenance-mode --query --type crm_config [--quiet] # 属性查询
 scope=crm_config  name=maintenance-mode value=false
+# crm_failcount --resource OS-1401dc36-node1-ha-flv --node OS-1401dc36-node1 --quiet # 管理记录每个资源的故障计数的计数器
+# crm_resource --list-raw # 显示资源
+# crm_resource --locate --resource OS-1401dc36-node1-ha-flv # 显示资源所在node
 ``` 
 
 ### 防​止​资​源​在​节​点​恢​复​后​移​动​

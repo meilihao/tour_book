@@ -19,3 +19,4 @@
 
 ## 工具
 - [linux命令查询](https://wangchujiang.com/linux-command/)
+- [log color - ANSI escape code](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors)

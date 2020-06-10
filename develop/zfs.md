@@ -381,3 +381,5 @@ zfs 0.8.1 rename后`/dev/zvol/{datapath}`会跟着变化, 且mkfs正常.
 
 	- z3 : `pip install z3`,  Z3备份与恢复的基本原理是围绕zfs send和zfs receive的管道来实现的.
 	- zrepl
+### pool is busy
+`fuser -vm /dev/zd640`
