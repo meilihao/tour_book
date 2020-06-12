@@ -1339,118 +1339,6 @@ with open(filename) as file_object:
 print(numbers)
 ```
 
-## FAQ
-### PyCharm 设置和更换 Python 版本
-通过`Settings -> Project:xxx -> Project Interpreter`为每个项目选择指定的默认编译器版本. 没有时可从系统环境导入(前提是系统已安装该版本的python), 步骤:
-    1. 选择`Project Interpreter`列表框右侧`设置`图标中的添加按钮
-    1. 选择tab `System Interpreter`, 选择指定版本即可
-### pycharm 导入模块时提示`unresolved reference`
-本质均是修改环境变量PYTHONPATH(需精确到package的上级路径).
-
-共2种方法:
-1. File->setting->Project:xxx->Project Interpreter, 选择相应的环境, 再点击后面的图标选择"show all", 选中对应的环境, 再点击右侧工具栏中的"树形"图标, 追加需导入module的上级目录的路径即可(**推荐**).
-1. 简单项目只需将需导入module的上级目录的路径设为`source`即可, 具体方法: 找到该目录, 右键选中`Mark Directory as` -> "Sources Root".
-### refresh import after pip install in pycharm
-File -> Invalidate Caches/Restart...
-### `pip的pip.conf`和`pypirc`的区别
-`.pypirc`是多个工具使用的文件标准，但不是由pip使用的. 例如，easy_install工具reads that file和twine一样, 它包含在**发布包**时如何访问特定pypi索引服务器的配置. 因此如果不发布包，则不需要.pypirc文件, 即不能使用它为pip配置索引服务器.
-但`pip.conf`仅由pip工具使用，**pip从不发布包，而是从中下载包**. 因此，它从不查看.pypirc文件.
-
-对于--index-url和--index开关，它们用于不同的pip命令.
---index-url是处理安装包的几个pip命令中的一个通用开关（pip install，pip download，pip list，和pip wheel），它是一组交换机的一部分（连同--extra-index-url，--no-index，--find-links和--process-dependency-links和一些不推荐的开关），它们一起配置包发现如何工作. url必须指向PEP 503 Simple Repository API位置，默认为https://pypi.org/simple.
---index仅由pip search使用；它只需要这一条信息. 它是单独命名的，因为它应该指向公共搜索Web界面，而不是简单的存储库！对于https://pypi.org，这是https://pypi.org/pypi.
-###  SyntaxError: Missing parentheses in call to 'exec'
-`sudo python -m pip install Pyro`报错.  Pyro是python2的.
-
-### Python 函数参数前面一个星号（*）和两个星号（**）的区别
-单星号(*agrs) : 将所有参数以元组(tuple)的形式导入
-双星号（**kwargs）: 将参数以字典的形式导入
-
-### ImportError: No module named license.LicenseManager
-明明`license.LicenseManager.py`却提示找不到, 因为LicenseManager.py同目录的`__init__.py`被删除了.
-
-### ImportError: No module named Cython.Build
-
-### 编译成`.so`的源py文件被修改并重启应用后代码未生效
-应先删除`.so`, 否则应用还是用旧的`.so`代码来运行
-
-### 被调函数输出的日志信息(by logging)中的函数名和行数都是其装饰器函数的信息
-原先代码被编译成了so, 源码更新后, 同名的`.so`未删除导致.
-
-解决方法: 删除同名的`.so`
-
-> 日志与代码无法对应, 根源在于运行中的代码不是最新代码, 检查看看是否有旧进程, `so`等在跑, 或更新错环境了等等.
-
-### TypeError: Class advice impossible in Python3.  Use the @implementer class decorator instead.
-python3使用`from zope.interface import implementer`, 而python2.7使用`from zope.interface import implements`
-
-### [Python 中如何将字节 bytes 转换为整数 int](https://www.delftstack.com/zh/howto/python/how-to-convert-bytes-to-integers/)
-参考:
-- [Python中struct.pack()和struct.unpack()用法](https://cloud.tencent.com/developer/article/1406350)
-
-python2.7:
-```python
-import struct
-
-# native byteorder
-buffer = struct.pack("ihb", 1, 2, 3) # "ihb"表示有三个成员, 分别指明它们的编码方式
-print(repr(buffer))
-'''
-b'\x01\x00\x00\x00\x02\x00\x03'
-'''
-print(struct.unpack("ihb", buffer))
-'''
-(1, 2, 3)
-'''
-```
-
-python3的: `int.from_bytes() `
-
-### subprocess.Popen执行`echo -e "123456\n123456" | pdbedit -a -t -u chen`报错, 未能从stdin读入密码
-subprocess.Popen默认使用sh(dash)执行命令, 而dash不支持`echo -e`.
-
-解决方法: 换用bash, 即`Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True, executable='/bin/bash')`
-
-### subprocess.Popen(cmd)卡住
-使用`Popen(cmd, stdout=PIPE, stderr=PIPE)`
-
-### [`if not someobj`和`if someobj == None`的过程](https://stackoverflow.com/questions/100732/why-is-if-not-someobj-better-than-if-someobj-none-in-python)
-`if not someobj`:
-1. If the object has a __nonzero__ special method (as do numeric built-ins, int and float), it calls this method. It must either return a bool value which is then directly used, or an int value that is considered False if equal to zero.
-1. Otherwise, if the object has a __len__ special method (as do container built-ins, list, dict, set, tuple, ...), it calls this method, considering a container False if it is empty (length is zero).
-1. Otherwise, the object is considered True unless it is None in which case, it is considered False.
-
-`if someobj == None`:
-1. If the object has a __eq__ method, it is called, and the return value is then converted to a boolvalue and used to determine the outcome of the if.
-1. Otherwise, if the object has a __cmp__ method, it is called. This function must return an int indicating the order of the two object (-1 if self < other, 0 if self == other, +1 if self > other).
-1. Otherwise, the object are compared for identity (ie. they are reference to the same object, as can be tested by the is operator).
-
-### 将log同时输出到console和日志文件
-```python
-import logging
-
-logger = logging.getLogger()
-logger.setLevel('DEBUG') # 从哪个level开始输出
-BASIC_FORMAT = "%(asctime)s:%(levelname)s:%(message)s"
-DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
-formatter = logging.Formatter(BASIC_FORMAT, DATE_FORMAT)
-chlr = logging.StreamHandler() # 输出到控制台的handler
-chlr.setFormatter(formatter)
-chlr.setLevel('INFO')  # 也可以不设置，不设置就默认用logger的level
-fhlr = logging.FileHandler('example.log') # 输出到文件的handler
-fhlr.setFormatter(formatter)
-logger.addHandler(chlr)
-logger.addHandler(fhlr)
-logger.info('this is info')
-logger.debug('this is debug')
-```
-
-log color可用coloredlogs.
-
-### pep8
-#### W291 trailing whitespace
-行尾有多余的空格
-
 ## setup.py
 setuptools 是一个优秀的，可靠的 Pthon 包安装与分发工具.
 
@@ -1648,6 +1536,47 @@ if __name__ == '__main__':
     # time.sleep(2)
     # p.terminate()     # 立刻关闭进程池
     p.join()
+```
+
+### threading
+使用方法:
+1. 使用Thread类
+```python
+# 导入Python标准库中的Thread模块 
+from threading import Thread 
+# 创建一个线程
+# function_name: 需要线程去执行的方法名
+# args: 线程执行方法接收的参数，该属性是一个元组，如果只有一个参数也需要在末尾加逗号
+mthread = threading.Thread(target=function_name, args=(function_parameter1, function_parameterN)) 
+# 启动刚刚创建的线程 
+mthread .start()
+```
+
+1. 重新写一个类，继承threading.Thread
+```python
+# 重写了父类threading.Thread的run()方法，其他方法（除了构造函数)都不应在子类中被重写. 使用线程的时候生成一个子线程类的对象，然后对象调用start()方法就可以运行线程
+import threading, time
+class MyThread(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+    def run(self):
+        global n, lock
+        time.sleep(1)
+        if lock.acquire():
+            print n , self.name
+            n += 1
+            lock.release()
+if "__main__" == __name__:
+    n = 1
+    ThreadList = []
+    lock = threading.Lock()
+    for i in range(1, 200):
+        t = MyThread()
+        ThreadList.append(t)
+    for t in ThreadList:
+        t.start() # 会执行run()
+    for t in ThreadList:
+        t.join() # 线程等待，我们的主线程不会等待子线程执行完毕再结束自身. 可以使用Thread类的join()方法来子线程执行完毕以后，主线程再关闭
 ```
 
 ### Manager
@@ -1851,3 +1780,115 @@ reactor.run()
 # 1. GuardedResource.getChild()
 # 1. /usr/local/lib/python3.8/dist-packages/twisted/web/resource.py#Resource.render # 按照Resource的具体Method进行处理
 # 1. GuardedResource.render_${Method}()/render()
+
+## FAQ
+### PyCharm 设置和更换 Python 版本
+通过`Settings -> Project:xxx -> Project Interpreter`为每个项目选择指定的默认编译器版本. 没有时可从系统环境导入(前提是系统已安装该版本的python), 步骤:
+    1. 选择`Project Interpreter`列表框右侧`设置`图标中的添加按钮
+    1. 选择tab `System Interpreter`, 选择指定版本即可
+### pycharm 导入模块时提示`unresolved reference`
+本质均是修改环境变量PYTHONPATH(需精确到package的上级路径).
+
+共2种方法:
+1. File->setting->Project:xxx->Project Interpreter, 选择相应的环境, 再点击后面的图标选择"show all", 选中对应的环境, 再点击右侧工具栏中的"树形"图标, 追加需导入module的上级目录的路径即可(**推荐**).
+1. 简单项目只需将需导入module的上级目录的路径设为`source`即可, 具体方法: 找到该目录, 右键选中`Mark Directory as` -> "Sources Root".
+### refresh import after pip install in pycharm
+File -> Invalidate Caches/Restart...
+### `pip的pip.conf`和`pypirc`的区别
+`.pypirc`是多个工具使用的文件标准，但不是由pip使用的. 例如，easy_install工具reads that file和twine一样, 它包含在**发布包**时如何访问特定pypi索引服务器的配置. 因此如果不发布包，则不需要.pypirc文件, 即不能使用它为pip配置索引服务器.
+但`pip.conf`仅由pip工具使用，**pip从不发布包，而是从中下载包**. 因此，它从不查看.pypirc文件.
+
+对于--index-url和--index开关，它们用于不同的pip命令.
+--index-url是处理安装包的几个pip命令中的一个通用开关（pip install，pip download，pip list，和pip wheel），它是一组交换机的一部分（连同--extra-index-url，--no-index，--find-links和--process-dependency-links和一些不推荐的开关），它们一起配置包发现如何工作. url必须指向PEP 503 Simple Repository API位置，默认为https://pypi.org/simple.
+--index仅由pip search使用；它只需要这一条信息. 它是单独命名的，因为它应该指向公共搜索Web界面，而不是简单的存储库！对于https://pypi.org，这是https://pypi.org/pypi.
+###  SyntaxError: Missing parentheses in call to 'exec'
+`sudo python -m pip install Pyro`报错.  Pyro是python2的.
+
+### Python 函数参数前面一个星号（*）和两个星号（**）的区别
+单星号(*agrs) : 将所有参数以元组(tuple)的形式导入
+双星号（**kwargs）: 将参数以字典的形式导入
+
+### ImportError: No module named license.LicenseManager
+明明`license.LicenseManager.py`却提示找不到, 因为LicenseManager.py同目录的`__init__.py`被删除了.
+
+### ImportError: No module named Cython.Build
+
+### 编译成`.so`的源py文件被修改并重启应用后代码未生效
+应先删除`.so`, 否则应用还是用旧的`.so`代码来运行
+
+### 被调函数输出的日志信息(by logging)中的函数名和行数都是其装饰器函数的信息
+原先代码被编译成了so, 源码更新后, 同名的`.so`未删除导致.
+
+解决方法: 删除同名的`.so`
+
+> 日志与代码无法对应, 根源在于运行中的代码不是最新代码, 检查看看是否有旧进程, `so`等在跑, 或更新错环境了等等.
+
+### TypeError: Class advice impossible in Python3.  Use the @implementer class decorator instead.
+python3使用`from zope.interface import implementer`, 而python2.7使用`from zope.interface import implements`
+
+### [Python 中如何将字节 bytes 转换为整数 int](https://www.delftstack.com/zh/howto/python/how-to-convert-bytes-to-integers/)
+参考:
+- [Python中struct.pack()和struct.unpack()用法](https://cloud.tencent.com/developer/article/1406350)
+
+python2.7:
+```python
+import struct
+
+# native byteorder
+buffer = struct.pack("ihb", 1, 2, 3) # "ihb"表示有三个成员, 分别指明它们的编码方式
+print(repr(buffer))
+'''
+b'\x01\x00\x00\x00\x02\x00\x03'
+'''
+print(struct.unpack("ihb", buffer))
+'''
+(1, 2, 3)
+'''
+```
+
+python3的: `int.from_bytes() `
+
+### subprocess.Popen执行`echo -e "123456\n123456" | pdbedit -a -t -u chen`报错, 未能从stdin读入密码
+subprocess.Popen默认使用sh(dash)执行命令, 而dash不支持`echo -e`.
+
+解决方法: 换用bash, 即`Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True, executable='/bin/bash')`
+
+### subprocess.Popen(cmd)卡住
+使用`Popen(cmd, stdout=PIPE, stderr=PIPE)`
+
+### [`if not someobj`和`if someobj == None`的过程](https://stackoverflow.com/questions/100732/why-is-if-not-someobj-better-than-if-someobj-none-in-python)
+`if not someobj`:
+1. If the object has a __nonzero__ special method (as do numeric built-ins, int and float), it calls this method. It must either return a bool value which is then directly used, or an int value that is considered False if equal to zero.
+1. Otherwise, if the object has a __len__ special method (as do container built-ins, list, dict, set, tuple, ...), it calls this method, considering a container False if it is empty (length is zero).
+1. Otherwise, the object is considered True unless it is None in which case, it is considered False.
+
+`if someobj == None`:
+1. If the object has a __eq__ method, it is called, and the return value is then converted to a boolvalue and used to determine the outcome of the if.
+1. Otherwise, if the object has a __cmp__ method, it is called. This function must return an int indicating the order of the two object (-1 if self < other, 0 if self == other, +1 if self > other).
+1. Otherwise, the object are compared for identity (ie. they are reference to the same object, as can be tested by the is operator).
+
+### 将log同时输出到console和日志文件
+```python
+import logging
+
+logger = logging.getLogger()
+logger.setLevel('DEBUG') # 从哪个level开始输出
+BASIC_FORMAT = "%(asctime)s:%(levelname)s:%(message)s"
+DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
+formatter = logging.Formatter(BASIC_FORMAT, DATE_FORMAT)
+chlr = logging.StreamHandler() # 输出到控制台的handler
+chlr.setFormatter(formatter)
+chlr.setLevel('INFO')  # 也可以不设置，不设置就默认用logger的level
+fhlr = logging.FileHandler('example.log') # 输出到文件的handler
+fhlr.setFormatter(formatter)
+logger.addHandler(chlr)
+logger.addHandler(fhlr)
+logger.info('this is info')
+logger.debug('this is debug')
+```
+
+log color可用coloredlogs.
+
+### pep8
+#### W291 trailing whitespace
+行尾有多余的空格

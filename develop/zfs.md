@@ -252,7 +252,7 @@ zfs send 将文件系统的快照写入stdout，然后流式传送到文件或�
 # 创建 snapshot 然后 save 到文件
 $ sudo zfs snapshot -r mypool/projects@snap2
 $ sudo zfs send mypool/projects@snap2 > ~/projects-snap.zfs  # `-c`使用压缩(如果mypool/projects是活动的则必须使用), `-n`表示模拟send, 实际不产生数据流, `-P`表示生成流的信息, 比如全量/增量, 数据流大小.`-v`: 向(stderr)发送流的详细信息, 包括每秒传输多少.
-$ sudo zfs receive -F mypool/projects-copy < ~/projects-snap.zfs # 恢复,此时目标fs必须存在. `-F`表示(此时目标必须没有快照)忽略目标fs的改动(mypool/projects-copy), 全量的话是直接覆盖原有fs, 增量的话是回滚到该增量快照的起点后再应用增量. `-d`: (此时目标fs必须存在)去掉原快照名称中的pool name,使用目标fs name+剩余名称作为新名称.
+$ sudo zfs receive -F mypool/projects-copy < ~/projects-snap.zfs # 恢复,此时目标dataset必须存在. `-F`表示(此时目标必须没有快照)忽略目标dataset的改动(mypool/projects-copy), 全量的话是直接覆盖原有dataset, 增量的话是回滚到该增量快照的起点后再应用增量. `-d`: (此时目标dataset必须存在)去掉原快照名称中的pool name,使用目标dataset name+剩余名称作为新名称.
 $ sudo zfs send -i @old_snap1  ool/dana@new_snap2 # `-i`增量发送,`-I`将一组增量快照合并为一个快照,`-R`表示复制 zfs 文件系统和其后代.
 $ sudo zfs send pool/dana@snap1 | ssh system2 zfs recv pool/dana
 $ zfs send ... | gzip | <network> |   gunzip | zfs recv otherpool/new-f # 中间可使用压缩, 或其他更快的压缩, 比如lz4.
@@ -383,3 +383,22 @@ zfs 0.8.1 rename后`/dev/zvol/{datapath}`会跟着变化, 且mkfs正常.
 	- zrepl
 ### pool is busy
 `fuser -vm /dev/zd640`
+
+### zfs 类clone 无法挂载
+`XFS (zd32): Filesystem has duplicate UUID adf19c69-ebc4-4622-97e2-1ab899f8f5c3 - can't mount` from `syslog`.
+
+操作步骤:
+1. 创建volume, 格式化为xfs
+1. 写入数据, 再执行sync(保证数据落盘)
+
+	不用fsync, 是因为fsync不是递归的, 不能确保指定路径的子文件全部落盘.
+1. 创建volume2, snap, zfs send/receive volume到volume2
+1. mount volume2报错
+
+> 此时使用`mount -o rw,nouuid /dev/zd64  /mnt`可以成功
+
+解决方法:
+```bash
+# xfs_repair -L /dev/zd64
+# xfs_admin -U generate /dev/zd64
+```

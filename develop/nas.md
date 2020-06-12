@@ -327,7 +327,8 @@ SMB 协议版本:
 	guest only = yes # 只允许用guest帐号访问
 	public = yes # 是否允许匿名访问, 即是否"所有人可见", 这个开关有时候也叫guest ok，所以有的配置文件中出现guest ok = yes其实和public = yes是一样的
 	invalid users = root # 设定不允许访问此共享资源的用户或组
-    sync always = no # 写操作后是否立即进行sync 
+    sync always = no # 写操作后是否立即进行sync
+    strict sync = yes
 	```
 
 	在smb.conf中<section header>中有三个特殊的NAME，分别是global、homes和printers:
