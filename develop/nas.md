@@ -66,7 +66,7 @@ $ sudo apt install nfs-common # Install NFS client
 $ sudo yum install nfs-utils # Install NFS client
 $ sudo systemctl status nfs-kernel-server
 $ systemctl start nfs-server # from centos7, 启动nfs
-$ sudo cat /proc/fs/nfsd/versions # 查看nfs server支持的nfs protocol version, nfs服务需先启动
+$ sudo cat /proc/fs/nfsd/versions # 查看nfs server支持的nfs protocol version, **nfs服务需先启动**
 $ nfsstat --server # nfs server status
 $ nfsstat -s # server使用的nfs version
 $ nfsstat -c # client使用的nfs version
@@ -140,6 +140,8 @@ NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nf
 　　-r 重新读取/etc/exports 中的信息 ，并同步更新/var/lib/nfs/xtab
 　　-u 卸载单一目录（和-a一起使用为卸载所有/etc/exports文件中的目录）
 　　-v 输出详细信息
+
+	> exportfs -ra # 在nfsd未启动时不报错, 因此佐证了它显示导出信息时仅从配置中读取.
 
 具体例子:
 		 # exportfs # 默认输出当前已导出文件系统的列表
@@ -328,7 +330,7 @@ SMB 协议版本:
 	public = yes # 是否允许匿名访问, 即是否"所有人可见", 这个开关有时候也叫guest ok，所以有的配置文件中出现guest ok = yes其实和public = yes是一样的
 	invalid users = root # 设定不允许访问此共享资源的用户或组
     sync always = no # 写操作后是否立即进行sync
-    strict sync = yes
+    # strict sync = yes, 不常用, 相关资料:[sync always, strict sync, cache question](https://lists.samba.org/archive/samba/2008-September/143647.html)
 	```
 
 	在smb.conf中<section header>中有三个特殊的NAME，分别是global、homes和printers:
@@ -654,7 +656,16 @@ rpcdebug选项:
 
 > 将nfsd日志输入syslog: `RPCNFSDOPTS="-d -s"`
 
+### mount.nfs: requested NFS version or transport protocol is not supported
+情况:
+1. mount nfs version不正确, 需指定version, 比如`mount -t nfs  -o nfsvers=3`
+1. nfsd未启动
+
 ### zfs xfs nas
+**推荐使用zfs fs, 其次ext4, 不推荐xfs**
+
+不推荐xfs原因: [xfs nas卷回滚/快照/克隆/复制等操作后挂载新/原卷会碰到错误"duplicate UUID xxx - can't mount"](zfs.md)
+
 env: 5.3.0-26-generic/4.4
 
 > 在zfs fs (on 0.7.x)上直接使用acl容易出现莫名奇妙的问题, 且[zfs 还未支持NFSv4 ACL](https://github.com/openzfs/zfs/pull/9709). 当前思路是使用zfs vol+格式化作为磁盘, 在其上再设置nas.
@@ -740,6 +751,7 @@ write list = @writer
 
 ### nas 扩容
 ```
+# --- xfs 在线
 # zfs create  -V 1gb d57a9bc700b94d7b854e3cbe70957afa/vol_test
 # mkfs -t xfs /dev/zvol/d57a9bc700b94d7b854e3cbe70957afa/vol_test
 # mount  /dev/zvol/d57a9bc700b94d7b854e3cbe70957afa/vol_test /mnt/nfs
@@ -761,4 +773,6 @@ d57a9bc700b94d7b854e3cbe70957afa/vol_test  reservation  none     default
 data blocks changed from 262128 to 524256
 # df -h
 /dev/zd16                         2.0G   33M  2.0G   2% /mnt/nfs
+# --- ext4 在线
+resize2fs /dev/zvol/d57a9bc700b94d7b854e3cbe70957afa/vol_test_ext4 # 非挂载扩容时需先执行`e2fsck -f /dev/zvol/d57a9bc700b94d7b854e3cbe70957afa/vol_test_ext4`否则resize2fs执行时会报错, **推荐挂载时扩容**
 ```

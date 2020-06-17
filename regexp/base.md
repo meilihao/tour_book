@@ -1,4 +1,4 @@
-## 正则表达式
+# 正则表达式
 
 [正则表达式](https://msdn.microsoft.com/zh-cn/library/ae5bf541(v=vs.100).aspx)是一种文本模式，包括普通字符(例如，a 到 z 之间的字母)和特殊字符(称为"元字符").
 
@@ -89,7 +89,7 @@
 - `\f` : 换页符
 - `\n` : 换行符
 - `\r` : 回车符
-- `\s` : 任何空白字符,其中包括空格、制表符和换页符,等同于`[\f\n\r\t\v]`;
+- `\s` : 任何空白字符,其中包括空格、制表符和换页符,等同于`[ \f\n\r\t\v]`;
 - `\S` : 任何非空白字符
 - `\t` : Tab 字符
 - `\v` : 垂直制表符
@@ -151,7 +151,7 @@ pattern在匹配时，正则引擎会将小括号 "()" 包含的表达式所匹�
 - [[:lower:]]		lowercase letters (all letters when 'ignorecase' is used)
 - [[:print:]]		printable characters including space
 - [[:punct:]]		punctuation characters
-- [[:space:]]		whitespace characters
+- [[:space:]]		whitespace characters, 即`[:space:]` = ` \t\r\n\v\f` = `\s`
 - [[:upper:]]		uppercase letters (all letters when 'ignorecase' is used)
 - [[:xdigit:]]		hexadecimal digits
 - [[:return:]]		the <CR> character

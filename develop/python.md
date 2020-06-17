@@ -1549,7 +1549,7 @@ from threading import Thread
 # args: 线程执行方法接收的参数，该属性是一个元组，如果只有一个参数也需要在末尾加逗号
 mthread = threading.Thread(target=function_name, args=(function_parameter1, function_parameterN)) 
 # 启动刚刚创建的线程 
-mthread .start()
+mthread .start() # 非阻塞方法
 ```
 
 1. 重新写一个类，继承threading.Thread

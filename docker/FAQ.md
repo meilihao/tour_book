@@ -1,3 +1,5 @@
+# FAQ
+
 ## prior storage driver "aufs" failed: driver not supported
 docker 1.8.2,运行"sudo docker daemon",报以上错误.
 linux kernel没有aufs驱动,试试其他docker storage-driver,比如"docker daemon -s overlay".
@@ -181,3 +183,12 @@ docker服务启动时定义的自定义链DOCKER由于某种原因被清掉,重�
 目前Docker官方已推荐使用Alpine作为基础镜像环境
 
 对于Go应用来说，我们可以采用静态编译的程序，但一旦采用静态编译，也就意味着我们将失去一些libc提供的原生能力，比如, 在linux上就无法使用系统提供的DNS解析能力，只能使用Go自实现的DNS解析器, 不过对于使用并没有影响.
+
+## the input device is not a TTY
+jekins使用docker run构建项目时报:
+```log
+the input device is not a TTY
+Build step 'Execute shell' marked build as failure
+```
+
+解决方法: `docker run`时使用了`-it`选项, 去掉即可.
