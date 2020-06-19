@@ -38,6 +38,7 @@ autofs 自动挂载服务: 无论是 Samba 服务还是 NFS 服务，都要把�
 - [aAmazon Elastic File System(nas) : 文件系统中文件和目录的用户和组 ID 权限 即 rwx模型](https://docs.aws.amazon.com/zh_cn/efs/latest/ug/efs-ug.pdf)
 - [pNFS](https://wenku.baidu.com/view/7cd3eee26294dd88d0d26b0c.html)
 - [windows 支持nfs的版本](https://docs.microsoft.com/en-us/windows-server/storage/nfs/nfs-overview)
+- [nas 常见问题 from aliyun](https://github.com/AlibabaCloudDocs/nas/tree/master/cn.zh-CN/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)
 
 > **NFS鉴权采用的是IP安全组，不支持用户名鉴权**
 
@@ -661,8 +662,16 @@ rpcdebug选项:
 1. mount nfs version不正确, 需指定version, 比如`mount -t nfs  -o nfsvers=3`
 1. nfsd未启动
 
-### zfs xfs nas
-**推荐使用zfs fs, 其次ext4, 不推荐xfs**
+### mount cifs: cannot mount //xxx.xxx.xxx.xxx/xxx read-only
+运行`mount.cifs`试试, 可能`cifs-utils未安装`
+
+### mount cifs : Permission denied
+env: ubuntu14.04 + samba 4.3.11
+
+smb server端权限正确, 重启后正常.
+
+## zfs xfs nas
+**推荐使用zfs fs, 不推荐ext4,xfs, 特别是xfs**
 
 不推荐xfs原因: [xfs nas卷回滚/快照/克隆/复制等操作后挂载新/原卷会碰到错误"duplicate UUID xxx - can't mount"](zfs.md)
 

@@ -35,11 +35,25 @@ sudo apt install libsodium-dev
 ### The c-ares library libraries not found
 sudo apt install libc-ares-dev
 
+### virsh not found
+apt install libvirt-bin # for ubuntu 14.04
+
 ### Couldn't find libev
 sudo apt install libev-dev
 
 ### /usr/bin/ld: 找不到 -lpam
 sudo apt install libpam0g-dev
+
+### virsh unknown os type hvm
+原因: qemu 虚拟机配置中的`<emulator>...</emulator>`路径不存在, 即未安装qemu kvm.
+apt install qemu-kvm qemu-system-x86 # for ubuntu 16.04, 必须同时安装qemu-system-x86,否则会报"qemu-system-x86_64: not found"
+
+同时用`lsmod |grep kvm`检查kernel是否已加载kvm, 不然用`modprobe kvm`加载.
+
+> virsh create启动kvm虚拟机前提: cpu支持虚拟化, 检测方法`grep -E "^flags.*(vmx|svm)" /proc/cpuinfo`.
+
+> 可用`kvm-ok`检查kvm环境是否ok.
+
 
 ### Cannot find asciidoc in PATH
 
@@ -516,6 +530,8 @@ blueman是管理蓝牙的gui工具.
 ### ntp no server suitable for synchronization found
 参考:
 - [ntpd时钟同步服务](http://xstarcd.github.io/wiki/sysadmin/ntpd.html)
+
+> **推荐使用新版ntp协议实现: chrony**
 
 在ntp客户端运行ntpdate 10.0.0.106，出现`no server suitable for synchronization found`的错误.
 在ntp客户端用ntpdate -d 10.0.0.106查看，发现有`Server dropped: Strata too high`的错误，并且显示`stratum 16`, 而正常情况下stratum这个值得范围是`0~15`.

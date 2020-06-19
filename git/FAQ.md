@@ -194,3 +194,40 @@ git diff b446759c1be2fa8a2c4532ac2bffb4b0449994bc HEAD -- ./xxx/* # 按照path�
 git log : 查看所有的commit提交记录
 git show [commit_id] : 查看最新或指定的commit
 git show commitId fileName # 查看某次commit中具体某个文件的修改
+
+### [迁移git commit](https://git-scm.com/book/zh/v2/Git-%E5%B7%A5%E5%85%B7-%E6%89%93%E5%8C%85)
+
+### git拉取远程分支
+```bash
+# git pull <远程主机名> <远程分支名>:<本地分支名>
+# git pull origin master = git pull origin master:master # git pull **会合并到本地分支, 且本地分支必须存在**
+# git fetch orgin master # git fetch 不合并本地分支
+```
+
+### git log filter
+```
+# git log --author="meilihao"
+# git log --since="2019-02-20" --until='2012-12-10'
+# git log --after="2019-02-20"
+```
+
+### Git cherry-pick from another repository
+```bash
+# Cloning our fork
+$ git clone git clone git@github.com:ifad/rest-client.git
+
+# Adding (as "endel") the repo from we want to cherry-pick
+$ git remote add endel git://github.com/endel/rest-client.git
+
+# Fetch their branches
+$ git fetch endel
+
+# List their commits
+$ git log endel/master
+
+# Cherry-pick the commit we need
+$ git cherry-pick 97fedac
+
+# Pushing to our master
+$ git push origin master
+```
