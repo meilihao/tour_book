@@ -211,7 +211,13 @@ git show commitId fileName # 查看某次commit中具体某个文件的修改
 # git log --after="2019-02-20"
 ```
 
-### Git cherry-pick from another repository
+### Git cherry-pick `from another repository`/`cross repository`
+参考:
+- [使用 Git 時如何做出跨 repo 的 cherry-pick](https://blog.m157q.tw/posts/2017/12/30/git-cross-repo-cherry-pick/)
+
+
+共计3种方法:
+1. git remote add + git fetch + git cherry-pick(**推荐**)
 ```bash
 # Cloning our fork
 $ git clone git clone git@github.com:ifad/rest-client.git
@@ -230,4 +236,16 @@ $ git cherry-pick 97fedac
 
 # Pushing to our master
 $ git push origin master
+```
+
+1. git format-patch + git am(**推荐**)
+```bash
+# git format-patch -k --stdout ${A_COMMIT_HASH}..${B_COMMIT_HASH} > xxx.patch # `-k`, 不加时patch中的git log's subject会被冠以"[PATCH] "前缀, 不要省略commit range中间的".."
+# git am -k -3 [--signoff] < xxx.patch # "-3",使用 three-way merge; "-k", 去除导入patch中git log's subject中的"[PATCH] "前缀
+```
+
+1. git diff + git apply
+```bash
+# git diff ${A_COMMIT_HASH} ${B_COMMIT_HASH} > xxx.patch # 会丢失git log的subject
+# git apply xxx.patch
 ```

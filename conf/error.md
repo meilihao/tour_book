@@ -73,6 +73,11 @@ $ sudo sysctl fs.inotify.max_user_watches=8192 # 临时修改
 $ vim /etc/sysctl.conf # 添加max_user_watches=8192，然后sysctl -p生效,永久生效
 ```
 
+### NMI watchdog: BUG: soft lockup - CPU#2 stuck for 23s! [systemd-logind:893]
+env: ubuntu 14:04, kernel:4.4.0
+
+该[issue](https://bugzilla.redhat.com/show_bug.cgi?id=1154286#c18)里有说在4.4.3中已修复该问题, 但其`Comment 19`提示之前的修复未完全解决该问题.
+
 ### vscode : Run VS Code with admin privileges so the changes can be applied.
 
 ```shell

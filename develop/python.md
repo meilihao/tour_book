@@ -1208,6 +1208,7 @@ u 无符号整数
 
 
 ```python
+0 < timeout == count => 0 < timeout && timeout == count
 -10 // 3=>-4 # 对于整除运算，需要明白的一个重点是它向下圆整结果
  -10 %  3  =>  2 # x y % 等价于x - ((x // y) * y)
 1 / 2 => 0.5 # Python2.7的结果是`0`.

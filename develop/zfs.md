@@ -402,3 +402,8 @@ zfs 0.8.1 rename后`/dev/zvol/{datapath}`会跟着变化, 且mkfs正常.
 # xfs_repair -L /dev/zd64
 # xfs_admin -U generate /dev/zd64
 ```
+
+### pool I/O is currently suspend
+pool只有raidz0(1块), 没有其他盘, 物理移除该盘后, `zpool destroy`时报该错误.
+
+查阅相关资料后发现只能通过reboot来解决, reboot后该pool消失.

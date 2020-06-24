@@ -674,6 +674,7 @@ smb server端权限正确, 重启后正常.
 **推荐使用zfs fs, 不推荐ext4,xfs, 特别是xfs**
 
 不推荐xfs原因: [xfs nas卷回滚/快照/克隆/复制等操作后挂载新/原卷会碰到错误"duplicate UUID xxx - can't mount"](zfs.md)
+不推荐ext4: nas umount成功后ext4日志内核进程(jbd2)不退出(ubuntu 14.04 on x84_64).
 
 env: 5.3.0-26-generic/4.4
 

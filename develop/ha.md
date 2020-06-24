@@ -394,6 +394,10 @@ crm(live)# exit
 # corosync-quorumtool -siH # 票数细节, 类似`pcs quorum status`
 # pcs stonith list # 查看可用fence插件
 # crm resource move webservice node12 # 手动转移资源
+# crm_resource --list-raw # 资源列表
+# crm configure show ${resource} # 查看resoure的配置
+# crm_resource --locate --resourece ${resource} # 查看resoure所在node
+# crm_failcount --resourece ${resource} --node ${node} # 查看资源的故障计数
 ```
 
 corosync+pacemaker集群默认对节点高可用，但是对于节点上资源的运行状态无法监控，因此，需要配置集群对于资源的监控，在资源因意外情况下，无法提供服务时，对资源提供高可用.

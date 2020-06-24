@@ -64,6 +64,7 @@ This is just the PID of the session leader. **If PID == SID, then this process i
 - NI : nice值
 - PRI : 调度优先级(内核的内部表示,与nice不同)
 - STAT : 进程状态
+- COMMAND : 进程执行时的命令, 内核进程会用`[]`包裹
 
 ### 进程状态
 
