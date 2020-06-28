@@ -13,3 +13,4 @@
 ## 例
 
     # file /bin/ls # 判断当前系统的位数
+    # file t.elf # 输出包含"not stripped"表示有符号表
