@@ -107,7 +107,7 @@ systemd-ask-password-conso
 # systemctl stop httpd.service
 # systemctl reload httpd.service # 重新载入httpd配置而不中断服务
 # systemctl condrestart httpd.service # condrestart会检查服务是否已运行, 如果已运行则重启; 否则忽略
-# systemctl status httpd.service
+# systemctl status [httpd.service]
 # ls /etc/systemd/system/*.wants/httpd.service 查看httpd服务在各个运行级别下的启用和禁用情况
 ```
 注意：当我们使用systemctl的start，restart，stop和reload命令时，我们不会从终端获取到任何输出内容，只有status命令可以打印输出。

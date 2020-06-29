@@ -181,7 +181,12 @@ $ sudo systemctl status httpd
 
 >上面的输出结果含义如下:
 Loaded行：配置文件的位置，是否设为开机启动
-Active行：表示正在运行
+Active行：systemd提供的状态
+	- inactive : 未运行
+	- active (running) : 有一个或多个进程正在执行
+	- active (exited) : 仅执行一次就正常结束的服务, 但有后台进程正在继续执行
+	- active (waiting) : 正在执行, 但正在等待其他事件才能继续执行.
+
 Main PID行：主进程ID
 Status行：由应用本身（这里是 httpd ）提供的软件当前状态
 CGroup块：应用的所有子进程
