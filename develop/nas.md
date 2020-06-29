@@ -710,7 +710,7 @@ nfs:
 # vim /etc/exports
 /mnt/xfs 192.168.0.245(rw,all_squash,no_subtree_check,async)
 /mnt/xfs 192.168.0.131(ro,all_squash,no_subtree_check,async)
-# exportfs -ra
+# exportfs -r
 
 ## on client @ 192.168.0.245
 # gpasswd -a  ${USER} nogroup # 将当前用户加入nogroup
