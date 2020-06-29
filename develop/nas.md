@@ -443,7 +443,7 @@ $ mkdir /var/lib/samba/private/msg.sock
 $ chmod 700 /var/lib/samba/private/msg.sock
 ```
 
-> [Ubuntu 14.04已不推荐使用sysinit(因为sysinit script包含了init_is_upstart)](https://wiki.ubuntu.com/UpstartCompatibleInitScripts), 需使用`initctl start nmbd && initctl start smbd && initctl start samba-ad-dc`
+> [Ubuntu 14.04已不推荐使用sysinit(因为sysinit script包含了init_is_upstart)](https://wiki.ubuntu.com/UpstartCompatibleInitScripts), 需使用`initctl start nmbd && initctl start smbd && initctl start samba-ad-dc`, 且samba的开机启动也由upstart管理, 相关配置在`/etc/init/*.conf`, 注释以`start on (`开头的行即可取消开机自启动.
 > `initctl list`查看所有upstart当前支持的job, 可参考[How to reliably start a service with UpStart](https://zohaib.me/how-to-reliably-start-a-service-with-upstart/)
 
 ### samba挂载乱码
