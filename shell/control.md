@@ -43,6 +43,8 @@ fi
 
 printf "Source directory is ${source_dir}\n"
 printf "Destinatin directory is ${dest_dir}\n"
+# ----- other
+if [ $(ls /etc/rc?.d/S??nfs-kernel-server |wc -l) -gt 0 ] # 判断nfs是否存在开机自启动
 ```
 ```shell
 # 用逻辑运算符进行简化, 短路运算更简洁
@@ -112,6 +114,16 @@ done;
 ```shell
 # 和C语言的for循环类似,`{`后必须紧跟一个空格,换行或tab
 for((i=1;i<=10;i++));{ echo $(expr $i \* 4); }
+```
+
+## example
+```bash
+# 取消nfs-kernel-server的开机启动
+list=$(ls /etc/rc?.d/S??nfs-kernel-server)
+for file in $list
+do
+    rm $file
+done
 ```
 
 # while
