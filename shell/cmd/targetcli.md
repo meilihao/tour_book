@@ -1,4 +1,8 @@
 # targetcli
+参考:
+- [Managing storage devices#Getting started with iSCSI](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/managing_storage_devices/getting-started-with-iscsi_managing-storage-devices)
+
+
 ```bash
 # yum -y install targetd targetcli-fb
 
@@ -12,11 +16,13 @@ targetcli 是用于管理 iSCSI 服务端存储资源的专用配置命令将 iS
 
 在执行 targetcli 命令后就能看到交互式的配置界面了, 利用 ls 查看目录参数的结构,使用 cd 切换到不同的目录中等.
 
-iSCSI target 名称是由系统自动生成的,这是一串用于描述共享资源的唯一字符串.
+**iSCSI target 名称是由系统自动生成的,这是一串用于描述共享资源的唯一字符串**.
 
-iSCSI 协议是通过客户端名称进行验证的,也就是说,用户在访问存储共享资源时不需要输入密码,只要 iSCSI 客户端的名称与服务端中设置的访问控制列表中某一名称条目一致即可,因此需要在 iSCSI 服务端的配置文件中写入一串能够验证用户信息的名称.
+iSCSI 协议是通过客户端名称进行验证的, 而该名称也是 iSCSI 客户端的唯一标识,而且必须与服务端配置文件中访问控制列表中的信息一致,否则客户端在尝试访问存储共享设备时,系统会弹出验证失败的保存信息. 因此用户在访问存储共享资源时不需要输入密码,只要 iSCSI 客户端的名称与服务端中设置的访问控制列表中某一名称条目一致即可.
+iSCSI 协议是通过客户端的名称来进行验证,
 
-acls 参数目录用于存放能够访问 iSCSI 服务端共享存储资源的客户端名称. 推荐在刚刚系统生成的 iSCSI target 后面追加上类似于:client 的参数,这样既能保证客户端的名称具有唯一性,又非常便于管理和阅读.
+acls 参数目录用于存放允许访问 iSCSI 服务端共享存储资源的客户端名称. 推荐在刚刚系统生成的 iSCSI target 后面追加上类似于:client 的参数,这样既能保证客户端的名称具有唯一性,又非常便于管理和阅读. "all"表示所有客户端都可以访问.
+
 在 portals 参数目录中写上服务器的 IP 地址, 以便对外提供服务.
 
 targetcli(服务端)使用步骤:
@@ -27,7 +33,7 @@ targetcli(服务端)使用步骤:
     /iscsi> cd iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80/
     /iscsi/iqn.20....d497c356ad80> ls
     o- iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 .... [TPGs: 1]
-        o- tpg1 ............................................. [no-gen-acls, no-auth]
+        o- tpg1 ............................................. [no-gen-acls, no-auth] # Target Portal Group
             o- acls ........................................................ [ACLs: 0]
             o- luns ........................................................ [LUNs: 0]
             o- portals .................................................. [Portals: 0]
@@ -37,7 +43,7 @@ targetcli(服务端)使用步骤:
 1. 创建ACL
     ```
     /iscsi/iqn.20...d80/tpg1/acls> create iqn.2003-01.org.linux-iscsi.linuxprobe.
-    x8664:sn.d497c356ad80:client
+    x8664:sn.d497c356ad80:client # 指定允许访问的clients的iqn
     Created Node ACL for iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:
     client
     Created mapped LUN 0.
@@ -59,9 +65,8 @@ targetcli(服务端)使用步骤:
 
 > [open-iscsi's git repo](https://github.com/open-iscsi/open-iscsi)
 
-iSCSI 协议是通过客户端的名称来进行验证,而该名称也是 iSCSI 客户端的唯一标识,而且必须与服务端配置文件中访问控制列表中的信息一致,否则客户端在尝试访问存储共享设备时,系统会弹出验证失败的保存信息.
-
 ```bash
+# 查询iSCSI 客户端的唯一标识iqn
 # vim /etc/iscsi/initiatorname.iscsi
 InitiatorName=iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client # 编辑 iSCSI 客户端中的 initiator 名称文件,写入服务端的访问控制列表名称
 # systemctl restart iscsid
