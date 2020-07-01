@@ -17,6 +17,8 @@ cluster是一组协同工作的服务集合, 用来提供比单一服务更稳�
 参考:
 - [pacemaker+corosync/heartbeat对比及资源代理RA脚本](https://www.cnblogs.com/clsblog/p/6202869.html)
 - [<<DRBD权威指南——基于Corosync+Heartbeat技术构建网络RAID>>]
+- [SUSE Linux Enterprise High Availability Extension](https://www.novell.com/zh-cn/documentation/sle_ha/book_sleha/)
+- [中标麒麟高可用集群软件V7.0产品白皮书](http://www.kylinos.cn/support/document/34.html)
 
 [驱动、开发者和Linux厂商，以及整个开源高可用集群社区，都已经转移到了基于Corosync 2.x+Pacemaker的HA堆栈上](http://www.linux-ha.org/wiki/Site_news), [Heartbeat](http://www.linux-ha.org)已名存实亡.
 
@@ -111,20 +113,27 @@ pacemaker负责仲裁指定谁是活动节点、IP地址的转移、本地资源
     node attribute manager
 - cib	pacemaker-based
 
-    群集信息库管理者. 包含所有群集选项，节点，资源，他们彼此之间的关系和现状的定义. 会同步更新到所有群集节点
+    群集信息库管理者,是一个xml文件, 描述了配置，节点，资源，状态, 限制条件等集群信息.
 
-    使用xml描述集群的配置及集群中所有资源的当前状态
+    集群中只有一个主 CIB 文件,是通过 DC 来维护的. 所有节点的 CIB 文件都是主 CIB 文件的副本. 如果需要修改集权配置,就必须通过 DC 来对主 CIB 文件进
+行修改.
+
+    > cibadmin -Q : 可查看cib信息
 - crmd 	pacemaker-controld
 
-    集群资源管理守护进程. 主要是消息代理的PEngine和LRM，还选举一个领导者（DC）统筹活动（包括启动/停止资源）的集群
+    集群资源管理守护进程. 主要是消息代理的PEngine和LRM，还选举一个领导者DC, 它会统筹集群的操作, 比如启动/停止/隔离/转移资源等.
 - lrmd 	pacemaker-execd
 
-    本地资源管理守护进程(local resource agent executor). 它提供了一个通用的接口支持的资源类型。直接调用资源代理（脚本）
+    本地资源管理守护进程(local resource agent executor). 它提供了一个通用的接口, 支持直接调用资源代理（脚本）来管理资源.
 - stonithd 	pacemaker-fenced
 
-    STONITH(Shoot the Other Node in the Head), 强制使节点下线.
+    STONITH(Shoot the Other Node in the Head), 强制使节点下线, 以防数据被恶意节点或并行访问破坏.
 
-    因为如果一个节点没有相应，但并不代表它没有在提供服务，100%保证数据安全的做法就是在允许另外一个节点操作数据之前，使用STONITH来保证节点真的下线了.
+    因为如果某个节点没有响应，但并不代表它没有在提供服务，100%确保数据安全的**唯一**做法就是在允许另外一个节点操作数据之前，使用STONITH来隔离该节点, 保证其真的下线了.
+
+    所有 STONITH 资源默认存放在每个节点的/usr/lib/stonith/plugins 目录下, 通过这些 STONITH 资源可是实现节点关机、节点重启等功能.
+
+    使用`stonith -L`可查看cluster支持的STONITH.
 - pacemaker_remoted 	pacemaker-remoted
 
     remote resource agent executor
@@ -133,6 +142,8 @@ pacemaker负责仲裁指定谁是活动节点、IP地址的转移、本地资源
     策略引擎, action scheduler
 
     主要负责将CRM发过来的一些信息按照配置文件中的各种设置（基于目前的状态和配置）计算集群的下一个状态.
+
+    当主控节点(DC)需要对集群做出更改时, 策略引擎需根据配置文件中的各种设置及当前状态来计算下一状态中群集和列表(资源)需要采取的行动. DC 发送消息给有关联的 CRM,然后 CRM 调用本地资源管理(LRM)完成对资源的修改.
 
 ![Pacemaker Architecture 2.x](https://clusterlabs.org/pacemaker/doc/en-US/Pacemaker/2.0/html-single/Pacemaker_Administration/images/pcmk-internals.png)
 
@@ -151,6 +162,7 @@ CIB使用XML表示集群的集群中的所有资源的配置和当前状态. CIB
     - -INFINITY：资源总是移离当前位置
 
     当某个高可用集群即包含资源粘性又包含位置约束，一旦该节点发生故障后，资源就会转移到另一个节点上去, 但是当之前的节点恢复正常时，需要比较所有的资源粘性之和与所有位置约束之和谁大谁小，这样资源才会留在大的一方
+
 - 资源类型：
 
     资源是集群管理的最小单位对象.
@@ -200,16 +212,20 @@ CIB使用XML表示集群的集群中的所有资源的配置和当前状态. CIB
         主从资源，如drdb
 
     Pacemaker中的资源类型使用standard, provider（仅当standard为ocf使用）和agent来进行标识，格式如下： `<standard>:[provider]:<agent>`.
+
 - RA类型： 资源代理(resource agent)是一种标准化的集群接口, 每一个原始资源(primitive Resource)都有一个资源代理, packmaker**通过该接口对集群资源进行操作**.
 
     - Lsb(linux standard base resource agents)： 一般位于/etc/rc.d/init.d/目录下的支持start|stop|status等参数的服务脚本都是lsb
     - systemd
     - ocf：Open cluster Framework，开放集群架构, 是对LSB资源代理的扩展, **已成为使用最多的资源类别**, 在`/usr/lib/ocf/resource.d/provider`
+
+        OCF 资源脚本至少包含 start, stop, status,monitor 以及 meta-data 执行动作。其中,meta-data 动作给出如何配置该脚本
     - heartbeat：heartbaet V1版本
     - stonith：专为配置stonith设备而用
 
     > 在多数情况下，资源 RA以 shell脚本的形式提供，当然也可以使用其他语言来实现 RA
     > OCF标准还严格定义了操作执行后的状态码，集群资源管理器将会根据资源代理返回的状态码来对执行结果做出判断
+
 - fence device的原理及作用
 
     fence device用于强制隔离设备. 如果某个节点没有反应，并不代表没有数据访问, 能够 100% 确定数据安全的唯一方法是使用 SNOITH 隔离该节点，这样才能确定在允许从另一个节点访问数据前，该节点已确实离线.
@@ -329,25 +345,6 @@ service
 stonith
 systemd
 crm(live)ra# list lsb # 查看该类别下可用的ra
-acpid                     apparmor                  apport                    atd                       console-setup.sh          corosync                  cron                      cryptdisks
-cryptdisks-early          dbus                      ebtables                  grub-common               heartbeat                 hwclock.sh                irqbalance                iscsid
-keyboard-setup.dpkg-bak   keyboard-setup.sh         kmod                      logd                      lvm2                      lvm2-lvmetad              lvm2-lvmpolld             lxcfs
-lxd                       mdadm                     mdadm-waitidle            networking                nfs-common                nginx                     nmbd                      open-iscsi
-open-vm-tools             openhpid                  pacemaker                 pcsd                      plymouth                  plymouth-log              procps                    resolvconf
-rpcbind                   rsync                     rsyslog                   samba-ad-dc               screen-cleanup            smbd                      ssh                       sysstat
-udev                      ufw                       unattended-upgrades       uuidd                     zfs-share                 
-crm(live)ra# list ocf heartbeat
-AoEtarget            AudibleAlarm         CTDB                 ClusterMon           Delay                Dummy                EvmsSCC              Evmsd                Filesystem           ICP
-IPaddr               IPaddr2              IPsrcaddr            IPv6addr             LVM                  LVM-activate         LinuxSCSI            MailTo               ManageRAID           ManageVE
-NodeUtilization      Pure-FTPd            Raid1                Route                SAPDatabase          SAPInstance          SendArp              ServeRAID            SphinxSearchDaemon   Squid
-Stateful             SysInfo              VIPArip              VirtualDomain        WAS                  WAS6                 WinPopup             Xen                  Xinetd               ZFS
-anything             apache               asterisk             aws-vpc-move-ip      aws-vpc-route53      awseip               awsvip               clvm                 conntrackd           db2
-dhcpd                dnsupdate            docker               eDir88               ethmonitor           exportfs             fio                  galera               garbd                iSCSILogicalUnit
-iSCSITarget          ids                  iface-bridge         iface-vlan           iscsi                jboss                kamailio             ldirectord           lvmlockd             lxc
-minio                mysql                mysql-proxy          nagios               named                nfsnotify            nfsserver            nginx                oraasm               oracle
-oralsnr              ovsmonitor           pgagent              pgsql                pingd                portblock            postfix              pound                proftpd              rabbitmq-cluster
-redis                rkt                  rsyncd               rsyslog              scsi2reservation     sfex                 sg_persist           slapd                symlink              syslog-ng
-tomcat               varnish              vmware               vsftpd               zabbixserver         
 crm(live)ra# info ocf:heartbeat:IPaddr # 查看该ra的help
 ```
 
@@ -388,6 +385,7 @@ crm(live)# exit
 # pcs cluster standy node11 # 将node状态置为standby
 # pcs cluster stop node11 # 将node状态置为offline
 # crm node standby # 将node设为standby
+# crm node list # 查看所有node
 # crm configure show # 查看当前配置
 # corosync-quorumtool -l # 显示所有节点的信息与票数
 # pcs cluster sync # 同步所有节点信息
@@ -397,7 +395,12 @@ crm(live)# exit
 # crm_resource --list-raw # 资源列表
 # crm configure show ${resource} # 查看resoure的配置
 # crm_resource --locate --resourece ${resource} # 查看resoure所在node
-# crm_failcount --resourece ${resource} --node ${node} # 查看资源的故障计数
+# crm_failcount --resource ${resource} --node ${node} # 查看资源的故障计数
+# crm resource clean ${resource} [${node}] # 清理资源的status, 比如failcount
+# crm_resource --resource ${resource} --move --host ${node} # 转移资源
+# cibadmin --modify --xml-text '<op id="xxx-monitor-30" enabled="true">' # 启用资源上的monitor操作
+# crm resource manage xxx # 允许crm管理资源
+# crm_resource --resource xxx --get-parameter is-managed --meta # 检查资源是否已被crm管理
 ```
 
 corosync+pacemaker集群默认对节点高可用，但是对于节点上资源的运行状态无法监控，因此，需要配置集群对于资源的监控，在资源因意外情况下，无法提供服务时，对资源提供高可用.
@@ -419,7 +422,7 @@ pacemaker提供了三种资源约束方法：
 - Resource Collocation（资源排列）：捆绑约束将不同的资源捆绑在一起作为一个逻辑整体来调度
 
     通常也是使用一个score来定义的. 当score是正值表示资源可以在一起；否则表示不可以在一起
-- Resource Order（资源顺序）：顺序约束定义集群资源在节点上启动的顺序, 启动关闭顺序相反
+- Resource Order（资源顺序）：顺序约束定义集群资源在节点上的运行顺序(启动的顺序, 关闭顺序与启动顺序相反)
 
 定义约束时，还需要指定分数. 各种分数是集群工作方式的重要组成部分, 其实，从迁移资源到决定在已降级集群中停止哪些资源的整个过程是通过以某种方式修改分数来实现的. 分数按每个资源来计算，资源分数为负的任何节点都无法运行该资源. 在计算出资源分数后，集群选择分数最高的节点. INFINITY（无穷大）目前定义为 1,000,000. 加减无穷大遵循以下3个基本规则：
 - 任何值 + 无穷大 = 无穷大
@@ -502,12 +505,57 @@ pcs集群创建步骤:
 # pcs property set enable-acl=true --force # 启用 Pacemaker ACL
 # pcs acl role create read-only description="Read access to cluster" read xpath /cib # 使用只读权限为 cib 创建名为 read-only 的角色. 写权限是`write xpath /cib`
 # pcs acl user create rouser read-only # 在 pcs ACL 系统中创建用户 rouser，并为那个用户分配 read-only 角色
-# --- 配置 STONITH
+# --- status
+# pcs status # 显示集群状态(pcs cluster status)及其资源的状态(pcs status resources)
+# --- 配置 STONITH, 部分设备支持 fencing 拓扑功能(支持包含多个设备的 fencing 节点, 它们用优先级来指明尝试stonith的顺序, 不常用), 相关命令是`pcs stonith level`
 # pcs stonith list [filter] # 查看所有可用 STONITH 代理列表
 # pcs stonith describe stonith_agent # 查看指定 STONITH 代理
+# pcs stonith create MyStonith fence_virt pcmk_host_list=f1 op monitor interval=30s # MyStonith, 是stonith_id;fence_virt, stonith_device_type; "pcmk_host_list=f1 op monitor interval=30s", stonith_device_options, pcmk_host_list是这个资源控制的机器列表.
+# pcs stonith show [stonith_id] [--full] # `--full`显示所有配置的 stonith 选项
+# pcs stonith update stonith_id [stonith_device_options] # 修改或添加选项
+# pcs stonith delete stonith_id # 删除 fencing 设备
+# pcs stonith fence node [--off] # 手动隔离某个节点. `--off`会使用 off API 调用 stonith，从而关闭节点，而不是重启节点.
+# pcs stonith confirm node # 确定指定的节点目前是否已被关闭
+# --- 配置集群资源
+# pcs resource create VirtualIP ocf:heartbeat:IPaddr2 ip=192.168.0.120 cidr_netmask=24 op monitor interval=30s meta resource-stickiness=5O # 创建一个名为 VirtualIP，使用 ocf 标准, 由heartbeat 提供程序，以及类型 IPaddr2 的资源. 这个资源的浮动地址为 192.168.0.120. 为保证资源正常工作，可在资源定义中添加监控操作, 当前系统会每 30 秒检查一次，确定该资源是否运行. meta用于设置资源的元数据选项.
+# pcs resource delete VirtualIP # 删除配置的资源
+# pcs resource update VirtualIP ip=192.169.0.120 # 修改配置资源的参数
+# pcs resource list  # 显示所有可用资源
+# pcs resource standard  # 显示可用资源代理标准
+# pcs resource providers # 显示可用资源代理提供程序列表
+# pcs resource list string   # 显示根据指定字符串过滤的可用资源列表。可使用这个命令显示根据标准名称、提供程序或类型过滤的资源
+# pcs resource describe standard:provider:type|type # 显示该资源设定的参数
+# pcs resource defaults resource-stickiness=100 # 更改资源选项的默认值
+# pcs resource defaults # 显示当前配置的默认值列表
+# pcs resource op defaults [options] # 获取监控操作全局默认值
+# pcs resource op defaults timeout=240s # 为所有监控操作将全局 timeout 值设定为 240s
+# pcs resource meta dummy_resource failure-timeout=20s # 资源dummy_resource可在 20 秒内尝试在同一节点中重启
+# pcs resource show --full # 显示所有配置的资源列表及为那些资源配置的参数
+# pcs resource show dummy_resource 查看该资源的配置
+# pcs resource group add shortcut IPaddr Email # 创建 shortcut 资源组，该资源组包含现有资源 IPaddr 和 Email
+# pcs resource op remove VirtualIP stop interval=0s timeout=20s 删除停止超时操作
+# pcs resource op add VirtualIP stop interval=0s timeout=40s # 添加停止超时操作
+# pcs resource enable/disable resource_id # 启用和禁用集群资源
+# pcs resource cleanup resource_id # 清除 resource_id 指定的资源
+# --- 属性
+# crm_attribute --type crm_config --name xxx --query # 查询指定的集群属性from cib
+# crm_attribute --type crm_config --name xxx --update xxx # 设置指定的集群属性
 ```
 
 #### crmsh
+- cibadmin : 操作 CIB 的基础管理命令
+- crm_attribute : 对 CIB 进行查询和修改
+- crm_diff : 帮助生成和应用 CIB XML 补丁
+- crm_verify : 用于验证 CIB 的一致性、检测其它错误和测试是否可以联机到正在运行的集群
+- crm_resource : 负责与 CRM 进行交互, 可以启动、停止、删除或者迁移在集群节点上的资源
+- crm_failcount : 查询当前资源错误统计
+
+    错误统计是资源监视器的附加属性,它的值会根据资源监视到的故障而递增,它与资源错误粘性数值(migration-threshold)相乘得到结果为错误切换分值. 如果这个数值超过设置的大小,资源就会发上切换, 除非错误统计数被重置. **要想资源会切,需删除错误统计数**.
+
+- crm_standby : 用来控制备机属性, 以决定资源是否可以运行在该节点上
+- crm_mon : 配置和监视集群状态, 该命令输出节点数量、名称、UUID 以及状态
+
+
 ```bash
 # crm_attribute --name maintenance-mode --query --type crm_config [--quiet] # 属性查询
 scope=crm_config  name=maintenance-mode value=false
