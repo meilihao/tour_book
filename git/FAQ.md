@@ -249,3 +249,12 @@ $ git push origin master
 # git diff ${A_COMMIT_HASH} ${B_COMMIT_HASH} > xxx.patch # 会丢失git log的subject
 # git apply xxx.patch
 ```
+
+### git pull origin master 如何不自动生成 merge commit
+```bash
+# [git pull --rebase的正确使用](https://juejin.im/post/5d3685146fb9a07ed064f11b)和[聊下git pull --rebase](https://www.cnblogs.com/wangiqngpei557/p/6056624.html)
+$ git stash
+$ git pull --rebase
+$ git push
+$ git stash pop
+```
