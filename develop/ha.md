@@ -19,6 +19,8 @@ cluster是一组协同工作的服务集合, 用来提供比单一服务更稳�
 - [<<DRBD权威指南——基于Corosync+Heartbeat技术构建网络RAID>>]
 - [SUSE Linux Enterprise High Availability Extension](https://www.novell.com/zh-cn/documentation/sle_ha/book_sleha/)
 - [中标麒麟高可用集群软件V7.0产品白皮书](http://www.kylinos.cn/support/document/34.html)
+- [SAP HA Test Cases on Alibaba Cloud](https://www.alibabacloud.com/help/zh/doc-detail/71945.htm)
+- [linux集群高可用--crm](https://blog.csdn.net/momokuku123/article/details/78370559)
 
 [驱动、开发者和Linux厂商，以及整个开源高可用集群社区，都已经转移到了基于Corosync 2.x+Pacemaker的HA堆栈上](http://www.linux-ha.org/wiki/Site_news), [Heartbeat](http://www.linux-ha.org)已名存实亡.
 
@@ -219,12 +221,16 @@ CIB使用XML表示集群的集群中的所有资源的配置和当前状态. CIB
     - systemd
     - ocf：Open cluster Framework，开放集群架构, 是对LSB资源代理的扩展, **已成为使用最多的资源类别**, 在`/usr/lib/ocf/resource.d/provider`
 
-        OCF 资源脚本至少包含 start, stop, status,monitor 以及 meta-data 执行动作。其中,meta-data 动作给出如何配置该脚本
+        OCF 资源脚本至少包含 start, stop, status,monitor 以及 meta-data 执行动作, 其中,meta-data 动作给出如何配置该脚本.
+
+        比如move 资源时对调用这些ra.
+
     - heartbeat：heartbaet V1版本
     - stonith：专为配置stonith设备而用
 
     > 在多数情况下，资源 RA以 shell脚本的形式提供，当然也可以使用其他语言来实现 RA
     > OCF标准还严格定义了操作执行后的状态码，集群资源管理器将会根据资源代理返回的状态码来对执行结果做出判断
+    > 标准ra支持`export OCF_TRACE_RA=1`开启调试
 
 - fence device的原理及作用
 
@@ -349,9 +355,9 @@ crm(live)ra# info ocf:heartbeat:IPaddr # 查看该ra的help
 ```
 
 常见资源：
-－　primitive webip ocf:heartbeat:IPaddr２ parms ip="192.168.10.100" cidr_netmask="24"
-－　primitive webserver systemd:nginx op start timeout=100s op stop timeout=100s
-－　primitive webstore ocf:heartbeat:Filesystem params device="192.168.10.9:/data/web/htdocs" directory="/var/www/html" fstype="nfs" op start timeout=60s op stop timeout=60s
+- primitive webip ocf:heartbeat:IPaddr２ parms ip="192.168.10.100" cidr_netmask="24"
+- primitive webserver systemd:nginx op start timeout=100s op stop timeout=100s
+- primitive webstore ocf:heartbeat:Filesystem params device="192.168.10.9:/data/web/htdocs" directory="/var/www/html" fstype="nfs" op start timeout=60s op stop timeout=60s
 
 创建/修改资源:
 ```bash
@@ -391,7 +397,7 @@ crm(live)# exit
 # pcs cluster sync # 同步所有节点信息
 # corosync-quorumtool -siH # 票数细节, 类似`pcs quorum status`
 # pcs stonith list # 查看可用fence插件
-# crm resource move webservice node12 # 手动转移资源
+# crm resource move webservice node12 # 手动转移资源, 会调用相应的resource agent
 # crm_resource --list-raw # 资源列表
 # crm configure show ${resource} # 查看resoure的配置
 # crm_resource --locate --resourece ${resource} # 查看resoure所在node
@@ -538,8 +544,9 @@ pcs集群创建步骤:
 # pcs resource enable/disable resource_id # 启用和禁用集群资源
 # pcs resource cleanup resource_id # 清除 resource_id 指定的资源
 # --- 属性
-# crm_attribute --type crm_config --name xxx --query # 查询指定的集群属性from cib
-# crm_attribute --type crm_config --name xxx --update xxx # 设置指定的集群属性
+# crm_attribute --type crm_config --name maintenance-mode --query # 查询指定的集群属性from cib
+# crm_attribute --type crm_config --name maintenance-mode --update true # 设置集群属性 <=> crm configure property maintenance-mode=true, 使cluster处于维护模式, 此时所有节点resource处于unmanaged状态.
+
 ```
 
 #### crmsh
@@ -557,6 +564,7 @@ pcs集群创建步骤:
 
 
 ```bash
+# crm status # 注意该命令不罗列stopped状态的resource
 # crm_attribute --name maintenance-mode --query --type crm_config [--quiet] # 属性查询
 scope=crm_config  name=maintenance-mode value=false
 # crm_failcount --resource OS-1401dc36-node1-ha-flv --node OS-1401dc36-node1 --quiet # 管理记录每个资源的故障计数的计数器
