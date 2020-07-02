@@ -258,3 +258,9 @@ $ git pull --rebase
 $ git push
 $ git stash pop
 ```
+
+### 如何在 git 里查找哪一个 commit 删除了代码的一行
+`git log -S <string> path/to/file`: 使用git log 的 -S 选项来指定 commit 里包括的字符串.
+
+### 查看某行代码由谁写的，在哪个commit中提交的
+`git blame file_name`
