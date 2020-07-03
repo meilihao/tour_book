@@ -148,6 +148,8 @@ shell中`！`叫做[事件提示符](https://linux.cn/article-5658-1.html)，英
 
 ## 脚本调试
 
+设置`export PS4='+${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]}: '`, 允许调试shell脚本时，在跟踪里输出文件/行号.
+
 使用选项`-x`,启动追踪调试shell脚本.
 
     # bash -x script.sh

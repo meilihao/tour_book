@@ -11,6 +11,7 @@
 - `[ -r file ]` : file存在且用户可读
 - `[ -w file ]` : file存在且用户可写
 - `[ -x file ]` ：file存在且用户可执行
+- `[ -z "$APP_PATH" ]` : 判断字符串长度是否为0
 - `[ file1 -nt file2 ]` : file1比file2新(file1存在且file2不存在为真)
 - `[ file1 -ot file2 ]` : file1比file2旧(file2存在且file1不存在为真)
 - `[ file1 -ef file2 ]` : file1和file2是否硬连接到同一个文件

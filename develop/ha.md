@@ -105,6 +105,8 @@ pacemaker是一个开源的高可用集群资源管理器(CRM)，位于HA集群�
 - pacemaker作为corosync的插件运行
 - pacemaker作为独立的守护进程运行
 
+配置文件: /etc/default/pacemaker. log功能需启用其中的PCMK_logfile和PCMK_logpriority. 同时因为pacemaker通过corosync通信, 通过看DC节点的corosync log也可以.
+
 pacemaker负责仲裁指定谁是活动节点、IP地址的转移、本地资源管理系统.
 
 当故障节点修复后，资源返回来称为failback，当故障节点修复后，资源仍在备用节点，称为failover.
@@ -128,6 +130,8 @@ pacemaker负责仲裁指定谁是活动节点、IP地址的转移、本地资源
 
     本地资源管理守护进程(local resource agent executor). 它提供了一个通用的接口, 支持直接调用资源代理（脚本）来管理资源.
 - stonithd 	pacemaker-fenced
+
+    当集群检测到集群中的节点出现故障时要实现问题节点的隔离就需要通过使用 STONITH 资源实现该功能.
 
     STONITH(Shoot the Other Node in the Head), 强制使节点下线, 以防数据被恶意节点或并行访问破坏.
 
@@ -397,6 +401,7 @@ crm(live)# exit
 # pcs cluster sync # 同步所有节点信息
 # corosync-quorumtool -siH # 票数细节, 类似`pcs quorum status`
 # pcs stonith list # 查看可用fence插件
+# crm node fence <target_node> # fence节点
 # crm resource move webservice node12 # 手动转移资源, 会调用相应的resource agent
 # crm_resource --list-raw # 资源列表
 # crm configure show ${resource} # 查看resoure的配置
@@ -710,3 +715,5 @@ LVS的八种调度方法
 该错误是`systemctl restart pacemaker`时`journalctl -f`截获的.
 
 原因: 定义`ocf:heartbeat:IPaddr`时未指定`cidr_netmask`
+### pacemaker failed action monitor not running
+对应的node因为某些原因没有执行monitor(比如reboot)导致该信息出现在`crm status`中.
