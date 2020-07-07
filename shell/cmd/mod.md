@@ -1,23 +1,30 @@
 # mod
 
-## lsmod
-查看当前kernel已加载的module信息, 信息来自`/proc/modules`.
+# depmod
+用于分析可载入模块的相依性, 以供modprobe使用.
+
+## 选项
+- -a : 分析所有可用的模块
+- -v : 输出详细信息
+
+# lsmod
+显示已加载内核模块的状态, 信息来自`/proc/modules`.
 
 输出信息:
 - Module  : 模块名称
 - Size  : 模块大小
 - Used by : 依赖其他模块的个数 + 被其他模块依赖的列表
 
-## modprobe
-加载指定的模块到内核, 或者载入一组相互依赖的模块. 若在载入过程中发生错误，在modprobe会卸载整组的模块.
+# modinfo
+显示内核模块的信息
+
+# modprobe命令
+用于对Linux内核中添加或移除模块
+
+加载指定的模块(会自动处理依赖)到内核时, 若在载入过程中发生错误，在modprobe会卸载整组的模块.
 
 modprobe会查看模块 目录`/lib/modules/$(uname -r)`里面的所有模块和文件，除了可选的/etc/modprobe.conf配置文件和/etc/modprobe.d目录外.
 modprobe需要一个最新的modules.dep(`/lib/modules/$(uname -r)/modules.dep`)文件，可以用depmod来生成. 该文件列出了每一个模块需要的其他模块，modprobe使用这个去自动添加或删除模块的依赖.
-
-### 格式
-```
-# modprobe ${mod_name}
-```
 
 > modprobe就是调用insmod和rmmod来实现的.
 
@@ -31,15 +38,11 @@ modprobe需要一个最新的modules.dep(`/lib/modules/$(uname -r)/modules.dep`)
 - -v : 详细信息
 - -q : 不提示任何错误信息
 
-## insmod/rmmod
-载入/卸载mod.
+# insmod
+插入内核模块
 
-## depmod
-分析模块的依赖, 以供modprobe使用.
-
-### 选项
-- -a : 分析所有可用的模块
-- -v : 输出详细信息
+# rmmod
+移除内核模块
 
 ## FAQ
 ### modprobe和insmod区别
