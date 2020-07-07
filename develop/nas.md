@@ -426,6 +426,11 @@ on linux:
 
 但用户如果确实需要的话，可以在支持 SMB2 及以上的 kernel 上挂载.
 
+### 删除共享后执行`smbcontrol all reload-config`, 共享目录所在的设备仍被smbd占用
+env: ubuntu14.04
+
+解决方法: 重启smbd服务
+
 ### samba启动失败
 按照samba启动脚本, 逐个测试相关组件是否正常by `echo $?`. 或使用`smbd -FS`测试(**推荐**).
 
