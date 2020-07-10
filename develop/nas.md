@@ -670,7 +670,7 @@ rpcdebug选项:
 ### mount cifs: cannot mount //xxx.xxx.xxx.xxx/xxx read-only
 运行`mount.cifs`试试, 可能`cifs-utils未安装`
 
-### mount cifs : Permission denied
+### mount cifs : Permission denied 或 syslog : `CIFS VFS: cifs_mount failed w/return code = -13`
 env: ubuntu14.04 + samba 4.3.11
 
 smb server端权限正确, 重启后正常.
