@@ -5,6 +5,8 @@ Go1.11和Go1.12只能在$GOPATH以外的目录中使用Go Modules.
 > 可以使用`go clean -modcache`清理所有已缓存的go mod数据
 > go mod导致`$GOPATH`的弱化甚至淘汰及`$GOBIN(go install)`的提升
 
+**注意:** go get 在非go mod项目下运行默认不使用GOPROXY, 除非显式指定GO111MODULE=on
+
 ## mod升级
 ```
 $ go get github.com/objcoding/testmod@v1.0.1
