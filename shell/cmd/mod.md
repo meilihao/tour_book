@@ -72,6 +72,9 @@ modprobe需要一个最新的modules.dep(`/lib/modules/$(uname -r)/modules.dep`)
 # rmmod uvcvideo
 ```
 
+# ksyms
+显示内核符号和模块符号表的信息. 信息来自`/proc/kallsyms`
+
 ## FAQ
 ### modprobe和insmod区别
 insmod不能处理依赖, 而modprobe可以.

@@ -54,6 +54,12 @@ apt install qemu-kvm qemu-system-x86 # for ubuntu 16.04, 必须同时安装qemu-
 
 > 可用`kvm-ok`检查kvm环境是否ok.
 
+### /usr/local/lib/libdbus-1.so.3: version 'LIBDBUS_PRIVATE_1.12.16' not found (required by dbus-uuidgen)
+具体原因未知, 怀疑是系统内有多个版本三libdbus.so导致.
+
+解决: `sudo apt install --reinstall libdbus-1-3`
+
+> 不行的话, 先删除错误的libdbus-1.so.3, 再重装.
 
 ### Cannot find asciidoc in PATH
 

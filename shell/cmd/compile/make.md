@@ -139,3 +139,6 @@ TOPDIR = $(realpath .) # in docker : `/app/xxx`
 # in docker : `TOPDIR=/app/xxx
 TOPDIR = $(realpath .)
 ```
+
+### *** 遗漏分隔符
+makefile中的command必须以tab键开头.

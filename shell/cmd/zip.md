@@ -22,6 +22,7 @@
 # zip -u /opt/etc.zip /etc/inittab # 将/etc/inittab更新入etc.zip
 # zip -u /opt/etc.zip /etc/* # 将/etc下所有内容更新入etc.zip
 # zip -ru /opt/etc.zip /etc # 将/etc下所有内容更新入etc.zip
+# zip -q -r -P 123456 zipfile.zip /etc
 ```
 
 ## unzip
@@ -32,6 +33,11 @@
 - -n : 解压时不覆盖已存在的文件
 - -o : 解压时覆盖已存在的文件, 并且不需要用户确认
 - -d <目录> : 把压缩文件解压到指定目录下
+- -r 递归, 将指定目录下的所有文件和子目录一起处理
+- -S : 包含系统和隐藏文件
+- -y : 直接保存符合连接, 而不是该连接所指向的文件
+- -P : 指定密码
+- -q : 不显示命令的执行过程
 
 ### example
 ```
