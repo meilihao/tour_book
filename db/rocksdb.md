@@ -1,4 +1,5 @@
 # rocksdb
+
 RocksDB的目的是成为一套能在服务器压力下，真正发挥高速存储硬件（特别是Flash 和 RAM）性能的高效数据库系统. 它是一个C++库，允许存储任意长度二进制kv数据, 支持原子读写操作.
 
 RocksDB大量复用了levedb的代码，并且还借鉴了许多HBase的设计理念, 同时Rocksdb也借用了一些Facebook之前就有的理念和代码.
@@ -8,6 +9,20 @@ RocksDB是一个嵌入式的K-V（任意字节流）存储。所有的数据在�
 RocksDB支持将一个数据库实例分片为多个列族(column families). 类似HBase，每个DB新建时默认带一个名为"default"的列族，如果一个操作没有携带列族信息，则默认使用这个列族. 如果WAL开启，当实例crash再恢复时，RocksDB可以保证用户一个一致性的视图. 通过WriteBatch API，可以实现跨列族操作的原子性.
 
 所有 Column Family 共享一个 WAL 文件，但是每个 Column Family 有自己单独的 memtable & ssttable(sstfile)，即 log 共享而数据分离.
+
+## 编译
+1. 参照[rocksdb INSTALL](https://github.com/facebook/rocksdb/blob/master/INSTALL.md), 选择平台安装依赖lib
+1. `cd rocksdb_source_root`, 选择`make static_lib/make shared_lib`进行编译
+1. 参考rocksdb的Makefile, 再执行`make install-static/make install-shared`即可. 如果安装位置需要还可使用`INSTALL_PATH=/usr/local make install-static/install-shared`, `INSTALL_PATH`默认已是`/usr/local`, 最终`librocksdb.a/librocksdb.so`会出现在`$INSTALL_PATH/lib`下
+1. 设置环境变量
+
+	```bash
+	# vim ~/.bashrc
+	export CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:$INSTALL_PATH/include
+	export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$INSTALL_PATH/lib
+	export LIBRARY_PATH=${LIBRARY_PATH}:$INSTALL_PATH/lib
+	```
+1. 重启terminal即可
 
 ## 文件介绍
 - *.log: 事务日志用于保存数据操作日志，可用于数据恢复
