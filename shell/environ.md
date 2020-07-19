@@ -78,6 +78,9 @@ done <<< "$IN"
 - RANDOM 生成一个随机数字
 - PATH 定义解释器搜索用户执行命令的路径
 - EDITOR 用户默认的文本编辑器
+- TERM 当前session终端的名称, 更加名称可知它的特性
+- LINES : 当前终端可显示的行数
+- COLUMNS : 当前终端可显示的列数
 
 # 配置文件
 `bashrc`与`profile`都用于保存用户的环境信息，`bashrc`用于非交互式`no-login shell`,比如x-window下启动的终端，而profile用于交互式`login shell`.

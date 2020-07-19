@@ -14,7 +14,7 @@ make和makefile是项目编译的管理方式.
 - -I : 在 <目录> 中搜索被包含的 makefile
 - M= : 当用户需要以某个内核为基础编译一个外部模块的话，需要在make modules 命令中加入`M=dir`, 程序会自动到指定的dir目录中查找模块源码，将其编译，生成ko文件
 - -n : 只打印命令过程，不实际执行
-- -p : 打印 make 的内部数据库, 即显示Makefile中所有的变量和内部规则
+- -p : 打印 make 的内部数据库, 即显示Makefile中所有的变量和隐式规则
 - -r : 禁用内置隐含规则
 - -s : 执行但不输出命令过程, 常用于检查Makefile的正确性
 - -S : 关闭`-k`, 即执行命令出错就退出
@@ -26,6 +26,10 @@ make主要功能就是通过makeflie来实现的. 它定义了各种源文件间
 
 linux下, 通常用Makefile代替makefile, 通过`configure`来生成. 在命令行执行make时, make默认会在当前目录查找Makefile或makefile. 如果使用其他文件作为Makefile则需要用`-f <makefile>`参数明确指明, make默认会执行Makefile中的第一个target, 且make或递归查找依赖, 如果被依赖的文件不存在, make就会退出.
 
+对于Makefile, 最主要的就是目标, 条件和命令三大要素.
+
+> make会对比target和它所有依赖的时间戳, 当发现target比它的任一依赖的时间戳小时会重新构建target, 该过程会递归进行, 因为该target的依赖可能是其他target.
+
 ### 规则
 Makefile由一组规则（Rule）组成，每条规则的格式是:
 ```makefile
@@ -35,24 +39,25 @@ targets ... : prerequisites ...
     ...
 ```
 
-- targets : 目标文件名, 多个文件以空格分隔, 可使用通配符(`*`,`?`,`[...]`).
-- prerequisites : 目标所依赖的文件或target
-- command : 如果它不与`target : prerequisites`写在一行则必须以tab键开头, 否则和prerequisites在同一行, 用`;`分隔. 如果命令过长, 可用`\`作为换行连接.
+- targets : 目标文件名, 多个文件以空格分隔, 可使用通配符(`*`,`?`,`[...]`), 至少要有一个target.
+- prerequisites : 目标所依赖的文件或target, 任意个数包括0. 0个时只有工作路径下target所代表的文件不存在时才执行command, 因为此时没法对比时间戳. 
+- command : 如果它不与`target : prerequisites`写在一行则**必须以tab键开头**, 否则和prerequisites在同一行, 用`;`分隔. 如果命令过长, 可用`\`作为换行连接.
 
 target也就是一个目标文件，可以是object file，也可以是执行文件, 还可以是一个标签（label）. prerequisites就是，要生成那个target所需要的文件或是目标. command也就是make需要执行的命令（任意的shell命令）. 这是一个文件的依赖关系，也就是说，target这一个或多个的目标文件依赖于prerequisites中的文件，其生成规则定义在 command中. 如果prerequisites中有一个以上的文件比target文件要新(修改日期)或target不存在，那么command所定义的命令就会被执行. 这就是makefile的规则, 也就是makefile中最核心的内容.
 
 常用target名称:
-- all : 表示编译所有内容, 是执行make时默认的最终目标
+- all : 表示编译所有内容, 是不给定target时make执行的默认target
 - clean : 删除编译生成的二进制文件
 - distclean : 不仅删除编译生成的二进制文件，也删除其它生成的文件，例如配置文件和格式转换后的文档，执行make distclean之后应该清除所有这些文件，只留下源文件
 - install : 需安装的内容,即执行编译后的安装工作，把可执行文件、配置文件、文档等分别拷到不同的安装目录
 
 make用`.PHONY`显式指明伪目标. 伪目标不是文件, 仅是一个标签, 因此Makefile不会生成伪目标对应的文件. 伪目标的特性是总能被执行.
+make使用"include"来包含其他文件, 用空格分隔.
 
 Makefile组成:
 - 显式规则
 
-	它说明了如何生成一个或多个目标, 由Makefile的书写者显示指出要生成的文件, 文件的依赖及生成的命令.
+	它说明了如何生成一个或多个目标, 由Makefile的书写者**显示指出**要生成的文件, 文件的依赖及生成的命令.
 - 隐式规则
 
 	因为make有自动推导功能, 会选择一套默认的方法进行make, 它让开发者可以比较简略地书写Makefile. **不推荐使用**.
@@ -72,23 +77,25 @@ Makefile组成:
 
 	`+=`表示给变量追加值, 会延用定义该变量时的`:=`或`=`
 
-	目标变量即Makefile的局部变量, 语法为：
+	目标变量即Makefile的局部变量, 仅在target中有效, 离开作用域后会恢复旧值, 语法为：
 	```
 	<target...>:<variable-assignment>
 	<target...>:override <variable-assignment>
 	```
 	<variable-assignment>可以是前面讲过的各种赋值表达式，如`=`、`:=`、`+=`或是`?=`
 
-	常用的特殊变量有：
+	常用的自动变量(随上下文的不同而改变)有：
     - $@，表示规则(Rule)中的目标
     - $<，表示规则中的第一个条件
-    - $?，表示规则中所有比目标新的条件，组成一个列表，以空格分隔
-    - $^，表示规则中的所有条件，组成一个列表，以空格分隔
+    - $?，表示规则中所有时间戳比目标新的条件，组成一个列表，以空格分隔
+    - $^，表示规则中的所有条件，组成一个列表(已去重)，以空格分隔
+	- $+, 与$^类似, 但没有排除重复条件
+	- $*, 目标的主文件名, 不包括扩展名
 
 	```makefile
 	main: main.o stack.o maze.o
 	gcc $^ -o $@
-	# 等价于
+	# --- 等价于
 	main: main.o stack.o maze.o
 	gcc main.o stack.o maze.o -o main
 	```
@@ -102,10 +109,22 @@ Makefile组成:
 	仅有行注释, 用`#`开头
 
 
-每当target中的command执行完毕后, make会检测它们的返回码, 如果成功则继续执行, 否则中止该target. 在命令前加`-`则会忽略检查返回码, 认为都成功. 命令前加`@`表示不将要执行的命令输出到屏幕. 如果要让上一条命令的结果应用在下一条上, 则它们需要写在一行并用`;`分隔.
+每当target中的command执行完毕后, make会检测它们的返回码, 如果成功则继续执行, 否则中止该target. 在命令前加`-`则会忽略检查返回码, 认为都成功. 命令前加`@`表示不将要执行的命令输出到屏幕.命令前加`+`表示只显示命令但不执行, 常 用于递归式的makefile. 如果要让上一条命令的结果应用在下一条上, 则它们需要写在一行并用`;`分隔.
+
+### 宏
+```
+define MACRO_NAME
+	...
+endef
+```
+
+带有参数的宏就是函数, 语法是`$(call MACRO_NAME [, arg1, ... , argn])`, 宏中引用参数用`$1, ... $n`表示
 
 ### 函数调用
 `$(<function> <args>)`或`${<function> <args>}`
+
+### 条件指令
+ifdef, ifndef, ifeq, ifneq, else, 结尾统一用endif.
 
 ## FAQ
 ### 了解make时执行了哪些命令

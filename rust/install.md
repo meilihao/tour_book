@@ -5,13 +5,15 @@
 [安装过程]():
 ```bash
 $ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rust.sh
-$ export RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static
-$ export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup
+$ export RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static # 用于更新 toolchain
+$ export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup # 用于更新 rustup
 $ bash rust.sh
 $ echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc # from $HOME/.cargo/env
 ```
 
 > [rust 使用国内镜像，快速安装方法](https://www.cnblogs.com/hustcpp/p/12341098.html)
+> [rust ustc mirror](https://lug.ustc.edu.cn/wiki/mirrors/help/rust-static)
+> [rust tsinghua mirror](https://mirrors.tuna.tsinghua.edu.cn/help/rustup/)
 
 ## rustup
 
