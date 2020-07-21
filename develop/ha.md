@@ -610,6 +610,8 @@ keepalived配置: `/etc/Keepalived/Keepalived.conf`, 可分为:
 参考:
 - [LVS原理篇：LVS简介、结构、四种模式、十种算法](https://blog.csdn.net/lcl_xiaowugui/article/details/81701949)
 
+> lvs在kernel中的专业命名是ipvs.
+
 LVS的模型中有两个角色：
 - 调度器:Director Server，又称为Dispatcher，Balancer
 
@@ -638,6 +640,8 @@ lvs的ip负载均衡是通过ipvs实现的, 具体机制分3种:
 
     缺点：
     - 效率低: 请求和响应报文都要经过Director转发;极高负载时，Director可能成为系统瓶颈
+
+    ![](/misc/img/develop/2020-07-21_11-31-09.png)
 - FULLNAT
 
 
@@ -689,23 +693,26 @@ lvs的ip负载均衡是通过ipvs实现的, 具体机制分3种:
     性能比较：DR>TUN>NAT>FULLNAT
 
 LVS的八种调度方法
+参考:
+- [<<liunx就是这个范儿>>#15.6.5 LVS的负载均衡调度算法]
+
 - 静态方法:仅依据算法本身进行轮询调度
 
-    - RR:Round Robin,轮调 : 均等地对待每一台服务器，不管服务器上的实际连接数和系统负载
-    - WRR:Weighted RR，加权论调 : 加权，手动让能者多劳
-    - SH:SourceIP Hash : 与目标地址散列调度算法类似，但它是根据源地址散列算法进行静态分配固定的服务器资源. 来自同一个IP地址的请求都将调度到同一个RealServer
-    - DH:Destination Hash : 根据目标 IP 地址通过散列函数将目标 IP 与服务器建立映射关系，出现服务器不可用或负载过高的情况下，发往该目标 IP 的请求会固定发给该服务器. 不管IP，请求特定的东西，都定义到同一个RS上
+    - RR:Round Robin,轮询 : 均等地对待每一台服务器，不管服务器上的实际连接数和系统负载
+    - WRR:Weighted RR，加权轮询 : 加权，手动让能者多劳
+    - SH:SourceIP Hash : 来源地址散列, 与目标地址散列调度算法类似，但它是根据源地址散列算法进行静态分配固定的服务器资源. 来自同一个IP地址的请求都将调度到同一个RealServer
+    - DH:Destination Hash : 目标地址散列, 根据目标 IP 地址通过散列函数将目标 IP 与服务器建立映射关系，出现服务器不可用或负载过高的情况下，发往该目标 IP 的请求会固定发给该服务器. 不管IP，请求特定的东西，都定义到同一个RS上
 
 - 动态方法:根据算法及RS的当前负载状态进行调度
 
     - LC:least connections(最小链接数) : 链接最少，也就是Overhead最小就调度给谁; 假如都一样，就根据配置的RS自上而下调度
     - WLC:Weighted Least Connection (加权最小连接数) : 这个是LVS的默认算法. 调度器可以自动问询真实服务器的负载情况，并动态调整权值
     - SED:Shortest Expection Delay(最小期望延迟) : WLC算法的改进. 不考虑非活动链接，谁的权重大，优先选择权重大的服务器来接收请求，但权重大的机器会比较忙
-    - NQ:Never Queue : SED算法的改进
-    - LBLC:Locality-Based Least-Connection,基于局部的的LC算法
+    - NQ:Never Queue : 最少队列, SED算法的改进
+    - LBLC:Locality-Based Least-Connection,基于局部性的最少连接算法
 
         请求数据包的目标 IP 地址的一种调度算法，该算法先根据请求的目标 IP 地址寻找最近的该目标 IP 地址所有使用的服务器，如果这台服务器依然可用，并且有能力处理该请求，调度器会尽量选择相同的服务器，否则会继续选择其它可行的服务器
-    - lblcr, 复杂的基于局部性最少的连接算法 : 记录的不是要给目标 IP 与一台服务器之间的连接记录，它会维护一个目标 IP 到一组服务器之间的映射关系，防止单点服务器负载过高
+    - lblcr:Locality-Based Least Connections with replication, 带复制的基于局部性的最少连接算法 : 记录的不是要给目标 IP 与一台服务器之间的连接记录，它会维护一个目标 IP 到一组服务器之间的映射关系，防止单点服务器负载过高
 
 ## haproxy
 基于应用实现的软负载均衡, 基于tcp和http.

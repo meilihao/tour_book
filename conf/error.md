@@ -619,3 +619,6 @@ Every 2.0s: ntpq -p
 - jitter : 系统时间与bios时间差. 统计了在特定个连续的连接数里offset的分布情况. 简单地说这个数值的绝对值越小，主机的时间就越精确
 
 > ntpd是步进式的逐渐调整时间，而ntpdate是断点更新
+
+### 电脑无故重启可能与ACPI有关系(无硬件问题)
+acpi与内核可能有不兼容的问题, kernel启动参数可追加[`acpi=ht`](https://wiki.ubuntu.org.cn/UbuntuHelp:BootOptions/zh#.E5.8F.82.E6.95.B0:_acpi.3Dht)
