@@ -17,6 +17,12 @@
 ### zlib header files not found
 sudo apt install zlib1g-dev
 
+## not find
+1. libsatlas.so
+```
+sudo apt-get install libatlas-base-dev
+```
+
 ### OpenSSL header files not found
 sudo apt install libssl-dev
 
