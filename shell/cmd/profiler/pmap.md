@@ -32,3 +32,9 @@
 - Inode : 内存中所加载的文件所在设备上的inode
 
 > `[anon]` : 在磁盘上没有对应的文件，这些一般都是可执行文件或者动态库里的bss段. 当然有对应文件的mapping也有可能是anonymous，比如文件的数据段.
+
+`pmap <pid>`查看进程的地址空间分布:
+1. 第一列: vma的起始地址
+1. 第二列: vma的大小
+1. 第三列: 属性(r,read; w, write; x, execute; s, shared; p, private)
+1. 第四列: 内存映射的文件, [anon]为匿名内存映射
