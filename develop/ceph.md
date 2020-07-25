@@ -136,7 +136,7 @@ Ceph客户端从监视器获取一张集群运行图，并把对象写入存储�
 1. 提供针对存储池的功能，如存储池快照等
 1. 设置对象的所有者或访问权限
 
-PGP是存储池PG的OSD分布组合个数. PG数目的增加会引起PG的分裂，新的PG仍然在原来的OSD上，而PGP数目的增加则会引起部分PG的分布发生变化, 但是不会引起PG内对象的变动.
+PGP是存储池PG的OSD分布组合个数. PG数目的增加会引起PG的分裂，新的PG仍然在原来的OSD上，而PGP数目的增加则会引起部分PG的分布发生变化, 但是不会引起PG内对象的变动. 可参考[ceph分布式存储-PG和PGP的区别](https://cloud.tencent.com/developer/article/1664635)
 
 ## FAQ
 ### DRBD vs Ceph
