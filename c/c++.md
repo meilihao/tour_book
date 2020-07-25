@@ -816,3 +816,8 @@ clean:
 - [C++ Standards Support in GCC](https://gcc.gnu.org/projects/cxx-status.html)
 - [C++ Support in Clang](http://clang.llvm.org/cxx_status.html)
 - [C++ 20的范围稳了，主流编译器的完整支持会在什么时候？](https://www.zhihu.com/question/313443905)
+
+### `gcc -lstdc++ slice.cpp`报: undefined reference to `std::cout'
+明明使用了`use namespace std;`, 编译时还是报错.
+
+使用`gcc slice.cpp -lstdc++`或`g++ slice.cpp`. 用gcc时要注意参数位置.
