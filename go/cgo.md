@@ -177,11 +177,13 @@ func main() {
 - 设置LD_LIBRARY_PATH，运行`LD_LIBRARY_PATH=. ./demo`
 
 ## cgo编译
-`go build --ldflags '-extldflags "-lm -lstdc++ -static"' -i -o cockroach`
+参考:
+- [完全静态编译一个Go程序](https://colobu.com/2018/07/20/totally-static-Go-builds/)
 
-` CGO_CFLAGS="-I/usr/local/include" CGO_LDFLAGS="-L/usr/local/lib -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy -llz4 -lzstd -ldl" go build --ldflags '-extldflags "-static"'`
+// use github.com/tecbot/gorocksdb librocksdb.a 且已安装了`apt install libc6-dev`
+`CGO_LDFLAGS="-L/usr/local/lib -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy -llz4 -lzstd" go build`
 
-> rocksdb 6.11.4因为使用了dlopen, 必须依赖so导致无法静态编译, 报`Using 'dlopen' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking`
+`CGO_CFLAGS="-I/usr/local/include" go build --ldflags '-extldflags "-L/usr/local/lib -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy -llz4 -lzstd"'` // ??? 加了`-extldflags "-static"`即`-static`就报`Using 'dlopen' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking`, 不加就正常. 且此时编出的二进制仅rocksdb静态化, 其他的比如bz2, snappy还是so的形式.
 
 ## FAQ
 ### so依赖
