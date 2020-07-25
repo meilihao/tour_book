@@ -176,6 +176,13 @@ func main() {
 - 设置rpath， 编译时直接指定so的位置， `cgo LDFLAGS: -L. -ldemo -Wl,-rpath=./`, `./`在这里表示当前目录，直接用`.`会报错.
 - 设置LD_LIBRARY_PATH，运行`LD_LIBRARY_PATH=. ./demo`
 
+## cgo编译
+`go build --ldflags '-extldflags "-lm -lstdc++ -static"' -i -o cockroach`
+
+` CGO_CFLAGS="-I/usr/local/include" CGO_LDFLAGS="-L/usr/local/lib -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy -llz4 -lzstd -ldl" go build --ldflags '-extldflags "-static"'`
+
+> rocksdb 6.11.4因为使用了dlopen, 必须依赖so导致无法静态编译, 报`Using 'dlopen' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking`
+
 ## FAQ
 ### so依赖
 如果引入的so依赖其他so,那么先使用`ldd libai.so`查看并安装缺失的so(注意版本),否则`go build`时会报错,比如:
