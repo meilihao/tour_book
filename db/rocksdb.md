@@ -2,11 +2,13 @@
 参考:
 - [RocksDB系列](https://www.jianshu.com/p/061927761027)
 
-RocksDB的目的是成为一套能在服务器压力下，真正发挥高速存储硬件（特别是Flash 和 RAM）性能的高效数据库系统. 它是一个C++库，允许存储任意长度二进制kv数据, 支持原子读写操作.
+RocksDB的目的是成为一套能在服务器压力下，真正发挥高速存储硬件（特别是Flash 和 RAM）性能的高效单点数据库系统. 它是一个C++库，允许存储任意长度二进制kv数据, 支持原子读写操作, 因此本质上来说它是一个可插拔式的存储引擎选择.
 
 RocksDB大量复用了levedb的代码，并且还借鉴了许多HBase的设计理念, 同时Rocksdb也借用了一些Facebook之前就有的理念和代码.
 
 RocksDB是一个嵌入式的K-V（任意字节流）存储. 所有的数据在引擎中是有序存储，可以支持Get(key)、Put（Key）、Delete（Key）和NewIterator()。RocksDB的基本组成是memtable、sstfile和logfile。memtable是一种**内存数据结构**，写请求会先将数据写到memtable中，然后可选地写入事务日志logfile(WAL)。logfile是一个**顺序写**的文件。当memtable被填满的时候，数据会flush到sstfile中，然后这个memtable对应的logfile也会安全地被删除。sstfile中的数据也是有序存储以方便查找.
+
+> rocksdb支持Direct IO, 以绕过系统Page Cache，通过应用内存从存储设置中直接进行IO读写操作.
 
 ![](/misc/img/develop/4304640-891400b1777c999d.png)
 
@@ -35,6 +37,7 @@ RocksDB是一个嵌入式的K-V（任意字节流）存储. 所有的数据在�
 - MANIFEST-* : Manifest的滚动日志文件
 - CURRENT：指定当前正在使用的MANIFEST文件
 - LOCK：rocksdb自带的文件锁，防止两个进程来打开数据库
+- IDENTITY : 存放当前rocksdb的唯一标识
 
 ## Memtable
 可插拔 memtable，RocksDB 的 memtable 的默认实现是一个 skiplist。skiplist 是一个有序集，当工作负载使用 range-scans 并且交织写入时，这是一个必要的结构。然而，一些应用程序不交织写入和扫描，而一些应用程序根本不执行范围扫描。对于这些应用程序，排序集可能无法提供最佳性能。因此，RocksDB 支持可插拔的 API，允许应用程序提供自己的 memtable 实现。
@@ -45,6 +48,10 @@ RocksDB是一个嵌入式的K-V（任意字节流）存储. 所有的数据在�
 
 ## SSTFile(SSTTable)
 RocksDB在磁盘上的file结构sstfile由block作为基本单位组成，一个sstfile结构由多个data block和meta block组成， 其中data block就是数据实体block，meta block为元数据block， 其中data block就是数据实体block，meta block为元数据block。 sstfile组成的block有可能被压缩(compression)，不同level也可能使用不同的compression方式。 sstfile如果要遍历block，会逆序遍历，从footer开始。
+
+sst里面的数据按照key进行排序能方便对其进行二分查找. 在SST文件内，还额外包含以下特殊信息：
+- Bloom Fileter : 用于快速判断目标查询key是否存在于当前SST文件内
+- Index / Partition Index，SST内部数据块索引文件快速找到数据块的位置
 
 compaction输入的SST file并不是立即就从SST file集合中删除，因为有可能在这些SST file上正进行着get or iterator操作. 只有当冗余的SST file上没有任何操作的时候，才会执行真正的删除文件操作. [这些逻辑是通过引用计数来实现的](https://www.jianshu.com/p/b95db752178f).
 
@@ -70,7 +77,7 @@ Get()流程：
 
 ## 功能
 ### Column Families
-RocksDB支持将一个数据库实例分片为多个列族(column families). 类似HBase，每个DB新建时默认带一个名为"default"的列族，如果一个操作没有携带列族信息，则默认使用这个列族. 如果WAL开启，当实例crash再恢复时，RocksDB可以保证用户一个一致性的视图. 通过WriteBatch API，可以实现跨列族操作的原子性.
+RocksDB支持将一个数据库实例分片为多个列族(column families, 类似表Table). 类似HBase，每个DB新建时默认带一个名为"default"的列族，如果一个操作没有携带列族信息，则默认使用这个列族. 如果WAL开启，当实例crash再恢复时，RocksDB可以保证用户一个一致性的视图. 通过WriteBatch API，可以实现跨列族操作的原子性.
 
 所有 Column Family 共享 WAL、Current、Manifest 文件，但是每个 Column Family 有自己单独的 memtable & ssttable(sstfile)，即 log 共享而数据分离.
 
@@ -137,7 +144,7 @@ RocksDB支持增量备份，增量复制需要能够查找到所有的DB修改�
 正常情况下，backup数据是递增的. 开发者可以使用BackupEngine::CreateNewBackup() 创建一个新的backup，且只有新增的数据才会copy到backup 目录中.
 
 ### Block Cache -- Compressed and Uncompressed Data
-RocksDB使用LRU cache提供block的读服务。block cache partition为两个独立的cache，其中一块可以cache未压缩RAM数据，另一块cache 压缩RAM数据。如果压缩cache配置打开的话，用户一般会开启direct io，以避免OS的也缓存重新cache相同的压缩数据。
+RocksDB使用LRU cache提供block的读服务, 存储SST文件被经常访问的热点数据. block cache partition为两个独立的cache，其中一块可以cache未压缩RAM数据，另一块cache 压缩RAM数据。如果压缩cache配置打开的话，用户一般会开启direct io，以避免OS的也缓存重新cache相同的压缩数据。
 
 ### Table Cache
 Table cache缓存了所有已打开的文件句柄，这些文件都是sstfile。用户可以设置table cache的最大值。
@@ -174,7 +181,36 @@ Block Cache是RocksDB把数据缓存在内存中以提高读性能的一种方�
 默认情况下，会对key的所有字节进行hash计算来设置bloom filter。这可以通过设置BlockBasedTableOptions::whole_key_filtering为false来避免对全部字节进行计算。当Options.prefix_extractor设置后，针对每个key的前缀计算的hash值也添加到了bloom filter中. 由于key的前缀集合要小于key集合，因此计算key前缀生成的bloom filter会更小，当然也会提高误报率.
 
 ## 工具
-[Administration and Data Access Tool](https://www.jianshu.com/p/35a5d5792d65)
+参考:
+- [Administration and Data Access Tool](https://www.jianshu.com/p/35a5d5792d65)
+
+RocksDB提供以下3大类型的工具:
+1. 性能测试工具
+
+    Benchmark Tool
+    Stress Tool，压力测试工具
+
+1. workload模拟工具
+
+    用户数据访问行为模拟工具
+    Workload生成工具
+
+    [ldb](https://github.com/facebook/rocksdb/wiki/Administration-and-Data-Access-Tool)命令行工具提供了不同的数据访问和数据库管理命令.
+    [sst_dump tool](https://github.com/facebook/rocksdb/wiki/Administration-and-Data-Access-Tool)可以dump数据然后分析SST file.
+
+    ```bash
+    # Linux
+	$ cd rocksdb
+	$ make ldb sst_dump
+	$ cp ldb /usr/local/bin/
+	$ cp sst_dump /usr/local/bin/
+    ```
+
+1. 性能分析工具，DB Analyzer
+
+## 源码
+- [RocksDB · 数据的读取(一)](http://mysql.taobao.org/monthly/2018/11/05/)
+- [RocksDB解析](https://www.cnblogs.com/pdev/p/11277784.html)
 
 ## FAQ
 ### 即使Put() use writeOptions.SetSync(true), Iterator遍历时部分数据(最近put的数据)无法访问到, 但Get()正常
@@ -203,3 +239,6 @@ RocksDB的内存大致有如下四个区：
 - Indexes and bloom filters
 - Memtables
 - Blocked pinned by iterators
+
+### 获取所使用的rocksdb version
+查看db_path下的OPTIONS-<SN>中的section "Version"即可
