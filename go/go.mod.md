@@ -184,3 +184,6 @@ vendor目录仅包含依赖到的代码, 未依赖的package会被忽略.
 ### 代理
 - [Go Module 来了，企业私有代理你准备好了吗？](https://gocn.vip/topics/9831)
 - [goproxy.cn - 为中国 Go 语言开发者量身打造的模块代理](https://segmentfault.com/a/1190000020293616)
+
+### go mod项目嵌套
+go mod项目嵌套时, go get需要指定具体的路径比如`go get -u golang.org/x/tools/gopls`,再将gopls拷入对应目录, 这里是拷入`$GOROOT/pkg/mod/golang.org/x/tools-v0.0.0-xxx-<xxx>`. 因为直接`go get -u golang.org/x/tools`时, tools目录不含gopls.

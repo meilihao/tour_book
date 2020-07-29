@@ -215,6 +215,8 @@ git show commitId fileName # 查看某次commit中具体某个文件的修改
 参考:
 - [使用 Git 時如何做出跨 repo 的 cherry-pick](https://blog.m157q.tw/posts/2017/12/30/git-cross-repo-cherry-pick/)
 
+> git cherry-pick会改变commit id.
+
 
 共计3种方法:
 1. git remote add + git fetch + git cherry-pick(**推荐**)

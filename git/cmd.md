@@ -23,6 +23,10 @@ $ git config -l
 - `git help <command>` :  显示command的help
 - `git clone <url>` : clone远程版本库
 - `git init` : init本地版本库
+- `git ls-files` : 查看当前路径下哪些文件被git管理
+- `git send-email` : 发送patch
+- `git gc` : 清理未使用的对象或文件, 优化repo
+
 
 ## add
 - `git add -u <file>` : 将文件修改提交到暂存区,"-u"表示仅添加修改和删除的文件,不包括新增.
@@ -69,6 +73,16 @@ git checkout a.md
 git checkout [<$id>|<branch>] [--] <file>；
 git checkout . # .表示撤销当前目录及其子目录内所有文件的修改
 ```
+
+高版本git(>=2.23, 比如`git version 2.25.1`)开始, 将checkout拆分成了两个命令, 目的是将checkout的分支管理和文件恢复撤销的职责分离:
+- git switch ：类似于git checkout，参数有:
+	
+	- git checkout <分支名> 和 git checkout -b <分支名> -> git switch <分支名> 和 git switch -c <分支名>
+	-m:merge
+	-t:track
+- git restore : 类似`git checkout --`
+
+	- `--staged` : 将暂存区的文件从暂存区撤出到work dir，但不会更改文件文件的内容
 
 ## branch
 - `git branch -r` : 查看所有的远程分支

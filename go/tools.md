@@ -60,3 +60,6 @@ vscode的go插件启用了gopls, 但gopls总是崩溃.
 "http.proxyStrictSSL": false,
 "go.docsTool": "gogetdoc", // 如果引用的包使用了 ( . "aa.com/text") 那这个text包下的函数也无法跳转进去, 可将 "go.docsTool" 改为 gogetdoc，默认是 godoc
 ```
+
+#### vscode go依赖更新
+打开golang 项目, 右键选择`Go: Show All Commands...` -> 输入`Go: Install/Update Tools`, 在下拉中选中该命令 -> 选择全部插件, 点击输入框右侧的"ok"按钮即可.

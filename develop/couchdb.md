@@ -369,7 +369,7 @@ couchdb内置reduce函数:
 - `_sum` : 返回map结果集中数值的求和结果
 - `_stats` : 返回map结果集中数值的统计结果
 
-运行视图时的可选参数(参数, 说明):
+运行视图时的可选参数(参数, 说明), 以下仅是部分, 更多的话查看[这里](https://docs.couchdb.org/en/latest/api/ddoc/views.html#db-design-design-doc-view-view-name):
 - key : 限定结果中只包含键为该参数值的记录
 - startkey : 限定结果中只包含键大于或等于该参数值的记录
 - endkey : 限定结果中只包含键小于或等于该参数值的记录
@@ -383,6 +383,7 @@ couchdb内置reduce函数:
 - group : 指定是否对键进行分组
 - reduce : 指定reduce=false可以只返回 Map 方法的运行结果
 - group_level : 当key为array时, 允许使用group_level指定使用array的前n个元素作为新key来执行mapreduce.
+- include_docs=true : 返回doc
 
 > startkey + limit + skip 可实现分页
 
