@@ -58,6 +58,8 @@ ip rule list的这三张路由表，又称为路由规则. 只不过路由规则
 # ip rule add from 192.168.1.0/24 table 1 prio 10  在table 1添加rule且优先级是10
 ```
 
+# ip link
+
 # ip netns
 参考:
 - [Linux ip netns 命令](https://www.cnblogs.com/sparkdev/p/9253409.html)

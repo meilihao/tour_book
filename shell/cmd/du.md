@@ -10,3 +10,8 @@
 - -h : 以易读的方式显示结果
 - -s : 仅显示总计(递归统计)的大小, 单位为KB
 - -sm : 以mb为单位显示总计结果
+
+## example
+```bash
+# du -m -s gorocksdb.db
+```
