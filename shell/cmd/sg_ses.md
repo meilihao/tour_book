@@ -1,4 +1,7 @@
 # scsi
+参考:
+- [sg3-utils的命令列表](http://sg.danny.cz/sg/sg3_utils.html)
+
 [sg3-utils](http://sg.danny.cz/sg/)是一个工具包，提供了与SCSI设备通信的命令工具.
 
 sg = SCSI Generic
@@ -43,9 +46,9 @@ Linux实现了一个通用的SCSI设备驱动，如果一个设备支持SCSI协�
 # sg_ses -p 0x2 /dev/sg7 # 根据`sg_ses -p 0x0`返回的结果, 查看指定的page, 这里的0x2表示`Enclosure status/control (SES) [0x2]`
 # sg_ses -p 2 -I 27 /dev/sg7 # 查看指定element的enclosure status
 # sg_ses -p 0xa /dev/sg7 # 获取扩展柜中设备的SAS address, 槽位号
-# sg_ses -p 0xa /dev/sg7 |grep -E 'slot|Element' |sed 'N;s/\n//' |awk '{print $3,$15}' # 获取element_index与slot_number的对应关系
+# sg_ses -p 0xa /dev/sg7 |grep -E 'slot|Element' |sed 'N;s/\n//' |awk '{print $3,$15}' # 获取element_index与slot_number的对应关系, 通常序号是对应的
 # sg_ses -p 0xa /dev/sg7 |grep -E 'slot|Element' |sed 'N;s/\n//' |awk '{print $15,$3}' |sort -n # 获取slot_number与element_index的对应关系
-# sg_ses -p 0xa /dev/sg7 |grep -E 'slot number|  SAS address' |sed 'N;s/\n//' |awk '{print $12,$15}' |sort -n # 槽位对应的SAS address, 0x0000000000000000或0x0表示没有盘
+# sg_ses -p 0xa /dev/sg7 |grep -E 'slot number|  SAS address' |sed 'N;s/\n//' |awk '{print $12,$15}' |sort -n # 槽位对应的SAS address, 0x0000000000000000(x86)或0x0(arm)表示没有盘
 # sg_ses -ee # 查看允许设置的状态
 # --- disk fault: (Red LED light on)
 # --- `--set/--clear/--get`对应的格式是`<start_byte>:<start_bit>[:<number_of_bits>]`, <number_of_bits>未提供时默认是1 
@@ -56,15 +59,27 @@ Linux实现了一个通用的SCSI设备驱动，如果一个设备支持SCSI协�
 ```
 
 ## sginfo
+symbolic decoding (optional changing) of mode pages. Can also output (disk) defect lists. Port of older scsiinfo utility.
+
 ```bash
 # sginfo - # 获取sg设备的信息
 ```
 
 ## sg_inq
-```
+fetch standard response, VPD pages or version descriptors. Also can perform IDENTIFY (PACKET) DEVICE ATA command. VPD page decoding also performed by sg_vpd and sdparm.
+
+```bash
 # sg_inq /dev/sda # 获取磁盘的概要信息
 # sg_inq -p 0x0 /dev/sda # 获取磁盘支持的pages
-# sg_inq -p 0x83 /dev/sda # 获取磁盘的设备标识
+# sg_inq -p 0x83 /dev/sda # 获取磁盘的设备标识信息
+# sg_inq /dev/sda |grep "Unit serial number" # 获取磁盘的设备标识
+```
+
+## sg_vpg
+Decodes standard and some vendor Vital Product Data (VPD) pages.
+
+```bash
+# sg_vpd -p 0x83 /dev/sg15
 ```
 
 ## 扩展

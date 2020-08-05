@@ -1,4 +1,5 @@
-# tee
+# iotop
+> 类似的有pidstat, 查看某个进程的io情况: `pidstat -p <pid> -d 1`
 
 ## 描述
 
@@ -14,4 +15,4 @@ iotop 是一个类似 top 的工具，用来显示实时的磁盘活动. 它会�
 
 ## 例
 
-    # iotop
+    # iotop -oP
