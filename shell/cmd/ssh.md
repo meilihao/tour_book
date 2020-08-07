@@ -23,6 +23,11 @@ MaxSessions 10 最大终端数
 PasswordAuthentication yes 是否允许密码验证
 PermitEmptyPasswords no 是否允许空密码登录（很不安全）
 
+## example
+```bash
+ssh root@192.168.16.40 -t "cd /proc/cpuinfo"
+```
+
 ## FAQ
 ### 不检查host key, 即不检查fingerprint
 仅在安全网络下这样配置, 比如内网.
