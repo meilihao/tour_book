@@ -48,18 +48,96 @@ Kubernetes 项目上创建的所有 Pod 就能够通过 Persistent Volume（PV�
 ### cluster
 cluster是计算,存储和网络资源的集合. k8s使用这些资源运行各种基于容器的服务.
 
-### master
-master是cluster的大脑, 主要职责是调度. 为了高可用, 通常会运行多个master
+# k8s架构
+参考:
+- [Kubernetes 组件](https://kubernetes.io/zh/docs/concepts/overview/components/)
 
-### controller
-k8s通常不直接创建pod, 而是通过controller来运行管理pod.
+Kubernetes 属于主从的分布式集群架构，包含 Master 和 Node. Master 作为控制节点，调度管理整个系统；Node 是运行节点，运行业务容器. 每个Node上运行有多个Pod,Pod 中可以运行多个容器（通常一个Pod 中只部署一个容器，也可以将一些高度耦合的容器部署在一起），然而Pod无法直接对来自Kubernetes集群外部的访问提供服务.
+
+![Kubernetes 集群由代表控制平面的组件和一组称为节点的机器组成](https://d33wubrfki0l68.cloudfront.net/7016517375d10c702489167e704dcb99e570df85/7bb53/images/docs/components-of-kubernetes.png)
+
+## master(control plane)
+master是cluster的大脑, 主要职责是调度. 为了高可用, 通常会运行多个master.
+
+Master节点上面主要由五个组件组成：kube-apiserver、
+kube-scheduler、kube-controller-manager, cloud-controller-manager、etcd:
+
+- etcd是Kubernetes用于存储各个资源状态的分布式数据库，采用Raft协议作为一致性算法
+
+- API Server（kube-apiserver）主要提供认证与授权、管理API版本等功能，通过RESTful API向外提供服务，任何对资源（Pod、Deployment、Service等）进行增删改查等操作都要交给API Server处理后再提交给etcd, 是 Kubernetes 控制面的前端.
+
+  kubectl(k8s的客户端)就是通过kube-apiserver提供的api与k8s cluster交互
+
+- Scheduler（kube-scheduler）负责调度Pod到合适的Node上，根据集群的资源和状态选择合适的节点创建Pod。如果把Scheduler看作一个黑匣子，那么它的输入是Pod和由多个Node组成的列表，输出是Pod和一个Node的绑定，即将Pod部署到Node 上。Kubernetes 提供了调度算法的实现接口，用户可以根据自己的需求定义自己的调度算法。
+
+  调度决策考虑的因素包括单个 Pod 和 Pod 集合的资源需求、硬件/软件/策略约束、亲和性和反亲和性规范、数据位置、工作负载间的干扰和最后时限.
+
+- kube-controller-manager就是负责的“后台”。每个资源一般都对应有一个控制器，而kube-controller-manager就是负责管理这些控制器的。比如通过API Server创建一个Pod，当Pod创建成功后，API Server 的任务就算完成了，而后面保证 Pod 的状态始终和预期一样的重任就由Controller去完成.
+
+  从逻辑上讲，每个控制器 都是一个单独的进程，但是为了降低复杂性，它们都被编译到同一个可执行文件，并在一个进程中运行.
+
+  这些控制器包括:
+
+  - 节点控制器（Node Controller）: 负责在节点出现故障时进行通知和响应。
+  - 副本控制器（Replication Controller）: 负责为系统中的每个副本控制器对象维护正确数量的 Pod。
+  - 端点控制器（Endpoints Controller）: 填充端点(Endpoints)对象(即加入 Service 与 Pod)。
+  - 服务帐户和令牌控制器（Service Account & Token Controllers）: 为新的命名空间创建默认帐户和 API 访问令牌
+
+- cloud-controller-manager 运行与基础云提供商交互的控制器, 且仅运行云提供商特定的控制器循环
+
+  以下控制器具有云提供商依赖性:
+
+  - 节点控制器（Node Controller）: 用于检查云提供商以确定节点是否在云中停止响应后被删除
+  - 路由控制器（Route Controller）: 用于在底层云基础架构中设置路由
+  - 服务控制器（Service Controller）: 用于创建、更新和删除云提供商负载均衡器
+  - 数据卷控制器（Volume Controller）: 用于创建、附加和装载卷、并与云提供商进行交互以编排卷
+
+## node
+节点组件在每个节点上运行, 是具体负责运行容器的工作节点（worker machine, 工作机器），维护运行的 Pod 并提供 Kubernetes 运行环境. 它运行着pod、pod网络、kubelet、kube-proxy、Container Runtime等.
+
+node agent(kubelet)会监控并汇报容器状态, 同时会根据master的要求管理容器的生命周期.
+
+Node由Master来进行管理。每个Node上可以运行多个Pod,Master会根据集群中每个Node上的可用资源情况自动地调度Pod的部署。
+
+每个Node上都会运行以下组件:
+
+- kubelet：是Master在每个Node节点上面的agent，负责Master和Node之间的通信，并管理Pod和容器。
+
+- kube-proxy：是集群中每个节点上运行的网络代理,实现 Kubernetes Service 概念的一部分.
+
+  kube-proxy实现了Kubernetes中的服务发现和反向代理功能:
+
+  - 在反向代理方面，kube-proxy支持TCP和UDP连接转发，默认基于Round Robin算法将客户端流量转发到与 Service 对应的一组后端 pod.
+  - 在服务发现方面，kube-proxy使用etcd的watch机制，监控集群中Service和Endpoint对象数据的动态变化，并且维护一个Service到Endpoint的映射关系，从而保证了后端Pod的IP变化不会对访问者造成影响.
+  - 另外，kube-proxy还支持session affinity
+
+- 一个容器：负责从Registry拉取容器镜像、解压缩容器及运行应用程序
+
+## 其他组成
+### DNS
+Cluster DNS 是一个 DNS 服务器，为 Kubernetes 服务提供DNS记录
+
+# kube-controller-manager
+是一系列控制器的集合. 它管理 cluster的各种资源, 保证资源处于预期状态. k8s通常不直接创建pod, 而是通过controller来运行管理pod.
 
 controller分类:
-- Deployment : 管理pod的多副本(通过ReplicaSet), 确保pod按照期望的状态运行
-- ReplicaSet : 实现了Pod的多副本管理,包括滚动更新. 使用Deployment时会自动创建ReplicaSet, 因此我们通常不直接使用它
-- DaemonSet : 用于node最多只运行一个pod副本的场景
-- StatefuleSet : 保证pod的每个副本在整个生命周期中的名称是不变的(因故障需删除并重启除外), 同时会保证副本按照固定的顺序启动,更新或删除
-- Job
+
+- Node Controller
+- CronJob Controller
+- Daemon Controller : 用于node最多只运行一个pod副本的场景
+- Deployment Controller : 管理pod的多副本(通过ReplicaSet), 确保pod按照期望的状态运行
+- Endpoint Controller
+- Garbage Collector
+- Namespace Controller : 管理namespace
+- Job Controller
+- Pod AutoScaler
+- RelicaSet : 实现了Pod的多副本管理,包括滚动更新. 使用Deployment时会自动创建ReplicaSet, 因此我们通常不直接使用它
+- Service Controller
+- ServiceAccount Controller
+- StatefulSet Controller : 保证pod的每个副本在整个生命周期中的名称是不变的(因故障需删除并重启除外), 同时会保证副本按照固定的顺序启动,更新或删除
+- Volume Controller
+- Resource quota Controller
+- ~~Replication Controller~~(RC, 已被Replica Set和Deployment取代)
 
 > 一个 ReplicaSet 对象，其实就是由副本数目的定义和一个 Pod 模板组成的; Deployment 控制器实际操纵的，正是 ReplicaSet 对象，而不是 Pod 对象
 
@@ -131,16 +209,19 @@ Cron 表达式中的五个部分分别代表：分钟、小时、日、月、星
 
 如果某一次 Job 创建失败，这次创建就会被标记为“miss”。当在指定的时间窗口(spec.startingDeadlineSeconds)内，miss 的数目达到 100 时，那么 CronJob 会停止再创建这个 Job
 
-### node
-node是具体负责运行容器的应用, 会监控并汇报容器状态, 同时会根据master的要求管理容器的生命周期. node由master管理.
-
 ### pod
 pod是k8s最小的工作(调度,扩展,共享资源,管理生命周期)单位. 它是一个或多个相关容器的集合, 其原因是:
 1. 可管理性: 某些容器的应用间存在紧密联系
-1. 共享通信和存储: pod中的容器使用同一个网络namespace.
+1. 共享通信和存储
+
+  - pod中的容器使用同一个网络namespace
+  - 共享存储，如卷（Volume）
+  - 运行这些容器所需的相关信息，如容器镜像版本、使用的特定端口等
 
 围绕着容器和 Pod 不断向真实的技术场景扩展，我们就能够摸索出一幅如下所示的 Kubernetes 项目核心功能的“全景图”:
 ![Kubernetes 项目核心功能的“全景图](https://static001.geekbang.org/resource/image/16/06/16c095d6efb8d8c226ad9b098689f306.png)
+
+Pod是有生命周期的，Pod被分配到一个Node上之后，就不会离开这个Node，直到被删除。当某个 Pod 失败时，首先会被 Kubernetes 清理掉，之后 Deployment会在其他机器（或本机）上重建Pod，重建之后Pod的ID发生了变化，与原有的Pod将拥有不同的IP地址，因而将会是一个新的Pod。所以，Kubernetes中Pod的迁移，实际指的是在新Node上重建Pod。而将Pod部署在Service中，使得Kubernetes可以自动协调Pod之间的更改，从而支持应用程序的持续运行。
 
 > pod类似于进程组的或虚拟机的角色, 而容器就是里面的进程
 > 凡是调度、网络、存储，以及安全相关的属性，基本上是 Pod 级别的; 凡是跟容器的 Linux Namespace 相关的属性或容器要共享宿主机的 Namespace，都一定是 Pod 级别的, 因为Pod 的设计就是要让它里面的容器尽可能多地共享 Linux Namespace，仅保留必要的隔离和限制能力
@@ -366,9 +447,9 @@ Kubernetes集群现在支持增加一个可选的组件——DNS服务器. 这�
 Kubernetes使用iptables和kube-proxy解析Service的入口地址，在中小规模的集群中运行良好，但是当Service的数量超过一定规模时，仍然有一些小问题. 首当其冲的便是Service环境变量泛滥，以及Service与使用Service的Pod两者创建时间先后的制约关系. 目前来看，很多使用者在使用Kubernetes时往往会开发一套自己的Router组件来替代Service，以便更好地掌控和定制这部分功能. 
 
 ### Deployment
-Kubernetes提供的一种更加简单的维护RC和Pod的机制. 通过在Deployment中描述所期望的集群状态，Deployment Controller会将现在的集群状态在一个可控的速度下逐步更新到所期望的集群状态.
+Kubernetes提供的一种更加简单的维护RC和Pod的机制. 通过在Deployment中描述所期望的集群状态，Deployment Controller会将现在的集群状态在一个可控的速度下逐步更新到所期望的集群状态, 即更加方便地管理Pod和Replica Set.
 
-90%的功能与Replication Controller完全一样，可以看做新一代的Replication Controller. 但是，它又具备了Replication Controller之外的新特性：
+Deployment 的主要职责同样是为了保证Pod的数量和健康，继承了Replication Controller的全部功能，可以看做新一代的Replication Controller. 但是，它又具备了Replication Controller之外的新特性：
 - Replication Controller全部功能
 - 事件和状态查看：可以查看Deployment的升级详细进度和状态
 - 回滚：当升级Pod镜像或者相关参数的时候发现问题，可以使用回滚操作回滚到上一个稳定的版本或者指定的版本
@@ -407,7 +488,7 @@ kubectl rollout status deployment nginx-deployment # 实时查看 Deployment 对
 > k8s使用ControllerRevision(from v1.7)来记录Controller 的版本, 其在回滚时非常有用.
 
 #### Horizontal Pod Autoscaler
-Horizontal Pod Autoscaler的操作对象是Replication Controller、ReplicaSet或Deployment对应的Pod，根据观察到的实际资源使用量与用户的期望值进行比对，做出是否需要增减实例数量的决策.
+Horizontal Pod Autoscaler的操作对象是ReplicaSet或Deployment对应的Pod，根据观察到的实际资源使用量与用户的期望值进行比对，做出是否需要增减实例数量的决策.
 
 ### volume
 参考:
@@ -563,7 +644,7 @@ StatefulSet 的控制器直接管理的是 Pod, 通过 Headless Service为这些
 设计思想: StatefulSet 其实就是一种特殊的 Deployment，而其独特之处在于，它的每个 Pod 都被编号了。而且，这个编号会体现在 Pod 的名字和 hostname 等标识信息上，这不仅代表了 Pod 的创建顺序，也是 Pod 的重要网络标识. 有了这些编号后，StatefulSet 就使用 Kubernetes 里的两个标准功能：Headless Service 和 PV/PVC，实现了对 Pod 的拓扑状态和存储状态的维护.
 
 ### Namespace
-Namespace将一个物理cluster逻辑上划分为多个虚拟的cluster, 不同Namespace间的资源是完全隔离的.
+Namespace将一个物理cluster逻辑上划分为多个虚拟的cluster, 不同Namespace间的资源是完全隔离的. Kubernetes通过Namespace将一个集群的资源分配给了多个用户.
 
 k8s默认会创建两个Namespace:
 - default : 创建资源时如果不指定Namespace则会放入这里
@@ -589,35 +670,9 @@ k8s应用打包工具, 支持:
 - chart : 一个应用的信息集合, 包含各种k8s 对象的配置模板, 参数定义, 依赖关系, 文档等.
 - release : chart 的运行实例. chart能够多次安装到同一个集群
 
-## 架构
-k8s cluster 由 master 和 node 组成.
 
-master运行着kube-apiserver、
-kube-scheduler、kube-controller-manager、etcd和pod网络.
+### other
 
-node运行着pod、pod网络、kubelet、kube-proxy、Runtime.
-
-### kube-dns
-为cluster提供dns服务
-
-### kube-apiserver
-提供k8s api(RESTFul API), 是k8s cluster的前端接口(即系统管理命令的统一入口).
-
-> kubectl(k8s的客户端)就是通过kube-apiserver提供的api与k8s cluster交互
-
-### kube-scheduler
-负责将pod调度到哪个node上.
-
-scheduler 考虑维度: cluster的拓扑结构, 节点负载, 应用对高可用,性能,数据亲和性等
-
-### kube-controller-manager
-是一系列控制器的集合. 它管理 cluster的各种资源, 保证资源处于预期状态
-
-controller分类:
-- replication controller : 管理 deployment, statefulset, daemonset
-- endpoints controller
-- namespace controller : 管理namespace
-- serviceaccounts controller
 
 类似 Deployment controller，实际上都是由上半部分的控制器定义（包括期望状态），加上下半部分的被控制对象的模板组成的.
 
@@ -645,13 +700,6 @@ deployment controller创建pod的过程:
 1. 通过kubectl创建Deployment
 1. Deployment创建ReplicaSet
 1. ReplicaSet创建pod
-
-#### Replication Controller(RC)
-应用托管在Kubernetes之后，Kubernetes需要保证应用能够持续运行，这是RC的工作内容，它会确保任何时间Kubernetes中都有指定数量的Pod在运行. 在此基础上，RC还提供了一些更高级的特性，比如滚动升级、升级回滚等
-
-RC与Pod的关联是通过Label来实现的, 可在Pod.metadata.labeks中进行设置. 另外Lable是不具有唯一性的，为了更准确的标识一个Pod，应该为Pod设置多个维度的label.
-
-修改了对应Pod的Label，就会使Pod脱离RC的控制. 同样，在RC运行正常的时候，若试图继续创建同样Label的Pod，是创建不出来的. 因为RC认为副本数已经正常了，再多起的话会被RC删掉的.
 
 ##### 弹性伸缩
 弹性伸缩是指适应负载变化，以弹性可伸缩的方式提供资源。反映到Kubernetes中，指的是可根据负载的高低动态调整Pod的副本数量(通过修改RC中Pod的副本是来实现的).
@@ -930,18 +978,30 @@ pod是k8s的基本处理单元, 其包含一个特殊的Pause容器(即根容器
 Endpoint: service通过selector和pod建立关联, k8s会根据service关联到pod的podIP信息组合成一个endpoint.  可通过`kubectl describe service ${service_name}`查看Endpoints.
 
 Service类型:
-- ClusterIP(默认) : 只有Cluster内的节点和Pod可以访问
+- ClusterIP(默认) : 只有Cluster内的节点和Pod可以访问, 是一个虚拟ip
 - NodePort(不推荐) : Service通过Cluster节点上的端口(`NodeIP:NodePort`)对外提供服务.
   k8s还是会分配一个ClusterIP, `EXTERNAL-IP`变为`nodes`, `PORT(S)`变为`${Cluster_Port}:${Node_Port,自动分配时的范围:30000~32767}/protocol`.
 - LoadBalancer: 借助cloud provider创建一个外部的负载均衡器进行请求转发, 比如转发到ClusterIP/NodePort. 目前[cloud provider(具体实现见代码)](https://github.com/kubernetes/kubernetes/blob/master/pkg/cloudprovider/providers/providers.go)有GCE, AWS, Aliyun等.
 
+在真实的系统实现上，Kubernetes通过kube-proxy实现虚拟IP路由及转发的. 每个Node上都需要部署Proxy组件，从而实现Kubernetes层级的虚拟转发网络.
+
 kube-proxy 有三种实现 service 的方案, userspace, iptables 和 ipvs:
-- userspace(废弃) : 在用户空间监听一个端口，所有的 service 都转发到这个端口，然后 kube-proxy 在内部应用层对其进行转发。因为是在用户空间进行转发，所以效率也不高
+- ~~userspace~~(废弃) : 在用户空间监听一个端口，所有的 service 都转发到这个端口，然后 kube-proxy 在内部应用层对其进行转发。因为是在用户空间进行转发，所以效率也不高
 - iptables(默认, 推荐) : 完全使用 iptables 来实现 service，是目前默认的方式，也是推荐的方式，效率很高（只有内核中 netfilter 一些损耗）
-- ipvs模式 (**最推荐**): IPVS(IP Virtual Server)是lvs项目的一部分，作为Linux内核的一部分，提供4层负载均衡器的功能，即传输层负载均衡
+
+  在iptables模式下，创建Service时，Node节点上的kube-proxy会建立两个iptables规则，一个为Service服务，用于将<服务虚拟IP，端口>的流量转给后端，另一个为Endpoints创建，用于选择Pod。在默认情况下，后端的选择是随机的.
+- ipvs模式 (**最推荐**): IPVS(IP Virtual Server)是lvs项目的一部分，作为Linux内核的一部分，提供4层负载均衡器的功能，即传输层负载均衡.
+
+  在ipvs模式下，kube-proxy会调用netlink接口以创建相应的ipvs规则，并定期与Service和Endpoint同步ipvs规则，从而确保ipvs状态与期望一致。访问Service时，流量将被重定向到其中某一个后端Pod。与iptables类似，ipvs也基于netfilter hook函数。但不同的是，iptables 规则为顺序匹配，当规则数量较多时，匹配时间将显著变长；而 ipvs 使用散列表作为底层数据结构，并在内核空间中工作，这使得规则匹配的时间较短。这也意味着 ipvs 可以更快地重定向流量，并且在同步代理规则时具有更好的性能。
+
+  此外，ipvs提供了多种负载均衡算法，例如：rr（round-robin，轮询调度算法）,lc（least connection，最少连接数调度算法）,dh（destination hashing，目的地址散列调度算法）,sh（source hashing，源地址散列调度算法）,sed（shortest expected delay，最短期望延迟调度算法）,nq（never queue，永不排队调度算法）.
+
+  需要注意的是，ipvs模式需要Node上预先安装ipvs内核模块。当kube-proxy以ipvs模式启动时，kube-proxy将验证Node上是否安装了ipvs模块。如果未安装，则kube-proxy将使用iptables模式。
 
 > Kubernetes 原生的 Service 负载均衡基于 Iptables 实现，其规则链会随 Service 的数量呈线性增长，在大规模场景下对 Service 性能影响严重.
 > IPVS 在 CPU/内存两个维度的指标都要远远低于 Iptables.
+
+Kubernetes还通过Service实现了负载均衡、服务发现和DNS等功能.
 
 #### ClusterIP
 它是一个虚拟ip, 由k8s 节点上的iptables管理.
@@ -1076,12 +1136,77 @@ Kubernetes 是如何对 Resource、Group 和 Version 进行解析，从而在 Ku
 在自定义控制器里面，可以通过对自定义 API 对象和默认 API 对象进行协同，从而实现更加复杂的编排功能.
 
 ## 网络模型
-k8s基于扁平地址空间的网络模型, 采用Container Networking Interface(CNI)规范, 每个Pod有自己的ip, Pod间不需要配置NAT就能直接通信. 同一个Pod贡献容器IP, 能通过localhost通信.
+参考:
+- [Kubernetes使用eBPF替换iptables](https://zhuanlan.zhihu.com/p/137960916)
+
+Kubernetes的网络通信可以分为以下几个部分：
+- Pod内部的容器间通信
+
+  同一个Pod内的容器共享Pod的网络命名空间（包括 IP 地址和网络端口），这也意味着它们之间的访问可以用localhost加上容器端口的方式. 这种网络模型被称为"IP-per-Pod".
+
+  该模型的实现需要利用一个Docker容器作为“pod 容器”并确保其命名空间已开启，也就是说，Kubernetes在创建Pod时，会首先在Node节点上创建一个运行在Docker Bridge网络上的“pod容器”，并为这个Pod容器创建虚拟网卡eth0及分配IP地址。而Pod里的容器（称为App容器），只需要在创建时使用--net=container:<id>加入该网络命名空间，这样所有的Docker容器就运行在同一个网络命名空间中.
+- Pod间通信
+
+  - 同一个 Node 内的 Pod 之间
+
+    每一个Pod都有一个真实的全局 IP 地址，同一个 Node 内的不同 Pod 之间可以直接采用对方的 IP 地址通信，而且不需要使用DNS等其他发现机制.
+
+    它们都是通过veth连接在同一个Docker0网桥上的，它们的IP都是从Docker0的网段上动态获取的，和网桥本身的IP是同一个网段.
+  - 不同 Node 上的 Pod 之间的通信
+
+    想支持不同 Node 上的 Pod间通信，要达到两个条件：
+    - 在整个 Kubernetes 集群中对 Pod 的 IP 地址分配进行规划，不能有冲突
+    - 找到一种办法，将 Pod 的 IP 地址和所在 Node 的 IP 地址关联起来，让Pod 之间可以互相访问
+
+    具体实现由网络插件实现, 比如Cilium,flannel, canal, calico, weave等
+- Pod与Service之间的网络通信
+
+  Kubernetes在创建Service时，根据Service的标签选择器（Label Selector）来查找Pod，据此创建与Service同名的EndPoints对象，Service的targetPort和Pod的IP地址都记录在与Service同名的EndPoints里。当Pod的地址发生变化时，EndPoints也随之变化。当 Service 接收到请求时，就能通过 EndPoints 找到请求需要转发的目标地址。
+
+  Service仅仅是一个抽象的实体，为其分配的IP地址也只是一个虚拟的IP地址，这背后真正负责转发请求的是运行在Node上的kube-proxy.
+- Kubernetes外部与Service之间的网络通信
+
+  根据应用场景的不同，Kubernetes提供了4种类型的Service：
+
+  - ClusterIP：在集群内部的IP地址上提供服务，并且该类型的Service只能从集群内部访问。该类型为默认类型。
+
+  - NodePort：通过每个Node IP上的静态端口（NodePort）来对外提供服务，集群外部可以通过访问<NodeIP> : <NodePort>来访问对应的端口。在使用该模式时，会自动创建 ClusterIP，访问 NodePort 的请求会最终路由到ClusterIP。
+
+  - LoadBalancer：通过使用云服务提供商的负载均衡器对集群外部提供服务。使用该模式时，会自动创建NodePort和ClusterIP，集群外部的负载均衡器最终会将请求路由给NodePort和ClusterIP。
+
+  - ExternalName：将服务映射到集群外部的某个资源，例如foo.bar.example.com。使用该模式需要1.7版本或更高版本的kube-dns.
+
+
+k8s基于扁平地址空间的网络模型, 采用Container Networking Interface(CNI)规范, 每个Pod有自己的ip, Pod间不需要配置NAT就能直接通信. 同一个Pod共享容器IP, 能通过localhost通信.
+
+CNI 的目的在于定义一个标准的接口规范，使得Kubernetes在增删Pod 的时候，能够按照规范向CNI 实例提供标准的输入并获取标准的输出，再将输出作为 Kubernetes 管理 Pod 网络的参考。在满足输入输出以及调用标准的CNI规范下，Kubernetes委托CNI实例管理Pod的网络资源并为Pod建立互通能力。
+
+CNI的接口中主要包含以下几种方法：
+- 添加网络
+- 删除网络
+- 添加网络列表
+- 删除网络列表
+
+每个CNI插件只需要实现两类方法，一类是配置网络，用于创建容器时调用，一类是清理网络，用于删除容器时调用（以及一个可选的VERSION查看版本操作）. 所以，CNI的实现确实非常简单，把复杂的逻辑交给具体的Network Plugin实现.
 
 > [网络方案安装](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/)
 > [Kube-OVN](https://github.com/alauda/kube-ovn) : 基于 OVN 的 Kubernetes 网络系统
 > [ovn-kubernetes提供了一个ovs OVN网络插件，支持underlay和overlay两种模式](https://www.bookstack.cn/read/sdn-handbook/ovs-ovn-kubernetes.md)
 
+### Network Plugin
+#### flannel
+Flannel是CoreOS 开源的网络方案，负责为Kubernetes集群中的多个Node间提供层3的IPv4网络. 容器如何与主机联网不在Flannel的考虑范围，Flannel只控制如何在主机之间传输流量.
+
+#### calico
+Calico是一个基于BGP的纯三层的数据中心网络方案. Calico在每一个计算节点基于Linux 内核实现了一个高效的vRouter来负责数据转发，基于iptables创建了相应的路由规则，并通过这些规则来处理进出各个容器、虚拟机和主机的流量.
+
+#### Cilium(推荐)
+Cilium是一款开源软件，它以一种不干涉运行在容器中的应用程序的方式，提供了安全的网络连接和负载均衡。Cilium在层3和层4运行，提供传统的网络和安全服务；同时，Cilium也在层7运行，以保护HTTP、gRPC和Kafka等应用协议的使用.
+
+BPF（Berkeley Packet Filter，伯克利包过滤器，于4.9内核开始支持）的Linux内核技术是Cilium的基础。它支持在各种集成点（如网络I/O、应用程序套接字和跟踪点）将 BPF 字节码动态地插入 Linux 内核，以实现安全性、网络和可见性逻辑.
+
+#### Multus
+Intel的 multus-cni可以为运行在Kubernetes的Pod提供多个网络接口，它可以将多个CNI插件组合在一起为Pod配置不同类型的网络. Multus自己不会进行任何网络设置，而是调用其他插件（如Flannel、Calico）来完成真正的网络配置.
 
 ## 生态
 ### 监控

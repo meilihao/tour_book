@@ -75,13 +75,15 @@ docker run的资源限制参数:
 通过`docker run`的`--network`指定:
 - none : 使用none网络, 即网卡上仅有`lo`项
 - host : 共享host的网络, 即容器的网络配置与host完全一样
+
     最大好处是性能, 坏处是要考虑与host的端口冲突
-- bridge : linux bridge(可通过`brctl show`查看), 是docker的默认网络, `docker0`是docker安装时创建
+- bridge : linux bridge(可通过`brctl show`查看), 是docker的默认网络, `docker0`是docker安装时创建. 桥接网络适用于在同一个主机上运行的容器之间的通信，对于不同主机上容器之间的通信，可以在操作系统级别管理路由或使用overlay类型的网络.
+
     ![bridge模型](images/network_bridge.png)
     Docker每创建一个`network`的容器都会执行如下操作：
     1. 创建一对虚拟接口，即veth pair，分别放到宿主机和容器中(该容器退出时也会删除其veth pair)
     1. 主机一端桥接到默认的docker0或指定网桥上，具有一个唯一的名字，如vethXXX(veth0ac844e)
-    1. 另一端放到新容器中，并修改名字为eth0，该接口只在容器的命名空间可见
+    1. 另一端(一个已连接至网桥的虚拟以太网设备 veth)放到新容器中，并修改名字为eth0(veth 通过 Linux Namespace在容器中映射显示为eth0)，该接口只在容器的命名空间可见
     1. 从网桥可用地址段中获取一个空闲地址分配给容器的eth0，并配置默认路由到桥接网卡veth0ac844e
 
     注意: 只有创建bridge时指定`--subnet`才允许使用`--ip`指定静态ip
