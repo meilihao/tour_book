@@ -323,12 +323,12 @@ $ sudo journalctl -b -u nginx.service -o json
 $ sudo journalctl -b -u nginx.serviceqq
  -o json-pretty
 
-# 显示日志占据的硬盘空间
-$ sudo journalctl --disk-usage
-
 # 指定日志文件占据的最大空间
 $ sudo journalctl --vacuum-size=1G
 
 # 指定日志文件保存多久
 $ sudo journalctl --vacuum-time=1years
+
+# 显示journalctl日志的字段名, 保存位置
+journalctl -f -o verbose
 ```

@@ -622,3 +622,7 @@ Every 2.0s: ntpq -p
 
 ### 电脑无故重启可能与ACPI有关系(无硬件问题)
 acpi与内核可能有不兼容的问题, kernel启动参数可追加[`acpi=ht`](https://wiki.ubuntu.org.cn/UbuntuHelp:BootOptions/zh#.E5.8F.82.E6.95.B0:_acpi.3Dht)
+
+## fs
+### EXT4-fs error (device sdb4) ext4_find_entry:1436 inode #2 comm pvestatd reading directory lblock 0
+[怀疑是sata接口接触不良](https://m.newsmth.net/article/KernelTech/75125?p=1)

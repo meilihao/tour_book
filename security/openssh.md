@@ -8,6 +8,9 @@
 - [SSH原理与运用](http://www.ruanyifeng.com/blog/2011/12/ssh_remote_login.html)
 - [Linode](https://www.linode.com/docs/networking/ssh/use-public-key-authentication-with-ssh)
 
+## 最新
+[OpenSSH 8.2](http://www.openssh.com/txt/release-8.2)增加了[对 FIDO/U2F 硬件身份验证器的支持](https://www.debian.cn/archives/3683).
+
 ## 前言
 
 无论是个人的VPS还是企业允许公网访问的服务器，如果开放22端口的SSH密码登录验证方式，被众多黑客暴力猜解捅破菊花也可能是经常发生的惨剧。企业可以通过防火墙来做限制，普通用户也可能借助修改22端口和强化弱口令等方式防护，但目前相对安全和简单的方案则是让SSH使用密钥登录并禁止口令登录。
@@ -115,13 +118,23 @@ ssh -Tv -i $rsa_primary_key root@192.168.15.241
 ssh -Tvvv -i $rsa_primary_key root@192.168.15.241
 ```
 
-### 问题
+## FAQ
+### 普通用户无法用ssh通信, 但root可以
 
-```
-// 查看ssh版本: ssh -V
-// server: OpenSSH_5.3p1, OpenSSL 1.0.0-fips 29 Mar 2010
-// client: OpenSSH_7.3p1 Ubuntu-1, OpenSSL 1.0.2g  1 Mar 2016
+```bash
+# --- ssh -V
+server: OpenSSH_5.3p1, OpenSSL 1.0.0-fips 29 Mar 2010
+client: OpenSSH_7.3p1 Ubuntu-1, OpenSSL 1.0.2g  1 Mar 2016
 ```
 root能用pubkey登录,普通用户不能.
 
 解决: 创建普通用户指定shell时,其名称错误.
+
+### ssh支持的算法
+```bash
+ssh -Q cipher       # List supported ciphers
+ssh -Q mac          # List supported MACs
+ssh -Q key          # List supported public key types
+ssh -Q kex          # List supported key exchange algorithms
+ssh -Q sig          # List supported signature algorithms
+```

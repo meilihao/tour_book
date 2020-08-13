@@ -4,6 +4,8 @@
 
 Domain Information Groper,域名查询工具(DNS lookup utility),可以用来测试域名系统工作是否正常
 
+> dig 采用的是操作系统的解析库，而 nslookup 采用的是自己提供的解析库
+
 ## 语法格式
 
 ```
@@ -32,8 +34,16 @@ querytype : A/AAAA/PTR/MX/ANY等值，默认是查询A记录
 - MX : 邮件记录（Mail eXchange），返回接收电子邮件的服务器地址
 - CNAME : 规范名称记录（Canonical Name），返回另一个域名，即当前查询的域名是另一个域名的跳转
 - PTR : 逆向查询记录（Pointer Record），只用于从IP地址查询域名
+- SOA ：表示授权记录开始
+- TXT : 一些相关文本
 
 一般来说，为了服务的安全可靠，至少应该有两条NS记录，而A记录和MX记录也可以有多条，这样就提供了服务的冗余性，防止出现单点失败.
+
+status:
+- NOERROR : 没有问题
+- SERVFAIL：被查询的名称存在，但没有数据或现有数据无效
+- NXDOMAIN：所查询的名称不存在
+- REFUSED：该区域的数据不存在于所请求的权威服务器中，并且在这种情况下，基础设施没有设置为提供响应服务
 
 DNS解析完整过程:
 1. 用户向本地DNS发出解析请求

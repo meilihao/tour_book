@@ -675,11 +675,14 @@ env: ubuntu14.04 + samba 4.3.11
 
 smb server端权限正确, 重启后正常.
 
+### clnt_create: RPC: Program not registered
+`showmount -e 192.168.0.248`时报该错误, 网上的提示是`rpcbind`没运行, 但查了`ss -anlpt|grep rpcbind`是运行的, 推测是nfs本身的问题, `exportfs -ra`后正常.
+
 ## zfs xfs nas
-**推荐使用zfs fs, 不推荐ext4,xfs, 特别是xfs**
+**推荐使用zfs fs, 不推荐ext4,xfs + zvol, 特别是xfs**
 
 不推荐xfs原因: [xfs nas卷回滚/快照/克隆/复制等操作后挂载新/原卷会碰到错误"duplicate UUID xxx - can't mount"](zfs.md)
-不推荐ext4: nas umount成功后ext4日志内核进程(jbd2)不退出(ubuntu 14.04 on x84_64).
+不推荐ext4: nas umount成功后ext4日志内核进程(jbd2)不退出(ubuntu 14.04 on x84_64), 模拟出一种情况是nas server中有终端进入了nas导出路径导致该zvol被占用而无法释放, umount前可用fuser检测并关闭占用进程. 注意这里必须是umount前检查, 之后就无法检查出来了.
 
 env: 5.3.0-26-generic/4.4
 
