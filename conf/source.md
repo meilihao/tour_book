@@ -40,5 +40,9 @@ javac -version
 #### 安装openjdk
 sudo apt install  openjdk-8-jdk
 
-#### 参考
-1. 
+### wireshark
+```bash
+# ubuntu 20.04
+sudo add-apt-repository universe
+sudo apt install wireshark
+```

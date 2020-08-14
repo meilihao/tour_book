@@ -79,30 +79,6 @@ def rsaPublicDecrypt(S):
 ```
 
 ## FAQ
-### 查看Server host key即远程主机的key fingerprint
-```
-chen@xxx:/etc/ssh$ ssh-keygen  -lf ssh_host_ecdsa_key.pub
-256 SHA256:kM9uQJBdQt9JGlDkuIh4bIJSWjF5EPnTpcq5X1pMmVw root@iZuf6hftd4ce4kf92zb5ycZ (ECDSA)
-$ ssh-keygen -E md5 -lf meilihao_github.pub
-2048 MD5:4f:32:da:5c:d2:4c:25:a4:ea:dd:08:c9:aa:31:dc:22 563278383@qq.com (RSA) # 即github.com SSH keys上显示的Fingerprint
-```
-
-> `ssh-keygen -lf`也适用于known_hosts和authorized_keys文件
-
-重新生成server host key:
-逐个替换`/etc/ssh/ssh_host_xxx`或使用`dpkg-reconfigure`命令
-
-```
-# rm -v /etc/ssh/ssh_host_*
-# dpkg-reconfigure openssh-server
-```
-
-### 获取sever上openssh的公钥
-```
-ssh-keyscan -t ed25519 -p 22 xxx.com
-```
-获取的是`/etc/ssh`下对应类型的公钥`ssh_host_${type}_key.pub`.
-
 ### 网站不支持ALPN提示"No ALPN negotiated"
 [ALPN介绍](https://imququ.com/post/enable-alpn-asap.html),检查是否支持ALPN的命令:
 ```sh
