@@ -205,3 +205,8 @@ $ ssh-keygen -E md5 -lf meilihao_github.pub
 ssh-keyscan -t ed25519 -p 22 xxx.com
 ```
 获取的是`/etc/ssh`下对应类型的公钥`ssh_host_${type}_key.pub`, type有rsa, ecdsa, ed25519.
+
+### 执行`ssh-add`报`Could not open a connection to your authentication agent`
+```bash
+$ eval `ssh-agent -s`
+```
