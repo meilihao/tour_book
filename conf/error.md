@@ -85,6 +85,9 @@ $ sudo sysctl fs.inotify.max_user_watches=8192 # 临时修改
 $ vim /etc/sysctl.conf # 添加max_user_watches=8192，然后sysctl -p生效,永久生效
 ```
 
+### makeinfo: command not found
+`sudo apt install texinfo`
+
 ### NMI watchdog: BUG: soft lockup - CPU#2 stuck for 23s! [systemd-logind:893]
 env: ubuntu 14:04, kernel:4.4.0
 
