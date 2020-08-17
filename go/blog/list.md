@@ -105,3 +105,6 @@
 ## tools
 - [Go数据结构完美打印](https://github.com/shivamMg/ppds)
 - [Go调优神器trace介绍](https://studygolang.com/articles/9693)
+
+## mirror
+- [go sdk](https://mirrors.ustc.edu.cn/golang/)
