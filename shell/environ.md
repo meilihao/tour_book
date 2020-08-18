@@ -101,6 +101,7 @@ bashrc是专门用来给 bash 做初始化的比如用来初始化 bash 的设�
 参考:[理解 Linux/Unix 登录脚本](https://www.sdk.cn/news/5585)
 
 ### login shell
+"login shell"代表用户登入, 比如使用`su -`命令, 或者用 ssh 连接到某一个服务器上, 都会使用该用户默认 shell 启动 login shell 模式.
 
 1. login
 2. `/etc/profile`,根据其内容读取额外的文档，如/etc/profile.d和/etc/inputrc等
@@ -119,6 +120,7 @@ ps :
 > 不同的发行版可能有点不同,具体可以看其相关脚本的内容.
 
 ### non-login shell
+no-login shell是在终端下直接输入 bash 或者`bash -c "CMD"`来启动的 shell
 
 1. `~/.bashrc`
 2. /etc/bashrc(或/etc/bash.bashrc)
@@ -134,3 +136,14 @@ ps :
 ## X11
 
 见`/etc/X11/Xsession`
+
+### /etc/profile、/etc/bash.bahsrc、~/.profile、~/.bashrc的用途
+> /etc/bashrc(ubuntu/debian没有这个文件，对应地，其有/etc/bash.bashrc文件)
+
+打开一个新的shell（包括打开一个新终端和在终端上输入bash），都会重新读取/etc/bash.bashrc 和 ~/.bashrc文件里面的内容.
+
+
+/etc/profile、/etc/bash.bashrc文件是针对所有用户来说的，每个用户登录时都会执行，其中/etc/profile只执行一次，而/etc/bash.bashrc在每次Shell登录时都会执行.
+~/.profile、~/.bashrc文件是针对单个用户来说的，每个用户目录下都会有这两个文件，其中~/.profile在Login Shell登录时执行，~/.bashrc在Non-login Shell登录时执行.
+
+![](/misc/img/shell/20170405223231326.png)

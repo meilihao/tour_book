@@ -337,6 +337,9 @@ $ sudo zfs set dedup=on mypool/projects # 启用去重
 
 > Reservation是最小值, quota是最大值.
 
+## zdb
+- `zdb -l /dev/sdj` : 查看磁盘上的zpool信息
+
 ## FAQ
 ### quota于refquota区别
 如果对 tank/home 数据集设置了quota，则 tank/home 及其所有后代使用的总磁盘空间量不能超过该配额.
