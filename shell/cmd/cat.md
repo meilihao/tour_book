@@ -18,6 +18,7 @@
 
 ## 例
 
+	# cat /dev/null > filename # 清空文件
     # cat test.txt
     # cat test1.txt test2.txt
     # OUTPUT_FROM_SOME_CMDS | cat # 从管道中读取
@@ -30,3 +31,22 @@
 ## 扩展
 ### tac命令
 tac是cat的反向书写, 命令的功能是反向显示文件内容(从最后一行->第一行)
+
+### 清空文件
+1. 将文件清空，文件大小为0k
+```bash
+$ : > filename # : 符号，它是 shell 的一个内置命令，等同于 true 命令，它可被用来作为一个 no-op（即不进行任何操作）**推荐**
+$ true > my_file
+$ > filename # 通过 shell 重定向 null （不存在的事物）到该文件, **推荐**
+$ cat /dev/null > filename
+$ cp /dev/null access.log
+$ dd if=/dev/null of=access.log
+$ echo -n "" > access.log # 要将 null 做为输出输入到文件中，你应该使用 -n 选项，这个选项将告诉 echo 不再像上面的那个命令那样输出结尾的那个新行
+$ truncate -s 0 access.log
+```
+
+1. 清空文件，但会有一个换行，文件大小为4k(block大小)
+```bash
+$ echo "" > filename # 空字符串并不等同于 null
+$ echo > filename
+```

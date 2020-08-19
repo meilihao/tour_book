@@ -315,4 +315,6 @@ Kickstart 是一种无人值守的安装方式,其工作原理是预先把原本
 > system-config-kickstart 是一款图形化的 Kickstart 应答文件生成工具,可以根据自己的需求生成自定义的应答文件.
 
 ## 磁盘空间分析
-命令`ncdu`
+命令工具: `ncdu`
+
+gui: `apt install baobab`

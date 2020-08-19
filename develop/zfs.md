@@ -20,7 +20,9 @@ zfs有两个工具: zpool和zfs. zpool用于维护zfs pools, zfs负责维护zfs 
 > zfs可充当卷管理器
 > zfs已实现零管理, 通过zfs daemon(zed,zfs Event Daemon)实现, 因此无需将pool信息写入`/etc/fstab`, pool配置在`/etc/zfs/zpool.cache`里.
 > zfs pool使用zfs_vdev_scheduler来调度io.
-> zdb 是zfs的调试工具.
+> zdb 是zpool的调试工具.
+> zgenhostid : generate and store a hostid in /etc/hostid
+> zvol_wait :  导入pool时, 等待/dev/zvol下的所有符号链接都创建后返回
 
 ## 概念
 pool : 存储设备的逻辑分组, 它是ZFS的基本构建块，可将其存储空间分配给数据集.

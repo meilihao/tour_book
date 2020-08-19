@@ -29,6 +29,9 @@ rustup component add rust-src
 [Rust Crates 镜像使用帮助](https://lug.ustc.edu.cn/wiki/mirrors/help/rust-crates)
 
 ## tool
+参考:
+- [将 Vim 设置为 Rust IDE](https://linux.cn/article-12530-1.html)
+
 ### sublime3插件
 ```
 Rust Enhanced // 需先通过package control的disable package禁用st3自带的Rust插件
