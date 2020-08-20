@@ -26,4 +26,7 @@
 tail -n 5 m.txt //显示最后5行
 tail -n -5 m.txt //显示最后5行
 tail -n +5 m.txt //从第5行开始显示
+ps -ef
+sudo tail  /proc/<pid>/fd/1 # 查看运行进程的输出
+strace -p {pid} -e write # 同上
 ```
