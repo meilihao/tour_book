@@ -21,4 +21,24 @@ rm [OPTION]... FILE...
 ## example
 ```bash
 $ rm -rf ./* # 加上" ./"来配合通配符, 避免错误执行`rm -rf *`
+## Delete all file except file1 ##
+rm  !(file1)
+ 
+## Delete all file except file1 and file2 ##
+rm  !(file1|file2) 
+ 
+## Delete all file except all zip files ##
+rm  !(*.zip)
+ 
+## Delete all file except all zip and iso files ##
+rm  !(*.zip|*.iso)
+ 
+## You set full path too ##
+rm /Users/vivek/!(*.zip|*.iso|*.mp3)
+ 
+## Pass options ##
+rm [options]  !(*.zip|*.iso)
+rm -v  !(*.zip|*.iso)
+rm -f  !(*.zip|*.iso)
+rm -v -i  !(*.php)
 ```

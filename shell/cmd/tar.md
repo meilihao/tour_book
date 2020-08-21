@@ -64,6 +64,7 @@ zip jpg.zip *.jpg //zip格式的压缩，需要先下载zip for linux
 tar -rvf data.tar /etc/fstab //在压缩过的 tar 文件中无法进行追加文件操作
 tar -zcvpf optbackup-$(date +%Y-%m-%d).tgz /opt/ //使用 tar 命令进行定时备份
 split -b <Size-in-MB> <tar-file-name>.<extension> “prefix-name”//分割体积庞大的 tar 文件为多份小文件
+tar -cJpf ${LFSRoot}/iso/lfs-temp-tools-10.0-systemd-rc1.tar.xz . --exclude=${LFSRoot} # tar.xz
 ```
 
 ### 解压
