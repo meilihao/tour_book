@@ -100,3 +100,15 @@ $ gcc -c -Q -march=native  --help=optimizers // 查看目标架构为native 及�
 ```bash
 # sudo apt install gcc-10
 ```
+
+### 编译gcc时重新执行"make check"
+error-log:
+```conf
+Running /tmp/tmp.B0fetZ1B2h.gcc/gcc/testsuite/gcc.c-torture/execute/builtins/builtins.exp ...
+FAIL: gcc.c-torture/execute/builtins/fprintf.c execution,  -O0
+```
+
+方法:
+```
+# make check-gcc RUNTESTFLAGS="builtins.exp=fprintf.c -v -v" # `-v` 为输出详细log
+```
