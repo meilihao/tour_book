@@ -75,3 +75,6 @@ $ id -nG chen # 获取用户的支持组
 /etc/shadow
 /etc/gshadow
 ```
+
+### passwd: unrecognized option '--stdin'
+`echo "username:cleartext_password" | sudo chpasswd`

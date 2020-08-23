@@ -129,7 +129,7 @@ ifdef, ifndef, ifeq, ifneq, else, 结尾统一用endif.
 ## FAQ
 ### 了解make时执行了哪些命令
 ```bash
-$ make "V="
+$ make [test] "V=1"
 ```
 
 ### make if判断明明正确却没有日志输出
@@ -161,3 +161,9 @@ TOPDIR = $(realpath .)
 
 ### *** 遗漏分隔符
 makefile中的command必须以tab键开头.
+
+### Makefile调用栈
+类似函数栈
+
+### 如何重新执行某项 make check
+根据make check日志, 重新进入相应的目录, 直接执行`make check`即可.
