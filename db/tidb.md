@@ -11,6 +11,8 @@
 # mysql -u root -h 47.100.15.8 -P 4000 # 默认没密码
 > SET PASSWORD FOR 'root'@'%' = 'xxx';
 # tiup cluster upgrade tidb-test v4.0.1 [--force] # cluster升级
+# tiup cluster start ${cluster-name} # 启动集群
+# tiup cluster stop ${cluster-name} # 关闭集群
 ```
 
 > **部署完记得修改grafana, tidb的密码**

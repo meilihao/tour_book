@@ -81,3 +81,12 @@ set pastetoggle=<F9> # 推荐, Vim的编辑模式(Insert)中，还有一个Paste
 ```
 
 > 原因是终端把粘贴的文本存入键盘缓存（Keyboard Buffer）中，Vim则把这些内容作为用户的键盘输入来处理. 导致在遇到换行符的时候，如果Vim开启了自动缩进，就会默认的把上一行缩进插入到下一行的开头，最终使代码变乱.
+
+### vim打开中文乱码
+```
+$ vim ~/.vimrc
+...
+set fileencodings=utf-8
+set termencoding=utf-8
+set encoding=utf-8
+```

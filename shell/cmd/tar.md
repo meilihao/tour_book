@@ -18,6 +18,7 @@
 - -r : 向归档文件末尾追加文件
 - -u : 更新归档中的文件
 - --exclude : 排除目录或文件
+- --strip-components N : 解压时跳过目录的前N层前缀
 
 上面五个是独立的命令，压缩解压都要用到其中一个，可以和别的命令连用但只能用其中一个.
 
@@ -81,5 +82,7 @@ root/anaconda-ks.cfg //释放 tar 文件中的指定文件或目录
 tar -zcpvf myarchive.tar.gz /etc/ /opt/
 tar -zcpvf myarchive.tgz /etc/ /opt/ --exclude=*.html //排除指定文件或类型后创建 tar 文件
 tar -tvf myarchive.tar.gz  | more //列出 .tar.gz 文件中的内容
+tar -tvf /lfs/sources/mpfr-*.tar.xz // 列出.tar.xz内容
 tar czf xx.tgz -C /xxx/xxx A //使用-C指定相对路径
+tar -xf binutils-2.35.tar.xz -C a --strip-components 1 # 解压时生成的路径不包括父目录`binutils-2.35`
 ```

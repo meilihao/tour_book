@@ -105,3 +105,10 @@ Vim 的三种模式:
 - `:w file` : 另存为
 - `:q` : 不保存就退出
 - `:q!` : 不保存, 强制退出
+
+## FAQ
+### 保存文件时报"readonly option is set"
+解决方法： =
+1. 按ESC键
+1. 输入:set noreadonly
+1. 然后就可以用 :wq 保存并退出了
