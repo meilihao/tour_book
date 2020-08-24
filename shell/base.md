@@ -115,8 +115,10 @@ delimiter
 
 注意:
 - EOF 只是一个标识而已，可以替换成任意的合法字符
-- 作为结尾的delimiter一定要顶格写，前面不能有任何字符
-- 作为结尾的delimiter后面也不能有任何的字符（包括空格）
+- **作为结尾的delimiter一定要顶格写，前面不能有任何字符**
+- **作为结尾的delimiter后面也不能有任何的字符（包括空格）**
+
+    否则报: "warning: here-document at line N delimited by end-of-file (wanted `EOF')"
 - 作为起始的delimiter前后的空格会被省略掉
 
 ```bash
