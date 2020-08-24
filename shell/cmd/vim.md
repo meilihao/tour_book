@@ -112,3 +112,6 @@ Vim 的三种模式:
 1. 按ESC键
 1. 输入:set noreadonly
 1. 然后就可以用 :wq 保存并退出了
+
+### 获取vim的选项
+`vim -c ':options'`

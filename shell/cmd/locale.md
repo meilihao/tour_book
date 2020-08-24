@@ -3,7 +3,19 @@
 
 > localedef : 转化语言环境和字符集源文件以生成语言环境数据库, 由它创建的语言环境对象代码可被`setlocale()`使用. `setlocale()`由glibc实现, 具体会加载哪些locale要看其实现.
 
-> **locale-gen是localedef的脚本封装**.
+> **locale-gen是localedef的脚本封装**. 用户只要去 /etc/locale.gen 文件里, 把想要生成的 locale 取消注释, 然后运行 locale-gen, locale-gen 就会去检查 /etc/locale.gen 里没有被注释的行然后调用 localedef 并传以相应的参数生成相应的 locale.
+
+localedef 是用来生成 locale 的工具. localedef 能够读取 **locale 定义文件**, 以及 charmap 文件, 然后编译它们, 将编译好的二进制的 locale 数据库放在 /usr/lib/locale 目录里 (这个目录不是绝对的, 可以通过 localedef --help 查看编译好的 locale 数据库文件放在哪里), 然后 Linux 系统中一些会使用到 locale 的程序 (基本上是使用 GNU libc 库的程序) 就能够找到并使用这些 locale.
+
+> localedef 可以将编译好的每一个 locale 在 /usr/lib/locale 目录下单独创建一个子目录, 也可以将编译好的 locale 附加到 /usr/lib/locale/locale-archive 文件里 (通过 --add-to-archive 选项控制).
+
+生成了相应的 locale 数据库文件之后, 就可以设置 LC_* 环境变量为那个生成的 locale (一般是直接设置 LANG 变量). 然后, 支持 i18n 的程序就会根据这些环境变量来向用户展示信息, GNOME, KDE 开发的程序一般都支持 i18n, 因为 GTK, Qt 早已经支持 i18n 了.
+
+locale definition file, 即locale 定义文件, 每一个文件会包含某个 locale 的所有信息 (LC_CTYPE 信息, LC_MESSAGE 信息等等), 这文件包含的也是 localedef 命令生成这个 locale 所需要的信息.
+
+locale 定义文件一般位于 /usr/share/i18n/locales 目录中, 不用担心, localedef 自己会找到它们, 可以通过 localedef --help 来查看与 locale 相关的目录.
+
+编译 locale 还需要 charmap 文件, 这种文件一般位于 /usr/share/i18n/charmaps 目录下, 这也是可以通过 localedef --help 命令知晓的.
 
 相关系统文件：
 - 在文件/usr/share/i18n/SUPPORTED : 列出了当前系统支持的所有locale与字符集的名字, 是`/usr/share/i18n/locales`和`/usr/share/i18n/charmaps`的组合结果

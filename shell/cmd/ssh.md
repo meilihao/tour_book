@@ -39,3 +39,6 @@ Host *
    StrictHostKeyChecking no # 初次连接时不检查host key, 但该主机的公钥还是会追加到文件 ~/.ssh/known_hosts 中
    UserKnownHostsFile=/dev/null # host key因服务器系统重装，服务器间IP地址交换，DHCP，虚拟机重建，中间人劫持等出现变更也不提示
 ```
+
+### 查看ssh-agent已缓存的key
+`ssh-add -l`

@@ -52,3 +52,33 @@ $ echo -e "\e[1;31m This is red text \e[0m" # 8/16 Colors
 ```
 
 `stty -echo`可禁止将输出发送到终端, 在输入密码场景可禁止显示输入的密码内容；`stty echo`则允许发送输出到终端, 适用于恢复输出的场景, 比如结束密码输出后.
+
+## 内建命令
+比如eval、exec、exit、export
+
+### exec
+exec
+
+在shell中，内建（builtin）命令exec，格式：`exec [-cl] [-a name] [command [arguments]]`
+
+exec命令，如果指定了command，它就会**取代当前的shell而不是创建新的进程，所以命令执行完毕后shell也就退出了**. 如果设置了“-l”即login选项，在command的第0个参数前会添加符号“-”，这是login所需的. 如果设置了“-c”即clear选项，command命令将在一个空的环境中执行. 如果指定了“-a name”选项，name会作为第0个参数传给command. 若没有指定command，可以使用重定向来影响当前的shell. 重定向成功时退出状态为0，否则为1。
+
+exec后面的命令如果是多个简单命令组合而成的复合命令，只执行第一个命令，可以把这些符合命令写入shell脚本中，然后通过exec执行这个脚本，此时脚本中所有的命令都会执行.
+
+### exit
+在shell中，内建（builtin）命令exit，格式：`exit [n]`.
+
+exit命令退出当前shell，退出状态为n，若没有指定n，退出状态为执行的最后一个命令的退出状态.
+
+### export
+在shell中，内建（builtin）命令export用于把当前shell的变量、函数导出到子shell，这样在子shell中就可以使用父shell中定义的变量、函数. export的退出状态为0，除非格式错误或者指定了不存在的函数. export有多种格式，如下：
+```bash
+export    显示当前导出的变量
+export -p    显示当前导出的变量
+export name    导出变量name
+export name=word    导出变量name并赋值为word
+export -n name    取消导出的变量name
+export -f 显示当前导出的函数
+export -f name    导出函数name
+export -fn name    取消导出的函数name
+```

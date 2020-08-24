@@ -192,3 +192,11 @@ Build step 'Execute shell' marked build as failure
 ```
 
 解决方法: `docker run`时使用了`-it`选项, 去掉即可.
+
+## /var/lib/docker/overlay2 is too big and docker no space left on device
+```bash
+# docker system df
+# docker system prune -a
+```
+
+> dangling 镜像（即无 tag 的镜像）
