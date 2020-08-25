@@ -1,6 +1,10 @@
 # gdisk
 gdisk是支持gpt的分区工具.
 
+> from gdisk_1.0.5-1_amd64
+
+> cgdisk: 支持终端窗口功能的gdisk
+
 ## example
 ```bash
 $ sudo  gdisk /dev/nbd0

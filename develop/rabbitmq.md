@@ -11,6 +11,95 @@
 1. 定时任务
 1. 流量削峰
 
+## 架构
+![RabbitMQ 流程](/misc/img/develop/435188-20180605151314266-1010797270.png)
+
+## 管理
+
+### rabbitmq_management(dashboard)
+默认安装了rabbitmq_management, 只需要执行一条命令即可：
+```bash
+$ sudo rabbitmq-plugins enable rabbitmq_management
+```
+
+rabbitmq_management功能:
+1. 主页地址: http://server-name:15672/ (默认用户名guest,密码guest)
+1. API文档: http://server-name:15672/api/
+1. 下载 rabbitmqadmin: http://server-name:15672/cli/
+
+### cmd
+1. rabbitmqctl list_queues : 查看mq上的queue
+1. rabbitmqctl list_users : 已有帐号, 缺省的guest账户只能在本地豋录, `[xxx]`表示role
+1. rabbitmqctl change_password  Username  'Newpassword'
+1. rabbitmqctl status : 状态
+
+## 配置
+配置文件位置: `/etc/rabbitmq`
+默认log文件位置: `/var/lib/rabbitmq`
+
+> `http://server-name:15672/#/`上就有相关信息.
+
+### 用户权限管理
+权限管理中主要包含四步：
+1. 新建用户
+
+	rabbitmqctl add_user rabbitadmin 123456 : 新建帐号
+1. 配置权限
+
+	rabbitmqctl set_permissions -p / rabbitadmin ".*" ".*" ".*" # set_permissions [-p <vhostpath>] <user> <conf> <write> <read>
+
+	<conf> <write> <read>的位置分别用正则表达式来匹配特定的资源，如'^(amq\.gen.*|amq\.default)$'可以匹配server生成的和默认的exchange，'^$'不匹配任何资源
+
+	权限细则:
+    - exchange和queue的declare与delete分别需要exchange和queue上的配置权限
+    - exchange的bind与unbind需要exchange的读写权限
+    - queue的bind与unbind需要queue写权限exchange的读权限 发消息(publish)需exchange的写权限
+    - 获取或清除(get、consume、purge)消息需queue的读权限
+
+    其他:
+    - sudo rabbitmqctl list_user_permissions rabbitadmin : 查看用户权限
+
+1. 配置角色
+
+	rabbitmqctl set_user_tags rabbitadmin administrator : 分配用户标签, 设置为管理用户, 如果未设置权限, 此时还是不能访问virtual hosts, 该情况可在dashboard的admin tab上看到.
+
+	权限区别:
+	- none
+
+		不能访问 management plugin
+
+    - management
+
+	    用户可以通过AMQP做的任何事外加：
+	    列出自己可以通过AMQP登入的virtual hosts
+	    查看自己的virtual hosts中的queues, exchanges 和 bindings
+	    查看和关闭自己的channels 和 connections
+	    查看有关自己的virtual hosts的“全局”的统计信息，包含其他用户在这些virtual hosts中的活动
+
+    - policymaker
+
+	    management可以做的任何事外加：
+	    查看、创建和删除自己的virtual hosts所属的policies和parameters
+
+    - monitoring
+
+	    management可以做的任何事外加：
+	    列出所有virtual hosts，包括他们不能登录的virtual hosts
+	    查看其他用户的connections和channels
+	    查看节点级别的数据如clustering和memory使用情况
+	    查看真正的关于所有virtual hosts的全局的统计信息
+
+    - administrator
+
+	    policymaker和monitoring可以做的任何事外加:
+	    创建和删除virtual hosts
+	    查看、创建和删除users
+	    查看创建和删除permissions
+	    关闭其他用户的connections
+1. 删除用户
+
+	rabbitmqctl.bat delete_user rabbitadmin
+
 ## FAQ
 ### 持久化消息
 默认情况下的交换机和队列以及消息是非持久化的. 如果消息想要从Rabbitmq崩溃中恢复，那么消息必须满足以下条件:
