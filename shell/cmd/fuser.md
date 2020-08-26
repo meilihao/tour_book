@@ -7,6 +7,7 @@
 ## 选项
 - -m : 显示所有使用指定文件系统或块设备的进程
 - -v : 输出更多信息
+- -k : Kill processes accessing the file.  Unless changed with -SIGNAL, SIGKILL is sent
 
 ## example
 ```

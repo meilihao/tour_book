@@ -7,7 +7,7 @@
 
 > 在rhel8上默认不安装network.service(等同废弃)，因此只能通过NM进行网络配置，如果未开启NM，则无法使用网络.
 
-> nmtui是nmcli的字符gui.
+> nmtui是nmcli的字符gui, 需要sudo权限.
 
 在nmcli中有2个命令最为常用：
 - nmcli connection : 连接，可理解为配置文件，相当于ifcfg-ethX. 可以简写为nmcli c

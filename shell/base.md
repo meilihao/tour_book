@@ -262,7 +262,7 @@ logger是一个shell命令接口，可以通过该接口使用Syslog的系统日
 
 ### 脚本调试
 
-设置`export PS4='+${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]}: '`, 允许调试shell脚本时，在跟踪里输出文件/行号.
+设置`export PS4='+${BASH_SOURCE}:${LINENO}:${FUNCNAME[0]}: '`, 允许调试shell脚本时，在跟踪里输出文件/行号, 此时可能导致某些脚步报错.
 
 使用选项`-x`,启动追踪调试shell脚本.
 

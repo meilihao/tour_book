@@ -582,7 +582,7 @@ mount: can't find nfs in /etc/fstab
 参考:
 - [NFS Mount over a Specific Interface](https://www.redhat.com/archives/fedora-list/2005-September/msg03442.html)
 
-nfs client存在多网卡多ip时, nfs mount使用了非nfs server export中指定的ip去连接nfs server导致权限(ip)不正确被拒绝.
+nfs client存在多ip且它们属于同网段(未确定此时多网卡是否也有影响)时, nfs mount使用了非nfs server export中指定的ip去连接nfs server导致权限(ip)不正确被拒绝.
 
 ```bash
 # mount -t nfs -o vers=3,clientaddr=192.160.0.31  192.168.0.141:/mnt/xfs nfs # 报错:`unmatched host`. 192.168.0.121与192.160.0.31是同一台电脑.
@@ -676,7 +676,17 @@ env: ubuntu14.04 + samba 4.3.11
 smb server端权限正确, 重启后正常.
 
 ### clnt_create: RPC: Program not registered
-`showmount -e 192.168.0.248`时报该错误, 网上的提示是`rpcbind`没运行, 但查了`ss -anlpt|grep rpcbind`是运行的, 推测是nfs本身的问题, `exportfs -ra`后正常.
+`showmount -e 192.168.0.248`时报该错误, 网上的提示是`rpcbind`没运行, 但查了`ss -anlpt|grep rpcbind`是运行的,`exportfs -ra`后有时正常但有时还是不行. 推测是nfs本身的问题.
+
+验证过程:
+通过tcpdump抓取mount.nfs与rpcbind(端口111)的通信过程, 发现它们能正常通信, 那么问题应该是server端的rpcbind与nfs-kernel-server的问题, `systemctl restart nfs-kernel-server`后恢复正常.
+
+### 修改/etc/export后, 仍提示"权限不够"
+1. client使用root挂载nfs export(/mnt/abc, root_squash, all_squash), client能挂载成功但没有权限进入挂载目录
+1. 将nfs export改为`anonuid=0, anongid=0`, 再`exportfs -ra`, client仍无法进入挂载目录
+1. umount后重新挂载, 能进入挂载目录并创建文件.
+
+原因推测: `exportfs -ra`时, client与server的连接未被终止, session中仍然使用`root_squash, all_squash`标识权限, 导致报错.
 
 ## zfs xfs nas
 **推荐使用zfs fs, 不推荐ext4,xfs + zvol, 特别是xfs**
