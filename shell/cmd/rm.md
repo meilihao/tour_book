@@ -41,4 +41,11 @@ rm [options]  !(*.zip|*.iso)
 rm -v  !(*.zip|*.iso)
 rm -f  !(*.zip|*.iso)
 rm -v -i  !(*.php)
+# ls
+'--exclude=lfs_root'   boot
+# rm '--exclude=lfs_root'
+rm: unrecognized option '--exclude=lfs_root'
+Try 'rm ./'--exclude=lfs_root'' to remove the file '--exclude=lfs_root'.
+Try 'rm --help' for more information.
+# rm ./'--exclude=lfs_root' # ok
 ```
