@@ -132,6 +132,9 @@ ifdef, ifndef, ifeq, ifneq, else, 结尾统一用endif.
 $ make [test] "V=1"
 ```
 
+### Makefile定义的操作
+`make help`
+
 ### make if判断明明正确却没有日志输出
 ```makefile
 pkg:
