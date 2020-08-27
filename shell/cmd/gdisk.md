@@ -36,3 +36,7 @@ Do you want to proceed? (Y/N): y # 询问是否相想继续，输入y继续
 OK; writing new GUID partition table (GPT) to /dev/nbd0.
 The operation has completed successfully.
 ```
+
+## gdisk分区代号
+- EF00  EFI System
+- 8300  Linux filesystem
