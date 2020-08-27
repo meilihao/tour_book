@@ -19,7 +19,7 @@
 ### rabbitmq_management(dashboard)
 默认安装了rabbitmq_management, 只需要执行一条命令即可：
 ```bash
-$ sudo rabbitmq-plugins enable rabbitmq_management
+$ sudo rabbitmq-plugins enable rabbitmq_management # 可能需要重启rabbitmq使其生效
 ```
 
 rabbitmq_management功能:
