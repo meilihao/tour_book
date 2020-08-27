@@ -38,5 +38,11 @@ The operation has completed successfully.
 ```
 
 ## gdisk分区代号
+- EF02  BIOS boot partition
+
+    gnu grub用它来引导基于legacy bios但启动设备上却包含GPT格式分区表时的操作系统. 这种结构有时候被称为BIOS/GPT启动.
+
+    此时使用`sudo parted -l /dev/nvme0n1`查看时, Partition Table: gpt, Disk Flags不为空, 是pmbr_boot. 
+
 - EF00  EFI System
 - 8300  Linux filesystem
