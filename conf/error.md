@@ -547,3 +547,13 @@ acpi与内核可能有不兼容的问题, kernel启动参数可追加[`acpi=ht`]
 ## fs
 ### EXT4-fs error (device sdb4) ext4_find_entry:1436 inode #2 comm pvestatd reading directory lblock 0
 [怀疑是sata接口接触不良](https://m.newsmth.net/article/KernelTech/75125?p=1)
+
+## lib
+### /lib/x86_64-linux-gnu/libm.so.6: version `GLIBC_2.27' not found (required by xxx)
+缺少GLIBC_2.27, `2.27`是xxx需要的最高glibc version.
+
+命令`strings /lib/x86_64-linux-gnu/libm.so.6 | grep GLIBC_`支持查找该so支持的glibc版本, 输出是个范围, 只要本机`ldd --version`的glibc在该区间即可.
+
+解决方法有2:
+1. 安装指定版本的glibc
+1. 在目标机器上编译程序并运行即可
