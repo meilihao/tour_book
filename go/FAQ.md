@@ -489,3 +489,21 @@ copierErrChan := make(chan error, 1)
 解析pem格式的rsa pubkey时报错, 原因: 将公钥嵌入代码时莫名其妙被追加了`\t`, 可用`hexdump -C xxx.go`查看.
 
 解决方法: `sed -i "s/\t//g" xxx.go`
+
+## thirdpart
+### 1. "Key: 'Req.Field' Error:Field validation for 'Field' failed on the 'required' tag"
+```go
+type Req struct {
+    Field int `json:"field" binding:"required"`
+}
+
+func handler(ctx *gin.Context) {
+    req := &Req{}
+    err := ctx.BindJSON(&req) // "Key: 'Req.Field' Error:Field validation for 'Field' failed on the 'required' tag"
+}
+```
+
+原因是`binding:"required"`, 因为go有默认值, validation无法检查出Field字段是否有传值, 因此它认为此时`required`无法正常工作, 因此可将Field定义为`*int`来处理.
+
+
+

@@ -64,6 +64,8 @@ modprobe需要一个最新的modules.dep(`/lib/modules/$(uname -r)/modules.dep`)
 # insmod /lib/modules/`uname -r`/kernel/zfs/zfs.ko
 ```
 
+> 安装已加载的mod会报错: "insmod: ERROR: could not insert module xxx.ko: File exists"
+
 # rmmod
 移除内核模块
 

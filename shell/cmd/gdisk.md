@@ -46,3 +46,101 @@ The operation has completed successfully.
 
 - EF00  EFI System
 - 8300  Linux filesystem
+
+## script分区
+参考:
+- [Creating GPT partitions easily on the command line](https://suntong.github.io/blogs/2015/12/26/creating-gpt-partitions-easily-on-the-command-line/)
+
+> sgdisk支持linux+unix, gdisk支持linux.
+
+```bash
+# sed -e 's/\s*\([\+0-9a-zA-Z]*\).*/\1/' << EOF | gdisk /dev/nbd0
+  o # new gpt
+  Y # Proceed
+  n # new partition
+  1 # Partition number
+    # default - start at beginning of disk
+  +1M # 1 MB BIOS boot partition
+  ef02  # new partition
+  n
+  2
+
+  +256M
+  ef00 # EFI System
+  n
+  3
+
+  +2048M
+  8300
+  n
+  4
+  
+  
+  
+  w # write GPT data
+  Y # want to proceed
+EOF
+# gdisk /dev/nbd0 # 上面命令的分区效果
+GPT fdisk (gdisk) version 1.0.3
+
+Partition table scan:
+  MBR: protective
+  BSD: not present
+  APM: not present
+  GPT: present
+
+Found valid GPT with protective MBR; using GPT.
+
+Command (? for help): p
+Disk /dev/nbd0: 16777216 sectors, 8.0 GiB
+Sector size (logical/physical): 512/512 bytes
+Disk identifier (GUID): D43F5226-18A1-4A4B-B6B4-F77E5BAF6961
+Partition table holds up to 128 entries
+Main partition table begins at sector 2 and ends at sector 33
+First usable sector is 34, last usable sector is 16777182
+Partitions will be aligned on 2048-sector boundaries
+Total free space is 2014 sectors (1007.0 KiB)
+
+Number  Start (sector)    End (sector)  Size       Code  Name
+   1            2048            4095   1024.0 KiB  EF02  BIOS boot partition
+   2            4096          528383   256.0 MiB   EF00  EFI System
+   3          528384         4722687   2.0 GiB     8300  Linux filesystem
+   4         4722688        16777182   5.7 GiB     8300  Linux filesystem
+# --- format /dev/sdb as GPT, GUID Partition Table
+# sgdisk -Z /dev/nbd0
+# sgdisk -n 0:0:+1M -t 0:ef02 -c 0:"bios_boot" /dev/nbd0
+# sgdisk -n 0:0:+256M -t 0:ef00 -c 0:"efi" /dev/nbd0
+# sgdisk -n 0:0:+2G -t 0:8300 -c 0:"linux_boot" /dev/nbd0
+# sgdisk -n 0:0:+1G -t 0:0700 -c 0:"windows" /dev/nbd0
+# sgdisk -n 0:0:+1G -t 0:8200 -c 0:"linux_swap" /dev/nbd0
+# sgdisk -n 0:0:+1G -t 0:8300 -c 0:"os1" /dev/nbd0
+# sgdisk -n 0:0:0 -t 0:8300 -c 0:"data" /dev/nbd0
+# sgdisk -p /dev/nbd0
+# sgdisk -p /dev/nbd0
+Disk /dev/nbd0: 16777216 sectors, 8.0 GiB
+Sector size (logical/physical): 512/512 bytes
+Disk identifier (GUID): 46C2F0D3-8206-45A8-98D3-BDB09981A754
+Partition table holds up to 128 entries
+Main partition table begins at sector 2 and ends at sector 33
+First usable sector is 34, last usable sector is 16777182
+Partitions will be aligned on 2048-sector boundaries
+Total free space is 2014 sectors (1007.0 KiB)
+
+Number  Start (sector)    End (sector)  Size       Code  Name
+   1            2048            4095   1024.0 KiB  EF02  bios_boot
+   2            4096          528383   256.0 MiB   EF00  efi
+   3          528384         4722687   2.0 GiB     8300  linux_boot
+   4         4722688         6819839   1024.0 MiB  0700  windows
+   5         6819840         8916991   1024.0 MiB  8200  linux_swap
+   6         8916992        11014143   1024.0 MiB  8300  os1
+   7        11014144        16777182   2.7 GiB     8300  data
+```
+
+sgdisk命令解析：
+1. `sgdisk -n 1:2048:4095 -c 1:"BIOS Boot Partition" -t 1:ef02 /dev/nbd0`
+1. `sgdisk -n 0:0:+1M -t 0:ef02 -c 0:"bios_boot" /dev/nbd0`
+
+- `1:2048:4095`: 1, 分区编号; 2048, 起始扇区; 4095, 结束扇区
+- `0:0:+1M`: 0, 分区编号sgdisk自动计算; 0, 起始扇区sgdisk自动计算; +1M, 该分区大小
+- `-t 0:ef02`: 0, 前面自动生成的分区号, ef02是分区类型
+- `-c 0:"bios_boot"`: 0, 前面自动生成的分区号, bios_boot是该分区的name
