@@ -84,7 +84,9 @@ vm重新启动后会在dmesg中看到"Secure boot enabled"了.
 > 不是使用OVMF-need-smm.fd时, EnrollDefaultKeys.efi会报错: "error: GetVariable("SetupMode", 8BE4DF61-93CA-11D2AA0D-00E098032B8C): Not Found". 即使换成了"OVMF-need-smm.fd"还是会卡在qemu的启动界面上(ovmf之前), 原因可看[这里](https://askbot.fedoraproject.org/en/question/86384/wiki-using-uefi-with-qemu/)和[SMM support](https://github.com/tianocore/edk2/blob/master/OvmfPkg/README), 但对照检查后还是不行, 只能使用OVMF-pure-efi.fd了.
 
 ### 编译
-参考[edk2-ovmf](https://www.archlinux.org/packages/extra/any/edk2-ovmf/)右上角的[Source Files](https://github.com/archlinux/svntogit-packages/tree/packages/edk2/trunk)中的[构建脚本](https://github.com/archlinux/svntogit-packages/blob/packages/edk2/trunk/PKGBUILD).
+参考:
+- [edk2-ovmf](https://www.archlinux.org/packages/extra/any/edk2-ovmf/)右上角的[Source Files](https://github.com/archlinux/svntogit-packages/tree/packages/edk2/trunk)中的[构建脚本](https://github.com/archlinux/svntogit-packages/blob/packages/edk2/trunk/PKGBUILD).
+- [gentoo edk2-ovmf-999999.ebuild](https://gitweb.gentoo.org/repo/gentoo.git/plain/sys-firmware/edk2-ovmf/edk2-ovmf-999999.ebuild)
 
 ```bash
 $ git clone --depth 1 -b edk2-stable202005 git@github.com:tianocore/edk2.git
