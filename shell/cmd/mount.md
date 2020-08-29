@@ -56,3 +56,17 @@ mount: /srv/dev-disk-by-path-pci-0000-00-10.0-scsi-0-0-2-0-part1/test/ bound on 
 
 # mountpoint
 `mountpoint /mnt/smb` : 检查`/mnt/smb`是否为挂载点
+
+# findmnt
+查看mountpoint和分区的关系, 及其挂载参数
+```bash
+$ findmnt /boot/efi
+TARGET    SOURCE         FSTYPE OPTIONS
+/boot/efi /dev/nvme0n1p1 vfat   rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro
+```
+
+## FAQ
+### mount: /dev/nbd0p4: can't find in /etc/fstab
+执行`mount -v -t ext4 /dev/nbd0p4 $LFS`时报错.
+
+原因: $LFS未定义. 
