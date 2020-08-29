@@ -200,3 +200,99 @@ Build step 'Execute shell' marked build as failure
 ```
 
 > dangling 镜像（即无 tag 的镜像）
+
+## FAQ
+### host上`/dev/device`变化没有同步到container里
+```
+$ sudo qemu-nbd -c /dev/nbd0 lfs.img
+$ sudo gdisk /dev/nbd0 # 此时分3个区
+$ lsblk
+NAME     MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
+...
+nbd0      43:0    0     8G  0 disk 
+|-nbd0p1  43:1    0     1M  0 part 
+|-nbd0p2  43:2    0   256M  0 part 
+`-nbd0p3  43:3    0   5.8G  0 part
+$ sudo docker run --privileged -d -it --entrypoint /bin/bash ubuntu:20.04 # 进入docker
+$ sudo docker exec -it 2779ef43d758 bash -c "lsblk"
+NAME     MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
+...
+nbd0      43:0    0     8G  0 disk 
+|-nbd0p1  43:1    0     1M  0 part 
+|-nbd0p2  43:2    0   256M  0 part 
+`-nbd0p3  43:3    0   5.8G  0 part 
+vda      254:0    0    40G  0 disk 
+`-vda1   254:1    0    40G  0 part /mnt/lfs/lfs_root/iso
+$ sudo gdisk /dev/nbd0 # 重新划分为4个区
+$ lsblk
+NAME     MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
+... 
+nbd0      43:0    0     8G  0 disk 
+|-nbd0p1  43:1    0     1M  0 part 
+|-nbd0p2  43:2    0   256M  0 part 
+|-nbd0p3  43:3    0     2G  0 part 
+`-nbd0p4  43:4    0   5.8G  0 part
+$ sudo docker exec -it 2779ef43d758 bash # 进入容器
+# lsblk
+NAME     MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
+...
+nbd0      43:0    0     8G  0 disk 
+|-nbd0p1  43:1    0     1M  0 part 
+|-nbd0p2  43:2    0   256M  0 part 
+|-nbd0p3  43:3    0     2G  0 part 
+`-nbd0p4  43:4    0   5.8G  0 part
+# ll /dev/nbd0* # 未看到nbd0p4
+brw-rw---- 1 root disk 43, 0 Aug 27 09:44 /dev/nbd0
+brw-rw---- 1 root disk 43, 1 Aug 27 09:44 /dev/nbd0p1
+brw-rw---- 1 root disk 43, 2 Aug 27 09:44 /dev/nbd0p2
+brw-rw---- 1 root disk 43, 3 Aug 27 09:44 /dev/nbd0p3
+# apt update && apt install -y udev
+# udevadm monitor # 此时在host调用`sudo qemu-nbd -d /dev/nbd0 && sudo qemu-nbd -c /dev/nbd0 lfs.img`
+...
+KERNEL[11668557.207132] change   /devices/virtual/block/nbd0 (block)
+KERNEL[11668557.207238] remove   /devices/virtual/block/nbd0/nbd0p1 (block)
+KERNEL[11668557.207311] remove   /devices/virtual/block/nbd0/nbd0p2 (block)
+KERNEL[11668557.207393] remove   /devices/virtual/block/nbd0/nbd0p3 (block)
+KERNEL[11668557.207483] remove   /devices/virtual/block/nbd0/nbd0p4 (block)
+KERNEL[11668557.223089] change   /devices/virtual/block/nbd0 (block)
+KERNEL[11668557.228320] change   /devices/virtual/block/nbd0 (block)
+KERNEL[11668557.228759] add      /devices/virtual/block/nbd0/nbd0p1 (block)
+KERNEL[11668557.229025] add      /devices/virtual/block/nbd0/nbd0p2 (block)
+KERNEL[11668557.229315] add      /devices/virtual/block/nbd0/nbd0p3 (block)
+KERNEL[11668557.229629] add      /devices/virtual/block/nbd0/nbd0p4 (block)
+$ sudo udevadm monitor # 这是此时host的udevadm monitor日志
+...
+KERNEL[11668677.753045] change   /devices/virtual/block/nbd0 (block)
+KERNEL[11668677.760119] remove   /devices/virtual/block/nbd0/nbd0p1 (block)
+UDEV  [11668677.760156] change   /devices/virtual/block/nbd0 (block)
+KERNEL[11668677.760174] remove   /devices/virtual/block/nbd0/nbd0p2 (block)
+UDEV  [11668677.760207] remove   /devices/virtual/block/nbd0/nbd0p1 (block)
+KERNEL[11668677.760232] remove   /devices/virtual/block/nbd0/nbd0p3 (block)
+UDEV  [11668677.760264] remove   /devices/virtual/block/nbd0/nbd0p3 (block)
+KERNEL[11668677.760283] remove   /devices/virtual/block/nbd0/nbd0p4 (block)
+UDEV  [11668677.760316] remove   /devices/virtual/block/nbd0/nbd0p2 (block)
+UDEV  [11668677.760366] remove   /devices/virtual/block/nbd0/nbd0p4 (block)
+KERNEL[11668677.769738] change   /devices/virtual/block/nbd0 (block)
+KERNEL[11668677.774402] change   /devices/virtual/block/nbd0 (block)
+KERNEL[11668677.775673] add      /devices/virtual/block/nbd0/nbd0p1 (block)
+KERNEL[11668677.775761] add      /devices/virtual/block/nbd0/nbd0p2 (block)
+KERNEL[11668677.775835] add      /devices/virtual/block/nbd0/nbd0p3 (block)
+KERNEL[11668677.775957] add      /devices/virtual/block/nbd0/nbd0p4 (block)
+UDEV  [11668677.785195] change   /devices/virtual/block/nbd0 (block)
+UDEV  [11668677.785228] change   /devices/virtual/block/nbd0 (block)
+UDEV  [11668677.794127] add      /devices/virtual/block/nbd0/nbd0p4 (block)
+UDEV  [11668677.807696] add      /devices/virtual/block/nbd0/nbd0p2 (block)
+UDEV  [11668677.807822] add      /devices/virtual/block/nbd0/nbd0p3 (block)
+UDEV  [11668677.812048] add      /devices/virtual/block/nbd0/nbd0p1 (block)
+```
+
+Docker's --privileged creates a tmpfs inside the container and recreates all device nodes currently in the hosts /dev. However, it does not create or update symlinks from hosts /dev.
+
+the point of udevadm trigger is to tell the kernel to send events for all the devices that are present. It does that by writing to `find /sys/devices -name "uevent"`. This requires sysfs to be mounted read-write on /sys.
+
+通过`grep -r "nbd" /usr/lib/udev/rules.d/`, 有nbd相关规则输出, 与host debian10的udev rules比较发现, 相关的nbd规则是正确的. 
+
+通过`udevadm monitor`可以看到nbd0p4未生效的原因:docker中缺少udev event, 查看了host上udev相关进程(by `sudo  ps -ef|grep udev`), 发现有`/lib/systemd/systemd-udevd
+`存在, 怀疑是该udev daemon未启动所致. 在容器里执行`/lib/systemd/systemd-udevd`, 再在host执行`sudo qemu-nbd -d /dev/nbd0 && sudo qemu-nbd -c /dev/nbd0 lfs.img`, 通过容器里的`udevadm monitor`发现, udev处理了相关的udev event, 但`/dev/nbd0p*`的分区数仍旧不对, 且`/lib/systemd/systemd-udevd`报错:"Failed to unlink /run/udev/queue: No such file or directory", 但host上也有该错误, 且在其他机器上测试发现即使没有`/run/udev/queue`也不报错, 且`/dev/nbd0pN`正常. 因此最终推测是与docker对udev的支持或实现有关, 解决方法是启动容器前提前完成相关操作.
+
+其实在host执行`sudo qemu-nbd -d /dev/nbd0`时, 容器中的3个`/dev/nbd0p*`也未消失, 同样是上述原因.

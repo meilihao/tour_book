@@ -101,3 +101,14 @@ in 64-bit mode. So it simply depends what the CPU happens to be
 doing at any given time.
 
 可能是seabios最高支持到32bit的原因???.
+
+### 如何将qcow2打内容克隆到磁盘
+`qemu-img dd -f qcow2 -O raw bs=4M if=/vm-images/image.qcow2 of=/dev/sdd1`支持将qcow2 dd到磁盘
+
+### x86 machine type选择
+参考:
+- [Qemu X86架构的Machine Type](https://remimin.github.io/2019/07/09/qemu_machine_type/)
+
+可通过`qemu-system-x86_64 --machine help`查看x86支持的所以machine type.
+
+i440fx是1996年推出的架构, 已过时. q35是2009年推出的架构, 更现代.
