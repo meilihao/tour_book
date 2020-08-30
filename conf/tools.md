@@ -236,22 +236,6 @@ $ sudo mount cd.iso {mount_dir} # 挂载iso, 只读
 $ sudo apt-get install isomaster # isomaster可修改iso, 保存时需要另存为
 ```
 
-### qcow2
-```
-$ sudo apt-get install libguestfs-tools
-$ guestmount  -a  x.qcow2 -i  --rw  {mount_dir} # 挂载qcow2
-$ sudo umount {mount_dir}
-$ guestfish --rw -a centos6.5-minimal.qcow2 # 进入qcow2直接修改即可, 与系统进入修复模式类似.
-><fs> run
-><fs> list-filesystems # 查找文件系统
-/dev/sda1: ext4
-><fs> mount /dev/sda1 / # 挂载文件系统
-><fs> touch /etc/rc.local
-><fs> edit /etc/rc.local
-><fs> chmod 0755 /etc/sysconfig/modules/8021q.modules
-><fs> exit
-```
-
 ### flash
 
     sudo dnf install flash-plugin

@@ -129,6 +129,7 @@ configfile $prefix/grub.cfg
 ## UEFI Shell
 参考:
 - [UEFI Shell命令操作总结](https://blog.csdn.net/kair_wu/article/details/48342093)
+- [用efibootmgr管理UEFI启动项，添加丢失的启动项](https://blog.csdn.net/Pipcie/article/details/79971337)
 
 Shell命令的通用选项:
 - -b : 输出信息分屏显示
@@ -155,6 +156,8 @@ uefi存储标示:
 - [How to run OVMF](https://github.com/tianocore/tianocore.github.io/wiki/How-to-run-OVMF)
 - [kraxel可下载已编译好的ovmf/已安装好os的qcow2 image](https://www.kraxel.org/repos/), 比如[edk2.git-ovmf-x64-0-20200515.1440.gcbccf99592.noarch.rpm](https://www.kraxel.org/repos/jenkins/edk2/edk2.git-ovmf-x64-0-20200515.1440.gcbccf99592.noarch.rpm), 使用rpm2cpio解压rpm即可
 - [redhat ovmf whitepaper](http://people.redhat.com/~lersek/ovmf-whitepaper-c770f8c.txt)
+
+> `sudo apt install ovmf` on deepin v20.
 
 edk2.git-ovmf-x64-0-20200515.1440.gcbccf99592.noarch.rpm解压说明:
 ```bash

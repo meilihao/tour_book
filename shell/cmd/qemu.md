@@ -84,6 +84,26 @@ XMM04=00000000000000000000000000000000 XMM05=00000000000000000000000000000000
 XMM06=00000000000000000000000000000000 XMM07=00000000000000000000000000000000
 ```
 
+## qcow2
+### 修改qcow2 image的方法
+1. libguestfs-tools
+```
+$ sudo apt-get install libguestfs-tools
+$ guestmount  -a  x.qcow2 -i  --rw  {mount_dir} # 挂载qcow2
+$ sudo umount {mount_dir}
+$ guestfish --rw -a centos6.5-minimal.qcow2 # 进入qcow2直接修改即可, 与系统进入修复模式类似.
+><fs> run
+><fs> list-filesystems # 查找文件系统
+/dev/sda1: ext4
+><fs> mount /dev/sda1 / # 挂载文件系统
+><fs> touch /etc/rc.local
+><fs> edit /etc/rc.local
+><fs> chmod 0755 /etc/sysconfig/modules/8021q.modules
+><fs> exit
+```
+
+1. qemu-nbd
+
 ## FAQ
 ### qemu编译依赖
 ```

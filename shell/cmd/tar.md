@@ -56,10 +56,10 @@
 tar -zcvf - /etc |tar -zxvf - # 第一个"-"表示输出到stdout, 第二个"-"是将管道传入的信息作为解压的数据来源
 tar -N "2008/7/21" -zcvf log.tar.gz /var/log # 压缩/var/log中2008/7/71以后的文件
 tar -ztvf /opt/etc.tar.gz # 查看内容
-tar –cvf jpg.tar *.jpg //将目录里所有jpg文件打包成tar.jpg
-tar –czf jpg.tar.gz *.jpg   //将目录里所有jpg文件打包成jpg.tar后，并且将其用gzip压缩，生成一个gzip压缩过的包，命名为jpg.tar.gz
-tar –cjf jpg.tar.bz2 *.jpg //将目录里所有jpg文件打包成jpg.tar后，并且将其用bzip2压缩，生成一个bzip2压缩过的包，命名为jpg.tar.bz2
-tar –cZf jpg.tar.Z *.jpg   //将目录里所有jpg文件打包成jpg.tar后，并且将其用compress压缩，生成一个umcompress压缩过的包，命名为jpg.tar.Z
+tar -cvf jpg.tar *.jpg //将目录里所有jpg文件打包成tar.jpg
+tar -czf jpg.tar.gz *.jpg   //将目录里所有jpg文件打包成jpg.tar后，并且将其用gzip压缩，生成一个gzip压缩过的包，命名为jpg.tar.gz
+tar -cjf jpg.tar.bz2 *.jpg //将目录里所有jpg文件打包成jpg.tar后，并且将其用bzip2压缩，生成一个bzip2压缩过的包，命名为jpg.tar.bz2
+tar -cZf jpg.tar.Z *.jpg   //将目录里所有jpg文件打包成jpg.tar后，并且将其用compress压缩，生成一个umcompress压缩过的包，命名为jpg.tar.Z
 tar --exclude=tomcat/logs --exclude=tomcat/libs --exclude=tomcat/xiaoshan.txt -zcvf tomcat.tar.gz tomcat # 排除logs和libs两个目录及文件xiaoshan.txt
 rar a jpg.rar *.jpg //rar格式的压缩，需要先下载rar for linux
 zip jpg.zip *.jpg //zip格式的压缩，需要先下载zip for linux

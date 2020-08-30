@@ -548,6 +548,11 @@ acpi与内核可能有不兼容的问题, kernel启动参数可追加[`acpi=ht`]
 ### EXT4-fs error (device sdb4) ext4_find_entry:1436 inode #2 comm pvestatd reading directory lblock 0
 [怀疑是sata接口接触不良](https://m.newsmth.net/article/KernelTech/75125?p=1)
 
+### mknod: cannot set permissions of 'console': Operation not supported
+在docker container(已使用`--privileged`)的chroot环境中执行`mknod -m 640 console c 5 1`报错, 推测是chroot环境权限受限导致.
+
+解决方法: 在chroot的外层即container中执行mknod即可.
+
 ## lib
 ### /lib/x86_64-linux-gnu/libm.so.6: version `GLIBC_2.27' not found (required by xxx)
 缺少GLIBC_2.27, `2.27`是xxx需要的最高glibc version.
