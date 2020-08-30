@@ -221,3 +221,10 @@ $ git submodule update --init --recursive # 下载`.gitmodules`中的依赖, 以
 ```
 # efivar -l # by read efivarfs = /sys/firmware/efi/efivars
 ```
+
+### grubx64.efi和shimx64.efi区别
+- EFI\ubuntu\grubx64.efi : 
+- EFI\ubuntu\shimx64.efi : 是安全启动选项
+
+
+	启动shimx64.efi就像启动一样grubx64.efi. 在启用了安全启动的计算机上，启动shimx64.efi会间接启动GRUB，而无法直接启动grubx64.efi.
