@@ -220,7 +220,7 @@ vm重新启动后会在dmesg中看到"Secure boot enabled"了.
 $ sudo apt install acpica-tools nasm # acpica-tools即以前的iasl
 $ git clone --depth 1 -b edk2-stable202005 git@github.com:tianocore/edk2.git
 $ cd edk2-stable202005
-$ git submodule update --init --recursive # 下载`.gitmodules`中的依赖, 以后用`git submodule update --remote`更新submodule
+$ git submodule update --init # 下载`.gitmodules`中的依赖, 以后用`git submodule update`更新submodule. 相关doc在edk2-stable202005/ReadMe.rst
 $ . edksetup.sh
 $ make -C BaseTools
 $ --- with debug
