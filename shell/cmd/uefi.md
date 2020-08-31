@@ -150,14 +150,16 @@ uefi存储标示:
 - fsX : filesystem
 - blkX : block device 或者 data storage device
 
-## OVMF
+## OVMF(Open Virtual Machine Firmware)
 参考:
 - [PCI passthrough via OVMF (简体中文)](https://wiki.archlinux.org/index.php/PCI_passthrough_via_OVMF_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87))
 - [How to run OVMF](https://github.com/tianocore/tianocore.github.io/wiki/How-to-run-OVMF)
-- [kraxel可下载已编译好的ovmf/已安装好os的qcow2 image](https://www.kraxel.org/repos/), 比如[edk2.git-ovmf-x64-0-20200515.1440.gcbccf99592.noarch.rpm](https://www.kraxel.org/repos/jenkins/edk2/edk2.git-ovmf-x64-0-20200515.1440.gcbccf99592.noarch.rpm), 使用rpm2cpio解压rpm即可
+- [kraxel可下载已编译好的ovmf/已安装好os的qcow2 image](https://www.kraxel.org/repos/), 比如[edk2.git-ovmf-x64-0-20200515.1440.gcbccf99592.noarch.rpm](https://www.kraxel.org/repos/jenkins/edk2/edk2.git-ovmf-x64-0-20200515.1440.gcbccf99592.noarch.rpm), 使用rpm2cpio解压rpm即可, 自编译可参考他的[edk2.git.spec.template](https://git.kraxel.org/cgit/jenkins/edk2/tree/edk2.git.spec.template), 他的[官网](https://www.kraxel.org/repos/)中的section "Using the repo"有简短说明.
 - [redhat ovmf whitepaper](http://people.redhat.com/~lersek/ovmf-whitepaper-c770f8c.txt)
 
 > `sudo apt install ovmf` on deepin v20.
+
+OVMF is an EDK II based project to enable UEFI support for Virtual Machines. OVMF contains sample UEFI firmware for QEMU and KVM.
 
 edk2.git-ovmf-x64-0-20200515.1440.gcbccf99592.noarch.rpm解压说明:
 ```bash
@@ -215,8 +217,21 @@ vm重新启动后会在dmesg中看到"Secure boot enabled"了.
 - [gentoo edk2-ovmf-999999.ebuild](https://gitweb.gentoo.org/repo/gentoo.git/plain/sys-firmware/edk2-ovmf/edk2-ovmf-999999.ebuild)
 
 ```bash
+$ sudo apt install acpica-tools nasm # acpica-tools即以前的iasl
 $ git clone --depth 1 -b edk2-stable202005 git@github.com:tianocore/edk2.git
+$ cd edk2-stable202005
 $ git submodule update --init --recursive # 下载`.gitmodules`中的依赖, 以后用`git submodule update --remote`更新submodule
+$ . edksetup.sh
+$ make -C BaseTools
+$ --- with debug
+$ OvmfPkg/build.sh -a X64 # with debug by doc edk2-stable202005/OvmfPkg/README
+$ cp Build/OvmfX64/DEBUG_GCC5/FVOVMF.fd ~/test/uefi
+$ --- no debug
+$ OvmfPkg/build.sh -a X64 -b RELEASE -t GCC5 # no debug
+$ cp Build/OvmfX64/RELEASE_GCC5/FV/OVMF.fd ~/test/uefi
+$ --- test efi
+$ cd ~/test/uefi
+$ qemu-system-x86_64 -pflash ./OVMF.fd
 ```
 
 ## FAQ
