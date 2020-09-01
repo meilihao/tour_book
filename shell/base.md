@@ -127,6 +127,35 @@ __EOF__
 abc
 ```
 
+delimiter包含变量:
+```bash
+$ LFSVersion="10.0-systemd"
+$ cat << EOF
+$LFSVersion
+DISTRIB_ID="Linux From Scratch"
+DISTRIB_RELEASE="${LFSVersion}"
+DISTRIB_CODENAME="BigBang"
+DISTRIB_DESCRIPTION="Linux From Scratch for fun"
+EOF
+10.0-systemd
+DISTRIB_ID="Linux From Scratch"
+DISTRIB_RELEASE="10.0-systemd"
+DISTRIB_CODENAME="BigBang"
+DISTRIB_DESCRIPTION="Linux From Scratch for fun"
+$ cat << "EOF" # delimiter使用""包裹表示直接按文本格式输出 
+$LFSVersion
+DISTRIB_ID="Linux From Scratch"
+DISTRIB_RELEASE="${LFSVersion}"
+DISTRIB_CODENAME="BigBang"
+DISTRIB_DESCRIPTION="Linux From Scratch for fun"
+EOF
+$LFSVersion
+DISTRIB_ID="Linux From Scratch"
+DISTRIB_RELEASE="${LFSVersion}"
+DISTRIB_CODENAME="BigBang"
+DISTRIB_DESCRIPTION="Linux From Scratch for fun"
+```
+
 ## 管道
 ```sh
 # echo "linuxprobe" | passwd --stdin root

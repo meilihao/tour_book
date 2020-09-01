@@ -18,7 +18,9 @@ debian,ubuntu等发行版的包管理.
 # apt-cache depends -i samba # 查看依赖
 # apt install --simulate samba # 仅模拟不安装
 # apt install --download-only samba # 仅下载, 不安装
+# apt list --installed # 查看已安装的package
 # apt-cache show cpio # 查看软件依赖
+# apt purge package_name # remove命令卸载指定软件包，但是留下一些包文件. 如果想彻底卸载软件包，包括它的文件，使用purge替换remove
 ```
 
 ## FAQ

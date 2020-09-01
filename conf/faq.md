@@ -203,3 +203,13 @@ $ echo $SSH_AUTH_SOCK
 ```bash
 # cat /proc/filesystems |grep -i xfs # 检查kernel是否支持xfs
 ```
+
+### 删除snap
+```bash
+snap list; sudo snap remove xxx
+sudo apt install ubuntu-software
+sudo snap remove snap-store
+sudo apt purge snapd
+sudo rm -rf /var/cache/snapd
+sudo rm -rf ~/snap
+```

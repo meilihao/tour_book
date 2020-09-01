@@ -48,4 +48,5 @@
 ## 例
 ```sh
 # ls -Al --time-style=+"" #  不显示时间
+# ls whateveryouwant | xargs -n 1 basename # 仅获取文件名
 ```
