@@ -54,3 +54,6 @@ ss 秒(选择性)
     # date -d @1501124007 # unix时间 -> 本地时间
     # date -s "21 June 2009 11:01:22" # 设置系统时间
     # clock -w # 把系统时间写入CMOS
+
+## timedatectl
+systemd的时间工具.
