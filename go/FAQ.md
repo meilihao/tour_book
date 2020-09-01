@@ -332,52 +332,6 @@ my.T1.m1()
 my.T2.m1()
 ```
 
-### Happens Before
-参考:
-- [Go 内存模型和Happens Before关系](https://zhuanlan.zhihu.com/p/29108170)
-
-为什么需要定义Happens Before关系来保证内存操作的可见性呢？原因是没有限制的情况下，编译器和CPU使用的各种优化，会对此造成影响.
-
-具体的来说就是操作重排序和CPU CacheLine缓存同步：
-- 操作重排序 :　现代CPU通常是流水线架构，且具有多个核心，这样多条指令就可以同时执行。然而有时候出现一条指令需要等待之前指令的结果，或是其他造成指令执行需要延迟的情况。这个时候可以先执行下一条已经准备好的指令，以尽可能高效的利用CPU。操作重排序可以在两个阶段出现：
-	- 编译器指令重排序
-	- CPU乱序执行
-- CPU 多核心间独立Cache Line的同步问题 : 多核CPU通常有自己的一级缓存和二级缓存，访问缓存的数据很快. 但是如果缓存没有同步到主存和其他核心的缓存，其他核心读取缓存就会读到过期的数据.
-
-因此Happens Before就是对编译器和CPU的限制，禁止违反Happens Before关系的指令重排序及乱序执行行为，以及必要的情况下保证CacheLine的数据更新等.
-
-Go 中定义的Happens Before保证:
-1. 单线程
-在单线程环境下，所有的表达式，按照代码中的先后顺序，具有Happens Before关系. 这并不是说编译器或者CPU不能做重排序，只要优化没有影响到Happens Before关系就是可以的.
-1. init函数
-	- 如果包P1中导入了包P2，则P2中的init函数Happens Before 所有P1中的操作
-	- main函数Happens After 所有的init函数
-1. Goroutine
-	- Goroutine的创建Happens Before所有此Goroutine中的操作
-	- Goroutine的销毁Happens After所有此Goroutine中的操作
-1. Channel
-	- 对一个元素的send操作Happens Before对应的receive 完成操作
-	- 对channel的close操作Happens Before receive 端的收到关闭通知操作
-	- 对于Unbuffered Channel，对一个元素的receive 操作Happens Before对应的send完成操作
-	- 对于Buffered Channel，假设Channel 的buffer 大小为C，那么对第k个元素的receive操作，Happens Before第k+C个send完成操作, 可以看出上一条Unbuffered Channel规则就是这条规则C=0时的特例
-
-	首先注意这里面，send和send完成，这是两个事件，receive和receive完成也是两个事件.
-
-	然后，Buffered Channel这里有个坑，它的Happens Before保证比UnBuffered 弱，这个弱只在【在receive之前写，在send之后读】这种情况下有问题, 而【在send之前写，在receive之后读】，这样用是没问题的. 这也是我们通常写程序常用的模式，千万注意这里不要弄错！
-
-1. Lock
-Go里面有Mutex和RWMutex两种锁，RWMutex除了支持互斥的Lock/Unlock，还支持共享的RLock/RUnlock.
-
-	- 对于一个Mutex/RWMutex，设n < m，则第n个Unlock操作Happens Before第m个Lock操作
-	- 对于一个RWMutex，存在数值n，RLock操作Happens After 第n个UnLock，其对应的RUnLockHappens Before 第n+1个Lock操作
-
-简单理解就是这一次的Lock总是Happens After上一次的Unlock，读写锁的RLock Happens After上一次的UnLock，其对应的RUnlock Happens Before 下一次的Lock
-
-1. Once
-once.Do中执行的操作，Happens Before 任何一个once.Do调用的返回
-
-> 如果是前端或者使用node的程序员，那么你压根就不需要清楚这些，毕竟目前js始终只有一个线程在跑
-
 ### Golang中实现典型的fork调用
 https://github.com/moby/moby/tree/master/pkg/reexec
 
