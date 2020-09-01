@@ -34,6 +34,7 @@
     # ps aux
     # ps -elf
     # ps auxf # 输出进程树
+    # ps -A -O pgid # 基本属性+`-O`指定的属性
 
 ## 扩展
 
