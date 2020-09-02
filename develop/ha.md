@@ -728,6 +728,7 @@ Active-Active阵列双活解决方案：主从站点双活架构，同一个双�
 ### nas
 参考:
 - [华为HyperMetro SAN与NAS一体化双活解决方案](https://wenku.baidu.com/view/1bbcb89e7e192279168884868762caaedd33babe.html)
+- [双活数据中心解决方案](https://support.huawei.com/enterprise/zh/doc/EDOC1000179703?section=j00b)
 
 nas双活, 每个nas pool绑定一个vip, 之后飘vip.
 ### san

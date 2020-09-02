@@ -303,3 +303,18 @@ the point of udevadm trigger is to tell the kernel to send events for all the de
 使用`--privileged`，container内的root拥有真正的root权限, 否则container内的root只是外部的一个普通用户权限.
 
 privileged启动的容器，可以看到很多host上的设备，并且可以执行mount, 甚至允许在docker容器中启动docker容器.
+
+### docker clean
+[`docker system prune`](https://docs.docker.com/config/pruning/)
+
+### docker cp到container挂载的文件系统 不起作用
+```bash
+root@401ccde8d881:/mnt# mkdir -pv /mnt/lfs
+root@401ccde8d881:/mnt# mkfs -v -t ext4 /dev/nbd0p3
+root@401ccde8d881:/mnt# mount -v -t ext4 /dev/nbd0p3 /mnt/lfs
+# --- outside
+sudo docker cp scripts 401ccde8d881:/mnt/lfs # not work
+sudo docker cp scripts 401ccde8d881:/mnt # work
+```
+
+估计是cgroup限制导致
