@@ -296,3 +296,10 @@ the point of udevadm trigger is to tell the kernel to send events for all the de
 `存在, 怀疑是该udev daemon未启动所致. 在容器里执行`/lib/systemd/systemd-udevd`, 再在host执行`sudo qemu-nbd -d /dev/nbd0 && sudo qemu-nbd -c /dev/nbd0 lfs.img`, 通过容器里的`udevadm monitor`发现, udev处理了相关的udev event, 但`/dev/nbd0p*`的分区数仍旧不对, 且`/lib/systemd/systemd-udevd`报错:"Failed to unlink /run/udev/queue: No such file or directory", 但host上也有该错误, 且在其他机器上测试发现即使没有`/run/udev/queue`也不报错, 且`/dev/nbd0pN`正常. 因此最终推测是与docker对udev的支持或实现有关, 解决方法是启动容器前提前完成相关操作.
 
 其实在host执行`sudo qemu-nbd -d /dev/nbd0`时, 容器中的3个`/dev/nbd0p*`也未消失, 同样是上述原因.
+
+### `--privileged`与`--device`
+使用`--privileged`时, `--device`会被忽略.
+
+使用`--privileged`，container内的root拥有真正的root权限, 否则container内的root只是外部的一个普通用户权限.
+
+privileged启动的容器，可以看到很多host上的设备，并且可以执行mount, 甚至允许在docker容器中启动docker容器.
