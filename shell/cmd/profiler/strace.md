@@ -54,4 +54,5 @@
 ## example
 ```
 # strace command arg ...
+# strace -e trace=openat pkg-config --cflags systemd # 仅输出syscall=openat的记录
 ```
