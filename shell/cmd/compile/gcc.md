@@ -58,6 +58,9 @@ export LD_LIBRARY_PATH=/usr/local/gcc-9.1/lib64:$LD_LIBRARY_PATH
 ```
 
 ## 交叉编译
+参考:
+- [深入理解交叉编译(Cross Compile)](https://www.jianshu.com/p/62613863aed0)
+
 交叉编译中的build、host、target选项的含义:
 - --build=编译该软件所使用的平台(你现在电脑的平台), config.guess中猜的
 - --host=该软件将运行的平台(编译出来的库可以在哪个平台上运行)
