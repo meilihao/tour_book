@@ -61,7 +61,7 @@ export LD_LIBRARY_PATH=/usr/local/gcc-9.1/lib64:$LD_LIBRARY_PATH
 交叉编译中的build、host、target选项的含义:
 - --build=编译该软件所使用的平台(你现在电脑的平台), config.guess中猜的
 - --host=该软件将运行的平台(编译出来的库可以在哪个平台上运行)
-- --target=该软件所处理的目标平台, 即告诉该软件编译出来的工具链生成的代码的运行平台. 这个选项只有在建立交叉编译环境的时候用到, 比如compile cross-compiler, binutils，toolchain时.
+- --target=该软件所处理的目标平台, 即告诉该软件编译出来的工具链生成的代码的运行平台, 即编译程序能够为其生成机器码的平台. 这个选项只有在建立交叉编译环境的时候用到, 比如compile cross-compiler, binutils，toolchain时.
 
 build和host比较好理解,但是target就不好办了.
 
