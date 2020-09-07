@@ -717,6 +717,23 @@ LVS的八种调度方法
 ## haproxy
 基于应用实现的软负载均衡, 基于tcp和http.
 
+## 双活
+
+Active-Passive阵列双活解决方案：仅主站点阵列承担业务负载，从站点阵列并不处于实时提供业务的状态（分不可访问和业务转发两种模式）。提供仲裁机制，单站点故障下能够实现业务连续。但需要注意的是，这种模式下如果主站点服务器与主阵列间链路故障，可能会导致业务中断.
+
+Active-Active阵列双活解决方案：主从站点双活架构，同一个双活LUN的所有I/O路径均可同时被访问，主从阵列均可处理同一业务I/O，系统间无需转发，实现业务负载均衡，提供完善的仲裁机制，发生故障时无缝切换. 这种Active-Active架构的双活就是通常我们所说的真正意义的阵列双活架构.
+
+> AA(Active-Active)使用双活分布式锁互斥保证, 对同一存储位置的单点写入, 确保数据一致性.
+
+### nas
+参考:
+- [华为HyperMetro SAN与NAS一体化双活解决方案](https://wenku.baidu.com/view/1bbcb89e7e192279168884868762caaedd33babe.html)
+- [双活数据中心解决方案](https://support.huawei.com/enterprise/zh/doc/EDOC1000179703?section=j00b)
+
+nas双活, 每个nas pool绑定一个vip, 之后飘vip.
+### san
+san双活, 多路径软件.
+
 ## FAQ
 ### pacemaker : Cannot use default route w/o netmask
 该错误是`systemctl restart pacemaker`时`journalctl -f`截获的.

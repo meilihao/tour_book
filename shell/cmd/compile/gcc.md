@@ -61,6 +61,21 @@ export PATH=/usr/local/gcc-9.1/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/gcc-9.1/lib64:$LD_LIBRARY_PATH
 ```
 
+## 交叉编译
+参考:
+- [深入理解交叉编译(Cross Compile)](https://www.jianshu.com/p/62613863aed0)
+
+交叉编译中的build、host、target选项的含义:
+- --build=编译该软件所使用的平台(你现在电脑的平台), config.guess中猜的
+- --host=该软件将运行的平台(编译出来的库可以在哪个平台上运行)
+- --target=该软件所处理的目标平台, 即告诉该软件编译出来的工具链生成的代码的运行平台, 即编译程序能够为其生成机器码的平台. 这个选项只有在建立交叉编译环境的时候用到, 比如compile cross-compiler, binutils，toolchain时.
+
+build和host比较好理解,但是target就不好办了.
+
+一般来说,我们平时所说的交差编译用不到他target的,比如`./configure --build=i386-linux --host=arm-linux`就可以了,在386的平台上编译可以运行在arm板的程序.但是,一般我们都是编译程序,而不是编译工具,如果我们编译工具,比如gcc,这个target就有用了.如果我们需要在一台机器上为arm开发板编译一个可以处理mips程序的gcc,那么target就是mips了.
+
+`./configure --build=powerpc --host=i686 --target=mips`: 在powerpc编译, 而编译出的工具在i686运行, 且该工具为mips平台生成机器码.
+
 ## FAQ
 ### [-g、-ggdb、-g3和-ggdb3, -gdwarf-4之间的区别](3.10 Options for Debugging Your Program)
 -g和-ggdb之间只有细微的区别:
