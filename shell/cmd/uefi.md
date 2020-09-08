@@ -138,6 +138,9 @@ Shell命令的通用选项:
 - map : 显示设备映射的列表，即可用文件系统（fsN）和存储设备（blkN）的名称
 - edit FS0:\EFI\refind\refind.conf : 类似nano的编辑器
 - help : 获取help
+- efibootmgr -v : 启动项的详细信息
+- `efibootmgr -c -L "lfs" -d /dev/nbd0 -p 1 -l /EFI/boot/bootx64.efi` : 添加启动项, /dev/nbd0是EFI分区所在的磁盘, -p是EFI分区编号（默认为1），-l是启动efi文件的路径
+- efibootmgr -b 0013 -B  # 删除刚才添加的lfs启动项，对应的编号为0013
 
 ### 使用UEFI Shell引导U盘/磁盘启动
 一般UEFI启动分区是硬盘最前端的FAT分区, 因此首先要找到存放启动文件的分区，依次输入下列命令：
@@ -246,3 +249,5 @@ $ qemu-system-x86_64 -pflash ./OVMF.fd
 
 
 	启动shimx64.efi就像启动一样grubx64.efi. 在启用了安全启动的计算机上，启动shimx64.efi会间接启动GRUB，而无法直接启动grubx64.efi.
+### 配置ovmf
+在qemu启动且进入uefi shell前可按esc键进入配置界面, 完成后选择左下角的"Continue"选项退出即可.

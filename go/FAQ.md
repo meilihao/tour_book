@@ -460,4 +460,5 @@ func handler(ctx *gin.Context) {
 原因是`binding:"required"`, 因为go有默认值, validation无法检查出Field字段是否有传值, 因此它认为此时`required`无法正常工作, 因此可将Field定义为`*int`来处理.
 
 
-
+### fmt.Println没有按照预期执行
+type有`Error() string`即实现了error接口时, fmt.Println优先执行它而不是`Stringer`即可.

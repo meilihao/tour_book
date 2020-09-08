@@ -144,3 +144,9 @@ sgdisk命令解析：
 - `0:0:+1M`: 0, 分区编号sgdisk自动计算; 0, 起始扇区sgdisk自动计算; +1M, 该分区大小
 - `-t 0:ef02`: 0, 前面自动生成的分区号, ef02是分区类型
 - `-c 0:"bios_boot"`: 0, 前面自动生成的分区号, bios_boot是该分区的name
+
+### 获取pt uuid/part uuid/fs uuid
+`sudo blkid /dev/nbd0`
+
+fs uuid: `ls -l /dev/disk/by-uuid/`
+pt uuid: `gdik -l /dev/disk`

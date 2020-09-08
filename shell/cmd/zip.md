@@ -43,4 +43,6 @@
 ### example
 ```
 # unzip -o /opt/etc.zip -x etc/inittab -d /etc # 将etc.zip解压到/etc下, 但etc/inittab除外, 且解压时同名覆盖
+$ zip -9r lfs/lfs_root/iso/lfs-fsroot.zip lfs -x="lfs/lfs_root/*"
+$ unzip lfs-fsroot.zip
 ```

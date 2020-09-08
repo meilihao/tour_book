@@ -32,6 +32,7 @@
 - [Golang Memory](https://xenojoshua.com/2019/03/golang-memory/)
 - [从零开始的 Go 内存分配器可视化指南（golang）](https://ictar.xyz/2019/02/25/trans-a-visual-guide-to-golang-memory-allocator-from-ground-up/)
 - [+changkun/Go-Questions](https://github.com/changkun/Go-Questions)
+- [Go: gops如何与Go运行时交互？ - 判断是否go程序by symbols table](https://www.tuicool.com/articles/VfU73yv)
 
 ## go src
 - [go-under-the-hood](https://github.com/changkun/go-under-the-hood)

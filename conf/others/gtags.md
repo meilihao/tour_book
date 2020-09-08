@@ -18,7 +18,7 @@ if !empty(gtags_file)
     exe "cs add" gtags_file
 endif
 $ cd ~/linux-stable # 进入linux kernel源码目录
-$ gtags -v # 生成索引后即可使用vim 查看源码
+$ gtags -v # 生成索引后即可使用vim 查看源码, **查看源码时, vim的PWD需要与gtags生成tags文件的所在目录是同一个目录**
 ```
 
 命令行操作:

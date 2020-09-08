@@ -52,7 +52,7 @@
 
 ### 打包/压缩
 
-```
+```bash
 tar -zcvf - /etc |tar -zxvf - # 第一个"-"表示输出到stdout, 第二个"-"是将管道传入的信息作为解压的数据来源
 tar -N "2008/7/21" -zcvf log.tar.gz /var/log # 压缩/var/log中2008/7/71以后的文件
 tar -ztvf /opt/etc.tar.gz # 查看内容
@@ -71,7 +71,7 @@ tar --exclude=${LFSRoot} -cJpf ${LFSRoot}/iso/lfs-temp-tools-10.0-systemd-rc1.ta
 
 ### 解压
 
-```
+```bash
 tar –xvf file.tar //解压 tar包
 tar -xzvf file.tar.gz //解压tar.gz
 tar -xjvf file.tar.bz2   //解压 tar.bz2
@@ -89,11 +89,14 @@ tar czf xx.tgz -C /xxx/xxx A //使用-C指定相对路径
 tar -xf binutils-2.35.tar.xz -C a --strip-components 1 # 解压时生成的路径不包括父目录`binutils-2.35`
 ```
 
+### 其他
+```bash
+$ tar --exclude='*/*/*' -tvf lfs-rootfs-10.0-systemd.tar.xz # 仅显示顶层文件
+```
+
 ## FAQ
 ### tar: 由于前次错误，将以上次的错误状态退出
-解压时使用参数`-C`指定解压目的即可. 但有时还是不行, 换用zip压缩解压缩即可.
-
 ```bash
-$ zip -9r lfs/lfs_root/iso/lfs-fsroot.zip lfs -x="lfs/lfs_root/*"
-$ unzip lfs-fsroot.zip
+# tar --exclude=lfs_root -czpf /mnt/lfs-backup-tools-${LFSVersion}.tar.gz .
+$ tar -xvf lfs-backup-*.tar.gz # 可能是tar打包时使用了`-p`导致解压时处理权限(比如这里的解压后需恢复root权限)出错, 添加`sudo`后不报错
 ```
