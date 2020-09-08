@@ -144,6 +144,14 @@ Shell命令的通用选项:
 - efibootmgr -v : 启动项的详细信息
 - `efibootmgr -c -L "lfs" -d /dev/nbd0 -p 1 -l /EFI/boot/bootx64.efi` : 添加启动项, /dev/nbd0是EFI分区所在的磁盘, -p是EFI分区编号（默认为1），-l是启动efi文件的路径
 - efibootmgr -b 0013 -B  # 删除刚才添加的lfs启动项，对应的编号为0013
+- 修改boot 顺序
+
+    efibootmgr -o X,Y,... : 指定标号为X的启动项顺序在Y之前
+
+- 启用/禁用boot option
+
+    - efibootmgr -a -b X : 启用标号为X的启动项
+    - efibootmgr -A -b X : 禁用标号为X的启动项
 
 ### 使用UEFI Shell引导U盘/磁盘启动
 一般UEFI启动分区是硬盘最前端的FAT分区, 因此首先要找到存放启动文件的分区，依次输入下列命令：
