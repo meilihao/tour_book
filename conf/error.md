@@ -493,3 +493,8 @@ acpi与内核可能有不兼容的问题, kernel启动参数可追加[`acpi=ht`]
 解决方法有2:
 1. 安装指定版本的glibc
 1. 在目标机器上编译程序并运行即可
+
+### /var/run/nscd/socket no such file or directory
+实际原因是`/var/run/nscd`不存在.
+
+检查`/lib/systemd/system/nscd.service`的`section "Service"`是否存在属性`RuntimeDirectory=nscd`.
