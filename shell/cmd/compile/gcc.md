@@ -38,6 +38,9 @@ $ gcc -S hello.c # 生成汇编
 ```
 
 ## gcc所遵循的部分约定规则
+参考:
+- [Linux Makefile 生成 *.d 依赖文件以及 gcc -M -MF -MP 等相关选项说明](https://blog.csdn.net/QQ1452008/article/details/50855810)
+
 - .c : C语言源代码文件
 - .a : 由目标文件构成的档案库文件
 - .C，.cc或.cxx  : C++源代码文件
@@ -48,6 +51,7 @@ $ gcc -S hello.c # 生成汇编
 - .o : 编译后的目标文件
 - .s : 汇编语言源代码文件
 - .S : 经过预编译的汇编语言源代码文件
+- .d : gcc-generated dependency files即gcc生成的描述依赖的文件
 
 ## 编译gcc9.1.0
 [Building GCC 9 on Ubuntu Linux](https://solarianprogrammer.com/2016/10/07/building-gcc-ubuntu-linux/)

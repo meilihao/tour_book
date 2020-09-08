@@ -3,6 +3,9 @@ chroot，即 change root directory (更改 root 目录).
 
 在 linux 系统中，系统默认的目录结构都是以 /，即以根 (root) 开始的; 而在使用 chroot 之后，系统的目录结构将以指定的位置作为`/`.
 
+## 选项
+- --userspec : 指定登录chroot环境的用户信息(id+group)
+
 ## example
 ```
 $ mkdir rootfs

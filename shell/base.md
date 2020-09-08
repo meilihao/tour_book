@@ -127,6 +127,8 @@ __EOF__
 abc
 ```
 
+> cat+delimiter时内容中的tab会被解析成bash中的按tab键操作, 需要用空格替代tab.
+
 delimiter包含变量:
 ```bash
 $ LFSVersion="10.0-systemd"

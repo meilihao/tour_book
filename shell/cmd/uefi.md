@@ -4,6 +4,7 @@
 - [BIOSandSecureBootAttacksUncovered_eko10.pdf](/misc/pdf/BIOSandSecureBootAttacksUncovered_eko10.pdf)
 - [GRUB (简体中文)](https://wiki.archlinux.org/index.php/GRUB_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)#Chainload_%E4%B8%80%E4%B8%AA_Arch_Linux_.efi_%E6%96%87%E4%BB%B6) 
 - [Unified Extensible Firmware Interface (简体中文)](https://wiki.archlinux.org/index.php/Unified_Extensible_Firmware_Interface_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87))
+- [UEFI 可启动介质iso/usb](https://wiki.archlinux.org/index.php/Unified_Extensible_Firmware_Interface_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)#bcfg)
 
 - EDK2：    Intel发起的UEFI开发环境
 - OVMF：    基于EDK2的开源虚拟机(qemu)UEFI固件
@@ -76,7 +77,7 @@ Boot  grub  Microsoft
 
 如上,除了Boot文件夹,还有grub文件夹和Microsoft文件夹,这也是开机启动顺序所显示的名称. 而这两个文件夹则分别存放着grub和Windows Boot Manager, 这两个bootloader的efi文件:/EFI/grub/grubx64.efi和/EFI/Miscosoft/Boot/bootmgfw.efi
 
-Boot是计算机默认引导文件所在的目录, 在主板主板NVRAM异常时起备份作用.
+Boot是计算机默认引导文件所在的目录, 在主板主板NVRAM异常时起备份作用, [NVRAM boot使用bcfg命令管理](https://zhuanlan.zhihu.com/p/94587936). **UEFI NVRAM启动项未设置且EFI下没有uefi启动备份用的boot文件夹, 同时其他启动项比如PXE,DVD-ROM均失败的情况下会进入uefi shell.**
 
 事实上, Boot/bootx64.efi是通用名,任何其他的引导文件都可以改成这个名称,放在/EFI/Boot目录下,从而成为计算机默认引导文件.
 
@@ -133,6 +134,8 @@ configfile $prefix/grub.cfg
 
 Shell命令的通用选项:
 - -b : 输出信息分屏显示
+
+> qemu OVMF启动如何进入uefi shell: 开机过程中按F2进入BIOS -> 选择"Boot Manager" -> 选择"EFI Internal Shell"
 
 ### 相关命令
 - map : 显示设备映射的列表，即可用文件系统（fsN）和存储设备（blkN）的名称
