@@ -101,14 +101,14 @@ bashrc是专门用来给 bash 做初始化的比如用来初始化 bash 的设�
 参考:[理解 Linux/Unix 登录脚本](https://www.sdk.cn/news/5585)
 
 ### login shell
-"login shell"代表用户登入, 比如使用`su -`命令, 或者用 ssh 连接到某一个服务器上, 都会使用该用户默认 shell 启动 login shell 模式.
+"login shell"代表用户登入, 比如使用`su - xxx`命令, 或者用 ssh 连接到某一个服务器上, 都会使用该用户默认 shell 启动 login shell 模式.
 
 1. login
 2. `/etc/profile`,根据其内容读取额外的文档，如/etc/profile.d和/etc/inputrc等
 3. 个人配置文件(`~/.bash_profile`,`/.bash_login`和`~/.profile`,主要是获取与用户有关的环境、别名和函数等)
     - 在列出的顺序中第一个被找到的文件会被作为配置文件，其余的都会被忽略
 4. 如果`~/.bashrc`(其会调用`~/.bash_alias`)存在的话，`~/.bash_profile`还会调用它
-5. bash启动
+5. /etc/bashrc
 6. `~/.bash_logout`
 
 ps :
@@ -124,7 +124,7 @@ no-login shell是在终端下直接输入 bash 或者`bash -c "CMD"`来启动的
 
 1. `~/.bashrc`
 2. /etc/bashrc(或/etc/bash.bashrc)
-3. bash启动
+3. /etc/profile.d/*.sh
 
 ## ~/.profile与~/.bashrc的区别:
 
