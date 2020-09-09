@@ -142,6 +142,7 @@ Shell命令的通用选项:
 - edit FS0:\EFI\refind\refind.conf : 类似nano的编辑器
 - help : 获取help
 - efibootmgr -v : 启动项的详细信息
+- efibootmgr -t 10 : `qemu-system-x86_64 -M q35 -pflash OVMF`时没有效果???
 - `efibootmgr -c -L "lfs" -d /dev/nbd0 -p 1 -l /EFI/boot/bootx64.efi` : 添加启动项, /dev/nbd0是EFI分区所在的磁盘, -p是EFI分区编号（默认为1），-l是启动efi文件的路径
 - efibootmgr -b 0013 -B  # 删除刚才添加的lfs启动项，对应的编号为0013
 - 修改boot 顺序
