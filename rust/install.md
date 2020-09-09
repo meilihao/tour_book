@@ -20,6 +20,17 @@ $ echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc # from $HOME/.cargo/e
 参考:
 - [Rust 版本管理工具: rustup](https://github.com/rustcc/RustPrimer/blob/master/install/rustup.md)
 
+## 安装rls
+`rustup component add rls rust-analysis rust-src`
+
+## 常用命令
+- 使用 rustc -h : rustc 的基本用法
+- 使用 cargo -h : cargo 的基本用法
+- 使用 rustc -C help : rustc 的一些跟代码生成相关的选项
+- 使用 rustc -W help : rustc 的一些跟代码警告相关的选项
+- 使用 rustc -Z help : rus tc 的一些跟编译器内部实现相关的选项
+- 使用 r ustc -help -V : rustc 的更详细的选项说明
+
 ### 获取源码
 ```
 rustup component add rust-src

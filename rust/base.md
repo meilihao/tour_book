@@ -90,7 +90,9 @@ rust语言组成:
     1. 基础trait, 如Copy, Debug, Display,Option等
     1. 基本原始类型, 如 bool, char,i8/u8,..i64/u64, isize/usize, f32/f64, str, array, slic, tuple, pointer等
     1. 常用功能型数据类型, 比如String, Vec, HashMap, Rc, Arc,Box等
-    1. 常用的宏定义, 如println()!, assert!, panic!, vec!.
+    1. 常用的宏定义, 如println()!, assert!, panic!, vec!
+
+        Rust 中的宏(`!`)与C/C＋＋ 中的宏是完全不一样的东西. 简单点说，可以把它理解为一种安全版的编译期语法扩展, 这里之所以使用宏，而不是函数，是因为标准输出宏可以完成编译期格式检查. 更加安全.
 
     做嵌入式应用开发时, 核心库是必需的.
 - 标准库
@@ -111,8 +113,18 @@ rust语言组成:
     1. 可选和错误处理类型Option和Result, 以及各种迭代器.
 
     Rust 并没有空值，不过它确实拥有一个可以编码存在或不存在概念的枚举, 这个枚举是 Option<T>，而且它定义于标准库中.
+
+### 代码组织
+Rust 的代码从逻辑上是分 crate 和 mod 管理的. 所谓 crate 大家可以理解为"项目". 每个 crate 是一个完整的编译单元，它可以生成为一个 lib 或者 exe 可执行文件. 而在 crate 内
+部， 则是由 mod 这个概念管理的，所谓 mod 大家可以理解为 namespace. 可以使用 use 语句把其他模块中的内容引入到当前模块中来.
+
+Rust 有一个极简标准库， 叫作 std ，除了极少数嵌入式系统下无法使用标准库之外，绝大部分情况下，我们都需要用到标准库里面的东西. 为了给大家减少麻烦， Rust 编译器对标准库有特殊处理. 默认情况下，用户不需要手动添加对标准库的依赖 ，编译器会自动引人对标准库的依赖. 除此之外 ，标准库中的某些 type 、 trait、 function 、 macro 等实在是太常用了, 每次都写 use 语句确实非常无聊，因此标准库提供了一个[`std::prelude`'](https://github.com/rust-lang/rust/blob/master/library/std/src/prelude/mod.rs)模块，在这个模块中导出了一些最常见的类型 、 trait 等东西, 编译器会为用户写的每个 crate 自动插入一句话：`use std: :prelude::*;`, 这样，标准库里面的这些最重要的类型、 trait 等名字就可以直接使用，而无须每次都写全称或者 use 语句.
+
+> [std::prelude](https://doc.rust-lang.org/std/prelude/)目前的mod.rs 中, 直接导出了 vl 模块中的内容 ， 而 v1.rs 中， 则是编译器为我们自动导人的相关trait和类型.
     
 ### 语句和表达式
+> Rust 源代码的后缀名使用`.rs`表示, 且必须使用 utf-8 编码.
+
 rust语法分语句(statement, 要执行的一些操作和产生副作用的表达式)和表达式(expression, 主要用于计算求值).
 
 语句又分:
@@ -583,7 +595,7 @@ std::collections提供了4种通用集合类型:
 宏语句可以使用圆括号, 中括号, 花括号, 一般使用中括号表示数组.
 
 ### 语法
-用`//`和`/**/`表示注释.
+用 C 语言系列风格的`//`和`/**/`表示注释.
 
 字符串 slice（string slice）是 String 中一部分值的引用. 字符串 slice range 的索引必须位于有效的 UTF-8 字符边界内，如果尝试从一个多字节字符的中间位置创建字符串 slice，则程序将会因错误而退出.
 字符串字面值就是 slice, 是一个指向二进制程序特定位置的 slice.
