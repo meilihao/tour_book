@@ -44,6 +44,7 @@ thin: zfs支持thin provisioning,
 1. 使用热备以减少硬件故障而导致的停机时间
 1. 使用相同大小的磁盘以便在各个设备之间平衡 I/O
 1. pool最小为8G.
+1. [重删和压缩比较消耗资源, 特别是重删, 要求20G RAM/T, 我们(共40G RAM)碰到过原先200M/s的速度开了重删和压缩后变成20M/s](https://constantin.glez.de/2011/07/27/zfs-to-dedupe-or-not-dedupe/).
 
 ### zfs虚拟设备(zfs vdevs)
 参考:
