@@ -26,6 +26,8 @@ RocksDB是一个嵌入式的K-V（任意字节流）存储. 所有的数据在�
 	```
 1. 重启terminal即可
 
+> 编译rocksdb源码下的examples: `g++ simple_example.cc -o test -std=c++11 -lpthread -lrocksdb -ldl -lrt -lsnappy -lgflags -lz -lbz2 -lzstd`
+
 ## 文件介绍
 - *.log: 事务日志用于保存数据操作日志，可用于数据恢复
 - *.sst: 数据持久换文件
@@ -242,3 +244,10 @@ RocksDB的内存大致有如下四个区：
 
 ### 获取所使用的rocksdb version
 查看db_path下的OPTIONS-<SN>中的section "Version"即可
+
+### core dumped
+在x64使用6.10.1创建的db拷贝到arm64上用6.11.4打时, `gorocksdb.OpenDb()`崩溃了.
+
+不知是arch还是rocksdb version导致的, 因此尽量不要迁移arch.
+
+> driver : github.com/tecbot/gorocksdb

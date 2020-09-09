@@ -498,3 +498,8 @@ acpi与内核可能有不兼容的问题, kernel启动参数可追加[`acpi=ht`]
 实际原因是`/var/run/nscd`不存在.
 
 检查`/lib/systemd/system/nscd.service`的`section "Service"`是否存在属性`RuntimeDirectory=nscd`.
+
+### undefined reference to `dlopen'
+类似的还有`dlclose, dlerror, dlsym`, 是某个地方引用了`#include <dlfcn.h>`所致.
+
+解决方法: 编译选项里加`-ldl`, 即`gcc DBSim.c -o DBSim -ldl`
