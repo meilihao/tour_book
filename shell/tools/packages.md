@@ -6,6 +6,12 @@
 
 ## 打包(source -> deb/rpm)
 - [BuildingTutorial](https://wiki.debian.org/BuildingTutorial#Building_the_modified_package)
+- [How RPM packages are made: the source RPM](https://fedoramagazine.org/how-rpm-packages-are-made-the-source-rpm/)
+- [重建一个源代码 RPM](https://wiki.centos.org/zh/HowTos/RebuildSRPM)
+
+###　构建源
+- [CentOS 的 SRPM](http://vault.centos.org/)
+- [Fedora Package Sources](https://src.fedoraproject.org/)
 
 ## FAQ
 ### Ubuntu 如何解压 rpm 文件
