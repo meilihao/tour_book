@@ -131,23 +131,6 @@ SwitchyOmega chrome安装:
 - [oh-my-fish*](https://github.com/oh-my-fish/oh-my-fish)
 - [terminix](https://github.com/gnunn1/terminix), 推荐使用配色方案`Monokai Dark`.
 
-## tmux
-
-[tmux快捷键](http://blog.csdn.net/hcx25909/article/details/7602935)
-
-- `configure: error: "libevent not found"`
-
-    sudo apt-get install libevent-dev
-
-- `configure: error: "curses not found"`
-
-    sudo apt-get install ncurses-dev
-    sudo dnf install ncurses-devel
-
-- 快捷键失效
-
- 按键顺序是`ctrl+b`松开后再按其他键.例如`ctrl+b ？`，应该先同时按`ctrl+b` 松开后，`shift+/（即输入？）`
-
 ## Terminator
 
 安装:

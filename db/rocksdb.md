@@ -246,8 +246,39 @@ RocksDB的内存大致有如下四个区：
 查看db_path下的OPTIONS-<SN>中的section "Version"即可
 
 ### core dumped
-在x64使用6.10.1创建的db拷贝到arm64上用6.11.4打时, `gorocksdb.OpenDb()`崩溃了.
-
-不知是arch还是rocksdb version导致的, 因此尽量不要迁移arch.
-
 > driver : github.com/tecbot/gorocksdb
+
+在x64使用6.10.1创建的db拷贝到arm64上用6.11.4打时, `gorocksdb.OpenDb()`崩溃了, 删除该db后重新运行程序, 此时由程序重新生成的db是正常的.
+
+同时`db.Put(writOptions, []byte("123"), make([]byte, 1024))`即存储稍大点的value也会崩溃.
+
+通过gdb, 问题定位在`util/crc32c_arm64.cc`的`t1 = (uint64_t)vmull_p64(crc1, k1)`上, 大value时该语句会报"Illegal instruction", 应该是cpu crc32硬件实现上有问题或有限制, [官方issue在这里](https://github.com/facebook/rocksdb/issues/7363).
+
+解决方法: 将crc32c_arm64函数中的`#ifdef HAVE_ARM64_CRYPTO`块注释掉, 改用软件实现的crc32c算法.
+
+`uint32_t crc32c_arm64(uint32_t crc, unsigned char const *data, unsigned len)`的上层封装入口就是`util/crc32c.cc`中的`Extend(uint32_t crc, const char* buf, size_t size)`:
+```c++
+// util/crc32c.h
+// Return the crc32c of data[0,n-1]
+inline uint32_t Value(const char* data, size_t n) {
+  return Extend(0, data, n);
+}
+
+// util/crc32c_test.cc
+TEST(CRC, Extend) {
+  ASSERT_EQ(Value("hello world", 11),
+            Extend(Value("hello ", 6), "world", 5));
+}
+
+// util/crc32c.cc
+static Function ChosenExtend = Choose_Extend();
+// crc就是将一段输入分多次计算时的前一段结果
+uint32_t Extend(uint32_t crc, const char* buf, size_t size) {
+  return ChosenExtend(crc, buf, size);
+}
+```
+
+
+
+
+

@@ -503,3 +503,6 @@ acpi与内核可能有不兼容的问题, kernel启动参数可追加[`acpi=ht`]
 类似的还有`dlclose, dlerror, dlsym`, 是某个地方引用了`#include <dlfcn.h>`所致.
 
 解决方法: 编译选项里加`-ldl`, 即`gcc DBSim.c -o DBSim -ldl`
+
+### inlining failed in call to always_inline 'uint32_t __crc32cd(uint32_t, uint64_t)': target specific option mismatch
+使用了特定的指令集, 因此[gcc编译时需要特定的选项`-march=armv8-a+crc+crypto`](https://github.com/OSSystems/meta-browser/issues/258)
