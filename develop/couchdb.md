@@ -10,6 +10,7 @@
 
 > 每个文档都有一个全局惟一的标识符（ID）以及一个修订版本号（revision number）.
 > couchdb使用了append-only的文件(仅有追加写)
+> 内部数据库以"_"打头, 比如_config 为系统配置数据库，管理员配置也在其中; _users 为用户数据库(authentication)，默认匿名用户可以创建用户.
 
 内部字段解释:
 - _id : 全局惟一的标识符，用来惟一标识一个文档
@@ -58,6 +59,7 @@
 > CouchDB doc支持附加文件, 会自动对文件进行 base64 解码.
 > couchdb doc中以`_`作为前缀的顶层字段是由 CouchDB 保留使用的，如`_id和_rev`.
 > CouchDB 目前只支持一种角色(`系统管理员`), 拥有所有权限.
+> [CouchDB 2.2 开始支持`POST /{db}/_design/{ddoc}/_view/{view}/queries`](https://docs.couchdb.org/en/stable/api/ddoc/views.html)
 
 - 获取数据库列表
 

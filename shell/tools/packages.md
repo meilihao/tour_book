@@ -12,6 +12,7 @@
 ###　构建源
 - [CentOS 的 SRPM](http://vault.centos.org/)
 - [Fedora Package Sources](https://src.fedoraproject.org/)
+- [Arch Package](https://www.archlinux.org/packages/)
 
 ## FAQ
 ### Ubuntu 如何解压 rpm 文件

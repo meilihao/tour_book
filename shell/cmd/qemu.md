@@ -21,21 +21,85 @@ $ qemu-system-x86_64 -boot menu=on,splash-time=15000 # 查看seabios version
 
 编译:
 ```bash
+$ git ls-remote -t https://mirrors.tuna.tsinghua.edu.cn/git/qemu.git
+$ git clone --depth=1 -b v5.1.0  https://mirrors.tuna.tsinghua.edu.cn/git/qemu.git && cd qemu
+git submodule init
+git submodule update --recursive
 $ ./configure --target-list="x86_64-softmmu,x86_64-linux-user,aarch64-softmmu,aarch64-linux-user,aarch64_be-linux-user,riscv64-softmmu,riscv64-linux-user" \
-			  --mandir="\${prefix}/share/man" \
-			  --enable-sdl
+			  --enable-kvm \
+			  --enable-sdl \
+              --mandir="\${prefix}/share/man"
     		#   --enable-opengl \
             #   --enable-gtk
+$ make && sudo make install
+$ qemu-system-x86_64 --version
 ```
+
+> `--enable-sdl`是为了启用qemu console gui, 便于查看early boot, 比如uefi/grub信息.
+> qemu 5.1.0源码编译一次后重新make会卡住, 即使提前make clean过也不行, 只能用一份新源码来编译.
+
+生成的相关程序:
+- ivshmem-client/server：这是一个 guest 和 host 共享内存的应用程序，遵循 C/S 的架构
+- qemu-ga：这是一个不利用网络实现 guest 和 host 之间交互的应用程序（使用 virtio-serial），运行在 guest 中
+- qemu-io：这是一个执行 Qemu I/O 操作的命令行工具
+- qemu-system-x86_64：Qemu 的核心应用程序，虚拟机就由它创建的
+
+    使用 qemu-system-x86 来启动 x86 架构的虚拟机:`qemu-system-x86_64 test-vm-1.qcow2`, 因为 test-vm-1.qcow2 中并未给虚拟机安装操作系统，所以会提示 “No bootable device”，无可启动设备.
+
+    启动 VM 安装操作系统镜像: `qemu-system-x86_64 -m 2048 -enable-kvm test-vm-1.qcow2 -cdrom ./Centos-Desktop-x86_64-20-1.iso`:
+    - -m 指定虚拟机内存大小，默认单位是 MB
+    - -enable-kvm 使用 KVM 进行加速
+    - -cdrom 添加 fedora 的安装镜像
+
+    iso安装完成后重起虚拟机便会从硬盘 ( test-vm-1.qcow2 ) 启动.
+- qemu-img：创建虚拟机镜像文件的工具
+
+    虚拟机镜像用来模拟虚拟机的硬盘，在启动虚拟机之前需要创建镜像文件. 镜像文件创建完成后，可使用 qemu-system-x86 来启动x86 架构的虚拟机.
+
+    `qemu-img create -f qcow2 test-vm-1.qcow2 10G`:
+    - -f 选项用于指定镜像的格式，qcow2 格式是 Qemu 最常用的镜像格式，采用来写时复制技术来优化性能
+    - test-vm-1.qcow2 是镜像文件的名字
+    - 10G是镜像文件大小
+
+- qemu-nbd：磁盘挂载工具
+
+  ```bash
+  # qemu-img create -f <fmt> <image filename> <size of disk>
+  qemu-img create -f qcow2 lfs.img 8G
+  sudo modprobe -v nbd
+  sudo qemu-nbd -c /dev/nbd0 lfs.img
+  sudo gdisk /dev/nbd0
+  # see result
+  sudo  gdisk -l /dev/nbd0
+  qemu-nbd --disconnect /dev/nbd0
+  ```
+  > 通过`modinfo nbd`获知默认一个nbd设备的最大分区数是16, 可通过max_part修改.
+
+如何更便捷地创建虚拟机呢? 答案就是libvirt. 这次就不再一个个指定虚拟机启动的参数，而是用 libvirt. 它管理 qemu 虚拟机，是基于 XML 文件，这样容易维护. xml中定义了kvm中domain的配置信息，可以使用virt-install来生成. 首先，需要安装 libvirt
+```bash
+# apt install libvirt-bin
+# apt install virtinst
+```
+
+> kvm中vm的grub kernel启动参数添加`console=ttyS0`再执行update-grub并重启后, 就可以通过`virsh console ${vm_name}`，进入机器的控制台，可以不依赖于 SSH 和 IP 地址进行登录.
+
 ## qemu-system-x86_64
 参考:
 - [qemu-system-x86_64命令总结](http://blog.leanote.com/post/7wlnk13/%E5%88%9B%E5%BB%BAKVM%E8%99%9A%E6%8B%9F%E6%9C%BA)
 
 ### 选项
+参考:
+- [qemu命令行参数](https://blog.csdn.net/GerryLee93/article/details/106475710)
+
+- display
+
+    - curses : 仅用于文本模式(text mode is used only with BIOS firmware), 当出现"640 x 480 Graphic mode"时表示guest已切换到图形模式.
+    - sdl : qemu console gui
 - -cpu <cpu>/help : help可获取qemu支持模拟的cpu
-- -M <>/help : 当前版本的Qemu工具支持的开发板列表
+- -M <machine>/help : 当前版本的Qemu工具支持的开发板列表
 - -s : 设置gdbserver的监听端口, 等同于`-gdb tcp::1234`
 - -S : 启动时cpu仅加电, 但不继续执行, 相当于将断点打在CPU加电后要执行的第一条指令处，也就是BIOS程序的第一条指令. 必须在qemu monitor输入`c`才能继续. 未使用`-monitor`时, 按`Ctrl+Alt+2`可进入qemu的monitor界面,`Ctrl+Alt+1`回到qemu
+- -serial stdio : redirects the virtual serial port to the host's terminal input/output, 丢失early boot信息即加电到出现终端登入界面间的信息.
 - -monitor
 
     tcp – raw tcp sockets, **推荐**.
@@ -110,7 +174,7 @@ $ guestfish --rw -a centos6.5-minimal.qcow2 # 进入qcow2直接修改即可, 与
 # sudo apt install libglib2.0-dev # RROR: glib-2.48 gthread-2.0 is required to compile QEMU
 # sudo apt install libpixman-1-dev # Please install the pixman devel package
 # sudo apt install flex bison
-# sudo apt install libsdl2-dev # Install SDL2-devel & VNC server running on 127.0.0.1:5900 : 缺SDL
+# sudo apt install libsdl2-dev # Install SDL2-devel, otherwise "VNC server running on 127.0.0.1:5900 : 缺SDL"
 # 删除qemu源码, 重新解压编译 # No rule to make target 'x86_64-softmmu/config-devices.mak', needed by 'config-all-devices.mak'
 ```
 
@@ -132,3 +196,21 @@ doing at any given time.
 可通过`qemu-system-x86_64 --machine help`查看x86支持的所以machine type.
 
 i440fx是1996年推出的架构, 已过时. q35是2009年推出的架构, 更现代.
+
+### [qemu mirror](https://mirrors.tuna.tsinghua.edu.cn/help/qemu.git/)
+
+### Could not access KVM kernel module: No such file or directory
+`sudo modprobe kvm-intel`
+
+### could not insert 'kvm_intel': Operation not supported
+```
+# sudo dmesg | grep kvm
+[783653.034467] kvm: no hardware support
+```
+或通过`/proc/cpuinfo`查询:
+```
+# egrep '^flags.*(vmx|svm)' /proc/cpuinfo
+# LC_ALL=C lscpu | grep Virtualization
+```
+
+硬件不支持, 检查bios/uefi是否关闭了虚拟化支持.

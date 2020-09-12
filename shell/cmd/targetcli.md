@@ -27,7 +27,7 @@ acls 参数目录用于存放允许访问 iSCSI 服务端共享存储资源的�
 
 targetcli(服务端)使用步骤:
 1. `/backstores/block> create disk0 /dev/md0` 创建磁盘映射,  `disk0`是后端存储名, `/dev/md0`是后端存储磁盘路径
-1. `/iscsi> create` 创建iscsi target
+1. `/iscsi> create` 创建iscsi target, 名称自动生成, 比如这里的`iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80`
 1. 创建lun
     ```
     /iscsi> cd iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80/
