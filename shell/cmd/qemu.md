@@ -35,7 +35,7 @@ $ make && sudo make install
 $ qemu-system-x86_64 --version
 ```
 
-> `--enable-sdl`是为了启用qemu console gui, 便于查看early boot, 比如uefi/grub信息.
+> `--enable-sdl`是为了启用qemu gui, 便于查看early boot, 比如uefi/grub信息.
 > qemu 5.1.0源码编译一次后重新make会卡住, 即使提前make clean过也不行, 只能用一份新源码来编译.
 
 生成的相关程序:
@@ -214,3 +214,10 @@ i440fx是1996年推出的架构, 已过时. q35是2009年推出的架构, 更现
 ```
 
 硬件不支持, 检查bios/uefi是否关闭了虚拟化支持.
+
+### Dmesg print "psmouse serio1: VMMouse at isa0060/serio1/input0 lost sync at byte 1" when using vmmouse
+一旦鼠标移动到qemu gui上, 就会提示该信息. qemu 4.2正常, 5.1.0有该问题.
+
+```bash
+# rmmod psmouse # 卸载psmouse驱动, psmouse是触控板驱动.
+```
