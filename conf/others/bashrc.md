@@ -30,4 +30,14 @@ export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup # 用�
 
 # --- git
 export LESSCHARSET=utf-8 # git diff中文乱码
+
+# --- llvm
+alias clang="clang-10"
+alias opt="opt-10"
+alias llvm-dis="llvm-dis-10"
+alias llvm-as="llvm-as-10"
+alias llvm-link="llvm-link-10"
+alias llvm-mc="llvm-mc-10"
+alias lli="lli-10"
+alias llc="llc-10"
 ```
