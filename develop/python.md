@@ -1899,5 +1899,42 @@ logger.debug('this is debug')
 log color可用coloredlogs.
 
 ### pep8
+#### E127：continuation line over-indented for visual indent
+在括号内的参数很多的时候, 为了满足每一行的字符不超过79个字符, 需要将参数换行编写, 这个时候换行的参数应该与上一行的括号对齐.
+或者将所有参数换行编写, 此时第一行不能有参数, 即第一行的最后一个字符一定要是(, 换行后需要有一个缩进. 类似的规则也用在[], {}上.
+
+```python3
+# Aligned with opening delimiter.
+foo = long_function_name(var_one, var_two,
+                         var_three, var_four)
+
+# Hanging indents should add a level.
+foo = long_function_name(
+    var_one, var_two,
+    var_three, var_four)
+```
+
+#### E128: continuation line under-indented for visual indent
+```python3
+urlpatterns = patterns('',
+    url(r'^$', listing, name='investment-listing'),
+)
+```
+
+改进: 将行缩进到左括号, 或者不在起始行上放置任何参数，然后缩进到统一级别.
+```python3
+urlpatterns = patterns('',
+                       url(r'^$', listing, name='investment-listing'),
+)
+
+urlpatterns = patterns(
+    '',
+    url(r'^$', listing, name='investment-listing'),
+)
+
+urlpatterns = patterns(
+    '', url(r'^$', listing, name='investment-listing'))
+```
+
 #### W291 trailing whitespace
 行尾有多余的空格
