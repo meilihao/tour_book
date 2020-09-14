@@ -9,7 +9,7 @@ $ qemu- + <tab> 查看支持的arch
 $ qemu-system-x86_64 -boot menu=on,splash-time=15000 # 查看seabios version
 ```
 
-> qemu-x86_64: 仅仅模拟CPU; qemu-system-x86_64: 模拟整个PC
+> qemu-x86_64: 仅仅模拟CPU, 即运行某种架构的程序; qemu-system-x86_64: 模拟整个PC, 即运行某种架构系统的vm
 > 在qemu新版本(比如2.8.1)中已经将qemu-kvm模块完全合并到qemu中去. 因此当需要使用专kvm特性时候，只需要qemu-system-x86_64 启动命令中增加`–enable-kvm`参数即可.
 
 编译选项:
