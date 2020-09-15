@@ -74,11 +74,8 @@ service open-iscsi restart
 } < /tmp/xxx # {}表示语句块, 即读取/tmp/xxx后执行{}内的命令.
 
 ipmitool raw 0x30 0x70 0x20 2>&1|tr -d ' ' # 获取双控节点的节点标志, 需要硬件支持
-lsscsi -t -L # 能很方便的看出哪些是固态硬盘（SSD），哪些是SATA盘，哪些是FC盘. `[1:0:0:0]`是SCSI设备id([H(SCSI adapter number, 比如hba):C(channel number即bus):T(target):L(LUN ID)])即[SCSI Addressing](https://www.tldp.org/HOWTO/SCSI-2.4-HOWTO/scsiaddr.html).
 /lib/udev/scsi_id --page=0x83 --whitelisted /dev/sda # 查看/dev/sda的设备信息
 #> 1ATA     Hoodisk SSD                             KATMC9A11220768
-lsscsi # 查看scsi信息, 机柜类型是enclosu, 可用`lsscsi -c`更清楚查看scsi信息, 其实是读取了`/proc/scsi/scsi`
-#> [1:0:0:0]    disk    ATA      Hoodisk SSD      61.3  /dev/sda 
 sg_ses --page=7 /dev/bsg/1:0:0:0
 #>  ATA       Hoodisk SSD       61.3
 #>    disk device (not an enclosure)
