@@ -19,3 +19,15 @@
 ```
 # rpm2cpio xxx.rpm | cpio -div # `apt install rpm2cpio`
 ```
+
+## desktop
+### UbuntuDDE
+参考:
+- [Install Deepin Desktop Environment on Ubuntu 20.04](https://computingforgeeks.com/install-deepin-desktop-environment-on-ubuntu/)
+
+```bash
+$ sudo add-apt-repository ppa:ubuntudde-dev/stable
+$ sudo apt update
+$ sudo apt install ubuntudde-dde
+$ sudo reboot
+```
