@@ -101,3 +101,17 @@ UUID=eb9cbf2f-fce8-413a-b770-8b0f243e8ad6 /iscsi xfs defaults,_netdev 0 0 # 由�
 # umount /iscsi   # 如果磁盘正在挂载使用，建议先卸载再登出
 # iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linux.x8664:sn.d497c356ad80 -u # 登出
 ```
+
+## FAQ
+### 查找iSCSI client挂载生成的盘符
+1. 找出所有iscsi盘: `lsblk -SJo TRAN,NAME`, 将tran是iscsi的所有盘找出, 假设这里仅有一块sdo
+1. 找到对应的sgN: `ll /sys/block/sdo/device/scsi_generic`或`sg_map -i`
+1. 找到关联的iqn号: `sg_inq -p 0x83 /dev/sgN|grep iqn`与iscsi挂载时所用的iqn做匹配即可
+
+### 查看target iblock的lun序号
+在target端查找磁盘的T10 VPD Unit Serial Number(即scsi serial number, LUN序列号)
+
+    ```bash
+    # cat /sys/kernel/config/target/core/iblock_xxx/${iblock_name}/wwwn/vpd_unit_serial # iblock_name是targetcli's backstores/iblock中对于的名称
+    T10 VPD Unit Serial Number: xxx # xxx为lun序列号, 创建iblock时自行生成
+    ```

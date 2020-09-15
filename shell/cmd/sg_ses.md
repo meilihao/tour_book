@@ -71,7 +71,7 @@ fetch standard response, VPD pages or version descriptors. Also can perform IDEN
 ```bash
 # sg_inq /dev/sda # 获取磁盘的概要信息
 # sg_inq -p 0x0 /dev/sda # 获取磁盘支持的pages
-# sg_inq -p 0x83 /dev/sda # 获取磁盘的设备标识信息
+# sg_inq -p 0x83 /dev/sda # 获取磁盘的设备标识信息, sg_inq读取的应是`/sys/block/sda/device/vpd_pg${N}`
 # sg_inq /dev/sda |grep "Unit serial number" # 获取磁盘的设备标识
 ```
 
