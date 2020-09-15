@@ -99,6 +99,22 @@ targetcli(服务端)使用步骤:
     ```
 1. 输入 exit 命令来退出配置, 重启 iSCSI 服务端程序`systemctl restart targetd`
 
+> 在交互模式下默认创建完配置exit退出时会主动将配置保存到配置文件/etc/rtslib-fb-target/saveconfig.json中，重启后生效, 该配置路径可通过`targetcli saveconfig`修改.
+
+## targetcli CHAP（质询握手身份验证协议）
+
+配置targetcli CHAP认证, 分为全局配置和局部配置:
+- /iscsi 下为全局配置
+- 在 iscsi/iqn.2019-10.cc.pipci.iscsi:debian.tgt1/tpg1/ 下为单个Target的配置，配置只对单个IQN生效为局部配置
+
+全局配置下只能设置发现认证，局部配置只能设置登录认证，其中每种认证又分为单向认证和双向认证, 无论那种认证都是在target端配置的:
+- 单向认证是指initiator端在发现target端的时候，要提供正确的认证才能发现在target端的iSCSI服务
+- 双向认证是指在单向认证的基础上，target端需要正确设置initiator端设置的认证才能被initiator端发现
+
+> 设置双向认证必须建立在单向认证的基础上，因为在initiator登录的时候要先进行单项认证.
+
+具体配置参考[这里](https://www.cnblogs.com/pipci/p/11622014.html).
+
 ## iscsi客户端(initiator)
 ```bash
 # yum install iscsi-initiator-utils -y
@@ -159,3 +175,10 @@ UUID=eb9cbf2f-fce8-413a-b770-8b0f243e8ad6 /iscsi xfs defaults,_netdev 0 0 # 由�
     # cat /sys/kernel/config/target/core/iblock_xxx/${iblock_name}/wwwn/vpd_unit_serial # iblock_name是targetcli's backstores/iblock中对于的名称
     T10 VPD Unit Serial Number: xxx # xxx为lun序列号, 创建iblock时自行生成
     ```
+### 不设置acl
+在ACL配置目录执行 set attribute generate_node_acls=0使用自定义的acl实现访问控制，则需要设置访问权限控制列表acl（默认就是这种），acl参数目录用于存放能够访问target端共享存储资源的initiator的iqn. 在客户端访问时，只要iscsi客户端的iqn名称与服务端设置的访问控制列表中的iqn名称一致即可访问. 如果不想使用ACL可以在ACL配置目录执行 set attribute generate_node_acls=1使用自动生成acl节点，这样不添加initiator的iqn也允许initiator访问.
+```
+/iscsi/iqn.20...ian.tgt1/tpg1> set attribute generate_node_acls=1 # 配置成自动生成acl节点
+```
+
+一旦配置成自动生成acl节点，当initiator认证成功后，再配置成自定义的acl实现访问控制是无效的 只有重启系统后恢复正常，我感觉这个是因为有认证记忆的功能.
