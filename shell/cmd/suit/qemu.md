@@ -96,6 +96,7 @@ $ qemu-system-x86_64 --version
     - curses : 仅用于文本模式(text mode is used only with BIOS firmware), 当出现"640 x 480 Graphic mode"时表示guest已切换到图形模式.
     - sdl : qemu console gui
 - -cpu <cpu>/help : help可获取qemu支持模拟的cpu
+- -kernel bzImage : 使用linux bzImage, 但`CONFIG_PVH=y`时可直接使用vmlinux
 - -M <machine>/help : 当前版本的Qemu工具支持的开发板列表
 - -s : 设置gdbserver的监听端口, 等同于`-gdb tcp::1234`
 - -S : 启动时cpu仅加电, 但不继续执行, 相当于将断点打在CPU加电后要执行的第一条指令处，也就是BIOS程序的第一条指令. 必须在qemu monitor输入`c`才能继续. 未使用`-monitor`时, 按`Ctrl+Alt+2`可进入qemu的monitor界面,`Ctrl+Alt+1`回到qemu
@@ -221,3 +222,8 @@ i440fx是1996年推出的架构, 已过时. q35是2009年推出的架构, 更现
 ```bash
 # rmmod psmouse # 卸载psmouse驱动, psmouse是触控板驱动.
 ```
+
+### `qemu-system-x86_64 -kernel arch/x86_64/boot/bzImage -nographic` 退出
+尝试按Ctrl + a，然后按c，以获得（qemu console）提示, 再一个简单的q即可退出.
+
+推荐使用`qemu-system-x86_64 -kernel arch/x86_64/boot/bzImage -nographic -append "console=ttyS0"`运行, 退出方法同上.

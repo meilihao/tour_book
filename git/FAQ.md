@@ -274,3 +274,6 @@ $ git stash pop
 # git push --set-upstream <remote> <remote-branch> # 为当前分支设在upstream
 # git pull --set-upstream <remote> <remote-branch> # 为当前分支设在upstream, 作用同上
 ```
+
+## git clone断点续传
+没有, [网上找的解决方法](https://gist.github.com/arliang/0019de079fbe77f946c13a010e7f97c6)无用.
