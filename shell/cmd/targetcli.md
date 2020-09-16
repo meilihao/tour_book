@@ -192,19 +192,36 @@ UUID=eb9cbf2f-fce8-413a-b770-8b0f243e8ad6 /iscsi xfs defaults,_netdev 0 0 # 由�
 
 ## FAQ
 ### 查找iSCSI initiator挂载生成的盘符
-方法1:
-1. 找出所有iscsi盘: `lsblk -SJo TRAN,NAME`, 将tran是iscsi的所有盘找出, 假设这里仅有一块sdo
-1. 找到对应的sgN: `ll /sys/block/sdo/device/scsi_generic`或`sg_map -i`
-1. 找到关联的iqn号: `sg_inq -p 0x83 /dev/sgN|grep iqn`与iscsi挂载时所用的iqn做匹配即可
-
-方法2:
+方法1, **推荐**:
 1. 在target端查找磁盘的T10 VPD Unit Serial Number(即scsi serial number, LUN序列号)
 
     ```bash
     # cat /sys/kernel/config/target/core/iblock_xxx/${iblock_name}/wwwn/vpd_unit_serial # iblock_name是targetcli's backstores/iblock中对于的名称
-    T10 VPD Unit Serial Number: xxx # xxx为lun序列号, 创建iblock时自行生成
+    T10 VPD Unit Serial Number: xxx # xxx为lun序列号, 创建block时自行生成
     ```
 1. 在initiator端执行`ll /dev/disk/by-id |grep xxx`即可
+
+方法2:
+1. 找出所有iscsi盘: `lsblk -SJo TRAN,NAME`, 将tran是iscsi的所有盘找出, 假设这里仅有一块sdo
+1. 找到对应的sgN: `ll /sys/block/sdo/device/scsi_generic`或`sg_map -i`
+1. 找到关联的iqn号: `sg_inq -p 0x83 /dev/sgN|grep iqn`与iscsi挂载时所用的iqn做匹配即可或通过`sg_inq -p 0x83 /dev/sgN|grep "vendor specific"`与target端的`T10 VPD Unit Serial Number`做匹配
+
+> 方法2仅测试过target端是一个target提供一个lun的情况, 而一个target提供若干lun的情况未测试.
+
+### 查找FC initiator挂载生成的盘符
+方法1,**推荐**:
+1. 在target端查找磁盘的T10 VPD Unit Serial Number(即scsi serial number, LUN序列号)
+
+    ```bash
+    # cat /sys/kernel/config/target/core/iblock_xxx/${iblock_name}/wwwn/vpd_unit_serial # iblock_name是targetcli's backstores/iblock中对于的名称
+    T10 VPD Unit Serial Number: xxx # xxx为lun序列号, 创建block时自行生成
+    ```
+1. 在initiator端执行`ll /dev/disk/by-id |grep xxx`即可
+
+方法2:
+1. 找出所有fc盘: `lsblk -SJo TRAN,NAME`, 将tran是fc的所有盘找出, 假设这里仅有一块sdo
+1. 找到对应的sgN: `ll /sys/block/sdo/device/scsi_generic`或`sg_map -i`
+1. 找到关联的naa: `sg_inq -p 0x83 /dev/sgN|grep naa`与target的wwpn做匹配, 此时只能确定该lun由指定target提供而不能一一对应. 但通过`sg_inq -p 0x83 /dev/sgN|grep "vendor specific"`与target端的`T10 VPD Unit Serial Number`做匹配即可一一对应.
 
 ### 不设置acl
 在ACL配置目录执行 set attribute generate_node_acls=0使用自定义的acl实现访问控制，则需要设置访问权限控制列表acl（默认就是这种），acl参数目录用于存放能够访问target端共享存储资源的initiator的iqn. 在客户端访问时，只要iscsi客户端的iqn名称与服务端设置的访问控制列表中的iqn名称一致即可访问. 如果不想使用ACL可以在ACL配置目录执行 set attribute generate_node_acls=1使用自动生成acl节点，这样不添加initiator的iqn也允许initiator访问.
