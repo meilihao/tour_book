@@ -32,6 +32,10 @@ acls 参数目录用于存放允许访问 iSCSI 服务端共享存储资源的�
 
 在 portals 参数目录中写上服务器的 IP 地址, 以便对外提供服务.
 
+## iscsi
+参考:
+- [targetcli配置iSCSI](https://www.cnblogs.com/luxiaodai/p/9851214.html)
+
 targetcli(服务端)使用步骤:
 1. `/backstores/block> create disk0 /dev/md0` 创建磁盘映射,  `disk0`是后端存储名, `/dev/md0`是后端存储磁盘路径
 
@@ -101,6 +105,30 @@ targetcli(服务端)使用步骤:
 
 > 在交互模式下默认创建完配置exit退出时会主动将配置保存到配置文件/etc/rtslib-fb-target/saveconfig.json中，重启后生效, 该配置路径可通过`targetcli saveconfig`修改.
 
+## fc
+targetcli(服务端)使用步骤:
+1. 在/backstores/block下创建磁盘映射disk0, 同iscsi
+1. 创建光纤target
+
+    ```
+    /> qla2xxx> create 21:00:00:1b:32:81:6e:f1    //本机的wwwn，获取方式见FAQ
+    ```
+1. 创建lun
+
+    ```
+    /qla2xxx/21:00:00:1b:32:81:6e:f1/luns> create  /backstores/backstores/block/disk0
+    ```
+1. 创建acl
+
+    ```
+    /qla2xxx/21:00:00:1b:32:81:6e:f1/acls> create 21:00:00:1b:32:98:7d:1b   //将Lun映射给192.168.1.88对应的wwwn
+    ```
+1. 保存配置
+
+    ```
+    /> saveconfig # 必须在顶层执行
+    ```
+
 ## targetcli CHAP（质询握手身份验证协议）
 
 配置targetcli CHAP认证, 分为全局配置和局部配置:
@@ -163,18 +191,21 @@ UUID=eb9cbf2f-fce8-413a-b770-8b0f243e8ad6 /iscsi xfs defaults,_netdev 0 0 # 由�
 ```
 
 ## FAQ
-### 查找iSCSI client挂载生成的盘符
+### 查找iSCSI initiator挂载生成的盘符
+方法1:
 1. 找出所有iscsi盘: `lsblk -SJo TRAN,NAME`, 将tran是iscsi的所有盘找出, 假设这里仅有一块sdo
 1. 找到对应的sgN: `ll /sys/block/sdo/device/scsi_generic`或`sg_map -i`
 1. 找到关联的iqn号: `sg_inq -p 0x83 /dev/sgN|grep iqn`与iscsi挂载时所用的iqn做匹配即可
 
-### 查看target iblock的lun序号
-在target端查找磁盘的T10 VPD Unit Serial Number(即scsi serial number, LUN序列号)
+方法2:
+1. 在target端查找磁盘的T10 VPD Unit Serial Number(即scsi serial number, LUN序列号)
 
     ```bash
     # cat /sys/kernel/config/target/core/iblock_xxx/${iblock_name}/wwwn/vpd_unit_serial # iblock_name是targetcli's backstores/iblock中对于的名称
     T10 VPD Unit Serial Number: xxx # xxx为lun序列号, 创建iblock时自行生成
     ```
+1. 在initiator端执行`ll /dev/disk/by-id |grep xxx`即可
+
 ### 不设置acl
 在ACL配置目录执行 set attribute generate_node_acls=0使用自定义的acl实现访问控制，则需要设置访问权限控制列表acl（默认就是这种），acl参数目录用于存放能够访问target端共享存储资源的initiator的iqn. 在客户端访问时，只要iscsi客户端的iqn名称与服务端设置的访问控制列表中的iqn名称一致即可访问. 如果不想使用ACL可以在ACL配置目录执行 set attribute generate_node_acls=1使用自动生成acl节点，这样不添加initiator的iqn也允许initiator访问.
 ```
@@ -182,3 +213,21 @@ UUID=eb9cbf2f-fce8-413a-b770-8b0f243e8ad6 /iscsi xfs defaults,_netdev 0 0 # 由�
 ```
 
 一旦配置成自动生成acl节点，当initiator认证成功后，再配置成自定义的acl实现访问控制是无效的 只有重启系统后恢复正常，我感觉这个是因为有认证记忆的功能.
+
+### 获取光纤信息
+和以太网卡的MAC地址一样，HBA上也有独一无二的标识：WWN（World Wide Name）, FC HBA上的WWN有两种：
+1. Node WWN（WWNN）：每块HBA有其独有的Node WWN
+2. Port WWN（WWPN）：每块HBA卡上每个port有其独一无二的Port WWN
+
+由于通信是通过port进行的，因此多数情况下需要使用WWPN而不是WWNN. WWN的长度为8bytes，用16进制表示并用冒号分隔，例如：`50:06:04:81:D6:F3:45:42:23`. 通常说的光纤WWN均指WWPN.
+
+```bash
+# lspci  | grep -i fibre # 查看fc HBA卡, 通常一块光纤卡有两个光纤口
+# cat /sys/class/fc_host/host<N>/node_name # 查看fc HBA卡WWNN信息
+# cat /sys/class/fc_host/host<N>/port_name # 查看fc HBA卡WWPN信息
+# cat /sys/class/fc_host/host<N>/port_state # 查看fc 插口的状态: Online表示插有光纤且与对端(光纤卡或光纤交换机)联通
+Online
+# cat /sys/class/fc_host/host<N>/port_type # 查看fc 插口的连接类型: LPort是与其他HBA卡相连; NPort是与光纤交换机相连
+# cat /sys/class/fc_host/host<N>/supported_speeds # 查看port支持的速率
+# systool -v -c fc_host # 获取详细的光纤卡信息, from `apt install sysfsutils`
+```
