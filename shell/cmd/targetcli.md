@@ -296,3 +296,11 @@ qla2xxx.ko支持target模式和initiator模式, 在存储服务器上必须根�
 > 也可通过/etc/modprobe.d/qla2xxx.conf指定qla2xxx驱动参数, 比如`options qla2xxx qlini_mode="enabled"`.
 
 > 其实qlini_mode默认是"exclusive"模式: 默认支持initiator模式, 通过操作target驱动提供的configfs接口, 可切换到target模式, 还可以再切回initiator模式.
+
+### rm -rf "/sys/kernel/config/target/core/iblock_0", 删除失败
+target configfs与普通的文件系统有一定的差异导致删除失败.
+
+解决方法:
+```python
+os.rmdir("/sys/kernel/config/target/core/iblock_0") # 这样即可
+```
