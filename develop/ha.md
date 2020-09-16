@@ -407,7 +407,7 @@ crm(live)# exit
 # crm configure show ${resource} # 查看resoure的配置
 # crm_resource --locate --resourece ${resource} # 查看resoure所在node
 # crm_failcount --resource ${resource} --node ${node} # 查看资源的故障计数
-# crm resource clean ${resource} [${node}] # 清理资源的status, 比如failcount
+# crm resource cleanup ${resource} [${node}] # 清理资源的status, 比如failcount
 # crm_resource --resource ${resource} --move --host ${node} # 转移资源, 不阻塞, 因此需要轮询资源是否已在指定节点且在该节点的failcount为0
 # cibadmin --modify --xml-text '<op id="xxx-monitor-30" enabled="true">' # 启用资源上的monitor操作
 # crm resource manage xxx # 允许crm管理资源
