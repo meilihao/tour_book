@@ -235,3 +235,14 @@ Online
 ### 光纤initiator发现的方法
 1. `echo 1 > /sys/class/fc_host/host<N>/issue_lip`
 1. `echo "- - -" |tee -a /sys/class/scsi_host/*/scan`
+
+### Could not create Qla2xxxFabricModule in configFS | Could not create Target in configFS | 看不到FC fabric
+`modprobe tcm_qla2xxx`
+
+### 光纤initiator无法发现target
+qla2xxx.ko支持target模式和initiator模式, 在存储服务器上必须根据target模式加载，可以参考下面的命令重新加载：
+```bash
+# cat /sys/module/qla2xxx/parameters/qlini_mode # 查看当前qla2xxx.ko的模式
+# modprobe -r qla2xxx
+# modprobe qla2xxx qlini_mode=”disabled”
+```
