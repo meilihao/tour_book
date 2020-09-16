@@ -143,6 +143,30 @@ targetcli(服务端)使用步骤:
 
 具体配置参考[这里](https://www.cnblogs.com/pipci/p/11622014.html).
 
+## targetcli cmd模式
+```bash
+# targetcli /backstores/block create dev=/dev/nbd0 name=disk1
+```
+
+## targetcli backstores
+backstores分类:
+- block/iblock(旧版使用) : 通常能提供最好的性能，可以使用其他任何类型的磁盘设备
+
+    /backstores> iblock/ create name=block_backend dev=/dev/sdb
+- fileio : 不要使用 buffered FILEIO，默认是non-buffered 模式
+
+    /backstores> fileio/ create name=file_backend file_or_dev=/usr/src/fileio size=2G
+
+    如果新建的FILEIO 中，参数 buffered =True，就可以使用buffer cache ，将明显提高其有效性能
+    同时伴随的风险是一系列数据的整体风险：如果系统崩溃，一个 unflushed buffer cache将导致整个后
+    备存储不能挽回的损坏.
+- [pscsi(parallel SCSI)](https://en.wikipedia.org/wiki/Parallel_SCSI): 已淘汰, 建议使用 block 代替
+
+    /backstores> pscsi/ create name=pscsi_backend dev=/dev/sr0
+- ramdisk : RAM 硬盘后备存储
+
+    /backstores> ramdisk/ create name=rd_backend size=1GB
+
 ## iscsi客户端(initiator)
 ```bash
 # yum install iscsi-initiator-utils -y
@@ -257,9 +281,17 @@ Online
 `modprobe tcm_qla2xxx`
 
 ### 光纤initiator无法发现target
-qla2xxx.ko支持target模式和initiator模式, 在存储服务器上必须根据target模式加载，可以参考下面的命令重新加载：
+qla2xxx.ko模式可能不对.
+
+qla2xxx.ko支持target模式和initiator模式, 在存储服务器上必须根据target模式加载, 而initiator端需要initiator模式，可以参考下面的命令重新加载：
 ```bash
 # cat /sys/module/qla2xxx/parameters/qlini_mode # 查看当前qla2xxx.ko的模式
+# systool -m qla2xxx -v |grep qlini_mode # 也可通过systool查看当前qla2xxx.ko的模式
 # modprobe -r qla2xxx
-# modprobe qla2xxx qlini_mode=”disabled”
+# modprobe qla2xxx qlini_mode="disabled" # 只支持target模式, 除非重新加载qla2xxx驱动
+# modprobe qla2xxx qlini_mode="enabled"  # 只支持initiator模式, 除非重新加载qla2xxx驱动
 ```
+
+> 也可通过/etc/modprobe.d/qla2xxx.conf指定qla2xxx驱动参数, 比如`options qla2xxx qlini_mode="enabled"`.
+
+> 其实qlini_mode默认是"exclusive"模式: 默认支持initiator模式, 通过操作target驱动提供的configfs接口, 可切换到target模式, 还可以再切回initiator模式.
