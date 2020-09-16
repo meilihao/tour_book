@@ -231,3 +231,7 @@ Online
 # cat /sys/class/fc_host/host<N>/supported_speeds # 查看port支持的速率
 # systool -v -c fc_host # 获取详细的光纤卡信息, from `apt install sysfsutils`
 ```
+
+### 光纤initiator发现的方法
+1. `echo 1 > /sys/class/fc_host/host<N>/issue_lip`
+1. `echo "- - -" |tee -a /sys/class/scsi_host/*/scan`
