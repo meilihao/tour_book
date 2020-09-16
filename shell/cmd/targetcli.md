@@ -145,7 +145,8 @@ targetcli(服务端)使用步骤:
 
 ## targetcli cmd模式
 ```bash
-# targetcli /backstores/block create dev=/dev/nbd0 name=disk1
+# targetcli /backstores/block create name=disk1 dev=/dev/nbd1 [wwn=bb3f4d39-881a-4932-9e3e-9537ba9be9f4] # wwn会保存到/sys/kernel/config/target/core/iblock_1/disk1/wwn/vpd_unit_serial中
+# targetcli /backstores/block help create
 ```
 
 ## targetcli backstores
