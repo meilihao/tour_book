@@ -957,6 +957,10 @@ lambda语法格式：`lambda 变量 : 要执行的语句`, 比如`lambda x : x *
 ....
 ```
 
+## 调试
+参考:
+- [Python 代码调试技巧](https://www.ibm.com/developerworks/cn/linux/l-cn-pythondebugger/index.html)
+
 ## 性能
 对于 Python 来说,充分利用多核性能的阻碍主要在于 Python 的 全局解释器锁 (GIL). GIL 确保 Python 进程一次只能执行一条指令,无论当前有多少个核心. 该问题可以通过一些方法来避免,比如标准库的 multiprocessing,或 numexpr、Cython 等技术,或分布式计算模型等.
 
