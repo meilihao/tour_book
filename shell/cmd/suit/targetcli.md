@@ -275,8 +275,8 @@ Online
 ```
 
 ### 光纤initiator发现的方法
-1. `echo "- - -" |tee -a /sys/class/scsi_host/*/scan`, **推荐**
-1. `echo 1 > /sys/class/fc_host/host<N>/issue_lip`
+1. `echo 1 > /sys/class/fc_host/host<N>/issue_lip`, **推荐**
+1. `echo "- - -" |tee -a /sys/class/scsi_host/*/scan`
 
 ### Could not create Qla2xxxFabricModule in configFS | Could not create Target in configFS | 看不到FC fabric
 `modprobe tcm_qla2xxx`
