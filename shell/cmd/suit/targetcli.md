@@ -276,7 +276,7 @@ Online
 
 ### 光纤initiator发现的方法
 1. `echo 1 > /sys/class/fc_host/host<N>/issue_lip`, **推荐** # 此时会通过issue_lip重置HBA链路，重新扫描整个链路并配置SCSI target. 该操作是一种异步操作类型，具体完成时间需要参考system log.
-1. `echo "- - -" |tee -a /sys/class/scsi_host/*/scan`
+1. `echo "- - -" |tee -a /sys/class/scsi_host/*/scan` # `- - -`分别代表通道，SCSI目标ID和LUN, 此时破折号充当通配符，表示"重新扫描所有内容"
 
 ### Could not create Qla2xxxFabricModule in configFS | Could not create Target in configFS | 看不到FC fabric
 `modprobe tcm_qla2xxx`
