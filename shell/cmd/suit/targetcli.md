@@ -275,7 +275,7 @@ Online
 ```
 
 ### 光纤initiator发现的方法
-1. `echo 1 > /sys/class/fc_host/host<N>/issue_lip`, **推荐**
+1. `echo 1 > /sys/class/fc_host/host<N>/issue_lip`, **推荐** # 此时会通过issue_lip重置HBA链路，重新扫描整个链路并配置SCSI target. 该操作是一种异步操作类型，具体完成时间需要参考system log.
 1. `echo "- - -" |tee -a /sys/class/scsi_host/*/scan`
 
 ### Could not create Qla2xxxFabricModule in configFS | Could not create Target in configFS | 看不到FC fabric
@@ -303,4 +303,17 @@ target configfs与普通的文件系统有一定的差异导致删除失败.
 解决方法:
 ```python
 os.rmdir("/sys/kernel/config/target/core/iblock_0") # 这样即可
+```
+
+### 查看/设置属性
+`get/set attribute`只在特定targetcli path下有效(本质是`/sys/kernel/config/target/*`下的相应目录下存在attrib文件夹), 比如(可能不仅这些):
+
+```
+/backstores/block/disk0> get attribute
+
+/iscsi/iqn.20...d80/tpg1> get attribute
+/iscsi/iqn.20...d80/tpg1> set attribute demo_mode_write_protect=0
+
+/qla2xxx/21:00:00:1b:32:81:6e:f1> get attribute
+/qla2xxx/21:00:00:1b:32:81:6e:f1> set attribute demo_mode_write_protect=0
 ```
