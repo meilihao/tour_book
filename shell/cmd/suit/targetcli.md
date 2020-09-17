@@ -116,7 +116,7 @@ targetcli(服务端)使用步骤:
 1. 创建lun
 
     ```
-    /qla2xxx/21:00:00:1b:32:81:6e:f1/luns> create  /backstores/backstores/block/disk0
+    /qla2xxx/21:00:00:1b:32:81:6e:f1/luns> create  /backstores/block/disk0
     ```
 1. 创建acl
 
