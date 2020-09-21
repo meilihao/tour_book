@@ -1,134 +1,54 @@
 # nmcli
-参考:
-- [linux中nmcli命令使用及网络配置](https://www.cnblogs.com/djlsunshine/p/9733182.html)
-- [基于RHEL8/CentOS8的网络IP配置详解](https://zhuanlan.zhihu.com/p/56892392)
+RHEL 和 CentOS 系统默认使用 NetworkManager 来提供网络服务，这是一种动态管理网
+络配置的守护进程，能够让网络设备保持连接状态. 其使用 nmcli 命令来管理 Network 
+Manager 服务. 即nmcli 是一款基于命令行的网络配置工具.
 
-[nmcli命令与配置文件对应关系](/misc/img/shell/1482552-20180930195218267-1123602572.png)
-
-它是 NetworkManager 软件包集成的一部分，通过使用一些 应用程序接口（API）来操作 NetworkManager.
-
-> 在rhel8上默认不安装network.service(等同废弃)，因此只能通过NM进行网络配置，如果未开启NM，则无法使用网络.
-
-> nmtui是nmcli的字符gui, 需要sudo权限.
-
-ncmli 的语法: `nmcli <选项> <子命令> <操作>`, nmcli子命令如下, connection和device最为常用：
-- connection : 连接，可理解为配置文件，相当于ifcfg-ethX. 可以简写为nmcli c, 提供命令来启用或禁用网络接口、添加新的连接、删除已有连接等功能
-- device : 设备，可理解为实际存在的网卡（包括物理网卡和虚拟网卡）.可以简写为nmcli d, 主要被用于更改与某个设备（例如接口名称）相关联的连接参数或者使用一个已有的连接来连接设备
-- help
-- general : NetworkManager 的状态和总体配置信息
-- networking : 提供命令来查询某个网络连接的状态和启动、禁用连接的功能
-- radio : 提供命令来查询某个 WiFi 网络连接的状态和启动、禁用连接的功能
-- monitor : 提供命令来监控 NetworkManager 的活动并观察网络连接的状态改变
-- secret : 注册 nmcli 来作为一个 NetworkManager 的秘密代理，用以监听秘密信息. 这个子命令很少会被用到，因为当连接到网络时，nmcli 会自动做这些事
-
-在NM里，有2个维度：连接（connection）和设备（device），这是多对一的关系. 想给某个网卡配ip，首先NM要能纳管这个网卡, 设备里存在的网卡（即nmcli d可以看到的），就是NM纳管的. 接着，可以为一个设备配置多个连接（即nmcli c可以看到的），每个连接可以理解为一个ifcfg配置文件. 同一时刻，一个设备只能有一个连接活跃. 可以通过nmcli c up切换连接.
-
-connection有2种状态：
-- 活跃（带颜色字体）：表示当前该connection生效
-- 非活跃（正常字体）：表示当前该connection不生效
-
-device有4种常见状态：
-- connected：已被NM纳管，并且当前有活跃的connection
-- disconnected：已被NM纳管，但是当前没有活跃的connection
-- unmanaged：未被NM纳管
-- unavailable：不可用，NM无法纳管，通常出现于网卡link为down的时候（比如ip link set ethX down）
+**使用 nmcli 命令配置过的网络会话是永久生效的.**
 
 ## example
 ```bash
-# 查看ip（类似于ifconfig、ip addr）
-nmcli
-
-# 创建connection，配置静态ip（等同于配置ifcfg，其中BOOTPROTO=none，并ifup启动）
-#  type ethernet：创建连接时候必须指定类型，类型有很多，可以通过`nmcli c add type -h`查看
-# con-name ethX ifname ethX：第一个ethX表示连接（connection）的名字，这个名字可以任意定义，无需和网卡名相同；第二个ethX表示网卡名，这个ethX必须是在nmcli d里能看到的
-# ipv4.addr '192.168.1.100/24,192.168.1.101/32'：配置2个ip地址，分别为192.168.1.100/24和192.168.1.101/32
-# 如果这是为ethX创建的第一个连接，则自动生效；如果此时已有连接存在，则该连接不会自动生效，可以执行nmcli c up ethX来切换生效
-nmcli c add type ethernet con-name ethX ifname ethX ipv4.addr 192.168.1.100/24 ipv4.gateway 192.168.1.1 ipv4.method manual
-
-# 创建connection，配置动态ip（等同于配置ifcfg，其中BOOTPROTO=dhcp，并ifup启动）
-nmcli c add type ethernet con-name ethX ifname ethX ipv4.method auto
-
-# 修改ip（非交互式）
-nmcli c modify ethX ipv4.addr '192.168.1.200/24'
-nmcli c up ethX
-
-# 修改ip（交互式）
-nmcli c edit ethX
-nmcli> goto ipv4.addresses
-nmcli ipv4.addresses> change
-Edit 'addresses' value: 192.168.1.200/24
-Do you also want to set 'ipv4.method' to 'manual'? [yes]: yes
-nmcli ipv4> save
-nmcli ipv4> activate
-nmcli ipv4> quit
-
-# 启用connection（相当于ifup）
-nmcli c up ethX
-
-# 停止connection（相当于ifdown）
-nmcli c down ethX
-
-# 删除connection（类似于ifdown并删除ifcfg）
-nmcli c delete ethX
-
-# 查看connection列表
-# - 第一列是connection名字，简称con-name（注意con-name不是网卡名）
-# - 第二列是connection的UUID
-# - 最后一列才是网卡名（标准说法叫device名），可通过nmcil d查看device
-nmcli c show [--active]
-
-# 查看connection详细信息
-nmcli c show ethX
-
-# 重载所有ifcfg或route到connection（不会立即生效）
-nmcli c reload
-
-# 重载指定ifcfg或route到connection（不会立即生效）
-nmcli c load /etc/sysconfig/network-scripts/ifcfg-ethX
-nmcli c load /etc/sysconfig/network-scripts/route-ethX
-
-# 立即生效(刷新)connection，有3种方法
-nmcli c up ethX
-nmcli d reapply ethX
-nmcli d connect ethX # 由NM对指定网卡进行管理，同时刷新该网卡对应的活跃connection（如果之前有修改过connection配置）；如果有connection但是都处于非活跃状态，则自动选择一个connection并将其活跃；如果没有connection，则自动生成一个并将其活跃
-
-# 查看device列表
-nmcli d
-nmcli d status
-
-# 查看所有device详细信息
-nmcli d show
-
-# 查看指定device的详细信息
-nmcli d show ethX
-
-# 激活网卡
-nmcli d connect ethX
-
-# 关闭无线网络（NM默认启用无线网络）
-nmcli r all off
-
-# 查看NM纳管状态
-nmcli n
-
-# 开启NM纳管
-nmcli n on
-
-# 关闭NM纳管（谨慎执行）
-nmcli n off
-
-# 监听事件
-nmcli m
-
-# 查看NM本身状态
-nmcli
-
-# 检测NM是否在线可用
-nm-online
-
-# 让NM**暂时(即重启恢复)**不管理指定网卡，此操作不会变更实际网卡的link状态，只会使对应的connection变成非活跃
-nmcli d disconnect ethX
+# nmcli connection show # 查看网络信息或网络状态
+# ### nmcli 支持网络会话功能, 便于切换网络, 比如公司和家里
+# nmcli connection add con-name company ifname eno16777736 autoconnect no type ethernet ip4 192.168.10.10/24 gw4 192.168.10.1 # autoconnect no 参数设置该网络会话默认不被自动激活，以及用 ip4 及 gw4 参数手动指定网络的 IP 地址
+# nmcli connection add con-name house type ethernet ifname eno16777736 # 从外部 DHCP 服务器自动获得 IP 地址，因此不需要进行手动指定
+# nmcli connection up house # 回家启用 house网络会话，网卡就能自动通过 DHCP 获取到 IP 地址
 ```
 
-## 其他
-ifcfg和NM connection的关联：虽然network.service被废弃了，但是redhat为了兼容传统的ifcfg，通过NM进行网络配置时候，会自动将connection同步到ifcfg配置文件中, 也可以通过nmcli c reload或者nmcli c load /etc/sysconfig/network-scripts/ifcfg-ethX的方式来让NM读取ifcfg配置文件到connection中. 因此ifcfg和connection是一对一的关系，connection和device是多对一的关系.
+## bonding
+```bash
+# vim /etc/sysconfig/network-scripts/ifcfg-eno16777736
+TYPE=Ethernet 
+BOOTPROTO=none 
+ONBOOT=yes 
+USERCTL=no 
+DEVICE=eno16777736 
+MASTER=bond0 
+SLAVE=yes 
+[root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-eno33554968 
+TYPE=Ethernet 
+BOOTPROTO=none 
+ONBOOT=yes 
+USERCTL=no 
+DEVICE=eno33554968 
+MASTER=bond0 
+SLAVE=yes
+# vim /etc/sysconfig/network-scripts/ifcfg-bond0 
+TYPE=Ethernet 
+BOOTPROTO=none 
+ONBOOT=yes 
+USERCTL=no 
+DEVICE=bond0 
+IPADDR=192.168.10.10 
+PREFIX=24 
+DNS=192.168.10.1 
+NM_CONTROLLED=no
+#  vim /etc/modprobe.d/bond.conf # 时定义网卡以 mode6 模式进行绑定，且出现故障时自动切换的时间为 100 毫秒
+alias bond0 bonding 
+options bond0 miimon=100 mode=6
+# systemctl restart network # 重启网络服务后网卡bonding操作即可成功. 正常情况下只有 bond0 网卡设备才会有 IP 地址等信息
+```
+
+常见的网卡bond驱动有三种模式—mode0、mode1和 mode6, 它们的使用的情景是:
+- mode0（平衡负载模式）：平时两块网卡均工作，且自动备援，但需要在与服务器本地网卡相连的交换机设备上进行端口聚合来支持绑定技术
+- mode1（自动备援模式）：平时只有一块网卡工作，在它故障后自动替换为另外的网卡
+- mode6（平衡负载模式）：平时两块网卡均工作，且自动备援，无须交换机设备提供辅助支持
