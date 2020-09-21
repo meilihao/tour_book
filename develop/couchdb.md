@@ -14,7 +14,7 @@
 > couchdb使用了append-only的文件(仅有追加写)
 > 内部数据库以"_"打头, 比如_config 为系统配置数据库，管理员配置也在其中; _users 为用户数据库(authentication)，默认匿名用户可以创建用户.
 
-**注意**：CouchDB 不会彻底删除指定文档，而是会留下一个文档的基本信息，称之为“tombstone”（墓碑），设置的目的是为了实现数据库集群同步复制, 这个问题会导致创建与之前已删除的同名id的doc很麻烦, 必须先找回旧doc, 然后将新doc当更新处理.
+**注意**：CouchDB 不会彻底删除指定文档，而是会留下一个文档的基本信息，称之为“tombstone”（墓碑），设置的目的是为了实现数据库集群同步复制, 这个问题会导致创建与之前已删除的同名id的doc很麻烦(见`创建doc`), 因此不推荐使用重复doc id.
 
 内部字段解释:
 - _id : 全局惟一的标识符，用来惟一标识一个文档
@@ -98,7 +98,7 @@
 
     `curl -X PUT http://127.0.0.1:5984/testdb/1925a2a284289df9b55b390525001ca1 -d '{"id":1,"name":"mike"}'  -u admin:admin resp: {"ok":true,"id":"1925a2a284289df9b55b390525001ca1","rev":"1-0c1f72feabb29905ed205d25fbcbf3b3"}`
 
-    > 1925a2a284289df9b55b390525001ca1以前存在过(包括已删除)则会变成更新, 因此此时必须提供`_id`和`_rev`.
+    > 1925a2a284289df9b55b390525001ca1以前存在过(包括已删除)则会变成更新, 因此此时必须提供`_id`和`_rev`. 比如使用`curl -X GET "$host/<db>/<id>?revs=true&open_revs=all" -H "Accept: application/json"`, 可参考[这里](http://garmoncheg.blogspot.com/2013/11/couchdb-restoring-deletedupdated.html).
     
     1. 插入多个doc, 此时必须用POST:
 
