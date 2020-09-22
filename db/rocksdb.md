@@ -278,6 +278,8 @@ uint32_t Extend(uint32_t crc, const char* buf, size_t size) {
 }
 ```
 
+### github.com/tecbot/gorocksdb静态连接rocksdb
+不推荐, 曾尝试过一个下午, 但还是不行.
 
 
 
