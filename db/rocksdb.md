@@ -285,3 +285,47 @@ uint32_t Extend(uint32_t crc, const char* buf, size_t size) {
 - [tecbot/gorocksdb](https://github.com/tecbot/gorocksdb), most using
 - [linxGnu/grocksdb](https://github.com/linxGnu/grocksdb), follow rocksdb latest
 
+### 同步写 与 异步写
+参考:
+- [RocksDB 笔记](http://alexstocks.github.io/html/rocksdb.html)
+
+默认情况下，RocksDB 的写是异步的：仅仅把数据写进了操作系统的缓存区就返回了，而这些数据被写进磁盘是一个异步的过程. 如果为了数据安全，可以用如下代码把写过程改为同步写：
+```c++
+    rocksdb::WriteOptions write_options;
+    write_options.sync = true;
+    db->Put(write_options, …);
+```
+
+这个选项会启用 Posix 系统的 fsync(...) or fdatasync(...) or msync(..., MS_SYNC) 等函数.
+
+**异步写的吞吐率是同步写的一千多倍**. 异步写的缺点是机器或者操作系统崩溃时可能丢掉最近一批写请求发出的由操作系统缓存的数据，但是 RocksDB 自身崩溃并不会导致数据丢失. 而机器或者操作系统崩溃的概率比较低，所以大部分情况下可以认为异步写是安全的.
+
+RocksDB 由于有 WAL 机制保证，所以即使崩溃，其重启后会进行写重放保证数据一致性. 如果不在乎数据安全性，可以把 write_option.disableWAL 设置为 true，加快写吞吐率.
+
+RocksDB 调用 Posix API fdatasync() 对数据进行异步写. 如果想用 fsync() 进行同步写，可以设置 Options::use_fsync 为 true.
+
+### Rocksdb性能优化--写优化
+参考:
+- [官方RocksDB调优](https://github.com/facebook/rocksdb/wiki/RocksDB-Tuning-Guide), 翻译在[RocksDB参数调优](https://xiking.win/2018/12/05/rocksdb-tuning/)
+- [Tuning RocksDB - Write Stalls](https://www.jianshu.com/p/a2892a161a7b)
+
+有人在HDD/NVME SSD/Ceph Rados上分别测试过Rocksdb的性能，这三者的同步写性能分别是(170MB/s, 1200MB/s, 120MB/s), 不过最终的测试结果却让人大跌眼镜， Rocksdb的性能分别为(<1MB/s, 50MB/s, 4MB/s)，最多只能发挥存储侧不到0.05%的性能.
+
+自己测试性能(应用是自己写的cdp记录(by rocksdb)保存工具+同事的cdp截获驱动):
+`/dev/sdi`大小:1G, 测试命令`dd if=/dev/zero of=/dev/sdi bs=4k count=2048`即写4M.
+
+对照组: 不保存cdp信息耗时3s, 截获bio 2048个.
+
+> options.SetWriteBufferSize = wbs, writeOptions.SetSync=sync, writeOptions.DisableWAL=wal
+> sync=true也意味着wal=false, 设置wal=true会报错
+
+实际组:
+1. wbs=8M, sync=false, wal=false : 5m37s
+1. wbs=64M, sync=false, wal=false : 6s
+1. wbs=64M, sync=false, wal=true : 5s
+1. wbs=128M, sync=false, wal=false : 5s
+1. wbs=64M, sync=true, wal=false : 78s
+1. wbs=128M, sync=true, wal=false : 92s ??? 缓存比上面大, 性能反而下降
+
+### Sync writes has to enable wal
+writeOptions.SetSync=true时, writeOptions.DisableWAL必须为false.
