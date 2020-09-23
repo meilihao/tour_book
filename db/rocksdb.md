@@ -327,5 +327,7 @@ RocksDB 调用 Posix API fdatasync() 对数据进行异步写. 如果想用 fsyn
 1. wbs=64M, sync=true, wal=false : 78s
 1. wbs=128M, sync=true, wal=false : 92s ??? 缓存比上面大, 性能反而下降
 
+> 这个测试数据量可能有问题, 没法将wbs写满, 时间有限, 先这样.
+
 ### Sync writes has to enable wal
 writeOptions.SetSync=true时, writeOptions.DisableWAL必须为false.
