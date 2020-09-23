@@ -245,7 +245,7 @@ $ sudo systemctl isolate multi-user.target
 ## 日志管理
 Systemd 统一管理所有 Unit 的启动日志。日志的配置文件是`/etc/systemd/journald.conf`.
 
-systemd-journald 服务收集到的日志默认保存在 /run/log 目录中，重启系统会丢掉以前的日志信息, 修改配置文件 /etc/systemd/journald.conf，把 Storage=auto 改为 Storage=persistent，并取消注释，然后重启日志服务 systemd-journald.service即可实现持久化日志(`/var/log/journal`).
+systemd-journald 服务收集到的日志默认保存在 /run/log 目录中，重启系统会丢掉以前的日志信息, 修改配置文件 /etc/systemd/journald.conf，把 Storage=auto 改为 Storage=persistent，并取消注释，然后`systemctl restart systemd-journald.service`即可实现持久化日志(`/var/log/journal`).
 
 ```
 # 查看所有日志（默认情况下 ，只保存本次启动的日志）
