@@ -50,6 +50,9 @@ sudo apt install libev-dev
 ### /usr/bin/ld: 找不到 -lpam
 sudo apt install libpam0g-dev
 
+### librocksdb.so: undefined reference to `ZSTD_freeCDict`
+`nm -A librocksdb.so|grep ZSTD_freeCDict`可知, librocksdb.so需要链接ZSTD_freeCDict, 但linker找不到"ZSTD_freeCDict", 通常是rocksdb太新或libzstd-dev太旧, 版本不匹配导致.
+
 ### virsh unknown os type hvm
 原因: qemu 虚拟机配置中的`<emulator>...</emulator>`路径不存在, 即未安装qemu kvm.
 apt install qemu-kvm qemu-system-x86 # for ubuntu 16.04, 必须同时安装qemu-system-x86,否则会报"qemu-system-x86_64: not found"
