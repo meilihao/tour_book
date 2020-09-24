@@ -12,7 +12,7 @@ echo '/usr/local/lib' > /etc/ld.so.conf.d/local.conf
 ldconfig
 cat <<EOF > jemalloc.c
 #include <stdio.h>
-#include <jemalloc/jemalloc.h>
+#include <jemalloc/jemalloc.h> // 如果没有include jemalloc的头文件，编译的时候也不需要链接jemalloc库, 但启动的时候需通过LD_PRELOAD指定jemalloc库的路径(比如`/usr/local/lib/libjemalloc.so`)就可以了
   
 void jemalloc_test(int i)
 {
