@@ -1246,3 +1246,10 @@ int main(void)
     return 0;   
 }
 ```
+
+### printf long long
+```c
+printf("time:%llx\n",140734794339647l); // hex
+printf("time:%lld\n",140734794339647l); // 十进制
+printf("time:%llu\n",140734794339647l);
+```

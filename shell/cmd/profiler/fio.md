@@ -1,4 +1,7 @@
 # fio
+参考:
+- [磁盘测试工具FIO](https://www.cnblogs.com/klb561/p/11939355.html)
+
 模拟各种情况的i/o基准测试工具, 支持 14 种不同的 I/O 引擎，包括: sync,mmap, libaio, posixaio, SG v3, splice, null, network, syslet, guasi, solarisaio, iouring 等等.
 
 fio 分顺序读，随机读，顺序写，随机写，混合随机读写模式.
@@ -21,14 +24,14 @@ fio 分顺序读，随机读，顺序写，随机写，混合随机读写模式.
 ## 选项
 - filename=/dev/sdb1   # 测试设备的设备文件
 - direct=1             # 测试过程绕过机器自带的 buffer 使测试结果更真实
-- rw=randwrite/randrw  # 测试随机写的 I/O或随机写和读的 I/O
+- rw=randwrite/randrw/randread/read(顺序)/write(顺序)  # 读写模式
 - bs=16k               # 单次 io 的块文件大小为 16k
 - bsrange=512-2048     # 同上，提定数据块的大小范围
 - size=5G              # 本次的测试文件大小为 5g，以每次 4k 的 io 进行测试
 - numjobs=30           # 本次的测试线程为 30 个
 - runtime=1000         # 测试时间 1000 秒，如果不写则一直将 5g 文件分 4k 每次写完为止
 - iodepth=1            # 请求IO队列的深度
-- ioengine=psync       #io 引擎使用 psync 方式
+- ioengine=psync       # io 引擎使用 psync 方式
 - rwmixwrite=30        # 在混合读写的模式下，写占 30%
 - group_reporting      # 关于显示结果的，汇总每个进程的信息
 - lockmem=1G           # 只使用 1g 内存进行测试
@@ -40,6 +43,7 @@ fio 分顺序读，随机读，顺序写，随机写，混合随机读写模式.
 - randrepeat=0         # 随机序列是否重复
 - size=100G            # io测试的寻址空间
 - ioengine             # io engine
+- rwmixwrite=30        # 在混合读写的模式下，写占30%
 
 ## example
 ```bash
