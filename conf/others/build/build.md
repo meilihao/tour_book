@@ -32,3 +32,9 @@ int main(int argc, char **argv)
 EOF
 gcc jemalloc.c -o jmtest -ljemalloc
 ```
+
+### FAQ
+#### <jemalloc>: Invalid conf pair
+原因: [编译时未使用`--enable-prof`](https://github.com/jemalloc/jemalloc/issues/175)
+
+解决方法: `./configure --enable-prof`
