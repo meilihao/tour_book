@@ -15,6 +15,8 @@ RocksDB是一个嵌入式的K-V（任意字节流）存储. 所有的数据在�
 ## 编译
 1. 参照[rocksdb INSTALL](https://github.com/facebook/rocksdb/blob/master/INSTALL.md), 选择平台安装依赖lib
 1. `cd rocksdb_source_root`, 选择`make static_lib/make shared_lib`进行编译
+
+    如果构建环境存在jemalloc/tcmalloc, make会通过`build_tools/build_detect_platform <platform>`将相应的环境变量存入生成的make_config.mk中, 供自身使用
 1. 参考rocksdb的Makefile, 再执行`make install-static/make install-shared`即可. 如果安装位置需要还可使用`INSTALL_PATH=/usr/local make install-static/install-shared`, `INSTALL_PATH`默认已是`/usr/local`, 最终`librocksdb.a/librocksdb.so`会出现在`$INSTALL_PATH/lib`下
 1. 设置环境变量
 
@@ -30,6 +32,11 @@ RocksDB是一个嵌入式的K-V（任意字节流）存储. 所有的数据在�
 
 ## 文件介绍
 - *.log: 事务日志用于保存数据操作日志，可用于数据恢复
+- LOG/LOG.old.* : 当前log/历史log
+
+     `options.keep_log_file_num` : 可指定log文件个数(>=1, 因为当前LOG文件正在被使用)
+     `options.max_log_file_size` : 日志轮转大小
+     `options.log_file_time_to_roll` : 日志轮转时间
 - *.sst: 数据持久换文件
 - MANIFEST：数据库中的 MANIFEST 文件记录数据库状态即某个时刻SST文件的视图. 压缩过程会添加新文件并从数据库中删除旧文件，并通过将它们记录在 MANIFEST 文件中使这些操作持久化.
 
@@ -59,6 +66,8 @@ compaction输入的SST file并不是立即就从SST file集合中删除，因为
 
 写流程：
 rocksdb写入时，直接以append方式写到log文件以及memtable，随即返回，因此非常快速. memtable/immute memtable触发阈值后， flush 到Level0 SST，Level0 SST触发阈值后，经合并操作(compaction)生成level 1 SST， level1 SST 合并操作生成level 2 SST，以此类推，生成level n SST.
+
+![rocksdb 写入原理](/misc/img/rocksdb/1f950c8b30fe6992437242c368f0f8b1.png)
 
 Get()流程：
 1. 在MemTable中查找，无法命中转到下一流程
@@ -331,3 +340,26 @@ RocksDB 调用 Posix API fdatasync() 对数据进行异步写. 如果想用 fsyn
 
 ### Sync writes has to enable wal
 writeOptions.SetSync=true时, writeOptions.DisableWAL必须为false.
+
+### rocksdb delete a range of keys
+参考:
+- [rocksdb系列delete a range of keys](https://www.jianshu.com/p/cea1267628b6)
+
+最消极的做法: 遍历DB， 遇到特定范围里的key，直接调用Delete就可以了，这种方法适合于要删除的keys数量小的情况, 另一方面， 这种方法有两个显著问题：
+1. 不能立刻收回资源，得等compaction完成后在能真正收回资源
+2. 大量的tombstones（也就是标记为del的key） 会减缓迭代器效率
+
+解决方法:
+- 针对1:
+
+    - 对要删除range key使用DeleteFilesInRange， 这个方法会直接删除只包含range keys的文件， 对于大块的range， 这个方法可以直接回收资源，值得注意的是：
+
+        - 即使做完这个操作，一些在range keys范围内的数据依然存在于db中， 这个时候还需要一点的其他的opera
+        - 这个操作直接忽视了snapshots， 导致可能通过snapshot 读不到本该可以读到的数据
+
+    - compaction filter + compactRange, 一旦写个compaction filter, 做完compaction的时候，该删除的数据也没了. 在使用的时候， 可以设置CompactionFilter::IgnoreSnapshots = true， 这样的话， 就可以保证删除range keys，否则的话， 不能删除所有的keys， 这种方法也能很好的回收资源， 唯一的缺点是可能会增加I/O压力
+
+- 针对2:
+
+    - 如果从来不改写已经存在的keys，使用DB::SingleDelete而不是Delete就可以很快消灭tombstones， 这种Tombstone可以很快被清除而不是被一直推到last level
+    - 使用NewCompactOnDeletionCollectorFactory()， 可以在有大量tombstones的时候加快compaction
