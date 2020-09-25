@@ -111,6 +111,7 @@ $ qemu-system-x86_64 --version
     nowait – qemu will wait for a client socket application to connect to the port before continuing unless this option is used. In most cases you’ll want to use the nowait option.
 
 ## qemu monitor
+进入: 鼠标点击qemu窗口，然后ctrl+alt+2即可切换到控制台
 滚屏: ctrl + 上/下
 
 ## 操作
