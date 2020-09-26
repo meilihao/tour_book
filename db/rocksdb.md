@@ -251,8 +251,11 @@ RocksDB的内存大致有如下四个区：
 - Memtables
 - Blocked pinned by iterators
 
-### 获取所使用的rocksdb version
+### 获取所使用的rocksdb version/config
 查看db_path下的OPTIONS-<SN>中的section "Version"即可
+
+参考rocksdb 配置:
+- [tikv](https://github.com/tikv/tikv/blob/master/docs/reference/configuration/rocksdb-option-config.md)
 
 ### core dumped
 > driver : github.com/tecbot/gorocksdb
@@ -363,3 +366,10 @@ writeOptions.SetSync=true时, writeOptions.DisableWAL必须为false.
 
     - 如果从来不改写已经存在的keys，使用DB::SingleDelete而不是Delete就可以很快消灭tombstones， 这种Tombstone可以很快被清除而不是被一直推到last level
     - 使用NewCompactOnDeletionCollectorFactory()， 可以在有大量tombstones的时候加快compaction
+### RateLimiter
+rocksdb通过RateLimiter来控制最大写入速度的上限, 因为在某些场景下，突发的大量写入会导致很大的read latency，从而影响系统性能.
+
+RateLimiter参数：
+- int64_t rate_bytes_per_sec：控制 compaction 和 flush 每秒总写入量的上限。一般情况下只需要调节这一个参数
+- int64_t refill_period_us：控制 tokens 多久再次填满，譬如 rate_limit_bytes_per_sec 是 10MB/s，而 refill_period_us 是 100ms，那么每 100ms 的流量就是 1MB/s. 相当于将1s分成1s/refill_period_us个小窗口, 每个小窗口占用一定的token, 使得写入更均匀.
+- int32_t fairness：用来控制 high 和 low priority 的请求，防止 low priority 的请求饿死.
