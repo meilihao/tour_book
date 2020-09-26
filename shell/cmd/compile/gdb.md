@@ -101,6 +101,7 @@ gdb中命令：
     info registers eflags : 查看eflags的结果
     info display : 查看display设置的自动显示的信息
     info line <filename>:<function> : 显示指定函数在文件中的行数, 内存的起始地址及终止地址
+    info proc m : 查看内存映射
 (gdb) examine : 查看内存地址中的值, 简写x
 
     格式: `x/<n><format><size> ADDRESS`:
