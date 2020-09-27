@@ -20,3 +20,7 @@ $ go test types_test.go  types.go driver.go # ok
 #### `go test -v -run=XXX`,预先设置的调试信息未输出，直接`PASS ok`
 
 XXX函数名字和*_test.go里的待测试函数的名称不一致.
+
+
+#### `go test -v -bench=BenchmarkSingle -benchtime 200x`如何确定b.N
+其实BenchmarkSingle会被执行2次, 第一次b.N=1确定基准, 第二次b.N=200执行真正测试.

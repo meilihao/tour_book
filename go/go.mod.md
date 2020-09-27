@@ -187,3 +187,6 @@ vendor目录仅包含依赖到的代码, 未依赖的package会被忽略.
 
 ### go mod项目嵌套
 go mod项目嵌套时, go get需要指定具体的路径比如`go get -u golang.org/x/tools/gopls`,再将gopls拷入对应目录, 这里是拷入`$GOROOT/pkg/mod/golang.org/x/tools-v0.0.0-xxx-<xxx>`. 因为直接`go get -u golang.org/x/tools`时, tools目录不含gopls.
+
+### 内网有goproxy, `go get xxx`报错
+直接在启用go mod的项目中`import xxx`, 然后`go build`正常.

@@ -201,6 +201,13 @@ RocksDB提供以下3大类型的工具:
     Benchmark Tool
     Stress Tool，压力测试工具
 
+    ```bash
+    $ cd rocksdb
+    $ make BENCHMARKS
+    ```
+
+    > db_bench可用`--db=xxx`指定db path
+
 1. workload模拟工具
 
     用户数据访问行为模拟工具
@@ -212,7 +219,7 @@ RocksDB提供以下3大类型的工具:
     ```bash
     # Linux
 	$ cd rocksdb
-	$ make ldb sst_dump
+	$ make tools
 	$ cp ldb /usr/local/bin/
 	$ cp sst_dump /usr/local/bin/
     ```

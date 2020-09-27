@@ -17,7 +17,13 @@ gnu编译套件之一.
 - -O3 : -O2 更进一步优化，包括 inline 函数
 - -pedantic : 要求严格遵守ansi标准, 否则发出警告
 - -pipe : 编译过程中使用pipe, 加快编译速度
+- -P * : 表示在预处理阶段的输出中，阻止生成换行符, 但生成的结果没有换行和排版
+    
+    `gcc -E -P maco_expand.c -o result.c`, 
 - -static : 链接静态库
+- -save-temps : 保留中间文件：如预处理后的结果文件、汇编代码文件与目标文件
+
+    `gcc -c -save-temps main.c`, 会生成预处理后main.i文件
 - -S : 只编译不汇编, 生成汇编代码
 - -v : 输出详细信息
 - -w : 禁止所有的报警
