@@ -78,6 +78,10 @@ apt install qemu-kvm qemu-system-x86 # for ubuntu 16.04, 必须同时安装qemu-
 - [deepin 15.3](http://packages.deepin.com/deepin/pool/main)
 - [ubuntu 16.04](packages.ubuntu.com)
 
+### 调试日志刷屏: `kernel: Incremented dev->dev_cur_ordered_id: xxx for SIMPLE`
+临时: `echo 'file target_core_transport.c -p' > /sys/kernel/debug/dynamic_debug/control`
+永久: 修改启动kernel的kernel arg, 追加`dynamic_debug.verbose=0`
+
 ### no space left on device
 
 1. 检查磁盘空间(`df -h`)
