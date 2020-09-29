@@ -4,5 +4,7 @@
 
 ## 示例
 ```
-objcopy –only-section=.data <infile> <outfile> // 将.data 节从一个 ELF 目标文件复制到另一个文件中
+objcopy -only-section=.data <infile> <outfile> // 将.data 节从一个 ELF 目标文件复制到另一个文件中
+objcopy -I binary -O elf32-i386 -B i386 image.jpg image.o # 将二进制文件(图片)做成elf文件的一个段
+objdump -ht image.o # 查看image.o的段内容
 ```
