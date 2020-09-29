@@ -642,6 +642,7 @@ if (nfs_mount_data_version == 1) {
 
 ### nfs debug
 ```bash
+# rpcinfo -p 192.168.1.35 # 查看与nfs server间的rpc通信是否正常, service列表中显示mountd+nfs表示正常
 # rpcdebug -vh
 # rpcdebug -m nfs -s all # Enable all NFS (client-side) debugging
 # rpcdebug -m rpc -s call # only Enable RPC Call (client-side) debugging
@@ -662,7 +663,7 @@ rpcdebug选项:
 - -s : To set available kernel debug flag for a module
 - -c : Clear Kernel debug flags
 
-> 将nfsd日志输入syslog: `RPCNFSDOPTS="-d -s"`
+> 将nfsd日志输入syslog: `RPCNFSDOPTS="-d -s"`. "-d", 启用debug; "-s", 写入syslog
 
 ### mount.nfs: requested NFS version or transport protocol is not supported
 情况:
@@ -681,7 +682,7 @@ smb server端权限正确, 重启后正常.
 `showmount -e 192.168.0.248`时报该错误, 网上的提示是`rpcbind`没运行, 但查了`ss -anlpt|grep rpcbind`是运行的,`exportfs -ra`后有时正常但有时还是不行. 推测是nfs本身的问题.
 
 验证过程:
-通过tcpdump抓取mount.nfs与rpcbind(端口111)的通信过程, 发现它们能正常通信, 那么问题应该是server端的rpcbind与nfs-kernel-server的问题, `systemctl restart nfs-kernel-server`后恢复正常.
+通过tcpdump抓取mount.nfs与rpcbind(端口111)的通信过程, 发现它们能正常通信, 重启rpcbind后问题仍存在, 重启nfs-kernel-server后正常, 因此就是nfs-kernel-server的问题.
 
 ### 修改/etc/export后, 仍提示"权限不够"
 1. client使用root挂载nfs export(/mnt/abc, root_squash, all_squash), client能挂载成功但没有权限进入挂载目录
