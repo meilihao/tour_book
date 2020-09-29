@@ -96,3 +96,6 @@ ps工具标识进程的5种状态码:
 - s 是会话领导。Linux 中的相关进程被视为一个单元，并具有共享会话 ID（SID）。如果进程 ID（PID）= 会话 ID（SID），则此进程将是会话领导。
 - l	是多线程的（使用 CLONE_THREAD，例如 NPTL pthreads）
 - +	位于前台进程组,这样的处理器允许输入和输出到tty
+
+# pidof
+根据进程名查找pid, 比pgrep准确.

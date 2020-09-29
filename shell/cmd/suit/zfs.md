@@ -4,6 +4,7 @@
 - [zfs Administration](https://pthree.org/2012/12/04/zfs-administration-part-i-vdevs/)
 - [FreeBSD Handbook's zfs](https://www.freebsd.org/doc/handbook/)
 - [ZFS磁盘空间管理(分配、释放原理)](https://blog.csdn.net/beiya123/article/details/80393720)
+- [man pages](https://zfsonlinux.org/manpages/0.8.4/index.html)
 
 ```sh
 # ubuntu 18.04
@@ -105,7 +106,7 @@ $ sudo zpool offline [option] <pool> <device> # 离线zfs设备, `-t`表示临�
 $ sudo zpool online [option] <pool> <device> # 上线zfs设备, 新设备上线后会同步. `-e`可扩展LUN(即使用更大容量设备时, 使用完整大小), 默认不扩展.
 $ sudo zpool clear <pool> [devices] # 池设备故障时清理错误, 默认清理池内的所有设备错误.
 $ sudo zpool replace <pool> replaced-device [new-device] # 替换存储池中的设备, 比如使用热备盘
-$ sudo zpool get all <pool> # 获取pool的所有属性
+$ sudo zpool get all <pool> # 获取pool的所有属性, 其他free属性并不是pool的剩余空间, 剩余空间应该用`zfs get available <pool>`获取
 $ sudo zpool get <property> <pool> # 获取pool的指定属性
 $ sudo zpool set <property=value> <pool> # 设置pool的指定属性
 $ sudo zpool history [pool] # 显示zfs和zpool命令的使用日志, `-l`使用长格式(追加: 用户名, 主机名执行操作的域), `-i`显示更详细的内部日志可用于诊断

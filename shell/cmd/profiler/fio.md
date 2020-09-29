@@ -32,6 +32,12 @@ fio 分顺序读，随机读，顺序写，随机写，混合随机读写模式.
 - runtime=1000         # 测试时间 1000 秒，如果不写则一直将 5g 文件分 4k 每次写完为止
 - iodepth=1            # 请求IO队列的深度
 - ioengine=psync       # io 引擎使用 psync 方式
+
+    - libaio : Linux 原生的异步 I/O，这也是通常我们这边用的最多的测试盘吞吐和延迟的方法
+    - sync : 也就是最通常的 read / write 操作
+    - vsync : 使用 readv / writev，主要是会将相邻的 I/O 进行合并
+    - psync : 对应的 pread / pwrite
+    - pvsync / pvsync2 : 对应的 preadv / pwritev，以及 preadv2 / p writev2
 - rwmixwrite=30        # 在混合读写的模式下，写占 30%
 - group_reporting      # 关于显示结果的，汇总每个进程的信息
 - lockmem=1G           # 只使用 1g 内存进行测试
@@ -42,8 +48,23 @@ fio 分顺序读，随机读，顺序写，随机写，混合随机读写模式.
 - refill_buffers       # 每次提交IO任务会重新填充
 - randrepeat=0         # 随机序列是否重复
 - size=100G            # io测试的寻址空间
-- ioengine             # io engine
 - rwmixwrite=30        # 在混合读写的模式下，写占30%
+- -fdatasync=1         # 落盘方式
+
+## fio输出解读
+slat / clat / lat, 这几个是 latency 指标:
+- slat 就是 Submission latency，也就是提交到实际执行 I/O 的时间，在 sync 测试里面这个是没有的，因为 slat 就是 clat
+- clat 就是 Completion latency，也就是从提交到完成的时间
+- lat 就是 Total latency，包括 fio 从创建这个 I/O 单元到完成的总的时间
+
+disk stats:
+- ios : 总的 I/O 操作次数
+- merge : 被 I/O 调度合并的次数
+- ticks : 让磁盘保持忙碌的次数
+- in_queue : 总的在磁盘队列里面的耗时
+- util : 磁盘的利用率
+
+fio 还支持将中间的操作输出到文件，然后使用工具绘制图表展示，通常就是设置 write_bw_log，write_bw_log 和 write_iops_log，然后使用 fio_generate_plots 来绘图，另外也可以用 fio2gnuplot 来绘制.
 
 ## example
 ```bash
