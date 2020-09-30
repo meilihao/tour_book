@@ -1,4 +1,6 @@
 # prometheus & grafana
+![架构](https://prometheus.io/assets/architecture.png)
+
 ## 部署grafana
 ```
 # mkdir -p /var/lib/grafana
@@ -18,3 +20,14 @@
 ```
 
 访问http://localhost:9090
+
+其他配置:
+- --config.file=prometheus.yml : 指定配置文件
+- --web.listen-address=:9090 : 指定web访问端口, 此时必须指定`--config.file=prometheus.yml`
+
+## 部署node_exporter
+```
+# ./node_exporter
+```
+
+访问: http://${ip}:9100/metrics即可.

@@ -16,6 +16,7 @@
 	# docker load < myimage_latest.tar
 	# gunzip -c myimage_latest.tar.gz | docker load
 	# docker tag ${image_id} myimage:latest # 重建tag
+    # docker export $(docker create <image id>) --output="latest.tar" # 将image导出成rootfs
 	```
 载入镜像 : docker load [OPTIONS]
 上传镜像 : docker push [OPTIONS] NAME[:TAG]
