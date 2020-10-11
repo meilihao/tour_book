@@ -513,3 +513,8 @@ acpi与内核可能有不兼容的问题, kernel启动参数可追加[`acpi=ht`]
 
 ### inlining failed in call to always_inline 'uint32_t __crc32cd(uint32_t, uint64_t)': target specific option mismatch
 使用了特定的指令集, 因此[gcc编译时需要特定的选项`-march=armv8-a+crc+crypto`](https://github.com/OSSystems/meta-browser/issues/258)
+
+### [登录火狐浏览器账号后没有同步数据, 或同步后发现不一致，或火狐浏览器账号不存在](https://blog.csdn.net/qq_40157728/article/details/103994649)
+火狐账号登录(国际版) 和 火狐通行证(中国版) 是两个完全不同的账号体系，数据不互通.
+
+两种账号可切换: 选项-同步-切换至xxx服务(在页面下方), 推荐使用"切换至全球服务".
