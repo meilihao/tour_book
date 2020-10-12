@@ -1,6 +1,9 @@
 # prometheus & grafana
 ![架构](https://prometheus.io/assets/architecture.png)
 
+参考:
+- [prometheus-book](https://yunlzheng.gitbook.io/prometheus-book/)
+
 ## 部署prometheus
 ```
 # mkdir -p /var/lib/prometheus
