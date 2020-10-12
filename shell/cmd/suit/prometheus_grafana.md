@@ -66,3 +66,4 @@ systemd部署见[node_exporter.service](https://github.com/prometheus/node_expor
 1. `send a HTTP POST to the Prometheus web server`
 
     需要追加`--web.enable-lifecycle`选项, 即`/prometheus --config.file=prometheus.yml --web.enable-lifecycle` + `curl -X POST http://localhost:9090/-/reload`
+### [exporters](https://prometheus.io/docs/instrumenting/exporters/)
