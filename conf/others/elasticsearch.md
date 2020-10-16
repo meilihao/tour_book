@@ -13,3 +13,6 @@
 -Xms512m
 -Xmx512m
 ```
+
+### 验证elasticsearch是否已运行
+`curl -X GET "localhost:9200/?pretty"`
