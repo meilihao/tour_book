@@ -19,6 +19,8 @@ export QT_IM_MODULE="fcitx"
 export XMODIFIERS="@im=fcitx"
 
 # --- go
+export GO111MODULE=on
+export GOPROXY=https://goproxy.cn,direct
 export GOROOT=/usr/local/go
 export GOPATH=/home/chen/git/go
 export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
