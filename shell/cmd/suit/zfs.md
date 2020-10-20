@@ -93,6 +93,8 @@ $ sudo zpool add <pool> /dev/sdx # 将驱动器添加到池中
 $ sudo zpool exprot <pool> # 如果要在另一个系统上使用该存储池，则首先需要将其导出. zpool命令将拒绝导入任何尚未导出的存储池
 $ sudo zpool export oldname # 重命名已创建的zpool的过程分为2个步骤, export + import
 $ sudo zpool import oldname newname
+$ sudo zpool import -d /dev/disk/by-uuid
+$ sudo zpool import <poolname> -d /dev/disk/by-uuid
 $ sudo zpool create <pool> mirror <device-id-1> <device-id-m1> mirror <device-id-2> <device-id-m2> # 创建RAID10
 $ sudo zpool add <pool> log mirror <device-id-1> <device-id-2> # 添加 SLOG
 $ sudo zpool add <pool> spare devices # 添加热备, 大小应>=max(pool's vdev),且无法移除当前正在使用的热备. 移除用`zpool remove`
