@@ -23,6 +23,9 @@ MaxSessions 10 最大终端数
 PasswordAuthentication yes 是否允许密码验证
 PermitEmptyPasswords no 是否允许空密码登录（很不安全）
 
+## 选项
+- -t : 强制分配伪终端. 可以在远程机器上执行任何基于屏幕(screen-based)的程序, 所以非常有用, 例如菜单服务. 并联的 -t 选项(即`-tt`)强制分配终端, 即使没有本地终端.
+
 ## example
 ```bash
 ssh root@192.168.16.40 -t "cd /proc/cpuinfo"
@@ -42,3 +45,6 @@ Host *
 
 ### 查看ssh-agent已缓存的key
 `ssh-add -l`
+
+### ssh登录后立即退出
+login script有问题, 登录时禁止执行即可: `ssh -t user@host bash --noprofile`.
