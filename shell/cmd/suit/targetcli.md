@@ -141,7 +141,7 @@ targetcli(服务端)使用步骤:
 
 > 设置双向认证必须建立在单向认证的基础上，因为在initiator登录的时候要先进行单项认证.
 
-具体配置参考[这里](https://www.cnblogs.com/pipci/p/11622014.html).
+具体配置参考[这里](https://www.cnblogs.com/pipci/p/11622014.html)和[认证](https://wiki.archlinux.org/index.php/ISCSI_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)/LIO_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87))
 
 ## targetcli cmd模式
 ```bash
@@ -203,7 +203,7 @@ iscsiadm:
 ### example
 ```bash
 # iscsiadm -m discovery -t st -p 192.168.10.10
-# iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linux.x8664:sn.d497c356ad80 -p 192.168.10.10 --login # 在 iSCSI 客户端成功登录之后,会在客户端主机上多出一块名为`/dev/sd${xxx}` 的设备文件. `-T`表示要挂载的盘. 如果target使用了多张网卡时会存在多路径问题, 挂载磁盘数=target提供的磁盘数*路径数
+# iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linux.x8664:sn.d497c356ad80 -p 192.168.10.10 --login # 此时是禁用CHAP的情况 ,在 iSCSI 客户端成功登录之后,会在客户端主机上多出一块名为`/dev/sd${xxx}` 的设备文件. `-T`表示要挂载的盘. 如果target使用了多张网卡时会存在多路径问题, 挂载磁盘数=target提供的磁盘数*路径数
 # iscsiadm -m session -P 3 # 获取挂载信息, `-P`, 信息的详细level, 越大越详细.
 # mkfs.xfs /dev/sdb
 # mkdir /iscsi
@@ -255,6 +255,9 @@ UUID=eb9cbf2f-fce8-413a-b770-8b0f243e8ad6 /iscsi xfs defaults,_netdev 0 0 # 由�
 ```
 
 一旦配置成自动生成acl节点，当initiator认证成功后，再配置成自定义的acl实现访问控制是无效的 只有重启系统后恢复正常，我感觉这个是因为有认证记忆的功能.
+
+### iscsiadm -m node xxx 无法login, 报"initiator reported error ( 24 - ..."
+开启了CHAP认证, 禁用即可: `.../tpg1> set attribute authentication=0`
 
 ### 获取光纤信息
 和以太网卡的MAC地址一样，HBA上也有独一无二的标识：WWN（World Wide Name）, FC HBA上的WWN有两种：
