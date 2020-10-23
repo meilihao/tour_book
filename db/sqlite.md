@@ -23,6 +23,12 @@ $ sqlite3 xxx.db3
 > .q
 ```
 
+显示create table语句:
+```
+$ sqlite3 xxx.db3
+> .schema <table>
+```
+
 ## FAQ
 ### database is locked
 sqlite3只支持一写多读.
