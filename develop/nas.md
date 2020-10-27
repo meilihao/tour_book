@@ -548,14 +548,18 @@ linux samba client挂载需注意斜杠是linux风格的.
 ### `smbstatus`显示client的protocol version 是 Unknown (0x0311)
 "Unknown (0x0311)" protocol is fixed in [`Samba 4.4.0`](https://bugzilla.samba.org/show_bug.cgi?id=11472).
 
-### samba 无法创建文件???
+### samba 无法创建文件/权限不够???
 env:
 ```
 $ Linux 5.3.0-24-generic
 $ Samba version 4.3.11-Ubuntu
 $ mount.cifs version: 6.9
+
+$ Linux 5.4.0-51-generic # ubuntu 20.04
+$ Samba version 4.11.6-Ubuntu
+$ mount.cifs version: 6.9
 ```
-明明有写权限, 还是无法创建文件, windows server 2012和Linux 4.4.131-20190505.kylin.server-generic + mount.cifs version: 6.4则正常.
+上面两种环境明明有写权限, 还是无法创建文件, windows server 2012和Linux 4.4.131-20190505.kylin.server-generic + mount.cifs version: 6.4则正常.
 
 将mount.cifs version: 6.9降到6.4还是报同样的错.
 
@@ -807,3 +811,125 @@ data blocks changed from 262128 to 524256
 # --- ext4 在线
 resize2fs /dev/zvol/d57a9bc700b94d7b854e3cbe70957afa/vol_test_ext4 # 非挂载扩容时需先执行`e2fsck -f /dev/zvol/d57a9bc700b94d7b854e3cbe70957afa/vol_test_ext4`否则resize2fs执行时会报错, **推荐挂载时扩容**
 ```
+
+## quota
+参考:
+- [磁盘配额：NAS 用户 容量限制](https://blog.csdn.net/chengm8/article/details/50344375)
+
+```
+# apt install quota
+```
+
+> quota 基于文件系统, 因此配额仅在某个文件系统上有效, 而非全部挂载点.
+
+> 只有文件/文件夹属于user/group时, quota才统计其配额, 支持组的配额会被忽略.
+
+> 只有root可以编辑配额
+
+quota相关命令:
+- quotacheck: 扫瞄一个文件系统磁盘使用，创建，检查，修复配额文件
+
+	quotacheck :  [-gubcfinvdMmR] [-F quota-format ]  -a| filesystem
+    -c:  创建文件，不读取已存在的配额文件。只重新扫描并保存到磁盘。
+	-f:   force
+	-u:  只检查使能user 配额的文件系统(用户配额文件，默认)
+	-g:  只检查使能group配额的文件系统(组配额文件)
+
+ 	quotacheck -vug /file_system # 为保持准确的配额, 需定期运行
+
+	> quotacheck对XFS不生效，XFS使用xfs_quota
+- edquota :  通过editor(比如vim)编辑用户配额
+- repquota:  汇总文件系统的配额
+
+	- repquota   -a   //报告所有的 磁盘使用情况
+	- repquota  /home  报告指定的磁盘使用情况
+
+	输出列：
+    - 第1列：使能配额的文件系统 设备名
+    - 第2列：显示用户当前使用的块
+    - 第3，4列：用来设置此文件系统上用户的 软，硬块数限制
+    - 第5列：inode，显示用户当前使用的inodes节点数
+    - 第6，7列：用来设置文件系统上用户的 软，硬inode节点限制
+
+	> 输出说明: +-表示超出块限制，-+表示超出个数限制
+- quota:     显示磁盘使用和限制, 在文件系统的根目录执行
+
+	选项:
+	- -s : --human-readable, 高版支持自定义单位
+
+	查询用户的磁盘配额使用情况: `quota <username? / quota -g <group_name>`
+
+	> **只有实际有文件/文件夹属于user/group时, quota查询时才有具体内容输出, 否则需要追加`-v`来输出详细信息**.
+- quotaon:   打开文件系统配额
+
+	quotaon -vaug     //开启所有的配额
+	quotaon -vug /home //开启指定的配额
+- quotaoff:   关闭文件系统配额
+
+	quotaoff -vaug // 禁止所有fs的配额，-u 所有的用户配额 -g 所有的组配额
+
+1. 挂载启用quota的文件系统
+```bash
+# mkfs -t ext4 /dev/zd144
+# mount /dev/zd144 /mnt/t -o usrquota,grpquota
+```
+
+1. 创建用户/组
+```bash
+# useradd wg
+# useradd w1 -g wg
+```
+
+1. 建立配额文件，分别对用户和组
+```bash
+# quotacheck -cug /mnt/t
+```
+
+`/mnt/t`下会出现aquota.group和aquota.user, **建议acl设置完后再创建aquota.*, 避免文件被改动**
+
+1. 设置配额
+```
+# setquota -u w1  5120  10240  300  500  /mnt/t # -u参数为配置用户，如果为给组配置，参数为-g
+# edquota -p w1 w2  # 把username用户的设定复制给username1用户
+# edquota -t # 设置软限制的宽限期，默认为7天，可以用days,hours,minutes,seconds等
+# quotaon -vug /mnt/t # 开启配额
+# quotaoff -vug /mnt/t # 停止配额
+```
+
+> `env EDITOR=vim edquota -u w1`, 通过vim编辑quota, 结果等价于setquota
+
+限制可以分为两种：
+1. 软限制：当用户或组所分配的空间占满以后，在一定的宽限期内可以超出容量但是系统会给处警告，并在宽限期过后强制收回空间
+1. 硬限制：当用户或组所分配的空间占满以后，就不能再存储数据
+
+edquota设置说明:
+```conf
+Filesystem            blocks       soft       hard     inodes     soft     hard
+/dev/sdd              20           0           0          2        0        0
+```
+列说明:
+1. /dev/sdd : 配额文件系统
+1. 已使用的块, 不能修改(硬盘存储文件要写入block,同时占用一个inode)
+1. 软块数限制
+1. 硬块数限制
+1. 已经创建的文件个数(有*表示超出软限制)
+1. 软文件个数限制
+1. 硬文件个数限制
+
+> edquota设置某个配额为零表示不施加任何配额限制
+
+> 宽限时间：也就是当使用者使用的空间超过了 soft limit ，却还没有到达 hard limit 时，那么在这个宽限时间之内，就必需要请使用者将使用的磁盘容量降低到 soft limit 之下！而当使用者将磁盘容量使用情况超过 soft limit 时，宽限时间就会自动被启动，而在使用者将容量降低到 soft limit 之下，那么宽限时间就会自动的取消
+
+`setquota -u w1  5120  10240  300  500  /mnt/t`说明:
+- 5120表示软块数，就是说容量软限制80M
+- 10240表示硬块数，容量硬限制100M
+- 300表示软节点，意思就是文件个数限制, 当前是300个文件或者文件夹
+- 500表示硬节点
+- /home就是要设置的文件系统挂载点
+
+> block-softlimit and block-hardlimit are interpreted as multiples of kibibyte (1024 bytes) blocks by default.  Symbols K, M, G, and T can be appended to numeric value to express kibibytes, mebibytes, gibibytes, and tebibytes.
+
+> inode-softlimit and inode-hardlimit are interpreted literally. Symbols k, m, g, and t can be appended to numeric value to express multiples of 10^3, 10^6, 10^9, and 10^12 inodes.
+
+1. 配置samba
+启用quota后, `df -h`挂载点大小即为quota的大小.
