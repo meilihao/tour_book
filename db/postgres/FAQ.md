@@ -1,3 +1,5 @@
+# FQQ
+
 ### systemctl status postgresql-9.4.service提示`Failed to start SYSV: Starts and stop`
 
 估计是未用systemctl启动导致.
@@ -7,6 +9,13 @@
 ### 大小写
 
 创建database/table时,postgres会自动将数据库名,表名和字段名转为小写;执行sql时也会将表名和字段名转为小写.
+
+### 安装部署postgres 13
+参考:
+- [安装文档](https://www.postgresql.org/download/)
+
+启动pg: `sudo systemctl start postgresql@13-main.service`或`pg_ctlcluster 13 main start`
+修改postgres.conf: `vim /etc/postgresql/13/main/postgresql.conf`
 
 ## 常用命令
 
@@ -47,6 +56,7 @@ postgres:
 // DATABASE指定多个数据库时以逗号分隔.`all`只有在没有其他的符合条目时才代表“所有”，因为`all`的优先级最低.
 local   all             postgres                                peer
 local   all             all                                     md5
+host    all             all             0.0.0.0/0               md5
 ```
 
 > 可在psql中用`SHOW hba_file;`查找pg_hba.conf, 该文件有可能不存在需自行创建.

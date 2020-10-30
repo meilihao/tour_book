@@ -5,6 +5,7 @@
 - [FreeBSD Handbook's zfs](https://www.freebsd.org/doc/handbook/)
 - [ZFS磁盘空间管理(分配、释放原理)](https://blog.csdn.net/beiya123/article/details/80393720)
 - [man pages](https://zfsonlinux.org/manpages/0.8.4/index.html)
+- [Btrfs vs ZFS 实现 snapshot 的差异](https://farseerfc.me/zhs/btrfs-vs-zfs-difference-in-implementing-snapshots.html)
 
 ```sh
 # ubuntu 18.04

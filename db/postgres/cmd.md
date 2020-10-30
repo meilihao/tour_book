@@ -7,3 +7,13 @@
 - `\dt` : 列举表
 - `\d tblname` : 查看表结构
 - `\di` : 查看索引
+
+## 添加用户
+```sql
+postgres=# CREATE DATABASE mytestdb;
+CREATE DATABASE
+postgres=# CREATE USER mytestuser WITH ENCRYPTED PASSWORD '123456';
+CREATE ROLE
+postgres=# GRANT ALL PRIVILEGES ON DATABASE mytestdb to mytestuser;
+GRANT
+```
