@@ -15,6 +15,7 @@ sudo dlv debug github.com/zrepl/zrepl --  daemon --config=/home/jr/git/go/src/gi
 (dlv) b 93 # 当前文件的93行
 (dlv) b /home/chen/git/go/src/golang.org/x/tools/godoc/server.go:276
 (dlv) b handlerServer.ServeHTTP // func (h *handlerServer) ServeHTTP(w http.ResponseWriter, r *http.Request)
+(dlv) b (*Statement).AddVar:+6 // (*Statement).AddVar()的第六行
 ```
 
 > 可用`sources`查看用到的源码文件, 便于打断点
