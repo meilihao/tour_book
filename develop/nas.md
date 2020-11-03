@@ -58,7 +58,7 @@ autofs 自动挂载服务: 无论是 Samba 服务还是 NFS 服务，都要把�
 > 在互操作(NFSv4 ACL和mode)中ACL的everyone和UNIX mode中的other等价，修改mode other会直接修改ACE EVERYONE.
 > 由于POSIX ACL和NFSv4 ACL的语义不完全相同。例如：POSIX ACL继承不区分文件和目录，POSIX ACL的权限只有rwx而NFSv4 ACL更丰富。强烈建议只使用NFSv4 ACL或者只使用POSIX ACL，尽量避免混用。
 
-nfs权限模型: `(anonuid, anonuid, ip+rw/ro)`
+nfs权限模型: `(anonuid, anonuid, ip+rw/ro)`, nfs client文件权限(ugo)直接使用来自nfs server的权限(by uid/gid).
 
 安装:
 ```
@@ -206,7 +206,9 @@ NFS server 关机的时候一点要确保NFS服务关闭，没有客户端处于
 	    anonuid=xxx：将远程访问的所有用户都映射为匿名用户，并指定该用户为本地用户（UID=xxx, 该 UID 必需要存在于你的 /etc/passwd 当中）
 	    anongid=xxx：将远程访问的所有用户组都映射为匿名用户组账户，并指定该匿名用户组账户为本地用户组账户（GID=xxx）
 
-	    > allSquash,rootSquash允许联用: allSquash的取值为`all_squash`或`no_all_squash`，rootSquash的取值包括`root_squash`或`no_root_squash`, 
+	    > allSquash,rootSquash允许联用: allSquash的取值为`all_squash`或`no_all_squash`，rootSquash的取值包括`root_squash`或`no_root_squash`, 但all_squash会覆盖no_root_squash.
+
+	    > anonuid/anongid要和root_squash 以及 all_squash一同使用，用于指定使用NFS的用户限定后的uid和gid，前提是本机的/etc/passwd中存在这个uid和gid
 
 	1. 其它选项
 
@@ -902,7 +904,7 @@ quota相关命令:
 
 1. 设置配额
 ```
-# setquota -u w1  5120  10240  300  500  /mnt/t # -u参数为配置用户，如果为给组配置，参数为-g
+# setquota -u w1  5120  10240  300  500  /mnt/t # -u参数为配置用户，如果为给组配置，参数为-g. 限制大小超过磁盘大小会报错.
 # edquota -p w1 w2  # 把username用户的设定复制给username1用户
 # edquota -t # 设置软限制的宽限期，默认为7天，可以用days,hours,minutes,seconds等
 # quotaon -vug /mnt/t # 开启配额

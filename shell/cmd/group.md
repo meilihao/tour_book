@@ -13,6 +13,7 @@
 ### 将用户加入组
 ```
 # gpasswd -a  ${USER} docker
+# gpasswd -d userName groupName # 移出组, 需要重开terminal
 ```
 
 # newgrp
