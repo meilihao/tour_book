@@ -277,3 +277,9 @@ $ git stash pop
 
 ## git clone断点续传
 没有, [网上找的解决方法](https://gist.github.com/arliang/0019de079fbe77f946c13a010e7f97c6)无用.
+
+## git pull拉取远程分支合并到本地分支
+git pull <远程主机名> <远程分支名>:<本地分支名> , 比如`git pull origin master:wy`
+
+## git checkout远程分支到本地
+`git checkout -b 本地分支名x origin/远程分支名x`

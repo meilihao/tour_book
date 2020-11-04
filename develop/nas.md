@@ -879,6 +879,8 @@ quota相关命令:
 	quotaon -Ppv # 来查看文件系统 accounting/limit 这两种功能的开启情况, `-P`表示project quota, 但旧版本fs和quota不支持project quota.
 
 	> 重复quotaon会报错, 但没法查看quota是否using.
+
+	> quotaon后会给`aquota.*`文件添加属性(可用lsattr查看), 导致quota off 前无法删除`aquota.*`. 
 - quotaoff:   关闭文件系统配额
 
 	quotaoff -vaug // 禁止所有fs的配额，-u 所有的用户配额 -g 所有的组配额
