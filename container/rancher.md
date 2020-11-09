@@ -4,8 +4,8 @@
 
 ## 升级
 - [单节点版rancher升级指南](https://blog.maoxianplay.com/posts/rancher-update-2.2.1/)
-- [单节点升级(官方)](https://www.rancher.cn/docs/rancher/v2.x/cn/upgrades/single-node-upgrade/)
+- [单节点升级(官方)](https://docs.rancher.cn/docs/rancher2/upgrades/upgrades/single-node/_index)
 
 ## 清理节点(**重装rancher时必须清理**)
-- [清理节点](https://www.rancher.cn/docs/rancher/v2.x/cn/configuration/admin-settings/remove-node/)
+- [清理节点](https://docs.rancher.cn/docs/rancher2/cluster-admin/cleaning-cluster-nodes/_index)
 - [Removing Kubernetes Components from Nodes](https://rancher.com/docs/rancher/v2.x/en/cluster-admin/cleaning-cluster-nodes/)
