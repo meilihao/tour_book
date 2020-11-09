@@ -3,7 +3,7 @@
 
 ## example
 ```bash
-# blkid -p /dev/nvme0n1
+# blkid -p /dev/nvme0n1 # 检测是否存在分区表
 /dev/nvme0n1: PTUUID="f8fbd0cd-27ad-4df0-bcc1-7c5e88bf6cad" PTTYPE="gpt"
 # blkid
 /dev/nvme0n1p1: UUID="643D-9978" TYPE="vfat" PARTUUID="8c465477-4444-4e2a-9306-6526f24cae36"

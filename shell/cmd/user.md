@@ -78,3 +78,7 @@ $ id -nG chen # 获取用户的支持组
 
 ### passwd: unrecognized option '--stdin'
 `echo "username:cleartext_password" | sudo chpasswd`
+
+### 用户名限制
+- [by systemd]https://systemd.io/USER_NAMES/)
+- see useradd/groupadd
