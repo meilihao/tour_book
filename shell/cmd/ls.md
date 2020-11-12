@@ -19,6 +19,7 @@
 - -i : 显示inode信息
 - -k : 以k字节的形式表示大小
 - -l : 使用长格式列出文件及目录的信息
+- -L : 不解析link
 - -m : 横向输出文件名, 并以`,`作为分隔符
 - -o : 显示信息不包括组信息
 - -p : 给文件夹名称追加`/`
@@ -50,4 +51,6 @@
 ```sh
 # ls -Al --time-style=+"" #  不显示时间
 # ls whateveryouwant | xargs -n 1 basename # 仅获取文件名
+# ls  -ld  * # 输出不带"total ...", 仅罗列当前路径
+# ls  -lL 2>dev/null | awk '{print $9}' # 仅显示文件名
 ```

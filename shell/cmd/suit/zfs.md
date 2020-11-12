@@ -326,7 +326,7 @@ $ sudo zfs set dedup=on mypool/projects # 启用去重
 
 	used = usedbychildren + usedbydataset + usedbyrefreservation + usedbysnapshots
 - usedbychildren : 只读属性，用于标识此数据集的后代占用的磁盘空间量；如果所有数据集后代都被销毁，将释放该空间
-- usedbydataset : 只读属性，用于标识数据集本身占用的磁盘空间量；如果在先销毁所有快照并删除所有 refreservation 预留空间后销毁数据集，将释放该空间.
+- usedbydataset : 只读属性(已用空间)，用于标识数据集本身占用的磁盘空间量；如果在先销毁所有快照并删除所有 refreservation 预留空间后销毁数据集，将释放该空间.
 - usedbyrefreservation : 只读属性，用于标识针对数据集设置的 refreservation 占用的磁盘空间量；如果删除 refreservation，将释放该空间
 - usedbysnapshots : 只读属性，用于标识数据集的快照占用的磁盘空间量. 特别是，如果此数据集的所有快照都被销毁，将释放该磁盘空间. 请注意，此值不是简单的快照 used 属性总和，因为多个快照可以共享空间
 - quota : 限制**数据集及其后代**可占用的磁盘空间量. 一旦达到该容量后，不管存储池的可用空间有多大，都无法再将数据写入该数据集.
