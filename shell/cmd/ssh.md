@@ -32,7 +32,9 @@ PermitEmptyPasswords no 是否允许空密码登录（很不安全）
 ## example
 ```bash
 ssh root@192.168.16.40 -t "cd /proc/cpuinfo"
-ssh root@192.168.16.40 bash -c "cd /proc/cpuinfo" # 推荐, 因为ssh执行`-t "ls -lL /home/ubuntu | awk '{print $9}'"`和远端直接执行的输出不一致
+ssh root@192.168.16.40 -t "ls -lL /home/ubuntu | awk '{print \$9}'" # 简单命令时推荐, 此时需要转义否则结果会与预期不符.
+ssh root@192.168.16.40 'bash -s' < a.sh # 复杂命令时, 推荐
+ssh root@192.168.16.40 bash -c "ls -lL /home/ubuntu | awk '{print \$9}'" # 此时的执行结果不正确, 因此不能使用`bash -c "xxx"`的形式
 ```
 
 ## FAQ
@@ -40,7 +42,7 @@ ssh root@192.168.16.40 bash -c "cd /proc/cpuinfo" # 推荐, 因为ssh执行`-t "
 仅在安全网络下这样配置, 比如内网.
 
 ```bash
-# ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" user@host
+# ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" -o ConnectTimeout=10 user@host
 # vim ~/.ssh/config
 Host *
    StrictHostKeyChecking no # 初次连接时不检查host key, 但该主机的公钥还是会追加到文件 ~/.ssh/known_hosts 中
@@ -52,3 +54,6 @@ Host *
 
 ### ssh登录后立即退出
 login script有问题, 登录时禁止执行即可: `ssh -t user@host bash --noprofile`.
+
+### ssh无法输入密码
+`sshpass -p 'xxx' ssh root@xxx "ls"`

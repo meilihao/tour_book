@@ -1000,8 +1000,10 @@ here:
     _x > _y ? _x : _y; \
 }) // 优秀
 #define MAX(x,y)({     \
-    typeof(x) _x = x;        \
+    typeof(x) _x = x;        \ // typeof(x) 语句可以获得 x 的类型, 因此不需要像 min_t(type,x,y) 那个宏那样把 type 传入,因为通过 typeof(x)、typeof(y) 可
+以获得 type
     typeof(x) _y = y;        \
+    (void) (&_x == &_y);     \ // (void) (&_x == &_y) 的作用是检查 _x 和 _y 的类型是否一致
     _x > _y ? _x : _y; \
 }) // 同样优秀
 int main(void)
