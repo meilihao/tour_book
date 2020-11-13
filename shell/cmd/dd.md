@@ -26,3 +26,9 @@ $ seq 1000000 | xargs -i dd if=/dev/zero of={}.dat bs=1024 count=1 # 随机生�
 $ dd if=/dev/cdrom of=centos.iso # 将光驱设备中的光盘制作成 iso 格式的镜像文件
 $ dd bs=8k count=4k if=/dev/zero of=test.log conv=fdatasync/fsync # fdatasync/fsync区别是conv=fsync会把文件的“数据”和“metadata”都写入磁盘, 而fdatasync仅数据落盘, 两者时间相差不大. 单纯磁盘性能测试推荐用fdatasync. dd默认启用写缓存(先把数据写到os的“写缓存”，就算完成了写操作, 再由os周期性地调用sync函数，把“写缓存”中的数据刷入磁盘. 因此“写缓存”的存在，会测试出一个超级快的错误性能值. from [正确使用 dd 测试磁盘读写速度](https://cloud.tencent.com/developer/article/1114720)
 ```
+
+读取mbr:
+```bash
+# dd if=/dev/sda of=mbr.hex bs=512 count=1
+# hexdump -C mbr.hex
+```
