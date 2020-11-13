@@ -57,3 +57,6 @@ login script有问题, 登录时禁止执行即可: `ssh -t user@host bash --nop
 
 ### ssh无法输入密码
 `sshpass -p 'xxx' ssh root@xxx "ls"`
+
+### ssh获取cmd的exit code
+ssh成功连接到remote并执行cmd后, ssh返回的exit code就是cmd执行后的exit code.
