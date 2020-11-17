@@ -35,7 +35,7 @@ default via 192.168.0.1 dev bond0
 # ip addr
 ## example
 ```bash
-ip -s link list # 显示更加详细的设备信息
+ip -s link list # 显示更加详细的设备信息, 信息from /sys/class/net/${interface}/statistics
 ip link show                     # 显示网络接口信息
 ip link set eth0 up             # 开启网卡
 ip link set eth0 down            # 关闭网卡

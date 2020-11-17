@@ -170,6 +170,12 @@ root能用pubkey登录,普通用户不能.
 
 解决: 创建普通用户指定shell时,其名称错误.
 
+### 添加ssh key后无法登陆
+检查:
+- /home/$USER/.ssh权限: 700
+- /home/$USER/.authorized_keys权限: 600
+- /home/$USER/.authorized_keys内容: 比如key的开头少字母, 这种情况通常在使用vim粘贴时出现
+
 ### ssh支持的算法
 ```bash
 ssh -Q cipher       # List supported ciphers
