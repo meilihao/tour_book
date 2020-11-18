@@ -2,6 +2,8 @@
 
 ## 部署 
 ### [tiup(**推荐**)](https://github.com/pingcap-incubator/tiup-cluster)
+环境预备: [TiDB 环境与系统配置检查](https://docs.pingcap.com/zh/tidb/dev/check-before-deployment)
+
 ```
 # tiup cluster list # 查看已部署的集群
 # generate rsa key for root@xxx
@@ -131,7 +133,20 @@ ansible-playbook local_prepare.yml -c local
 ansible-playbook rolling_update.yml -c local
 ```
 
-#### Error
+### 双节点2tikv/2pd/2tidb 可用性验证
+使用`iptables -A INPUT -s 192.168.16.xx -j DROP`禁止peer链接后:
+- 已连接client
+
+  - desc <table> : ok
+  - select/insert/update : pd server timeout
+- 新client
+
+  1. 登录缓慢
+  1. use <db> : tikv server timeout
+
+使用`iptables -F`清理后, tidb cluster恢复正常．
+
+## Error
 1. `ansible-playbook bootstrap.yml`报错
 fatal: [127.0.0.1]: UNREACHABLE! => {"changed": false, "msg": "Failed to connect to the host via ssh: Permission denied (publickey).\r\n", "unreachable": true}
 
