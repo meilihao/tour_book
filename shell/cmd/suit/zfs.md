@@ -27,6 +27,9 @@ zfs有两个工具: zpool和zfs. zpool用于维护zfs pools, zfs负责维护zfs 
 > zvol_wait :  导入pool时, 等待/dev/zvol下的所有符号链接都创建后返回
 
 ## 概念
+参考:
+- [ZFS 术语](https://docs.oracle.com/cd/E26926_01/html/E25826/ftyue.html)
+
 pool : 存储设备的逻辑分组, 它是ZFS的基本构建块，可将其存储空间分配给数据集.
 dataset : zfs文件系统的组件即文件系统、克隆、快照和卷被统称为数据集
 mirror : 一个虚拟设备存储相同的两个或两个以上的磁盘上的数据副本，在一个磁盘失败的情况下,相同的数据是可以用其他磁盘上的镜像.
@@ -69,6 +72,8 @@ thin: zfs支持thin provisioning,
 	RAIDZ3 > RAIDZ2 > RAIDZ1 > Stripe
 - Hot Spare : 用于**热备** zfs 的软件 raid, 当正在使用的磁盘发生故障后，Spare磁盘将马上代替此故障盘.
 - Cache : 用于2级自适应的**读缓存**的设备 (zfs L2ARC), 提供在 memory 和 disk的缓冲层, 用于改善静态数据的随机读写性能
+
+	zfs实际有两层缓存: ARC(在内存) + L2ARC(高速存储设备上, 比如Flash，SSD，Nvme等)
 - Log : zfs Intent Log(zfs ZIL/SLOG, zfs意图日志,一种对于 data 和 metadata 的日志机制，先写入然后再刷新为写事务), 用于崩溃恢复, 最好配置并使用快速的 SSD来存储ZIL, 以获得更佳性能. ZIL支持mirror. ZIL也可认为是zfs的**写缓存**.
 
 VDEV始终是动态条带化的. 一个 device 可以被加到 VDEV, 但是不能移除.
