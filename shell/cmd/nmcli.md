@@ -5,6 +5,8 @@ Manager 服务. 即nmcli 是一款基于命令行的网络配置工具.
 
 **使用 nmcli 命令配置过的网络会话是永久生效的.**
 
+nmtui是nmcli的gui.
+
 ## example
 ```bash
 # nmcli connection show # 查看网络信息或网络状态
