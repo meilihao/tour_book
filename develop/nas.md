@@ -336,7 +336,7 @@ SMB 协议版本:
 	guest only = yes # 只允许用guest帐号访问
 	public = yes # 是否允许匿名访问, 即是否"所有人可见", 这个开关有时候也叫guest ok，所以有的配置文件中出现guest ok = yes其实和public = yes是一样的
 	invalid users = root # 设定不允许访问此共享资源的用户或组
-    sync always = no # 写操作后是否立即进行sync
+    sync always = no # 写操作后是否立即进行sync, 打开后性能极差
     # strict sync = yes, 不常用, 相关资料:[sync always, strict sync, cache question](https://lists.samba.org/archive/samba/2008-September/143647.html)
 	```
 
@@ -698,6 +698,19 @@ smb server端权限正确, 重启后正常.
 1. umount后重新挂载, 能进入挂载目录并创建文件.
 
 原因推测: `exportfs -ra`时, client与server的连接未被终止, session中仍然使用`root_squash, all_squash`标识权限, 导致报错.
+
+### samba性能
+测试方法: `dd if=/dev/zero of=/mnt/smb bs=4k count=1024000`
+
+server mount zvol, 没有samba和quota: 50~64 mB/s.
+
+samba client挂载测试情况:
+- -sync, -quota : 52.8 mB/s
+- +sync, -quota : 1 mB/s
+- -sync, +quota : 41.8 mB/s
+- +sync, +quota : 76.9 kB/s
+
+> sync: `sync always = yes` + `strict sync = yes`
 
 ## zfs xfs nas
 **推荐使用zfs fs, 不推荐ext4,xfs + zvol, 特别是xfs**
