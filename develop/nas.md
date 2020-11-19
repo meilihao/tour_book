@@ -712,6 +712,8 @@ samba client挂载测试情况:
 
 > sync: `sync always = yes` + `strict sync = yes`
 
+> quota: 仅打开了quota功能, 并没有给用户设置具体配额
+
 ## zfs xfs nas
 **推荐使用zfs fs, 不推荐ext4,xfs + zvol, 特别是xfs**
 
