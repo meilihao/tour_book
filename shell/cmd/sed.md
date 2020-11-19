@@ -66,6 +66,7 @@ $ sed -i "/LFS_Sources_Root=\${LFSRoot}\/sources/d" build/tcl.sh # 删除行
 $ echo sources/linux-5.8.1.tar.xz |sed 's/linux\-\(.*\)\.tar\.xz/\1/g' => sources/5.8.1 # 提取变量, 因为sed是匹配替换因此"sources/"被保留了
 $ sed -i '/2222222222/a\3333333333' test.txt # 在匹配行前插入新行
 $ sed -i '/2222222222/i\3333333333' test.txt # 在匹配行后追加新行
+$ sed -i "s/max_dbs_open = 100*/max_dbs_open = 1000/g" /etc/couchdb/default.ini # 匹配里使用通配符
 ```
 
 ps:
