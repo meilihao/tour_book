@@ -15,7 +15,7 @@ ha需要解决的两个问题:
 
 > 从服务器只读
 
-### 2. MMM(Master-Master Replication Manager for MySQL)
+### 2. MMM(Master-Master Replication Manager for MySQL), 已被MHA替代
 提供了MySQL主主复制配置的监控, 故障转移和管理的一套可伸缩的脚本套件.
 
 典型: 双主多从架构
@@ -56,3 +56,23 @@ ha需要解决的两个问题:
 
 ## 读写分离
 中间件.
+
+## 半复制+GDIT
+```conf
+[mariadb]
+...
+rpl_semi_sync_master_enabled=ON
+rpl_semi_sync_slave_enabled=ON
+rpl_semi_sync_master_wait_point=AFTER_SYNC
+
+gtid_strict_mode=ON
+
+log-bin
+server_id=1001/1002
+binlog-format=mixed
+```
+
+create user 'repl'@'%' identified by '123456';
+GRANT REPLICATION SLAVE, REPLICATION SLAVE ADMIN, REPLICATION MASTER ADMIN, REPLICATION SLAVE ADMIN, BINLOG MONITOR, SUPER ON *.* to 'repl'@'%';
+
+CHANGE MASTER TO MASTER_HOST='mgr01',MASTER_PORT=3306,MASTER_USER='repuser',MASTER_PASSWORD='JuwoSdk21TbUser',master_use_gtid=current_pos;start slave;show slave status;

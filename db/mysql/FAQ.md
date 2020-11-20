@@ -251,3 +251,34 @@ GRANT 权限 ON 数据库.*TO 账户名@主机名 | 对某个特定数据库中�
 GRANT 权限 ON*.*TO 账户名@主机名 | 对所有数据库及所有表单给予授权
 GRANT 权限 1,权限 2 ON 数据库.*TO 账户名@主机名 | 对某个数据库中的所有表单给予多个授权
 GRANT ALL PRIVILEGES ON *.*TO 账户名@主机名 | 对所有数据库及所有表单给予全部授权(需谨慎操作)
+
+### 全同步复制
+全同步复制（full sync replication）是指当主库执行完一个事务后，需要确保所有的从库都执行了该事务才返回给客户端. 因为需要等待所有的从库都执行完该事务才能返回，所以全同步复制的性能较差.
+
+MySQL自身不支持同步复制，需要用到第三方工具如DRBD（sync模式）等实现同步复制，严格来说，把半同步复制技术默认（或人为）全部应用到所有从库上也算是全同步复制.
+
+[MySQL](https://dev.mysql.com/doc/mysql-replication-excerpt/8.0/en/replication.html)/[mariadb](https://mariadb.com/kb/en/semisynchronous-replication/)仅支持两种复制:
+- Asynchronous replication
+- Semi-synchronous replication
+
+### mariadb 10.4 忘记密码
+```bash
+# vim /lib/systemd/system/mariadb.service
+ExecStart=/usr/sbin/mysqld --skip-grant-tables ...
+# systemctl daemon-reload
+# systemctl restart mariadb.service
+# mysql -h localhost -u root
+> flush privileges; -- 先刷新一下权限表, 否则会报: xxx is running with the --skip-grant-tables option so it cannot execute this statement
+> ALTER USER 'root'@'localhost' IDENTIFIED BY 'passowrd';
+> exit
+```
+
+记得删除skip-grant-tables, 并重启mariadb.
+
+### master_use_gtid介绍
+`master_use_gtid = { slave_pos | current_pos | no }`有3种选项：
+
+- slave_pos：slave将Master最后一个GTID的position复制到本地，Slave主机可通过gtid_slave_pos变量查看最后一个GTID的position
+- current_pos：假设有AB两台主机，A是Master，当A故障后，B成为Master，A修复后以Slave的身份重新添加，A之前从没担任过slave角色，所以没有之前复制的GTID号，此时gtid_slave_pos为空，为了能让A能自动添加为Slave，此时就用到该选项。该选项是大多数情况下使用的选项，因为他简单易用同，不必在意服务器之前是Master还是Slave角色。但要注意不要让从服务器在binlog日志中写入事务
+
+建议在服务器上启用gtid_strict_mode(不让从服务器在binlog日志中写入事务)，这样非Master产生的事物将被拒绝. 如果从服务器没有开启binlog上面两种方式等价.
