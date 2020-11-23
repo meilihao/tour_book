@@ -479,3 +479,8 @@ couchdb log中不含request url, 但可在`journalctl`中看到该url.
 
 ### update报409
 `_rev`已过时，因为每次文档更新都会对其进行更改.
+
+### 更新丢失
+couchdb使用`_rev`更新机制(乐观锁).
+
+a, b同时更新一个文档, 假设a先提交了, b提交报409引发重试, 但未merge a的修改, 此时b提交就会导致a的数据丢失. 
