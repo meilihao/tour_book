@@ -476,3 +476,6 @@ $ curl -X GET http://localhost/db/_changes
 `$ couchdb -c`显示配置位置及加载顺序, 再从配置中找到log的位置.
 
 couchdb log中不含request url, 但可在`journalctl`中看到该url.
+
+### update报409
+`_rev`已过时，因为每次文档更新都会对其进行更改.
