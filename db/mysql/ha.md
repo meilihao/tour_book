@@ -59,6 +59,16 @@ ha需要解决的两个问题:
 
 ## 半复制+GDIT
 ```conf
+# vim /etc/mysql/my.cnf
+[mysqld]
+bind-address=0.0.0.0
+
+binlog-ignore-db=mysql
+binlog-ignore-db=information_schema
+binlog-ignore-db=performance_schema
+# 或
+binlog_do_db=my_database
+
 [mariadb]
 ...
 rpl_semi_sync_master_enabled=ON
@@ -75,4 +85,23 @@ binlog-format=mixed
 create user 'repl'@'%' identified by '123456';
 GRANT REPLICATION SLAVE, REPLICATION SLAVE ADMIN, REPLICATION MASTER ADMIN, REPLICATION SLAVE ADMIN, BINLOG MONITOR, SUPER ON *.* to 'repl'@'%';
 
-CHANGE MASTER TO MASTER_HOST='mgr01',MASTER_PORT=3306,MASTER_USER='repuser',MASTER_PASSWORD='JuwoSdk21TbUser',master_use_gtid=current_pos;start slave;show slave status;
+CHANGE MASTER TO MASTER_HOST='192.168.16.44',MASTER_PORT=3306,MASTER_USER='repl',MASTER_PASSWORD='123456',master_use_gtid=current_pos;start slave;show slave status;
+
+
+相关命令:
+```sql
+> show binlog status \G; -- 查看master status, 查看当前使用的binlog file. 等价于以前的`show master status`
+> SHOW BINLOG EVENTS in 'mysqld-bin.000002'; -- 查看binlog内容, 不加指定log_name(mysqld-bin.000002)时只能显示第一个binlog
+> SHOW relay EVENTS; -- 查看relaylog内容
+
+> show slave status \G; -- 查看slave status
+
+> show variables like '%gtid%' -- 查看gtid
+
+-- 开始slave
+> SET GLOBAL gtid_slave_pos = "0-1-2"; -- BINLOG_GTID_POS 函数得到的位置, gtid_slave_pos为空时, 从master的第一个gtid开始复制
+> CHANGE MASTER TO master_host="127.0.0.1", master_port=3310, master_user="root", master_use_gtid=slave_pos;
+> START SLAVE;
+```
+
+> Slave的执行状态（最后一个执行的 GTID）被记录在 mysql.gtid_slave_pos 系统表中

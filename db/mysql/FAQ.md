@@ -224,8 +224,6 @@ key 太长会导致一个页当中能够存放的 key 的数目变少，间接�
 ### mariadb 10.4 系统root + root@localhost登录时无需密码
 [mariadb 10.4就是这么设计的.](https://mariadb.org/authentication-in-mariadb-10-4/)
 
-### [mariadb 离线下载地址](https://mariadb.com/downloads/)
-
 ### Found 1 prepared transactions! It means that mysqld was not shut down properly last time and critical recovery information (last binlog or tc.log file) was manually deleted after a crash. You have to start mysqld with --tc-heuristic-recover switch to commit or rollback pending transactions.
 ```sh
 # step1, 交易回滚
@@ -276,9 +274,37 @@ ExecStart=/usr/sbin/mysqld --skip-grant-tables ...
 记得删除skip-grant-tables, 并重启mariadb.
 
 ### master_use_gtid介绍
+master_use_gtid是当Slave连接到Master时，Master将从哪个GTID开始给Slave复制 Binlog.
+
 `master_use_gtid = { slave_pos | current_pos | no }`有3种选项：
 
+- no: 传统复制(即非gtid复制, **不推荐**)
 - slave_pos：slave将Master最后一个GTID的position复制到本地，Slave主机可通过gtid_slave_pos变量查看最后一个GTID的position
-- current_pos：假设有AB两台主机，A是Master，当A故障后，B成为Master，A修复后以Slave的身份重新添加，A之前从没担任过slave角色，所以没有之前复制的GTID号，此时gtid_slave_pos为空，为了能让A能自动添加为Slave，此时就用到该选项。该选项是大多数情况下使用的选项，因为他简单易用同，不必在意服务器之前是Master还是Slave角色。但要注意不要让从服务器在binlog日志中写入事务
+- current_pos：使用当前机器的gtid_current_pos(`select @@gtid_current_pos;`)作为master_use_gtid. 假设有AB两台主机，A是Master，当A故障后，B成为Master，A修复后以Slave的身份重新添加，A之前从没担任过slave角色，所以没有之前复制的GTID号，此时gtid_slave_pos为空，为了能让A能自动添加为Slave，此时就用到该选项(因为A原先有数据了). 该选项是大多数情况下使用的选项，因为他简单易用同，不必在意服务器之前是Master还是Slave角色。但要注意不要让从服务器在binlog日志中写入事务
 
-建议在服务器上启用gtid_strict_mode(不让从服务器在binlog日志中写入事务)，这样非Master产生的事物将被拒绝. 如果从服务器没有开启binlog上面两种方式等价.
+建议在服务器上启用gtid_strict_mode(不让从服务器在binlog日志中写入事务)，这样非Master产生的事务将被拒绝. 如果从服务器没有开启binlog上面两种方式等价.
+
+### ERROR 2002 (HY000):Can't connect to MySQL server on 'xxx' (115)
+mariadb server仅监听了127.0.0.1.
+
+```bash
+# vim /etc/mysql/my.cnf
+[mysqld]
+bind-address=0.0.0.0
+```
+
+### show slave status报: Error: connecting slave requested to start from GTID X-X-X, which is not in the master's binlog
+slave gtid_slave_pos比master早了.
+
+### MySQL RESET MASTER与RESET SLAVE
+删除所有index file 中记录的所有binlog 文件，将日志索引文件清空，创建一个新的日志文件，这个命令通常仅仅用于第一次用于搭建主从关系的时的主库
+
+注意reset master 不同于purge binary log的两处地方:
+1. reset master 将删除日志索引文件中记录的所有binlog文件，创建一个新的日志文件 起始值从000001 开始，然而purge binary log 命令并不会修改记录binlog的顺序的数值
+2. reset master 不能用于有任何slave 正在运行的主从关系的主库。因为在slave 运行时刻 reset master 命令不被支持，reset master 将master 的binlog从000001 开始记录,slave 记录的master log 则是reset master 时主库的最新的binlog,从库会报错无法找的指定的binlog文件
+
+reset slave 将使slave 清除主从复制关系的位置信息. 该语句会删除master.info文件和relay-log.info 文件以及所有的relay log 文件(即使relay log中还有SQL没有被SQL线程apply完), 并重新启用一个新的relay log文件.
+
+使用reset slave之前必须使用stop slave 命令将复制进程停止.
+
+> RESET SLAVE有个问题，它虽然删除了上述文件，但内存中的change master信息并没有删除. RESET SLAVE ALL还会删除内存中的连接信息，此时执行start slave会报错.

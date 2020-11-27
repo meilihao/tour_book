@@ -483,4 +483,83 @@ couchdb log中不含request url, 但可在`journalctl`中看到该url.
 ### 更新丢失
 couchdb使用`_rev`更新机制(乐观锁).
 
-a, b同时更新一个文档, 假设a先提交了, b提交报409引发重试, 但未merge a的修改, 此时b提交就会导致a的数据丢失. 
+a, b同时更新一个文档, 假设a先提交了, b提交报409引发重试, 但未merge a的修改, 此时b提交就会导致a的数据丢失.
+
+### neokylin v10编译couchdb 3.1.1
+**编译couchdb时必须在英文环境下即`LANG= make release`, 否则`make release`时会报错**.
+
+#### 1. 安装js-devel 1.8.5
+方法1, 自己构建(**推荐**):
+```bash
+# git clone --depth 1 git@github.com:apache/couchdb-pkg.git
+# cd couchdb-pkg
+# make couch-js-rpms # 可能需要安装一些依赖
+```
+
+方法2, 使用其他源的js-devel:
+1. yum install readline-devel nspr-devel ncurses-devel
+
+1. 下载rpm并依次安装
+- https://centos.pkgs.org/7/centos-aarch64/js-1.8.5-20.el7.aarch64.rpm.html
+- https://centos.pkgs.org/7/centos-x86_64/js-devel-1.8.5-20.el7.x86_64.rpm.html
+
+#### 2. 构建rpm couchdb 3.1.1
+参考:
+- [如何制作一个标准的 RPM 包](https://gohalo.me/post/linux-create-rpm-package.html)
+
+````bash
+# yum install libicu-devel
+# # 1. 参考Makefile里的target all, 先根据bin/detect-target.sh获取构建target, neokylin v10选择centos-7
+# # 2. 参考README.md里的"rpms or debs from a release tarball", 确定构建参数
+# LANG= make copy-couch centos-7 COUCHTARBALL=/root/couchdb-3.1.1.tar.gz PLATFORM=centos-7
+# # 上面的命令会输出执行过程并报错, 但rpm构建环境即rpmbuild目录已成功创建, 可根据报错修改rpmbuild/SPECS/couchdb.spec, 再根据上面命令输出的执行过程找到最后的rpmbuild命令, 切换到rpmbuild目录重新执行该命令即可.
+````
+
+couchdb.spec修改内容:
+1. BuildArch 追加 aarch64
+1. ExclusiveArch 追加 aarch64
+1. BuildRequires: esl-erlang 替换为
+
+    ```conf
+    BuildRequires: erlang-asn1
+    BuildRequires: erlang-erts
+    BuildRequires: erlang-eunit
+    BuildRequires: erlang-os_mon
+    BuildRequires: erlang-xmerl
+    BuildRequires: erlang-erl_interface
+    BuildRequires: erlang-reltool
+    ```
+
+    > 参考了couchdb.spec里的`0%{?suse_version}`和[官方的`installation-from-source`](installation-from-source)
+
+构建出的rpm是couchdb-3.1.1-1.ky10.ky10.aarch64.rpm.
+
+注意: couchdb-3.1.1没有设置Admin帐号启动会自动退出, 可在`/var/log/couchdb/couchdb.log`里看到该提示, 此时修改`/opt/couchdb/etc/local.ini中的[admin]`取消admin帐号的注释即可.
+
+访问`http://127.0.0.1:5984/_utils#setup`即可.
+
+> couchdb 3.1.1 配置的路径是`/opt/couchdb/etc/`, 不再是`/etc/couchdb`
+
+> neokylin v10默认防火墙是开着的(`firewall-cmd --state`), 因此其他机子访问couchdb 5984时应先打开端口(`firewall-cmd --zone=public --add-port=5984/tcp --permanent && firewall-cmd --reload`).
+
+#### 安装couchdb-3.1.1-1.ky10.ky10.aarch64.rpm 报"file /usr/lib/.build-id/xx/xxx..xxx from install of couchdb-3.1.1-1.ky10.ky10.aarch64.rpm conflicts with file from package erlang-crypto-22.3.4.1-1.ky10.aarch64"
+rpmbuild命令追加参数`--define "_build_id_links none"`禁止生成rpm build-id.
+
+
+### No Admin Account Found, aborting startup
+```bash
+# vim /etc/couchdb/local.ini
+;admin = mysecretpassword # 去掉该注释即可
+```
+
+### couchdb listen 0.0.0.0
+```
+# vim /etc/couchdb/local.ini
+bind_address = 0.0.0.0
+```
+
+### couchdb partition must not be empty
+couchdb 3.1.1支持partition, 新建database时选择`non-partition`即可.
+
+### chttp_auth_cache changes listener diea because the _users database dees not exist
+访问`http://127.0.0.1:5984/_utils#setup`, 按照向导设置即可.

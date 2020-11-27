@@ -127,3 +127,13 @@ FAIL: gcc.c-torture/execute/builtins/fprintf.c execution,  -O0
 ```
 # make check-gcc RUNTESTFLAGS="builtins.exp=fprintf.c -v -v" # `-v` 为输出详细log
 ```
+
+### ubuntu arm64编译couchdb 3.1.1成功但无法运行, couchdb.log报: undefined ucol_strcollIter_52
+排错过程:
+1. `grep -r "ucol_strcollIter_52" /opt/couchdb`, 发现couch_icu_driver.so有该symbol, 通过搜索发现`ucol_strcollIter()`由libicuXX提供
+1. 通过`locate icu|grep 52`, 发现其他人曾经编过libicu52, 但当前ubuntu 16.04已不再支持libicu52, 果断删除locate输出的相关文件
+1. 重新编译发现`ucol_strcollIter_52`还在, 在`/usr`, `/lib*`下搜索`ucol_strcollIter_52`, 没有发现
+1. 在couchdb_source搜索`couch_icu_driver`, 发现了`src/couch/compile_commands.json`里面有生成couch_icu_driver.o的命令
+1. 将上面发现命令中的`-o priv/icu_driver/couch_icu_driver.o`替换为`-E -o t.i`, 搜索t.i发现从`/usr/local/include/unicode/ucol.h`引入了`ucol_strcollIter_52`, 应该是之前libicu52的残留, 删除`/usr/local/include/unicode`目录, 最后重新编译即可.
+
+> `/usr/local/include/unicode/ucol.h`本身定义的`ucol_strcollIter`没有`_52`后缀, 应该是gcc编译时根据`.h`做了处理, 推测是`.h`中的`# U_ICU_VERSION_SUFFIX _52`+宏展开的原因
