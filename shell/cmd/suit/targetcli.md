@@ -103,7 +103,9 @@ targetcli(服务端)使用步骤:
     ```
 1. 输入 exit 命令来退出配置, 重启 iSCSI 服务端程序`systemctl restart targetd`
 
-> 在交互模式下默认创建完配置exit退出时会主动将配置保存到配置文件/etc/rtslib-fb-target/saveconfig.json中，重启后生效, 该配置路径可通过`targetcli saveconfig`修改.
+> 在交互模式下默认创建完配置exit退出时会主动将配置保存到配置文件`/etc/rtslib-fb-target/saveconfig.json`或`/target/saveconfig.json`中，重启后生效, 该配置路径可通过`targetcli saveconfig`修改.
+
+ps: 执行saveconfig也会输出配置文件路径相关的信息.
 
 ## fc
 targetcli(服务端)使用步骤:
@@ -133,7 +135,41 @@ targetcli(服务端)使用步骤:
 
 配置targetcli CHAP认证, 分为全局配置和局部配置:
 - /iscsi 下为全局配置
+
+    ```bash
+    cd /iscsi
+    set discovery_auth enable=1 # 启用发现 CHAP 验证
+
+    set discovery_auth userid=InUser
+    set discovery_auth password=InPassword  # 客户端登入验证用户和密码
+
+    set discovery_auth mutual_userid=OutUse
+    set discovery_auth mutual_password=OutPassword # 设置反向验证用户名和密码，当只设置单向验证时，请取消该设置
+    ```
 - 在 iscsi/iqn.2019-10.cc.pipci.iscsi:debian.tgt1/tpg1/ 下为单个Target的配置，配置只对单个IQN生效为局部配置
+
+    ```bash
+    cd iscsi/
+    set discovery_auth enable=0 # 关闭服务端的发现验证
+     
+    cd /iscsi/iqn.2018-07.com.holoem.iscsi:target/tpg1/
+     
+    set attribute authentication=0 # 关闭验证
+     
+    set attribute generate_node_acls=1
+    set attribute cache_dynamic_acls = 1 # 设置强制使用 TPG 的身份验证
+     
+    set auth userid=InAuthUser password=InAuthPassword # 启用客户端登入验证,并设置登入用户名和密码
+     
+    # 设置反向验证用户名和密码，当只设置单向验证时，请取消该设置
+    set auth mutual_userid=OutAuthUser mutual_password=OutAuthPassword
+     
+    cd /
+    saveconfig # 保存配置
+    exit
+     
+    systemctl restart target # 重启服务
+    ```
 
 全局配置下只能设置发现认证，局部配置只能设置登录认证，其中每种认证又分为单向认证和双向认证, 无论那种认证都是在target端配置的:
 - 单向认证是指initiator端在发现target端的时候，要提供正确的认证才能发现在target端的iSCSI服务
@@ -142,6 +178,46 @@ targetcli(服务端)使用步骤:
 > 设置双向认证必须建立在单向认证的基础上，因为在initiator登录的时候要先进行单项认证.
 
 具体配置参考[这里](https://www.cnblogs.com/pipci/p/11622014.html)和[认证](https://wiki.archlinux.org/index.php/ISCSI_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)/LIO_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87))
+
+配置后需要saveconfig保存targetcli配置以及`systemctl restart target.service`.
+
+
+全局时的iscsi initiator配置:
+```bash
+vim /etc/iscsi/iscsid.conf # 编辑客户端 iscsiadm 守护程序配置文件
+# 设置启用发现验证
+discovery.sendtargets.auth.authmethod = CHAP
+ 
+# 设置发现服务端时需要的用户和密码
+discovery.sendtargets.auth.username = InUser
+discovery.sendtargets.auth.password = InPassword
+ 
+# 设置当服务端访向客户端验证时的用户和密码
+discovery.sendtargets.auth.username_in = OutUser
+discovery.sendtargets.auth.password_in = OutPassword
+ 
+systemctl restart iscsi
+systemctl restart iscsid # 重启 iscsi和iscsid 服务
+```
+
+在 tpg 下置客户端 iscsiadm CHAP 双向认证:
+```bash
+vim /etc/iscsi/iscsid.conf # 编辑客户端 iscsiadm 守护程序配置文件
+ 
+# 设置启用登陆验证
+node.session.auth.authmethod = CHAP
+ 
+# 设置登入服务端 targetcli 的用户名和密码
+node.session.auth.username = InAuthUser
+node.session.auth.password = InAuthPassword
+ 
+# 设置当服务端访向客户端验证时的用户和密码
+node.session.auth.username_in = OutAuthUser
+node.session.auth.password_in = OutAuthPassword
+ 
+systemctl restart iscsi
+systemctl restart iscsid # 重启 iscsi和iscsid 服务
+```
 
 ## targetcli cmd模式
 ```bash
@@ -203,6 +279,7 @@ iscsiadm:
 ### example
 ```bash
 # iscsiadm -m discovery -t st -p 192.168.10.10
+# iscsiadm -m discoverydb -t st -p 192.168.10.10 -o show # 输出discovery信息(含认证)
 # iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linux.x8664:sn.d497c356ad80 -p 192.168.10.10 --login # 此时是禁用CHAP的情况 ,在 iSCSI 客户端成功登录之后,会在客户端主机上多出一块名为`/dev/sd${xxx}` 的设备文件. `-T`表示要挂载的盘. 如果target使用了多张网卡时会存在多路径问题, 挂载磁盘数=target提供的磁盘数*路径数
 # iscsiadm -m session -P 3 # 获取挂载信息, `-P`, 信息的详细level, 越大越详细.
 # mkfs.xfs /dev/sdb
@@ -258,6 +335,10 @@ UUID=eb9cbf2f-fce8-413a-b770-8b0f243e8ad6 /iscsi xfs defaults,_netdev 0 0 # 由�
 
 ### iscsiadm -m node xxx 无法login, 报"initiator reported error ( 24 - ..."
 开启了CHAP认证, 禁用即可: `.../tpg1> set attribute authentication=0`
+
+此时target端是报: `kernel: Initiator is requesting CSG: 1, has not been successfully authenticated, and the Target is enforcing iSCSI Authentication, login failed.`
+
+ps: `/iscsi`设置`set discovery_auth enable=0`, 但tpgX设置`set attribute authentication=1`时, tpgX还是开启了chap认证.
 
 ### 获取光纤信息
 和以太网卡的MAC地址一样，HBA上也有独一无二的标识：WWN（World Wide Name）, FC HBA上的WWN有两种：
