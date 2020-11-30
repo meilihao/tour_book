@@ -201,3 +201,24 @@ RabbitMQ 确保持久性消息能从服务器重启中恢复的方式是，将�
 1. 一致性问题
 
 A 系统处理完了直接返回成功了，人都以为你这个请求就成功了；但是问题是，要是 BCD 三个系统那里，BD 两个系统写库成功了，结果 C 系统写库失败了，这数据就不一致了。
+
+## FAQ
+### epmd error for host xxx：address (cannot connect to host/port)
+`/etc/hosts`错误导致解析host报错, 是之前修改ip导致, 修正即可.
+
+### rabbit 3.5 启动`no proc`
+`/var/log/rabbitmq/start_log`日志:
+```
+BOOT FAILED
+===========
+
+Error description:
+   noproc
+
+Log files (may contain more information):
+   /var/log/rabbitmq/rabbit@localhost.log
+   /var/log/rabbitmq/rabbit@localhost-sasl.log
+...
+```
+
+经搜索应该是rabbitmq 3.5与erlang 22不兼容导致, 直接升级rabbitmq到`3.8`.
