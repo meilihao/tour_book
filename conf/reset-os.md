@@ -18,3 +18,9 @@
 # wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add -
 # echo "deb https://apt.atzlinux.com/atzlinux buster main contrib non-free" sudo tee -a /etc/apt/sources.list
 ```
+
+## softwares
+### deepin
+- 向日葵
+
+    使用`sudo apt install com.oray.sunlogin.client`, 直接使用`dpkg -i <官方>.deb`会报缺依赖, 且该依赖不再apt repo里.
