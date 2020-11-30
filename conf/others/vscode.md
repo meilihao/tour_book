@@ -1,4 +1,14 @@
 # vscode
+当前使用的插件:
+1. C/C++
+1. C++ Intellisense
+1. Go
+1. Python
+1. Remote-SSH
+1. Rust
+1. vscode-proto3
+1. x86 and x86_64 Assembly
+
 ## 插件
 语言插件:
 - C/C++
