@@ -15,3 +15,8 @@ sudo 命令具有如下功能：
 - -k : 清空密码的有效时间，下次执行 sudo 时需要再次进行密码验证
 - -b : 在后台执行指定的命令
 - -p : 更改询问密码的提示语
+
+## examples
+```bash
+$ sudo KKZONE=cn env # sudo 传入env
+```
