@@ -972,6 +972,7 @@ pod是k8s的基本处理单元, 其包含一个特殊的Pause容器(即根容器
 - [kubernetes的网络策略(kube-proxy)流程探究](https://www.jianshu.com/p/13b86daf56dc)
 - [华为云在 K8S 大规模场景下的 Service 性能优化实践](https://zhuanlan.zhihu.com/p/37230013)
 - [Kubernetes 从1.10到1.11升级记录(续)：Kubernetes kube-proxy开启IPVS模式](https://blog.frognew.com/2018/10/kubernetes-kube-proxy-enable-ipvs.html)
+- [*利用 eBPF 支撑大规模 K8s Service (LPC, 2019)](https://www.tuicool.com/articles/7F7zAjv)
 
 为一组具有相同功能的容器应用提供一个统一的入口, 并将请求进行负载均衡地分发到pod上, 其屏蔽了pod ip的变化, 并通过Label来关联pod.
 

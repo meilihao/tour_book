@@ -567,3 +567,21 @@ couchdb 3.1.1支持partition, 新建database时选择`non-partition`即可.
 
 ### chttp_auth_cache changes listener diea because the _users database dees not exist
 访问`http://127.0.0.1:5984/_utils#setup`, 按照向导设置即可.
+
+
+### couchdb 1.6/3.1 权限变化
+1. 1.6允许不设置admin帐号, 但3.1必须设置否之couchdb启动后会退出
+1. 1.6 允许no auth访问couchdb, 3.1设置
+
+    ```ini
+    [couchdb]
+    default_security=everyone
+    [chttpd]
+    require_valid_user=false
+    [couch_httpd_auth]
+    require_valid_user=false
+    ```
+
+    部分接口允许匿名访问, 比如创建doc, 查询doc等, 但`/_all_dbs`, 创建view仍需admin权限, 可参考[这里](https://docs.couchdb.org/en/3.1.1/intro/security.html#authentication).
+
+    因此, **推荐带auth访问couchdb**.

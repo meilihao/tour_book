@@ -32,6 +32,7 @@ rabbitmq_management功能:
 1. rabbitmqctl list_users : 已有帐号, 缺省的guest账户只能在本地豋录, `[xxx]`表示role
 1. rabbitmqctl change_password  Username  'Newpassword'
 1. rabbitmqctl status : 状态
+1. rabbitmqctl list_connections : 连接状态
 
 ## 配置
 配置文件位置: `/etc/rabbitmq`
@@ -222,3 +223,10 @@ Log files (may contain more information):
 ```
 
 经搜索应该是rabbitmq 3.5与erlang 22不兼容导致, 直接升级rabbitmq到`3.8`.
+
+### rabbit 3.8.9 gust登录报错: `user can only log in via localhost`
+rabbitmq从3.3.0开始禁止使用guest/guest权限通过除localhost外的访问. 建议参考本文的`用户权限管理`添加自定义帐号.
+
+### 执行`rabbitmq-plugins enable rabbitmq_management`报`cannot_read_enabled_plugins_file /etc/rabbitmq/enabled_plugins eacces`
+因为`/etc/rabbitmq/enabled_plugins`的权限是`-rw-------`, 执行
+`umask 0022; rabbitmq-plugins enable rabbitmq_management`即可, 执行后权限变为`-rw-r--r--`
