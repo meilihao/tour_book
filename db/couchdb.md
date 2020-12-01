@@ -496,6 +496,8 @@ a, b同时更新一个文档, 假设a先提交了, b提交报409引发重试, �
 # make couch-js-rpms # 可能需要安装一些依赖
 ```
 
+> ubuntu打包命令: make couch-js-rpms PLATFORM=ubuntu-xenial # 其他ubuntu版本替换`ubuntu-xenial`即可
+
 方法2, 使用其他源的js-devel:
 1. yum install readline-devel nspr-devel ncurses-devel
 
@@ -514,6 +516,8 @@ a, b同时更新一个文档, 假设a先提交了, b提交报409引发重试, �
 # LANG= make copy-couch centos-7 COUCHTARBALL=/root/couchdb-3.1.1.tar.gz PLATFORM=centos-7
 # # 上面的命令会输出执行过程并报错, 但rpm构建环境即rpmbuild目录已成功创建, 可根据报错修改rpmbuild/SPECS/couchdb.spec, 再根据上面命令输出的执行过程找到最后的rpmbuild命令, 切换到rpmbuild目录重新执行该命令即可.
 ````
+
+> ubuntu打包: LANG= make copy-couch ubuntu-xenial COUCHTARBALL=/root/couchdb-3.1.1.tar.gz PLATFORM=ubuntu-xenial
 
 couchdb.spec修改内容:
 1. BuildArch 追加 aarch64
