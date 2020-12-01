@@ -467,6 +467,18 @@ $ curl -X GET http://localhost/db/_changes
 - feed=continous : 长连接, 连续获取变更
 - filter=design_name/filtername : 支持设计文档定义的`filters`过滤函数
 
+## client demo
+```python
+import couchdb
+s = couchdb.Server('http://192.168.0.71:5984')
+s.resource.credentials = ('admin', 'password')
+print s.version()
+
+db = couchdb.Database('http://192.168.0.71:5984/test')
+db.resource.credentials = ('admin', 'password')
+print db.name
+```
+
 ## FAQ
 ### `emit(doc.phoneNumber, doc.billSeconds);`和`emit([doc.phoneNumber], doc.billSeconds);`的区别
 `emit(doc.phoneNumber, doc.billSeconds)`　：　返回的key是`"1000"`
