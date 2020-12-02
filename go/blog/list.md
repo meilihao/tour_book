@@ -109,3 +109,7 @@
 
 ## mirror
 - [go sdk](https://mirrors.ustc.edu.cn/golang/)
+
+## 编译
+- [使用 upx 压缩 go build 打包的可执行文件](https://abelsu7.top/2019/10/24/go-build-compress-using-upx/)
+- [交叉编译Go程序](https://holmesian.org/golang-cross-compile)
