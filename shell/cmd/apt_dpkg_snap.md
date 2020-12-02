@@ -76,6 +76,8 @@ $ ll build/
 $ dpkg-scanpackages . | gzip -9c > Packages.gz #  制作本地软件源
 ```
 
+## snap
+
 ## FAQ
 ### dpkg-deb: error: archive '<file>.deb' has premature member 'data.tar.gz' before
 dpkg的bug: [dpkg无法解析tar.xz格式-xz compressed control.tar files not supported](https://bugs.launchpad.net/ubuntu/+source/dpkg/+bug/1730627)
@@ -94,3 +96,13 @@ dpkg的bug: [dpkg无法解析tar.xz格式-xz compressed control.tar files not su
 
 ### apt install 安装的deb的缓存位置
 ubuntu中由apt-get获得的文件包保存在/var/cache/apt/archives
+
+### 删除snap
+```bash
+snap list; sudo snap remove xxx
+sudo apt install ubuntu-software
+sudo snap remove snap-store
+sudo apt purge snapd
+sudo rm -rf /var/cache/snapd
+sudo rm -rf ~/snap
+```

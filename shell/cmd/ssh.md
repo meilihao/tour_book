@@ -60,3 +60,48 @@ login script有问题, 登录时禁止执行即可: `ssh -t user@host bash --nop
 
 ### ssh获取cmd的exit code
 ssh成功连接到remote并执行cmd后, ssh返回的exit code就是cmd执行后的exit code. 验证方法: `ssh aliyun "exit 13"`
+
+### ssh client报`packet_write_wait: Connection to 47.111.xxx.xxx port 22: Broken pipe`/ssh 超时自动断开
+只需在客户端设置(**推荐**)：
+- 全局设置：`/etc/ssh/ssh_config`
+- 当前user设置：~/.ssh/config`
+
+```
+# 在ssh_config开头处添加
+Host *
+    ServerAliveInterval 300
+    ServerAliveCountMax 2
+...
+```
+
+这些设置让ssh client 每5分钟发送一个空包到另一端, 如果它在尝试了2次后，仍没有收到任何响应，则放弃, 即断开连接.
+
+> 也有可能是防火墙掐掉空闲连接导致: [Linux使用ssh超时断开连接的真正原因](http://bluebiu.com/blog/linux-ssh-session-alive.html)
+
+其他方式:
+1. 服务端设置
+    找到/etc/ssh/sshd_config
+
+    # 30表示30s给客户端发送一次心跳
+    ClientAliveInterval 30
+    # 此客户端没有返回心跳3次，则会断开连接
+    ClientAliveCountMax 3
+    # TCP保持连接不断开
+    TCPKeepAlive yes
+
+
+
+### ssh-add无法添加ed25519 key
+```
+$ ssh-add ~/.ssh/my_ed25519
+Enter passphrase for /home/chen/.ssh/my_ed25519:
+Bad passphrase, try again for /home/chen/.ssh/my_ed25519:
+Could not add identity "/home/chen/.ssh/my_ed25519": communication with agent failed
+
+$ ssh -V
+OpenSSH_7.5p1 Debian-5, OpenSSL 1.0.2l  25 May 2017
+$ echo $SSH_AUTH_SOCK
+/run/user/1000/keyring/ssh
+```
+
+虽然ssh-add无法添加, 但`ssh xxx`还是可正常使用

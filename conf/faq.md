@@ -151,43 +151,6 @@ $ cat /etc/passwd|grep root
 root:x:0:0:root:/root:fish # root的shell的路径不对
 ```
 
-## ssh
-### ssh-add无法添加ed25519 key
-```
-$ ssh-add ~/.ssh/my_ed25519
-Enter passphrase for /home/chen/.ssh/my_ed25519:
-Bad passphrase, try again for /home/chen/.ssh/my_ed25519:
-Could not add identity "/home/chen/.ssh/my_ed25519": communication with agent failed
-
-$ ssh -V
-OpenSSH_7.5p1 Debian-5, OpenSSL 1.0.2l  25 May 2017
-$ echo $SSH_AUTH_SOCK
-/run/user/1000/keyring/ssh
-```
-
-虽然ssh-add无法添加, 但`ssh xxx`还是可正常使用
-
-### ssh 超时自动断开
-1. 服务端设置
-    找到/etc/ssh/sshd_config, 并修改数值
-
-    # 30表示30s给客户端发送一次心跳
-    ClientAliveInterval 30
-    # 此客户端没有返回心跳3次，则会断开连接
-    ClientAliveCountMax 3
-    # TCP保持连接不断开
-    TCPKeepAlive yes
-1. 客户端配置(推荐)
-    如果是想让主机所有用户都生效，修改/etc/ssh/ssh_config
-    如果只想让当前用户生效，则修改 ~/.ssh/config
-
-    Host *
-        ServerAliveInterval 30
-        ServerAliveCountMax 3
-        TCPKeepAlive yes
-
-> 也有可能是防火墙掐掉空闲连接导致: [Linux使用ssh超时断开连接的真正原因](http://bluebiu.com/blog/linux-ssh-session-alive.html)
-
 ## linux 搜狗输入法 禁用半角切换
 打开Fcitx配置界面 -> 全局配置, 选中左下角的`显示高级选项`, 重新定义`切换全角`的快捷键即可.
 
@@ -198,18 +161,3 @@ $ echo $SSH_AUTH_SOCK
 
 ### linux 字符界面输入出现`]`等乱码
 用`shift + backspace`来删除
-
-### 你的mke2fs.conf文件中没有定义类型 xfs 的文件系统
-```bash
-# cat /proc/filesystems |grep -i xfs # 检查kernel是否支持xfs
-```
-
-### 删除snap
-```bash
-snap list; sudo snap remove xxx
-sudo apt install ubuntu-software
-sudo snap remove snap-store
-sudo apt purge snapd
-sudo rm -rf /var/cache/snapd
-sudo rm -rf ~/snap
-```
