@@ -12,7 +12,7 @@
 ## FAQ
 ### 将用户加入组
 ```
-# gpasswd -a  ${USER} docker
+# gpasswd -a ${USER} docker # 需重启terminal/重启, 推荐使用等价的`newgrp - docker`
 # gpasswd -d userName groupName # 移出组, 需要重开terminal
 ```
 
