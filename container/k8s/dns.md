@@ -52,28 +52,27 @@ Kubernetes 集群中支持通过 dnsPolicy 字段为每个 Pod 配置不同的 D
 
 ## CoreDNS
 CoreDNS 目前是 Kubernetes 标准的服务发现组件，dnsPolicy: ClusterFirst 模式的 Pod 会使用 CoreDNS 来解析集群内外部域名.
-在命名空间 kube-system 下，集群有一个名为 coredns 的 configmap(`kubectl describe configmap coredns -n kube-system`). 其 Corefile 字段的文件配置内容如下（CoreDNS 功能都是通过 Corefile 内的插件提供）.
-```conf
-Corefile:
-----
-.:53 {
-    errors
-    health {
-       lameduck 5s
+在命名空间 kube-system 下，集群有一个名为 coredns 的 configmap(` kubectl get configmap coredns -n kube-system -o yaml`或`kubectl describe configmap coredns -n kube-system`). 其 Corefile 字段的文件配置内容如下（CoreDNS 功能都是通过 Corefile 内的插件提供）.
+```yaml
+  Corefile: |
+    .:53 {
+        errors
+        health {
+           lameduck 5s
+        }
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+           pods insecure
+           fallthrough in-addr.arpa ip6.arpa
+           ttl 30
+        }
+        prometheus :9153
+        forward . /etc/resolv.conf
+        cache 30
+        loop
+        reload
+        loadbalance
     }
-    ready
-    kubernetes cluster.local in-addr.arpa ip6.arpa {
-       pods insecure
-       fallthrough in-addr.arpa ip6.arpa
-       ttl 30
-    }
-    prometheus :9153
-    forward . /etc/resolv.conf
-    cache 30
-    loop
-    reload
-    loadbalance
-}
 ```
 
 其中，各插件说明：
