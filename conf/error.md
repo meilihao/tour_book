@@ -23,6 +23,9 @@ sudo apt install zlib1g-dev
 sudo apt-get install libatlas-base-dev
 ```
 
+### debuild not found
+sudo apt install devscripts
+
 ### OpenSSL header files not found
 sudo apt install libssl-dev
 
