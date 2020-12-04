@@ -220,8 +220,41 @@ NFS server 关机的时候一点要确保NFS服务关闭，没有客户端处于
 	    no_wdelay：若有写操作则立即执行，应与sync配合使用
 	    subtree_check：若输出目录是一个子目录，则nfs服务器将检查其父目录的权限. 在客户端打开文件时重命名该文件会导致许多问题. 在几乎所有情况下，最好禁用子树检查.
 	    no_subtree_check：即使输出目录是一个子目录，nfs服务器也不检查其父目录的权限，这样可以提高效率, (默认设置)
+	    fsid: NFS需要通过fsid识别导出的每个文件系统. 通过同一zfs dataset的快照clone制作的多个nfs因为fs uuid相同, 挂载时会看看相同数据, 此时可通过fsid区分. fsid=0表示 只能共享一个目录，这个目录将成为NFS服务器的根目录, 用于nfsv4.
 
 > nfs 支持使用no_acl来禁用acl.
+
+#### NFSv4
+NFSv4版本不再使用rpc.mount协议（v2，v3中使用），因此，挂在文件的操作（mounting,在client端），也发生了变化.
+
+NFSv4版本的客户端，可以将NFSv4的服务端、所有的共享目录，看作一个单一的文件系统，叫做NFSv4 pseudo-file system（伪文件系统, 区别与本机的真实文件系统）.
+
+在Red Hat Enterprise中，这个pseudo-file system，被identified（标记）为一个单一、真实的文件系统, 此时需要在export文件时，加上fsid=0来标识该伪文件系统.
+
+服务端是NFSv4，应该如何mount共享目录:
+not compatible solution:
+```bash
+# Server端export file
+/home *(rw,fsid=0,sync)
+
+# client-side mount
+#NFS version 2,3,4 will work
+mount server:/home /mnt/home
+
+#NFS v4 will work
+mount -t nfs4 server:/ /mnt/home
+```
+
+compatible solution:
+```bash
+#server-side export file
+/ *(ro,fsid=0)
+/home *(rw,sync,nohide)
+
+#client-side
+mount server:/home /mnt/home
+mount -t nfs server:/home /mnt/home
+```
 
 ### 身份映射(`/etc/idmapd.conf`)
 NFS服务虽然不具备用户身份验证的功能，但是NFS提供了一种身份映射的机制来对用户身份进行管理. 当客户端访问NFS服务时，服务器会根据情况将客户端用户的身份映射成NFS匿名用户`nobody:nogroup`. `nobody:nogroup`是由linux中自动创建的一个用户账号，该账号不能用于登录系统，**专门用作服务的匿名用户账号**.
@@ -431,6 +464,12 @@ on linux:
 建议不要使用 Linux 作为客户端访问 SMB，因为存在一些操作上的问题. 例如支持的字符集、文件名的长度（Windows 支持255宽字符，Linux 支持255 UTF8 字节）等等.
 
 但用户如果确实需要的话，可以在支持 SMB2 及以上的 kernel 上挂载.
+
+### 基于同一zfs vol的两次快照(有数据变化及sync过)克隆做的nfs同时挂载时, nfs client访问到的两者数据相同, 均是排在/etc/export前面的那个nfs导出的数据
+原因两者有同样的fs uuid. samba没有该问题.
+
+
+解决方法: nfs export时添加`fsid=<uuid>`进行区分.
 
 ### 删除共享后执行`smbcontrol all reload-config`, 共享目录所在的设备仍被smbd占用
 env: ubuntu14.04
