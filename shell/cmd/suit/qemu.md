@@ -60,6 +60,7 @@ $ qemu-system-x86_64 --version
     - -f 选项用于指定镜像的格式，qcow2 格式是 Qemu 最常用的镜像格式，采用来写时复制技术来优化性能
     - test-vm-1.qcow2 是镜像文件的名字
     - 10G是镜像文件大小
+    - p : 显示转换进度
 
 - qemu-nbd：磁盘挂载工具
 
@@ -228,3 +229,23 @@ i440fx是1996年推出的架构, 已过时. q35是2009年推出的架构, 更现
 尝试按Ctrl + a，然后按c，以获得（qemu console）提示, 再一个简单的q即可退出.
 
 推荐使用`qemu-system-x86_64 -kernel arch/x86_64/boot/bzImage -nographic -append "console=ttyS0"`运行, 退出方法同上.
+
+### 压缩qcow2
+初始磁盘压缩方法:
+```bash
+//将默认raw格式的磁盘，简单压缩转换成qcow2格式
+# cp --sparse=always vm500G.raw vm500G-new.raw   //--sparse=always稀疏拷贝，忽略全0数据
+# qemu-img convert -c -f raw -O qcow2 vm500G.raw /path/new-vm500G.qcow2
+ 
+//将默认qcow2格式的磁盘，导出为简单压缩后的qcow2格式
+# qemu-img convert -c -O qcow2 vm500G.qcow2 new.img.qcow2
+```
+
+以上两种方法都能在一定程度上压缩减小导出后的镜像文件体积；但仅限于在虚拟机刚安装部署好，还没有进行过大量数据读写处理的情况下. 因为非空白(非全零)块无法压缩.
+
+针对其他创建需要先用ncdu清理, 再vm内部写零操作:
+```bash
+# dd if=/dev/zero of=/null.dat   //创建一个全0的大文件，占满所有的剩余磁盘空间，需要很久时间
+# rm -f /null.dat                //删除这个文件
+```
+最后关机并使用`初始磁盘压缩`方法即可.
