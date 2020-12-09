@@ -38,4 +38,5 @@ $ grep -r "Rows" # 检索当前目录下包含字符串"Rows"的文件
 $ grep -e "class" -e "vitural" file # 匹配多个模式
 $ cat LOG.* | tr a-z A-Z | grep "FROM " | grep "WHERE" > b # 查找日志中的所有带where条件的sql
 $ grep -r $'\r' * # 查找`^M`字符.($：锚定行尾，此字符前面的任意内容必须出现在行尾)
+$ lsmod | grep -E "drbd|xxx" # grep 或
 ```
