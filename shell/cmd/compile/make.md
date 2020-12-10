@@ -31,6 +31,8 @@ linux下, 通常用Makefile代替makefile, 通过`configure`来生成. 在命令
 > make会对比target和它所有依赖的时间戳, 当发现target比它的任一依赖的时间戳小时会重新构建target, 该过程会递归进行, 因为该target的依赖可能是其他target.
 
 ### 规则
+**shell 命令必须放到target里或使用`$(shell ...)`的形式**
+
 Makefile由一组规则（Rule）组成，每条规则的格式是:
 ```makefile
 targets ... : prerequisites ...
@@ -109,7 +111,7 @@ Makefile组成:
 	仅有行注释, 用`#`开头
 
 
-每当target中的command执行完毕后, make会检测它们的返回码, 如果成功则继续执行, 否则中止该target. 在命令前加`-`则会忽略检查返回码, 认为都成功. 命令前加`@`表示不将要执行的命令输出到屏幕.命令前加`+`表示只显示命令但不执行, 常 用于递归式的makefile. 如果要让上一条命令的结果应用在下一条上, 则它们需要写在一行并用`;`分隔.
+每当target中的command执行完毕后, make会检测它们的返回码, 如果成功则继续执行, 否则中止该target. 在命令前加`-`则会忽略检查返回码, 认为都成功. 命令前加`@`表示不将要执行的命令输出到屏幕.命令前加`+`表示只显示命令但不执行, 常用于递归式的makefile. 如果要让上一条命令的结果应用在下一条上, 则它们需要写在一行并用`;`分隔.
 
 ### 宏
 ```
@@ -170,3 +172,46 @@ makefile中的command必须以tab键开头.
 
 ### 如何重新执行某项 make check
 根据make check日志, 重新进入相应的目录, 直接执行`make check`即可.
+
+### missing separator.  Stop.
+在makefile中，命令行要以tab键开头. vscode因为配置原因将tab转成了4个空格.
+
+### recipe commences before first target. stop
+在target前使用了`ifeq ... else ifeq...`, 将这些代码移入一个target即可.
+
+```makefile
+SCRIPTS = abc
+
+# 不使用`uname -p`的原因: 它可能返回`unknown`
+ARCH = $(shell arch)
+
+deps-arch:
+ifeq ($(ARCH), x86_64)
+	cp -f app-amd64 app
+	$(eval SCRIPTS += app)
+else ifeq ($(ARCH), aarch64)
+	cp -f app-arm64 app
+	$(eval SCRIPTS += app)
+else
+endif
+```
+
+扩展:
+```makefile
+SCRIPTS = abc
+
+ARCH = $(shell arch)
+
+ifeq ($(ARCH), x86_64)
+                tmp = $(shell cp -f a.key a.key1) # cp命令不执行, 原因是没有使用变量tmp导致该语句被忽略. 将下面的`111`替换为`$(tmp)`, cp命令就执行了.
+                SCRIPTS += 111
+else ifeq ($(ARCH), aarch64)
+                SCRIPTS += "456"
+else
+                SCRIPTS += 000
+endif
+
+all:
+                echo "-----"
+                echo "$(SCRIPTS)"
+```
