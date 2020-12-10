@@ -203,7 +203,7 @@ SCRIPTS = abc
 ARCH = $(shell arch)
 
 ifeq ($(ARCH), x86_64)
-                tmp = $(shell cp -f a.key a.key1) # cp命令不执行, 原因是没有使用变量tmp导致该语句被忽略. 将下面的`111`替换为`$(tmp)`, cp命令就执行了.
+                tmp = $(shell cp -f a.key a.key1) # cp命令不执行, 原因是没有使用临时变量tmp导致该语句被忽略(使用`tmp := ...`声明的变量即使不使用也不会被忽略). 将下面的`111`替换为`$(tmp)`, cp命令就执行了.
                 SCRIPTS += 111
 else ifeq ($(ARCH), aarch64)
                 SCRIPTS += "456"
