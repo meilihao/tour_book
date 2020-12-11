@@ -267,7 +267,7 @@ $ git stash pop
 ### 查看某行代码由谁写的，在哪个commit中提交的
 `git blame file_name`
 
-## 查看哪个Git分支正在跟踪哪个远程/上游分支
+### 查看哪个Git分支正在跟踪哪个远程/上游分支
 ```bash
 # it branch -vv   # doubly verbose!
 # git branch --set-upstream-to=<remote>/<branch> <local-branch> # git pull/push upstream
@@ -275,11 +275,39 @@ $ git stash pop
 # git pull --set-upstream <remote> <remote-branch> # 为当前分支设在upstream, 作用同上
 ```
 
-## git clone断点续传
+### git clone断点续传
 没有, [网上找的解决方法](https://gist.github.com/arliang/0019de079fbe77f946c13a010e7f97c6)无用.
 
-## git pull拉取远程分支合并到本地分支
+### git pull拉取远程分支合并到本地分支
 git pull <远程主机名> <远程分支名>:<本地分支名> , 比如`git pull origin master:wy`
 
-## git checkout远程分支到本地
+### git checkout远程分支到本地
 `git checkout -b 本地分支名x origin/远程分支名x`
+
+### [配置git diff的输出颜色](http://ericnode.info/post/colorize_git_diff/), 以区别terminal的背景色
+可执行`git help config`，在里面搜找`color.diff`相关配置的说明.
+
+比如:
+```conf
+[color "diff"]
+    meta = white reverse
+    frag = cyan reverse
+    old = red reverse
+    new = green reverse
+```
+
+其中修改了四个slot的颜色属性:
+- meta: meta information，分割了不同的文件。设置为white reverse
+- frag: hunk header, 文件中一个修改的头，分割了同一个文件内的不同修改。设置为cyan reverse
+- old: 被删除的代码，设置为red bold
+- new: 新增的代码，设置为green bold
+
+其实`color.diff.<slot>`支持的slot有:
+- plain
+- meta
+- frag
+- func
+- old
+- new
+- commit
+- whitespace
