@@ -121,9 +121,6 @@ alertmanager_servers:
 ```
 
 ## FAQ
-### [prometheus 监控服务硬盘使用量过大，如何处理](https://asktug.com/t/topic/2588)
-prometheus(`/home/tidb/tidb-deploy/prometheus-9090/scripts/run_prometheus.sh`)使用`--storage.tsdb.retention="15d"和--storage.tsdb.retention.size="2GB"`参数
-
 ### [~~tidb-ansible~~, 作废, 已切换到tiup](https://github.com/pingcap/tidb-ansible)
 使用**用户名tidb**进行部署.
 

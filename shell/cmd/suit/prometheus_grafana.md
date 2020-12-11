@@ -5,7 +5,7 @@
 - [prometheus-book](https://yunlzheng.gitbook.io/prometheus-book/)
 
 ## 部署prometheus
-```
+```bash
 # mkdir -p /var/lib/prometheus
 # chmod 777 /var/lib/prometheus
 # cat << EOF > /etc/prometheus/prometheus.yml
@@ -101,3 +101,12 @@ systemd部署见[node_exporter.service](https://github.com/prometheus/node_expor
 
     需要追加`--web.enable-lifecycle`选项, 即`/prometheus --config.file=prometheus.yml --web.enable-lifecycle` + `curl -X POST http://localhost:9090/-/reload`
 ### [exporters](https://prometheus.io/docs/instrumenting/exporters/)
+### [prometheus 监控服务硬盘使用量过大，如何处理](https://asktug.com/t/topic/2588)
+参考:
+- [prometheus storage](https://prometheus.io/docs/prometheus/latest/storage/)
+
+prometheus(`/home/tidb/tidb-deploy/prometheus-9090/scripts/run_prometheus.sh`)使用`--storage.tsdb.retention="15d"和--storage.tsdb.retention.size="2GB"`参数
+
+> `--storage.tsdb.retention`默认是`15d`
+
+> [prometheus不支持将storage.tsdb.retention加入prometheus.yml](https://github.com/prometheus/prometheus/issues/6188).
