@@ -546,7 +546,7 @@ couchdb.spec修改内容:
     BuildRequires: erlang-reltool
     ```
 
-    > 参考了couchdb.spec里的`0%{?suse_version}`和[官方的`installation-from-source`](installation-from-source)
+    > 参考了couchdb.spec里的`0%{?suse_version}`和[官方的`installation-from-source`](https://docs.couchdb.org/en/stable/install/unix.html#installation-from-source)
 
 构建出的rpm是couchdb-3.1.1-1.ky10.ky10.aarch64.rpm.
 
