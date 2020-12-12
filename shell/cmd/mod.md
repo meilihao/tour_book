@@ -84,7 +84,7 @@ insmod不能处理依赖, 而modprobe可以.
 ### 黑名单
 在 /etc/modprobe.d/ 中创建 `.conf` 文件，使用 **blacklist 关键字屏蔽不需要的模块. blacklist仅屏蔽自动装入, 而不禁止手动操作**.
 
-注意: blacklist 命令会屏蔽一个模块，所以它不会自动装入，但是如果其它非屏蔽模块依赖这个模块，系统依然会装入它. 要避免这个行为，可以让 modprobe 使用自定义的 install 命令，直接返回导入失败：
+注意: blacklist 命令会屏蔽一个模块，所以它不会自动装入，但是如果其它非屏蔽模块依赖该模块或手动加载该模块，系统依然会装入它. 要避免这个行为，可以让 modprobe 使用自定义的 install 命令，直接返回导入失败：
 ```conf
 $ vim /etc/modprobe.d/blacklist.conf
 ...
