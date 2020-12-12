@@ -48,6 +48,21 @@ Kubernetes 项目上创建的所有 Pod 就能够通过 Persistent Volume（PV�
 ### cluster
 cluster是计算,存储和网络资源的集合. k8s使用这些资源运行各种基于容器的服务.
 
+### CRI/OCI
+CRI是Kubernetes提供的API，用于与容器运行时进行对话，以创建/删除容器化的应用程序.
+
+它们通过IPC在gRPC中作为kubelet进行通信，并且运行时在同一主机上运行，并且CRI运行时负责从kubelet获取请求并执行OCI容器运行时以运行容器.
+
+![](/misc/img/container/a634ac215282c8c142b83e5cdd4b6d64.png)
+
+OCI运行时负责使用Linux内核系统调用（例如cgroups和命名空间）生成容器, 比如runc或gVisor.
+
+![runC如何工作](/misc/img/container/7b0a95d3b4a391b41199481e74c0f44f.png)
+CRI通过调用Linux系统调用执行二进制文件后，runC生成容器. 这表明runC依赖Linux计算机上运行的内核.
+
+![gVisor的工作方式](/misc/img/container/d596759594b180f86884eec309a69c54.png)
+gVisor的安全模型比较特殊, 它具有`guest 内核`层，这意味着容器化的应用程序无法直接接触主机内核层, 这也导致了其性能较差且与linux kernel不是100%兼容.
+
 # k8s架构
 参考:
 - [Kubernetes 组件](https://kubernetes.io/zh/docs/concepts/overview/components/)
