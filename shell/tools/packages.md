@@ -12,14 +12,25 @@
 - [BuildingTutorial](https://wiki.debian.org/BuildingTutorial#Building_the_modified_package)
 - [How RPM packages are made: the source RPM](https://fedoramagazine.org/how-rpm-packages-are-made-the-source-rpm/)
 - [重建一个源代码 RPM](https://wiki.centos.org/zh/HowTos/RebuildSRPM)
+- [Easy way to create a Debian package and local package repository](https://linuxconfig.org/easy-way-to-create-a-debian-package-and-local-package-repository)
+- [Debian 新维护者手册](https://www.debian.org/doc/manuals/maint-guide/)
 
 ###　构建源
-- [CentOS 的 SRPM](http://vault.centos.org/)
+- [CentOS 的 SRPM](http://mirror.centos.org/)
 - [Fedora Package Sources](https://src.fedoraproject.org/)
 - [Arch Package, arch官方repo](https://www.archlinux.org/packages/)
 - [aur.archlinux.org - AUR=Arch User Repository, 创建 AUR 的初衷是方便用户维护和分享新软件包，并由官方定期从中挑选软件包进入 community 仓库](https://aur.archlinux.org/packages/)
 
 ## FAQ
+### 通过deb-src构建deb
+```bash
+# vim /etc/apt/source.list # 添加deb-src源
+deb-src http://pl.archive.ubuntu.com/ubuntu/ natty main restricted
+# apt update
+# apt build-dep ccache # 安装构建ccache所需的依赖
+# apt-get -b source ccache # 获取ccache源码并构建
+# dpkg -i ccache*.deb
+```
 
 ## desktop
 ### UbuntuDDE
