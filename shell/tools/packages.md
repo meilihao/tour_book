@@ -16,7 +16,8 @@
 ###　构建源
 - [CentOS 的 SRPM](http://vault.centos.org/)
 - [Fedora Package Sources](https://src.fedoraproject.org/)
-- [Arch Package](https://www.archlinux.org/packages/)
+- [Arch Package, arch官方repo](https://www.archlinux.org/packages/)
+- [aur.archlinux.org - AUR=Arch User Repository, 创建 AUR 的初衷是方便用户维护和分享新软件包，并由官方定期从中挑选软件包进入 community 仓库](https://aur.archlinux.org/packages/)
 
 ## FAQ
 
