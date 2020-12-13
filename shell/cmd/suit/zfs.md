@@ -379,6 +379,26 @@ nfs配置见[fs.md](fs.md)
 # zfs set sharesmb=on rpool/fs1
 ```
 
+### zfs 2.0.0编译
+参考:
+- [arch zfs-linux](https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=zfs-linux)
+- [arch zfs-utils](https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=zfs-utils)
+
+```bash
+# # env deepin v20 amd64
+# # [Building ZFS](https://openzfs.github.io/openzfs-docs/Developer%20Resources/Building%20ZFS.html)
+# apt install build-essential autoconf automake libtool gawk alien fakeroot dkms libblkid-dev uuid-dev libudev-dev libssl-dev zlib1g-dev libaio-dev libattr1-dev libelf-dev linux-headers-$(uname -r) python3 python3-dev python3-setuptools python3-cffi libffi-dev
+# cd <zfs-2.0.0 src>
+# ./autogen.sh
+# ./configure --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --libdir=/usr/lib \
+                --datadir=/usr/share --includedir=/usr/include --with-udevdir=/usr/lib/udev \
+                --libexecdir=/usr/lib --with-config=all --enable-systemd # configure前必须安装alien否则`make deb`会报错; 不能将`--with-python`设为"no", 否则`make deb`根据rpm spec构建rpm时会报错"configure: error: Unknown --with-python value ':'"
+# # 下面自行编译再install / 直接打包选一种即可
+# make -s -j$(nproc) # 自行编译 / make deb # [zfs会先通过构建rpm再通过alien将rpm转成deb](https://github.com/openzfs/zfs/issues/10168)
+```
+
+> `make deb`因为会先构建rpm的原因, 导致会根据`rpm/xxx/yyy.spec.in`重新编译zfs, 且编译参数由rpm spec指定.
+
 ## FAQ
 ### Error
 #### libzfs.h: No such file or directory
@@ -423,3 +443,19 @@ zfs 0.8.1 rename后`/dev/zvol/{datapath}`会跟着变化, 且mkfs正常.
 pool只有raidz0(1块), 没有其他盘, 物理移除该盘后, `zpool destroy`时报该错误.
 
 查阅相关资料后发现只能通过reboot来解决, reboot后该pool消失.
+
+### zfs编译时configure报`error: cannot guess build type; you must specify one`
+原因: 自带`config.guess`提示当前编译类型无法找到
+
+解决方法一：指定平台，手动编译
+```bash
+./configure --build=arm-linux
+make -s -j$(nproc)
+```
+
+解决方法二：替换ZFS自带`config.guess`
+```bash
+mv config/config.guess config/config.guess.bak
+cp /usr/share/automake-1.13/config.guess config/
+make -s -j$(nproc)
+```
