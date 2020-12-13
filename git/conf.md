@@ -12,10 +12,19 @@
 [alias]
 	br = branch
 	ci = commit
+	cm = commit -m
 	co = checkout
 	df = diff
+	d = diff
+	dv = difftool -t vimdiff -y
 	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+	ll = log --oneline
 	st = status
+	st2 = status -sb
+	last = log -1 HEAD --stat
+	rv = remote -v
+	gl = config --global -l
+	se = !git rev-list --all | xargs git grep -F
 ```
 
 ### prompt/提示
