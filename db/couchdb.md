@@ -406,6 +406,8 @@ couchdb查询view的过程:
 ### key
 > v3.0.0 curl的`?key=...`有问题, 新建的view无法匹配到结果(有数据).
 
+**key必须是json格式**.
+
 参考:
 - [Couchbase——查询View（详细版）](https://blog.csdn.net/EntropyArrow/article/details/40858225)
 
