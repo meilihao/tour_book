@@ -35,6 +35,7 @@ $ echo "PACKAGE hold" | sudo dpkg --set-selections  ##锁定软件包
 $ dpkg --get-selections | grep hold  ##显示锁定的软件包列表
 $ echo "PACKAGE install" | sudo dpkg --set-selections  ##解除对软件包的锁定
 $ dpkg --info xxx.deb | grep Depends # 查看deb包的依赖
+$ dpkg-deb -c xxx.deb # 查看deb内容
 ```
 
 按文件搜索package也可直接使用[debian package服务](https://www.debian.org/distrib/packages)
