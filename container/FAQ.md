@@ -318,3 +318,8 @@ sudo docker cp scripts 401ccde8d881:/mnt # work
 ```
 
 估计是cgroup限制导致
+
+### iptables: No chain/target/match by that name
+docker 服务启动的时候，docker服务会向iptables注册一个链，以便让docker服务管理的containner所暴露的端口之间进行通信.
+
+如果删除了iptables中的docker链，或者iptables的规则被丢失了（例如重启firewalld）, docker就会报该错误, 只要重启docker服务，之后，正确的iptables规则就会被创建出来.

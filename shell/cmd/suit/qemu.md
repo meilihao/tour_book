@@ -60,7 +60,9 @@ $ qemu-system-x86_64 --version
     - -f 选项用于指定镜像的格式，qcow2 格式是 Qemu 最常用的镜像格式，采用来写时复制技术来优化性能
     - test-vm-1.qcow2 是镜像文件的名字
     - 10G是镜像文件大小
-    - p : 显示转换进度
+
+    `qemu-img convert -p -c -f raw -O qcow2 vm500G.raw /path/new-vm500G.qcow2`:
+    - -p : 显示转换进度
 
 - qemu-nbd：磁盘挂载工具
 
@@ -238,7 +240,7 @@ i440fx是1996年推出的架构, 已过时. q35是2009年推出的架构, 更现
 # qemu-img convert -c -f raw -O qcow2 vm500G.raw /path/new-vm500G.qcow2
  
 //将默认qcow2格式的磁盘，导出为简单压缩后的qcow2格式
-# qemu-img convert -c -O qcow2 vm500G.qcow2 new.img.qcow2
+# qemu-img convert -p -c -O qcow2 vm500G.qcow2 new.img.qcow2
 ```
 
 以上两种方法都能在一定程度上压缩减小导出后的镜像文件体积；但仅限于在虚拟机刚安装部署好，还没有进行过大量数据读写处理的情况下. 因为非空白(非全零)块无法压缩.

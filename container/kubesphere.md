@@ -4,7 +4,7 @@
 ```bash
 # all-in-one部署, kk v1.0.1
 $ sudo KKZONE=cn kk create cluster --with-kubernetes v1.18.6 --with-kubesphere v3.0.0
-$ cat my_cilium.yaml # 当前`kk create cluster -f`的配置文件
+$ cat my.yaml # 使用`kk create cluster -f`部署时的配置文件
 apiVersion: kubekey.kubesphere.io/v1alpha1
 kind: Cluster
 metadata:
@@ -108,6 +108,8 @@ spec:
 
 根据[network plugin性能测试的结果](https://itnext.io/benchmark-results-of-kubernetes-network-plugins-cni-over-10gbit-s-network-updated-august-2020-6e1b757b9e49), 目前calico是最佳选择, 修改`plugin: calico`即可.
 
+> 实践发现, 即使使用calico, cilium还是会被安装, 应该有其他kubesphere组件依赖了cilium.
+
 ## kk
 ```bash
 $ kk create config --with-kubernetes v1.18.6 --with-kubesphere v3.0.0 -f mycluster.yaml # 创建cluster配置kubesphere
@@ -129,3 +131,11 @@ $ sudo chmod +r /etc/kubernetes/admin.conf # 允许其他用户可读
 $ echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> ~/.bash_profile
 $ source ~/.bash_profile
 ```
+
+### 组件异常, 事件里提示"0/1 nodes are available: 1 Insufficient cpu."
+参考:
+- [浅析Kubernetes资源管理](https://www.infoq.cn/article/rrsrvv093hh6f1ymkcez)
+
+可通过`kubectl get events --namespace=kubesphere-monitoring-system  |grep "prometheus-k8s-0"`或`kubectl describe pod prometheus-k8s-0 -n kubesphere-monitoring-system`查看对应的event.
+
+原因: cpu不足无法调度, 可通过`kubectl describe nodes`查看该node的资源限制. 目前除了添加资源外无解(除非手动修改deployment/pod配置的resources.requests).
