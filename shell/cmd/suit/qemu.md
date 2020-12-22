@@ -21,25 +21,31 @@ $ qemu-system-x86_64 -boot menu=on,splash-time=15000 # 查看seabios version
 
 编译:
 ```bash
+$ sudo apt install -y ninja-build meson pkg-config libglib2.0-dev libpixman-1-dev libjemalloc-dev libzstd-dev liburing-dev # qemue 5.2.0开始构建系统切换到ninja+meson. libzstd-dev最低要求1.4.0, 而deepin v20是1.3.8, 可到[这里](https://packages.debian.org/buster-backports/libzstd-dev)下载libzstd1和libzstd-dev. liburing-dev 未在apt repo里, 可在[这里](https://packages.debian.org/sid/liburing-dev)下载liburing-dev和liburing1来安装
 $ git ls-remote -t https://mirrors.tuna.tsinghua.edu.cn/git/qemu.git
-$ git clone --depth=1 -b v5.1.0  https://mirrors.tuna.tsinghua.edu.cn/git/qemu.git && cd qemu
+$ git clone --depth=1 -b v5.2.0  https://mirrors.tuna.tsinghua.edu.cn/git/qemu.git && cd qemu
 git submodule init
 git submodule update --recursive
 $ ./configure --target-list="x86_64-softmmu,x86_64-linux-user,aarch64-softmmu,aarch64-linux-user,aarch64_be-linux-user,riscv64-softmmu,riscv64-linux-user" \
 			  --enable-kvm \
 			  --enable-sdl \
+              --disable-xen \
+              --enable-jemalloc \
+              --enable-zstd \
+              --enable-linux-io-uring \
               --mandir="\${prefix}/share/man"
     		#   --enable-opengl \
             #   --enable-gtk
-$ make && sudo make install
+$ make -j $(nproc) && sudo make install
 $ qemu-system-x86_64 --version
 ```
 
 > `--enable-sdl`是为了启用qemu gui, 便于查看early boot, 比如uefi/grub信息.
-> qemu 5.1.0源码编译一次后重新make会卡住, 即使提前make clean过也不行, 只能用一份新源码来编译.
+> qemu 5.2.0构建切换到ninja+meson后, 构建速度贼快.
 
 生成的相关程序:
 - ivshmem-client/server：这是一个 guest 和 host 共享内存的应用程序，遵循 C/S 的架构
+- qemu-edid : [测试edid支持](https://www.kraxel.org/blog/2019/03/edid-support-for-qemu/)
 - qemu-ga：这是一个不利用网络实现 guest 和 host 之间交互的应用程序（使用 virtio-serial），运行在 guest 中
 - qemu-io：这是一个执行 Qemu I/O 操作的命令行工具
 - qemu-system-x86_64：Qemu 的核心应用程序，虚拟机就由它创建的
@@ -77,6 +83,7 @@ $ qemu-system-x86_64 --version
   qemu-nbd --disconnect /dev/nbd0
   ```
   > 通过`modinfo nbd`获知默认一个nbd设备的最大分区数是16, 可通过max_part修改.
+- qemu-pr-helper : [Persistent reservation helper protocol](https://www.qemu.org/docs/master/interop/pr-helper.html)
 
 如何更便捷地创建虚拟机呢? 答案就是libvirt. 这次就不再一个个指定虚拟机启动的参数，而是用 libvirt. 它管理 qemu 虚拟机，是基于 XML 文件，这样容易维护. xml中定义了kvm中domain的配置信息，可以使用virt-install来生成. 首先，需要安装 libvirt
 ```bash

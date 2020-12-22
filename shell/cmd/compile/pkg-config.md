@@ -1,5 +1,9 @@
 # pkg-config
 
+## 选项
+
+- --list-all 输出已知lib
+
 ## FAQ
 ### OpenSSL >= 1.0.1e and associated developement headers required
 编译freeswitch-1.8.2时碰到报错:
