@@ -27,8 +27,9 @@ $ git clone --depth=1 -b v5.2.0  https://mirrors.tuna.tsinghua.edu.cn/git/qemu.g
 git submodule init
 git submodule update --recursive
 $ ./configure --target-list="x86_64-softmmu,x86_64-linux-user,aarch64-softmmu,aarch64-linux-user,aarch64_be-linux-user,riscv64-softmmu,riscv64-linux-user" \
-			  --enable-kvm \
-			  --enable-sdl \
+              --prefix=/opt/qemu \
+              --enable-kvm \
+              --enable-sdl \
               --disable-xen \
               --enable-jemalloc \
               --enable-zstd \
@@ -201,13 +202,25 @@ doing at any given time.
 ### 如何将qcow2打内容克隆到磁盘
 `qemu-img dd -f qcow2 -O raw bs=4M if=/vm-images/image.qcow2 of=/dev/sdd1`支持将qcow2 dd到磁盘
 
-### x86 machine type选择
+### machine type选择
+参考:
+- [Platforms available in QEMU](https://wiki.qemu.org/Documentation/Platforms)
+
+#### x86_64
 参考:
 - [Qemu X86架构的Machine Type](https://remimin.github.io/2019/07/09/qemu_machine_type/)
 
 可通过`qemu-system-x86_64 --machine help`查看x86支持的所以machine type.
 
 i440fx是1996年推出的架构, 已过时. q35是2009年推出的架构, 更现代.
+
+#### riscv64
+参考:
+- [RISC-V QEMU Part 2: The RISC-V QEMU port is upstream](https://www.sifive.com/blog/risc-v-qemu-part-2-the-risc-v-qemu-port-is-upstream)
+
+- Spike是官方的RISC-V模拟平台
+- SiFive的E和U系列: E, 32-bit embedded cores; U, 64-bit application processors
+- Virt是通用的虚拟化RISC-V平台，支持VirtIO设备
 
 ### [qemu mirror](https://mirrors.tuna.tsinghua.edu.cn/help/qemu.git/)
 
