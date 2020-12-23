@@ -269,7 +269,7 @@ $ git stash pop
 
 ### 查看哪个Git分支正在跟踪哪个远程/上游分支
 ```bash
-# it branch -vv   # doubly verbose!
+# git branch -vv   # doubly verbose
 # git branch --set-upstream-to=<remote>/<branch> <local-branch> # git pull/push upstream
 # git push --set-upstream <remote> <remote-branch> # 为当前分支设在upstream
 # git pull --set-upstream <remote> <remote-branch> # 为当前分支设在upstream, 作用同上

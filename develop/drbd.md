@@ -36,3 +36,12 @@ DRBD在远程传输上支持三种模式：
 
     1. addr里不能使用localhost, 但可以使用"127.0.0.1"
     1. addr中的端口必须在[1~65535]中
+
+### drbd secondary 设备挂载报错
+drbd规定mount操作只能在primary节点进行.
+
+### requested minor out of range
+drbd设备超过限制, 目前了解最大是2^20, 已验证过的最大值是65535
+
+### conflicting use of IP 'xxx:65534'
+该端口虽然是空闲的, 但已配置在其他xxx.res中, 因此还是不能使用.

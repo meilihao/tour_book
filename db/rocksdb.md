@@ -304,6 +304,8 @@ uint32_t Extend(uint32_t crc, const char* buf, size_t size) {
 - [tecbot/gorocksdb](https://github.com/tecbot/gorocksdb), most using
 - [linxGnu/grocksdb](https://github.com/linxGnu/grocksdb), follow rocksdb latest
 
+    编译出的程序没法链接librocksdb.so时, 可参考[/go/cgo.md].
+
 ### 同步写 与 异步写
 参考:
 - [RocksDB 笔记](http://alexstocks.github.io/html/rocksdb.html)

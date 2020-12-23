@@ -459,3 +459,10 @@ mv config/config.guess config/config.guess.bak
 cp /usr/share/automake-1.13/config.guess config/
 make -s -j$(nproc)
 ```
+
+### `zpool create x /dev/sdd`报`... invalid feature 'redaction_bookmarks'`
+直接`apt remove zfsutils-linux`后直接通过`dpkg -i *.deb`安装了自打包的zfs 2.0.0导致创建pool时报了这个错误. 运行`zpool --version`输出了包含`0.8.3`即旧版本的zfs-kmod信息.
+
+解决方法: 重启即可.
+
+其实上面的升级zfs版本的步骤有问题, 应该: 删除旧版zfs后重启, 再安装新版本.

@@ -547,3 +547,9 @@ func main() {
         fmt.Println(dirs)                   
 }
 ```
+
+### cgo无法链接so
+```bash
+# CGO_CFLAGS="-I/usr/local/include/rocksdb" CGO_LDFLAGS="-L/usr/local/lib -lrocksdb -lstdc++ -lm -lz -lsnappy -llz4 -lzstd" go get github.com/linxGnu/grocksdb
+# CGO_CFLAGS="-I/usr/local/include/rocksdb" CGO_LDFLAGS="-L/usr/local/lib -lrocksdb -lstdc++ -lm -lz -lsnappy -llz4 -lzstd" go build # 不加CGO_CFLAGS,CGO_LDFLAGS编译时会无法链接到librocksdb.so, 导致编译不报错, 但执行时崩溃报"非法指令".
+```
