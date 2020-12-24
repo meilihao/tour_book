@@ -401,3 +401,11 @@ os.rmdir("/sys/kernel/config/target/core/iblock_0") # 这样即可
 /qla2xxx/21:00:00:1b:32:81:6e:f1> get attribute
 /qla2xxx/21:00:00:1b:32:81:6e:f1> set attribute demo_mode_write_protect=0
 ```
+
+### arm64 github.com/Datera/targetcli 3.0-pre4 iscsi无法添加portals
+```bash
+# vim /usr/local/lib/python2.7/dist-packages/rtslib/utils.py
+def list_eth_names(max_eth=1024):
+...
+    if os.uname()[4].endswitch("_64") # arm64的输出是aarch64, 去掉"_64"中的"_"即可
+```

@@ -472,12 +472,12 @@ make -s -j$(nproc)
 
 1. `fio -filename=/dev/zd0 -rw=write -ioengine=psync -iodepth=16 -numjobs=1 -ramp_time=30 -direct=1 -runtime=300 -time_based -group_reporting -bs=1MB -size=10GB -name=test`
 
-	- zfs 0.7.7
+	- zfs 0.7.7(ubuntu 16.04)
 
 		一次写完不报错; 3次写完报"No Space", 之后fio(参数同上), dd(direct)写都报该错, 但dd(no direct, 1g)不报错, 此时推测是dd异步写没处理报错的原因.
 
 
-	- zfs 2.0.0
+	- zfs 2.0.0(ubuntu 20.04, 自deb打包)
 
 		每次写完10G不报错
 
@@ -492,14 +492,18 @@ make -s -j$(nproc)
 		用同上参数的fio写立马报错; `dd`再写三次都会写入少量数据, 之后就无法写入而是直接报错
 
 
-还是上面的精简vol格式化成ext4后cp文件:
+还是上面的精简vol格式化成ext4后批量cp文件:
 	- zfs 0.7.7
 
-		写入3950M后变成read-only fs. umount后重新挂载报错: "can't read superblock"
+		写入3950M后变成read-only fs. umount后重新挂载报错: "can't read superblock", 因此禁止做nas.
+
+		将该不能重新挂载的vol做成iscsi, 发现iscsi client能挂载但不能格式成ext4, 会报错.
+
+		删除该vol, 重新创建一个相同大小的精简vol, 做成iscsi后, client能挂载也能格式化成ext4, 批量cp发现写入了**9072M**, 根据时间戳cp后写入的文件报错"no such file or directory", 但进入挂载目录发现该文件有大小87M. umount后再mount也报"can't read superblock".
 
 	- zfs 2.0.0
 
-		写入4577M后变成read-only fs
+		写入4577M后变成read-only fs, umount后重新挂载变正常, 可删除, 有空间后仍可创建文件, 但批量cp文件后又变成只读fs.
 
 还是上面的pool, 创建非精简vol 3.5g并格式化成ext4后cp文件:
 	- zfs 0.7.7

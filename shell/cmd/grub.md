@@ -31,3 +31,24 @@ GRUB_CMDLINE_LINUX_DEFAULT=... # 在GRUB_CMDLINE_LINUX_DEFAULT追加参数
 # update-grub2
 # cat /boot/grub/grub.cfg # 最后检查是否添加成功
 ```
+
+### 禁用Plymouth开机动画
+```bash
+# vim /etc/default/grub
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash" # 去掉splash. **splash去掉后关机动画也会被取消**
+# update-grub
+```
+
+
+进一步, 卸载plymouth:
+```bash
+sudo apt purge plymouth
+sudo apt autoremove
+sudo rm -rf /usr/share/plymouth
+```
+
+其他相关命令:
+```bash
+sudo plymouth --quit
+systemctl status plymouth-poweroff.service
+```
