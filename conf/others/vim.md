@@ -8,6 +8,7 @@
 配置:
 ```conf
 " 注释的文本在左侧使用双引号即可
+set hlsearch " 搜索时，高亮显示匹配结果
 set showcmd
 set showmode
 set pastetoggle=<F9>
