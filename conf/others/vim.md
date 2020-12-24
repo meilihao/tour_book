@@ -4,6 +4,9 @@
 
 配置:
 ```conf
+" 注释的文本在左侧使用双引号即可
+set pastetoggle=<F9>
+set showmode " 在底部显示，当前处于命令模式还是插入模式
 set ts=4 ":set tabstop=4 设定tab宽度为4个字符
 set expandtab " 空格代替tab
 syntax on " 语法高亮
@@ -15,7 +18,7 @@ function! CurDir()
         let curdir = substitute(getcwd(), $HOME, "~", "g")
         return curdir
 endfunction
-set statusline=[%n]\ %f%m%r%h\ \|\ \ pwd:\ %{CurDir()}\ \ \|%=\|\ %l/%L,%c\ %p%%\ \|\ ascii=%b,hex=%b%{((&fenc==\"\")?\"\":\"\ \|\ \".&fenc)}\ \|\ %{$USER}\ @\ %{hostname()}\
+set statusline=[%n]\ %f%m%r%h\ \|\ %{CurDir()}\ \ \|%=\|\ %l/%L,%c\ %p%%\ \|\ ascii=%b,hex=%b%{((&fenc==\"\")?\"\":\"\ \|\ \".&fenc)}\ \|\ %{$USER}\ @\ %{hostname()}\
 set ruler "在编辑过程中，在右下角显示光标位置的状态行
 set number
 if has('mouse')
