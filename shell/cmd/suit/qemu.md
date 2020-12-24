@@ -252,6 +252,10 @@ i440fx是1996年推出的架构, 已过时. q35是2009年推出的架构, 更现
 
 推荐使用`qemu-system-x86_64 -kernel arch/x86_64/boot/bzImage -nographic -append "console=ttyS0"`运行, 退出方法同上.
 
+### 强制退出QEMU虚拟机
+
+先按ctrl + a 放开后，再按下 x, 这在运行启动虚拟机的命令后发生卡死现象时特别有用.
+
 ### 压缩qcow2
 初始磁盘压缩方法:
 ```bash
