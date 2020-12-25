@@ -1,4 +1,7 @@
 # vim
+参考:
+- [vim快捷键大全图解](https://segmentfault.com/a/1190000016056004)
+
 文本编辑器
 
 Vim 的三种模式:
