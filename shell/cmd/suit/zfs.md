@@ -411,6 +411,8 @@ nfs配置见[fs.md](fs.md)
 
 > 需要test时`dpkg -i`追加`zfs-test_2.0.0-1_amd64.deb`
 
+> ZFS模块可以通过两种方式加载到内核，DKMS和kABI, 区别在于: 如果安装基于DKMS的ZFS模块，然后由于某种原因更新了操作系统的内核，则必须再次重新编译ZFS内核模块, 否则它将无法工作; 但是基于kABI的ZFS模块的优势在于，如果更新操作系统的内核，则不需要重新编译.
+
 ## FAQ
 ### [zfs test](https://openzfs.github.io/openzfs-docs/Developer%20Resources/Building%20ZFS.html)
 相关脚本在`zfs-test_*.deb`中, 安装后执行即可`/usr/share/zfs && ./zfs-tests.sh -vx`即可.
