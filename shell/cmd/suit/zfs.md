@@ -395,9 +395,21 @@ nfs配置见[fs.md](fs.md)
                 --libexecdir=/usr/lib --with-config=all --enable-systemd # configure前必须安装alien否则`make deb`会报错; 不能将`--with-python`设为"no", 否则`make deb`根据rpm spec构建rpm时会报错"configure: error: Unknown --with-python value ':'"
 # # 下面自行编译再install / 直接打包选一种即可
 # make -s -j$(nproc) # 自行编译 / make deb # [zfs会先通过构建rpm再通过alien将rpm转成deb](https://github.com/openzfs/zfs/issues/10168)
+# make deb
+# dpkg -i \
+        zfs-initramfs_2.0.0-1_amd64.deb \
+        zfs_2.0.0-1_amd64.deb \
+        python3-pyzfs_2.0.0-1_amd64.deb \
+        libzpool4_2.0.0-1_amd64.deb \
+        libzfs4_2.0.0-1_amd64.deb \
+        libuutil3_2.0.0-1_amd64.deb \
+        libnvpair3_2.0.0-1_amd64.deb \
+        kmod-zfs-$(uname -r)_2.0.0-1_amd64.deb # from 0.8.1
 ```
 
 > `make deb`因为会先构建rpm的原因, 导致会根据`rpm/xxx/yyy.spec.in`重新编译zfs, 且编译参数由rpm spec指定.
+
+> 需要test时`dpkg -i`追加`zfs-test_2.0.0-1_amd64.deb`
 
 ## FAQ
 ### [zfs test](https://openzfs.github.io/openzfs-docs/Developer%20Resources/Building%20ZFS.html)
