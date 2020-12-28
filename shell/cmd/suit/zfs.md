@@ -400,6 +400,9 @@ nfs配置见[fs.md](fs.md)
 > `make deb`因为会先构建rpm的原因, 导致会根据`rpm/xxx/yyy.spec.in`重新编译zfs, 且编译参数由rpm spec指定.
 
 ## FAQ
+### [zfs test](https://openzfs.github.io/openzfs-docs/Developer%20Resources/Building%20ZFS.html)
+相关脚本在`zfs-test_*.deb`中, 安装后执行即可`/usr/share/zfs && ./zfs-tests.sh -vx`即可.
+
 ### Error
 #### libzfs.h: No such file or directory
 ```sh
