@@ -73,9 +73,8 @@ systemd部署见[node_exporter.service](https://github.com/prometheus/node_expor
 
 ## 部署grafana
 ```
-# mkdir -p /var/lib/grafana
-# chmod 777 /var/lib/grafana
-# docker run -d  --net=host -p 3000:3000 -v /var/lib/grafana:/var/lib/grafana --name grafana  grafana/grafana
+# docker volume create data-grafana # 使用docker volume: docker run ... -v grafana-storage:/var/lib/grafana ...
+# docker run -d --restart=unless-stopped --net=host -p 3000:3000 -v data-grafana:/var/lib/grafana --name grafana  grafana/grafana
 ```
 
 访问http://localhost:3000, 初始密码: admin/admin
