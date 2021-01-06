@@ -4,11 +4,32 @@
 参考:
 - [prometheus-book](https://yunlzheng.gitbook.io/prometheus-book/)
 
+# prometheus
+Prometheus是一款开源的业务监控和时序数据库.
+
+## 基本概念
+Prometheus定义了4中不同的指标类型(metric type)：
+- Counter（计数器）: 只增不减的计数器
+
+  Counter类型的指标其工作方式和计数器一样,只增不减（除非系统发生重置）. 常见的监控指标,如http_requests_total,node_cpu都是Counter类型的监控指标. 一般在定义Counter类型指标的名称时推荐使用_total作为后缀. Counter是一个简单但有强大的工具,例如我们可以在应用程序中记录某些事件发生的次数,通过以时序的形式存储这些数据,我们可以轻松的了解该事件产生速率的变化. PromQL内置的聚合操作和函数可以用户对这些数据进行进一步的分析：
+  - 通过rate()函数获取HTTP请求量的增长率：`rate(http_requests_total[5m])`
+  - 查询当前系统中,访问量前10的HTTP地址：`topk(10, http_requests_total)`
+
+- Gauge（仪表盘）: 可增可减的仪表盘
+
+  与Counter不同,Gauge类型的指标侧重于反应系统的当前状态. 因此这类指标的样本数据可增可减. 常见指标如：node_memory_MemFree（主机当前空闲的内容大小）,node_memory_MemAvailable（可用内存大小）都是Gauge类型的监控指标. 通过Gauge指标,用户可以直接查看系统的当前状态： node_memory_MemFree 对于Gauge类型的监控指标, 通过PromQL内置函数delta()可以获取样本在一段时间返回内的变化情况. 例如,计算CPU温度在两个小时内的差异： delta(cpu_temp_celsius{host="zeus"}[2h]) 还可以使用deriv()计算样本的线性回归模型,甚至是直接使用predict_linear()对数据的变化趋势进行预测.例如,预测系统磁盘空间在4个小时之后的剩余情况： predict_linear(node_filesystem_free{job="node"}[1h], 4 * 3600)
+
+- Histogram（直方图）/ Summary（摘要）: 使用Histogram和Summary分析数据分布情况
+
+  Histogram和Summary主用用于统计和分析样本的分布情况. 在大多数情况下人们都倾向于使用某些量化指标的平均值, 例如CPU的平均使用率, 页面的平均响应时间. 这种方式的问题很明显,以系统API调用的平均响应时间为例：如果大多数API请求都维持在100ms的响应时间范围内,而个别请求的响应时间需要5s,那么就会导致某些WEB页面的响应时间落到中位数的情况,而这种现象被称为长尾问题. 为了区分是平均的慢还是长尾的慢,最简单的方式就是按照请求延迟的范围进行分组. 例如,统计延迟在0~10ms之间的请求数有多少而10~20ms之间的请求数又有多少.通过这种方式可以快速分析系统慢的原因.Histogram和Summary都是为了能够解决这样问题的存在,通过Histogram和Summary类型的监控指标, 可以快速了解监控样本的分布情况. 例如,指标prometheus_tsdb_wal_fsync_duration_seconds的指标类型为Summary. 它记录了Prometheus Server中wal_fsync处理的处理时间.
+
+  与Summary类型的指标相似之处在于Histogram类型的样本同样会反应当前指标的记录的总数(以_count作为后缀)以及其值的总量（以_sum作为后缀）. 不同在于Histogram指标直接反应了在不同区间内样本的个数,区间通过标签len进行定义. 同时对于Histogram的指标,我们还可以通过histogram_quantile()函数计算出其值的分位数. 不同在于Histogram通过histogram_quantile函数是在服务器端计算的分位数. 而**Sumamry的分位数则是直接在客户端计算完成**.因此对于分位数的计算而言,Summary在通过PromQL进行查询时有更好的性能表现,而Histogram则会消耗更多的资源. 反之对于客户端而言Histogram消耗的资源更少.在选择这两种方式时用户应该按照自己的实际场景进行选择.
+
 ## 部署prometheus
 ```bash
 # mkdir -p /var/lib/prometheus
 # chmod 777 /var/lib/prometheus
-# cat << EOF > /etc/prometheus/prometheus.yml
+# cat << EOF |tee /etc/prometheus/prometheus.yml
 # my global config
 global:
   scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
@@ -38,8 +59,17 @@ scrape_configs:
 
     static_configs:
     - targets: ['localhost:9090']
+  - job_name: 'otel-collector'
+    scrape_interval: 10s
+    static_configs:
+    - targets: ['0.0.0.0:8888']
+  - job_name: 'clients'
+    scrape_interval: 10s
+    static_configs:
+    - targets: ['0.0.0.0:8889']
 EOF
-# docker run -d --net=host -p 9090:9090 -v /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml -v /var/lib/prometheus:/prometheus --name prometheus prom/prometheus
+# docker volume create data-prometheus
+# docker run -d --restart=unless-stopped --net=host -p 9090:9090 -v /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml -v data-prometheus:/prometheus --name prometheus prom/prometheus
 ```
 
 > prometheus.yml可通过不指定`-v /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml`时进入容器来获取 
@@ -71,6 +101,36 @@ scrape_configs:
 
 systemd部署见[node_exporter.service](https://github.com/prometheus/node_exporter/blob/master/examples/systemd/node_exporter.service)
 
+# grafana
+参考:
+- [玩转 Grafana 可视化系统](https://www.infvie.com/ops-notes/play-grafana.html)
+
+grafana 是一款采用 go 语言编写的开源应用，主要用于大规模指标数据的可视化展现，是网络架构和应用分析中最流行的时序数据展示工具，目前已经支持绝大部分常用的时序数据库.
+
+Grafana支持许多不同的数据源. 每个数据源都有一个特定的查询编辑器,该编辑器定制的特性和功能是公开的特定数据来源. 官方支持以下数据源:Graphite，Elasticsearch，InfluxDB，Prometheus，Cloudwatch，MySQL和OpenTSDB等.
+
+每个数据源的查询语言和能力都是不同的, 可以把来自多个数据源的数据组合到一个dashborad，但每一个panel被绑定到一个特定的数据源,它就属于一个特定的组织.
+
+## 基本概念
+DashBoard：仪表盘，就像汽车仪表盘一样可以展示很多信息，包括车速，水箱温度等. Grafana的DashBoard就是以各种图形的方式来展示从Datasource拿到的数据.
+
+Row：行，DashBoard的基本组成单元，一个DashBoard可以包含很多个row. 一个row可以展示一种信息或者多种信息的组合(即由Panels组成), 比如系统内存使用率，CPU五分钟及十分钟平均负载等, 所以在一个DashBoard上可以集中展示很多内容.
+
+Panel：面板，实际上就是row展示信息的方式，支持表格（table），列表（alert list），热图（Heatmap）等多种方式.
+
+Query Editor：查询编辑器，用来指定获取哪一部分数据. 类似于sql查询语句，比如你要在某个row里面展示test这张表的数据，那么Query Editor里面就可以写成`select * from test`. 这只是一种比方，[实际上每个DataSource获取数据的方式都不一样，所以写法也不一样](http://docs.grafana.org/features/datasources/).
+
+Organization：组织，org是一个很大的概念，每个用户可以拥有多个org，grafana有一个默认的main org. 用户登录后可以在不同的org之间切换，前提是该用户拥有多个org. 不同的org之间完全不一样，包括datasource，dashboard等都不一样. 创建一个org就相当于开了一个全新的视图，所有的datasource，dashboard等都要再重新开始创建.
+
+User：用户，这个概念应该很简单. Grafana里面用户有三种角色admin,editor,viewer:
+- admin权限最高，可以执行任何操作，包括创建用户，新增Datasource，创建DashBoard
+- editor角色不可以创建用户，不可以新增Datasource，可以创建DashBoard
+
+  在2.1版本及之后新增了一种角色read only editor（只读编辑模式），这种模式允许用户修改DashBoard，但是不允许保存.
+- viewer角色仅可以查看DashBoard.
+
+每个user可以拥有多个organization.
+
 ## 部署grafana
 ```
 # docker volume create data-grafana # 使用docker volume: docker run ... -v grafana-storage:/var/lib/grafana ...
@@ -91,7 +151,7 @@ systemd部署见[node_exporter.service](https://github.com/prometheus/node_expor
 
 > Grafana首页的Dashboards tag页仅显示已使用过的dashboard, 初次可用左侧菜单栏的搜索按钮进行查找.
 
-## FAQ
+# FAQ
 ### 让Prometheus reload配置激活新的job的方法
 1. `send SIGHUP signal`
 
@@ -108,4 +168,7 @@ prometheus(`/home/tidb/tidb-deploy/prometheus-9090/scripts/run_prometheus.sh`)�
 
 > `--storage.tsdb.retention`默认是`15d`
 
-> [prometheus不支持将storage.tsdb.retention加入prometheus.yml](https://github.com/prometheus/prometheus/issues/6188).
+> [prometheus不支持将storage.tsdb.retention加入prometheus.yml的原因: storage属于不能动态刷新的配置](https://github.com/prometheus/prometheus/issues/6188).
+
+### grafana添加"Data Sources / Prometheus"报`HTTP Error Bad Gateway`
+尝试使用`curl http://<prometheus_sever>/metrics`测试, 通常是当前浏览器无法访问到`http://<prometheus_sever>/metrics`导致的, 比如grafana, prometheus部署在aliyun, 此时用`localhost:9090`作为prometheus url就会报该错.

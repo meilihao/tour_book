@@ -122,6 +122,8 @@ $ sudo zpool iostat # 列出pools的io统计信息, `-v`显示pool包含的vdev�
 $ sudo zpool export [option] <pool> # 导出pool, 该pool必须处于不活动状态, 导出后该pool在系统中不可见. `-f`强制取消已挂载的filesystem
 $ sudo zpool import [option] [pool/id-number] # 导入pool, 导入时允许重命名,允许只读导入. `-m`表示导入mirror log, 默认不导入.`-d`导入非标准路径的设备/由file构成的pool.`-D`恢复已销毁的pool, 追加`-f`即`-Df`可表示已销毁的pool中某设备不可用也可恢复.
 $ sudo zpool upgrade # 升级pool, 以使用新版的zfs功能. `-v`表示当前zfs支持的功能, `-a`表示升级到最新的zfs.
+$ blkid /dev/sdg # 检查盘是否被zfs使用过
+/dev/sdg: LABEL="t" ... TYPE="zfs_member" # t是pool name, zpool destroy后该信息还保留.
 ```
 
 pool status:

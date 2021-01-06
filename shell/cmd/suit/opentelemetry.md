@@ -1,4 +1,15 @@
 # opentelemetry
+OpenTelemetry合并了OpenTracing和OpenCensus项目，提供了一组API和库来标准化遥测数据的采集和传输. OpenTelemetry提供了一个安全，厂商中立的工具，这样就可以按照需要将数据发往不同的后端.
+
+OpenTelemetry项目由如下组件构成：
+- 推动在所有项目中使用一致的规范
+- 基于规范的，包含接口和实现的APIs
+- 不同语言的SDK(APIs的实现)，如 Java, Python, Go, Erlang等
+- Exporters：可以将数据发往一个选择的后端
+
+  [OpenTelemetry exporters list](https://opentelemetry.io/registry/)
+- Collectors：厂商中立的实现，用于处理和导出遥测数据
+
 
 ## opentelemetry-collector
 参考:
@@ -35,11 +46,42 @@ pipelines有两类：
 - metrics: 采集和处理metrics数据
 - traces: 采集和处理trace数据
 
+## OpenTelemetry API
+参考:
+- [^From 0 to Insight with OpenTelemetry in Go](https://www.honeycomb.io/blog/from-0-to-insight-with-opentelemetry-in-go/)
+- [OpenTelemetry: 经得起考验的工具](https://www.cnblogs.com/charlieroro/p/13862471.html)
+- [opentelemetry-java/QUICKSTART.md](https://github.com/open-telemetry/opentelemetry-java/blob/master/QUICKSTART.md)
+- [Setup and Install OpenTelemetry Go](https://opentelemetry.lightstep.com/go/setup-and-installation/)
+- [通过Open Telemetry上报Java应用数据](https://www.alibabacloud.com/help/zh/doc-detail/196899.htm)
+- [opentracing-io](https://wu-sheng.gitbooks.io/opentracing-io/content/pages/spec.html)
+- [^opentelemetry-go api status](https://opentelemetry.io/docs/go/) : go sdk未实现log api
+
+应用开发者会使用 Open Telemetry API对其代码进行插桩，库作者会用它(在库中)直接编写桩功能. API不处理操作问题，也不关心如何将数据发送到厂商后端:
+
+API分为四个部分：
+- A Tracer API
+
+  Tracer API 支持生成spans，可以给span分配一个traceId，也可以选择性地加上时间戳. 一个Tracer会给spans打上名称和版本. 当查看数据时，名称和版本会与一个Tracer关联，通过这种方式可以追踪生成的sapan
+- A Metrics API
+
+  [Metric API](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/metrics/api.md)提供了多种类型的Metric instruments(桩功能)，如Counters 和Observers. Counters 允许对度量进行计算，Observers允许获取离散时间点上的测量值. 例如，可以使用Observers 观察不在Span上下文中出现的数值，如当前CPU负载或磁盘上空闲的字节数.
+- A Context API
+
+  [Context API](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/context/context.md)会在使用相同"context"的spans和traces中添加上下文信息，如[W3C Trace Context](https://www.w3.org/TR/trace-context/), Zipkin B3首部, 或 [New Relic distributed tracing](https://docs.newrelic.com/docs/understand-dependencies/distributed-tracing/get-started/introduction-distributed-tracing) 首部. 此外该API允许跟踪spans是如何在一个系统中传递的. 当一个trace从一个处理传递到下一个处理时会更新上下文信息. Metric instruments可以访问当前上下文.
+- 语义规范
+
+  OpenTelemetry API包含一组[语义规范](https://github.com/open-telemetry/opentelemetry-specification/blob/master/specification/overview.md#semantic-conventions.md)，该规范包含了命名spans，属性以及与spans相关的错误. 通过将该规范编码到API接口规范中，OpenTelemetry 项目保证所有的instrumentation(不论任何语言)都包含相同的语义信息. 对于希望为所有用户提供一致的APM体验的厂商来说，该功能非常有价值.
+
+> 跨span传递trace的原理: [传递traceparent](https://github.com/open-telemetry/opentelemetry-go/tree/master/propagation/trace_context.go)
+
 ## demo
+1. [Instrumentation](https://github.com/open-telemetry/opentelemetry-go-contrib/tree/master/instrumentation)
+1. [lightstep / opentelemetry-examples go demo](https://github.com/lightstep/opentelemetry-examples/tree/main/go)
 1. [go demo](https://github.com/open-telemetry/opentelemetry-go/tree/master/example/otel-collector)
 
 	演示了如何从OpenTelemetry-Go SDK 中导出trace和metric数据，并将其导入opentelemetry-collector，最后通过collector将trace数据传递给Jaeger，将metric数据传递给Prometheus.
 1. [OpenTelemetry Collector Demo](https://github.com/open-telemetry/opentelemetry-collector/tree/master/examples)和[如何在客户端和服务器中正确使用OpenTelemetry导出器和OpenTelemetry收集器？](https://mlog.club/article/5893955)
+1. [OpenTelemetry 支持split driver即分开导出trace/metric](https://github.com/open-telemetry/opentelemetry-go/blob/master/exporters/otlp/example_test.go)
 
 ## 完整部署
 测试client: [exporter_otelcol](https://github.com/meilihao/demo/tree/master/opentelemetry/exporter_otelcol)
@@ -176,6 +218,10 @@ EOF
           receivers: [otlp]
           processors: [batch]
           exporters: [prometheus]
+        logs:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [logging]
 
       extensions: [health_check, pprof, zpages]
     EOF

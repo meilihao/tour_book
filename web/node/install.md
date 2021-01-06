@@ -5,7 +5,7 @@
 ## 其他安装方式
 
 - [通过包管理器安装](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
-- Linux 二进制安装
+- [Linux 二进制安装](https://github.com/nodejs/help/wiki/Installation)
 
  1. 在node官网下载[最新版Linux Binaries](http://nodejs.org/dist/v0.12.4/node-v0.12.4-linux-x64.tar.gz).
 
