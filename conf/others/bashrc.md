@@ -42,4 +42,7 @@ alias llvm-link="llvm-link-10"
 alias llvm-mc="llvm-mc-10"
 alias lli="lli-10"
 alias llc="llc-10"
+
+# --- liteide
+export LD_LIBRARY_PATH="/opt/liteide/lib:$LD_LIBRARY_PATH"
 ```

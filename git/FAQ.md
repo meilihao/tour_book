@@ -311,3 +311,20 @@ git pull <远程主机名> <远程分支名>:<本地分支名> , 比如`git pull
 - new
 - commit
 - whitespace
+
+### error: 推送一些引用到 'git@gitee.com:chenhao/hello_minio.git' 失败
+```log
+# git push -u read  master
+...
+To gitee.com:chenhao/hello_minio.git
+ ! [remote rejected] master -> master (shallow update not allowed)
+error: 推送一些引用到 'git@gitee.com:chenhao/hello_minio.git' 失败
+```
+
+在 clone 原仓库时用了`git clone --depth 1`，导致本地为`shallow repo`, 解决方法也很简单:
+1. 补全repo再push
+
+    ```
+    git fetch --unshallow origin
+    ```
+1. 删除`.git`, 再重建repo并push

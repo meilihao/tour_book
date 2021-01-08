@@ -119,6 +119,14 @@ sudo code --user-data-dir=/home/chen/.vscode .
 
 > [参考](http://www.tuicool.com/articles/myYv6v)
 
+### [`qt.qpa.plugin: Could not load the Qt platform plugin "xcb" in "" even though it was found`](https://github.com/visualfc/liteide/issues/1165)
+```bash
+# 开启QT_DEBUG_PLUGINS, 获取详细错误`Cannot load library /opt/liteide/plugins/platforms/libqxcb.so: (/opt/liteide/plugins/platforms/../../lib/libQt5XcbQpa.so.5: undefined symbol: _ZNK14QPlatformTheme14fileIconPixmapERK9QFileInfoRK6QSizeF6QFlagsINS_10IconOptionEE)`
+QT_DEBUG_PLUGINS=1 ./liteide
+```
+
+解决方法: `export LD_LIBRARY_PATH="/PATH/TO/liteide/lib:$LD_LIBRARY_PATH" && ./liteide`, 建议加入`~/.bashrc`.
+
 ### chrome 55 没有flash
 
 `chrome://plugins`里的Adobe Flash Player显示: 
