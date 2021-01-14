@@ -124,7 +124,7 @@
 - [Web Audio API samples](https://webaudioapi.com/samples/)
 - [standardized-audio-context](https://github.com/chrisguttandin/standardized-audio-context)
 
-## http3
+## [http3](https://github.com/quicwg)
 - [HTTP/3 explained](https://daniel.haxx.se/http3-explained/)
 - [quic status](https://datatracker.ietf.org/wg/quic/about/)
 - [HTTP/3 status](https://datatracker.ietf.org/doc/draft-ietf-quic-http/)
