@@ -190,3 +190,6 @@ go mod项目嵌套时, go get需要指定具体的路径比如`go get -u golang.
 
 ### 内网有goproxy, `go get xxx`报错
 直接在启用go mod的项目中`import xxx`, 然后`go build`正常.
+
+### 获取go mod支持的package versions
+`GO111MODULE=on go list -m -json -versions go.etcd.io/etcd`
