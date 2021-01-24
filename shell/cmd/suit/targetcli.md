@@ -323,7 +323,7 @@ UUID=eb9cbf2f-fce8-413a-b770-8b0f243e8ad6 /iscsi xfs defaults,_netdev 0 0 # 由�
 方法2:
 1. 找出所有fc盘: `lsblk -SJo TRAN,NAME`, 将tran是fc的所有盘找出, 假设这里仅有一块sdo
 1. 找到对应的sgN: `ll /sys/block/sdo/device/scsi_generic`或`sg_map -i`
-1. 找到关联的naa: `sg_inq -p 0x83 /dev/sgN|grep naa`与target的wwpn做匹配, 此时只能确定该lun由指定target提供而不能一一对应. 但通过`sg_inq -p 0x83 /dev/sgN|grep "vendor specific"`与target端的`T10 VPD Unit Serial Number`做匹配即可一一对应.
+1. 找到关联的naa: `sg_inq -p 0x83 /dev/sgN|grep naa`与target的wwpn做匹配, 此时只能确定该lun由指定target提供而不能一一对应. 但通过`sg_inq -p 0x83 /dev/sgN|grep "vendor specific"(=`sg_inq -p 0x80 /dev/sgN`)`与target端的`T10 VPD Unit Serial Number`做匹配即可一一对应.
 
 ### 不设置acl
 在ACL配置目录执行 set attribute generate_node_acls=0使用自定义的acl实现访问控制，则需要设置访问权限控制列表acl（默认就是这种），acl参数目录用于存放能够访问target端共享存储资源的initiator的iqn. 在客户端访问时，只要iscsi客户端的iqn名称与服务端设置的访问控制列表中的iqn名称一致即可访问. 如果不想使用ACL可以在ACL配置目录执行 set attribute generate_node_acls=1使用自动生成acl节点，这样不添加initiator的iqn也允许initiator访问.

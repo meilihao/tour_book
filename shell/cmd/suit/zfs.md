@@ -91,7 +91,7 @@ zfs支持分层组织filesystem, 每个filesystem仅有一个父级, 而且支�
 ```sh
 $ sudo zpool create pool-test /dev/sdb /dev/sdc /dev/sdd # 创建了一个零冗余的RAID-0存储池, zfs 会在`/`中创建一个目录,目录名是pool name 
 $ sudo zpool [option] list # 显示系统上pools的列表, `-o`只显示指定列,`-H`隐藏列头
-$ sudo zpool status <pool> # 查看pool的状态,read/write列显示io错误次数, cksum列显示无法更正的校验和错误的次数. `-v`输出详细信息, `-x`仅显示有错误或因其他原因不可用的pool
+$ sudo zpool status <pool> # 查看pool的状态,read/write列显示读写io时的错误次数, cksum列显示设备对读取请求返回损坏数据(校验和错误)的次数. `-v`输出详细信息, `-x`仅显示有错误或因其他原因不可用的pool
 $ sudo zpool destroy <pool> # 销毁pool
 $ sudo zpool destroy <pool>/data-set # 销毁dataset
 $ sudo zpool upgrade [<pool> | -a] # 更新 zfs 时，就需要更新指定/全部池
@@ -457,6 +457,10 @@ zfs 0.8.1 rename后`/dev/zvol/{datapath}`会跟着变化, 且mkfs正常.
 # xfs_repair -L /dev/zd64
 # xfs_admin -U generate /dev/zd64
 ```
+
+### [blk_update_request: I/O error, dev sdc, sector 824769880 且 zpool status提示有write和cksum错误](https://github.com/openzfs/zfs/issues/3785)
+可用`hdparm --read-sector 824769880 /dev/sdc`尝试多次读取.
+
 
 ### pool I/O is currently suspend
 pool只有raidz0(1块), 没有其他盘, 物理移除该盘后, `zpool destroy`时报该错误.

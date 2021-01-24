@@ -33,3 +33,9 @@ linux下用于构建、管理和监控RAID阵列(也被称为md设备)的工具.
     # echo "/dev/md0 /RAID ext4 defaults 0 0" >> /etc/fstab # 并把挂载信息写入到配置文件中，使其永久生效
     # mdadm /dev/md0 -f /dev/sdb # 模拟坏盘
     # mdadm /dev/md0 -a /dev/sdb # 将新盘换入md0(需先卸载再重新挂载)
+
+## FAQ
+### raid 重建进度
+方法:
+1. `cat /proc/mdstat`
+1. `mdadm -D /dev/md<N>`的`Resync Status`
