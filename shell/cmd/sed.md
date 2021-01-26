@@ -67,6 +67,7 @@ $ echo sources/linux-5.8.1.tar.xz |sed 's/linux\-\(.*\)\.tar\.xz/\1/g' => source
 $ sed -i '/2222222222/a\3333333333' test.txt # 在匹配行前插入新行
 $ sed -i '/2222222222/i\3333333333' test.txt # 在匹配行后追加新行
 $ sed -i "s/max_dbs_open = 100*/max_dbs_open = 1000/g" /etc/couchdb/default.ini # 匹配里使用通配符
+$ sed -i -r "s/([0-9]{1,3}\.){3}([0-9]{1,3})/127.0.0.1/g" <file> # 替换文件中的ip
 ```
 
 ps:

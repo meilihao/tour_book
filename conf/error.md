@@ -132,6 +132,7 @@ QT_DEBUG_PLUGINS=1 ./liteide
 - [mpt2sas0: log_info(0x31120303) 问题分析与解决](https://blog.csdn.net/weixin_44648216/article/details/104070284)
 - [hotplug_sata_drive.md](https://github.com/huataihuang/cloud-atlas-draft/blob/master/os/linux/kernel/storage/hotplug_sata_drive.md)
 - [mpt2sas故障处理](https://huataihuang.gitbooks.io/cloud-atlas/content/storage/das/mpt2sas/troubleshooting/mpt2sas_offline_fail_disk.html)
+- [使用命令行工具对LSI阵列卡进行高效管理](https://blog.51cto.com/1130739/1771506)
 
 > mpt3sas is the driver for the SATA host bus adapter.
 
@@ -183,6 +184,20 @@ PL_LOGINFO_SUB_CODE_OPEN_FAIL_NO_DEST_TIME_OUT
 > /var/log/messages日志中不断出现hard reset，表明存储卡出现了异常即服务器RAID卡需要替换维修.
 
 > 存储hba卡通常是来自LSI公司（LSI Corporation）,  一般地，支持RAID 5的卡，称其为阵列卡，都可以使用LSI官方提供的MegaCli, SAS2IRCU, SAS3IRCU等工具来管理; 而不支持RAID 5的卡，称其为SAS卡，使用lsiutil工具来管理. HP的服务器则使用其特有的hpacucli工具来管理.
+
+### ext4变成read only, syslog报"ext4_journal_check_start detected aborted journal"
+参考:
+- [File system going in to read-only](https://access.redhat.com/solutions/35122)
+
+原因: All paths to LUN were lost. If the kernel finds fatal corruption on the disk or if certain key IOs like journal writes start failing, it will remount the filesystem as read-only.
+
+修复方法:
+```bash
+umount /dev/<dev> # 从文件系统中删除日志
+tune2sf -O ^has_journal /dev/<dev>
+e2fsck -f /dev/<dev>
+tune2sf -j /dev/<dev>
+```
 
 ### chrome 55 没有flash
 
