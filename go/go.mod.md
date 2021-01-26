@@ -190,3 +190,9 @@ go mod项目嵌套时, go get需要指定具体的路径比如`go get -u golang.
 
 ### 内网有goproxy, `go get xxx`报错
 直接在启用go mod的项目中`import xxx`, 然后`go build`正常.
+
+### 获取go mod支持的package versions
+`GO111MODULE=on go list -m -json -versions go.etcd.io/etcd`
+
+### /home/chen/git/go/pkg/mod/go.uber.org/zap@v1.16.0/level.go:24:2: missing go.sum entry for module providing package go.uber.org/atomic; try 'go mod tidy' to add it
+需到go.mod所在目录执行`go mod tidy`

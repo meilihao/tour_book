@@ -32,7 +32,7 @@ etcdctl选项:
 - --endpoints : 指定 etcd server 的地址, 默认访问 `localhost:2379`
 
 ## etcd 集群的启动方式
-1. 静态配置
+1. [静态配置](http://play.etcd.io/install)
 
     比较适用于线下环境, 前提条件: `集群节点个数已知` 和 `集群各节点的地址已知`.
 

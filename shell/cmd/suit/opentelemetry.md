@@ -1,15 +1,39 @@
 # opentelemetry
+参考:
+- [OpenTelemetry – 云原生下可观测性的新标准](https://www.daqianduan.com/17340.html)
+
+> elemetry : [təˈlemətri], 遥测
+
 OpenTelemetry合并了OpenTracing和OpenCensus项目，提供了一组API和库来标准化遥测数据的采集和传输. OpenTelemetry提供了一个安全，厂商中立的工具，这样就可以按照需要将数据发往不同的后端.
 
-OpenTelemetry项目由如下组件构成：
-- 推动在所有项目中使用一致的规范
-- 基于规范的，包含接口和实现的APIs
-- 不同语言的SDK(APIs的实现)，如 Java, Python, Go, Erlang等
-- Exporters：可以将数据发往一个选择的后端
+OpenTelemetry的核心工作目前主要集中在3个部分：
+- 规范的制定和协议的统一，规范包含数据传输、API的规范，协议的统一包含：HTTP W3C的标准支持及GRPC等框架的协议标准
+- 多语言SDK的实现和集成，用户可以使用SDK进行代码自动注入和手动埋点，同时对其他三方库（Log4j、LogBack等）进行集成支持
+- 数据收集系统的实现，当前是基于OpenCensus Service的收集系统，包括Agent和Collector
+
+  - Exporters：可以将数据发往一个可选择的后端
 
   [OpenTelemetry exporters list](https://opentelemetry.io/registry/)
-- Collectors：厂商中立的实现，用于处理和导出遥测数据
+  - Collectors：厂商中立的实现，用于处理和导出遥测数据
 
+OpenTelemetry的自身定位很明确：数据采集和标准规范的统一，对于数据如何去使用、存储、展示、告警，官方是不涉及的. 目前社区推荐使用Prometheus + Grafana做Metrics存储、展示，使用Jaeger做分布式跟踪的存储和展示.
+
+OpenTelemetry的终极目标是：实现Metrics、Tracing、Logging的融合及大一统，作为APM的数据采集终极解决方案:
+- Tracing：提供了一个请求从接收到处理完成整个生命周期的跟踪路径，一次请求通常过经过N个系统，因此也被称为分布式链路追踪
+- Metrics：例如cpu、请求延迟、用户访问数等Counter、Gauge、Histogram指标
+- Logging：传统的日志，提供精确的系统记录
+
+这三者的组合可以形成大一统的APM解决方案：
+- 基于Metrics告警发现异常
+- 通过Tracing定位到具体的系统和方法
+- 根据模块的日志最终定位到错误详情和根源
+- 调整Metrics等设置，更精确的告警/发现问题
+
+在OpenTelemetry中使用Context为Metrics、Logging、Tracing提供统一的上下文，三者均可以访问到这些信息，同时Context可以随着请求链路的深入，不断往下传播:
+- Context数据在Task/Request的执行周期中都可以被访问到
+- 提供统一的存储层，用于保存Context信息，并保证在各种语言和处理模型下都可以工作（例如单线程模型、线程池模型、CallBack模型、Go Routine模型等）
+- 多种维度的关联基于元信息(标签)实现，元信息由业务确定，例如：通过Env来区别是测试还是生产环境等
+- 提供分布式的Context传播方式，例如通过W3C的traceparent/tracestate头、GRPC协议等
 
 ## opentelemetry-collector
 参考:

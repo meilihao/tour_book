@@ -13,6 +13,8 @@ minio没有快照功能.
 
 > minio出品自一个有着多年网络文件系统开发经验的团队，其初始创始团队都来自于原Glusterfs团队.
 
+> [minio支持在bucket级别开启versioning, 作用于其内的每个object](https://docs.min.io/docs/minio-bucket-versioning-guide.html)
+
 类似:
 - [seaweedfs](https://github.com/chrislusf/seaweedfs)及[weed-fs使用简介](https://tonybai.com/2015/08/22/intro-of-using-weedfs/)
 - [bfs](https://github.com/Terry-Mao/bfs)及[bfs:支撑Bilibili的小文件存储系统](https://mp.weixin.qq.com/s?__biz=MzAwMDU1MTE1OQ==&mid=406016886&idx=1&sn=f5aa286373fb981c9de904568fe7ddb2)
