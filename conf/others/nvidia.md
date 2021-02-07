@@ -33,7 +33,7 @@ change to non GUI mode: Ctrl+Alt+F2 (works on DeepinOS) or Ctrl+Alt+F1(works on 
 
 nvidia官方驱动:
 ```bash
-chmod +x NVIDIA-Linux-x86_64-455.45.01.run
+chmod +x NVIDIA-Linux-x86_64-455.45.01.run # NVIDIA-Linux-x86_64-455.45.01.run包含了nvidia-smi
 sudo systemctl stop lightdm.service
 sudo init 3  #切换运行级别3来运行驱动安装程序（不切换可能安装失败）
 sudo ./NVIDIA-Linux-x86_64-455.45.01.run # 
