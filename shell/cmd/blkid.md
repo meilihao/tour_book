@@ -1,8 +1,14 @@
 # blkid
 获取磁盘上所采用文件系统信息, 比如文件系统类型,Label,UUID等.
 
+## 选项
+- -p : 底层superblock探测(bypass cache)
+- -o <format> : 指定输出格式
+
 ## example
 ```bash
+# blkid -p -o udev /dev/sr0 # 探测光盘的fs
+# blkid -o list # 以列表的方式显示device, fs_type, label, mount point
 # blkid -p /dev/nvme0n1 # 检测是否存在分区表
 /dev/nvme0n1: PTUUID="f8fbd0cd-27ad-4df0-bcc1-7c5e88bf6cad" PTTYPE="gpt"
 # blkid
