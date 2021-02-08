@@ -21,6 +21,13 @@
 - [Arch Package, arch官方repo](https://www.archlinux.org/packages/)
 - [aur.archlinux.org - AUR=Arch User Repository, 创建 AUR 的初衷是方便用户维护和分享新软件包，并由官方定期从中挑选软件包进入 community 仓库](https://aur.archlinux.org/packages/)
 
+
+## dpkg-buildpackage
+选项:
+- -nc : doesn't call the clean target, 因此无需重新编译(但可能还是需要编译少量内容)
+- -uc : don't sign the changes file
+- -us : unsigned source package
+
 ## FAQ
 ### 通过deb-src构建deb
 ```bash
@@ -31,6 +38,9 @@ deb-src http://pl.archive.ubuntu.com/ubuntu/ natty main restricted
 # apt-get -b source ccache # 获取ccache源码并构建
 # dpkg -i ccache*.deb
 ```
+
+### dpkg-buildpackage报Warning "Compatibility levels before 9 are deprecated"
+将项目`debian/compat`中的数字改为9即可
 
 ## desktop
 ### UbuntuDDE

@@ -105,3 +105,8 @@ $ $ etcdctl lease revoke 32695410dcc0ca06 // 撤销租约. 租约被撤销后将
 $ etcdctl lease keep-alive 32695410dcc0ca06 // 续租,会阻塞命令, 每次续租都发生在该租约快过期时.
 $ etcdctl lease timetolive [--keys] 694d5765fc71500b // 查询租约的 TTL 以及剩余时间. `--keys`同时返回该租约关联的keys
 ```
+
+## mvcc
+- main ID: 在etcd中每个事务的唯一id,全局递增不重复.
+- sub ID: 在事务中的连续多个修改操作会从0开始编号,这个编号就是sub ID
+- revision: 由(mainID,subID)组成的唯一标识

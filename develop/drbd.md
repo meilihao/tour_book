@@ -22,7 +22,8 @@ DRBD在远程传输上支持三种模式：
 
 ## FAQ
 ### 查看drbd的同步状态
-`cat /proc/drbd`, 其中的索引是drbd设备的次设备号.
+- `cat /proc/drbd`, 其中的索引是drbd设备的次设备号.
+- drbd-overview
 
 ### drbd的底层设备为什么还能挂载成功即不受drbd顶层设备的影响
 1. `meta-disk internal`
@@ -45,3 +46,6 @@ drbd设备超过限制, 目前了解最大是2^20, 已验证过的最大值是65
 
 ### conflicting use of IP 'xxx:65534'
 该端口虽然是空闲的, 但已配置在其他xxx.res中, 因此还是不能使用.
+
+### 查看版本
+`modinfo drbd`

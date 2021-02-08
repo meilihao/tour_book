@@ -79,6 +79,9 @@ ip rule list的这三张路由表，又称为路由规则. 只不过路由规则
 - [多网卡同IP和同网卡多IP技术](https://www.jianshu.com/p/c3278e44ee9d)
 
 #### 多网卡同IP技术
+参考:
+- [Bonding vs Team](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/configuring_and_managing_networking/configuring-network-teaming_configuring-and-managing-networking)
+
 将多个网卡端口绑定为一个，可以提升网络的性能. 在linux系统上有两种技术可以实现:Linux 网络组和bond.
 
 网络组(Teaming, RHEL7开始使用): 是将多个网卡聚合在一起方法，从而实现冗错和提高吞吐量,网络组不同于旧版中bonding 技术，能提供**更好的性能和扩展性**，网络组由内核驱动和teamd 守护进程实现.
@@ -91,10 +94,21 @@ CONFIG_BONDING=m
 
 #### 同网卡多IP技术
 有两种实现：
-- 早期的 ip alias
-- 现在的secondary ip
+- 早期的 ip alias : ip alias 是由 ifconfig 命令来创建和维护的，ifconfig显示的格式为`eth0:N`(即单独的网络接口). alias IP就是在网卡设备上绑定的第二个及以上的IP
+- 现在的secondary ip(**推荐**) : ip addr add 创建的辅助IP，不能通过ifconfig查看，但是通过ifconfig创建的别名IP却可以在ip addr show 命令查看
 
-ifconfig显示的格式为`eth0:N`(即单独的网络接口),`ip addr`则是网络接口属性里的一条记录.
+    > ip addr show时secondary ip的记录里会出现关键字`secondary`
+
+
+特性:
+1. 在一个网络接口上可配置多个primary地址和多个secondary地址
+1. 对一个特定的网络掩码（比如网络掩码为/24），只能有一个Primary地址
+1. 当删除一个primary地址时, 相关的secondary地址也会被删除. 但通过配置`net.ipv4.conf.<eth0>.promote_secondaries=1`后, 当前primary地址被删除时, secondary地址会提升为primary地址
+1. 当主机为本地生成的流量选择源IP地址时，只考虑Primary地址
+
+![secondary ip的kernel描述](/misc/img/shell/20170125120034149.gif)
+
+每个节点代表的 IP 地址标识一个网段，这个节点的 IP 就是这个网段的 Primary 地址，它下面所带的 IP 就是这个网段的 Secondary 地址，也就是说一个网卡可以带有各个节点所带链表长度之和个 IP 地址，而且这些 IP 不是线形的，而是上述的吊链结构.
 
 ## 配置网络的工具
 nmtui 通过字符界面来配置网络.

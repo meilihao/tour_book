@@ -328,3 +328,14 @@ error: 推送一些引用到 'git@gitee.com:chenhao/hello_minio.git' 失败
     git fetch --unshallow origin
     ```
 1. 删除`.git`, 再重建repo并push
+
+### 显示git调用curl过程中的详细信息
+`GIT_CURL_VERBOSE=1 git ls-remote https://github.com/`
+
+`echo | openssl s_client -connect github.com:443`
+
+### 查看git使用openssl还是guntls
+`/usr/lib/git-core/ldd git-http-fetch | grep libcurl`
+
+### go get报"Error -50 setting GnuTLS cipher list starting with +VERS-TLS1.3:+SRP:
+git依赖的guntls不支持tls 1.3, 让go get使用git ssh即可: `git config --global url.git@github.com:.insteadOf https://github.com/`

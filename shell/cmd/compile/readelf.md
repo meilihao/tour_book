@@ -4,10 +4,11 @@
 
 ## 示例
 ```
+readelf -h <object> # 文件开始部分的ELF header信息
 readelf -S <object> # 查询节头表
 readelf -l <object> # 查询程序头表
 readelf -s <object> # 查询符号表
-readelf -e <object> # 查询 ELF 文件头数据
+readelf -e <object> # 显示文件中的所有header, `-e` = `-h -l -S`
 readelf -r <object> # 查询重定位入口
 readelf -d <object> # 查询动态段
 readelf a.out -x .rodata # 以16进制输出dump的内容

@@ -5,6 +5,7 @@
 - [如何选择NFS和SMB](https://help.aliyun.com/knowledge_detail/145239.html)
 - [linux用户和用户组](https://www.jianshu.com/p/584720f09228)
 - [setFileACL参考 from openmediavault](https://github.com/openmediavault/openmediavault/blob/master/deb/openmediavault/usr/share/openmediavault/engined/rpc/sharemgmt.inc)
+- [初探nfs-ganesha : 支持多种后端存储输出nfs服务](https://blog.51cto.com/nosmoking/1874320)
 
 阿里云NAS支持情况: NFSv3.0/4.0+, SMB2.1+. nfs仅支持linux, smb仅支持windows.
 
@@ -408,9 +409,19 @@ SMB 协议版本:
 	printable = no
 	```
 
-- /var/lib/samba/private/{passdb.tdb,secrets.tdb} 
+- tdb
 
-	管理 Samba 的用户账号/密码时，会用到的数据库档案
+	Samba使用称为轻量级数据库（tdb）的轻量级数据库，在其中存储持久性和瞬态数据.
+	
+	重置samba时所需的四个关键tdb:
+
+	- [/var/lib/samba/private/{passdb.tdb,secrets.tdb}](https://www.samba.org/samba/docs/old/Samba3-HOWTO/tdb.html)
+
+		管理 Samba 的用户账号/密码时，会用到的数据库档案
+	- /var/lib/samba/{account_policy.tdb, group_mapping.tdb}
+		- account_policy.tdb : NT account policy
+		- group_mapping.tdb : group mapping info
+
 
 > samba log: `/var/log/samba`
 

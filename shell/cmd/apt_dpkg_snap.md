@@ -8,6 +8,7 @@ debian,ubuntu等发行版的包管理.
 
 ## 例
 ```bash
+# apt search drbd-utils # 类似`apt-cache search`, 但更好用
 # apt-cache madison pouch # 列出软件包的所有版本
 # apt install pouch=1.0.0-0~ubuntu # 安装指定版本的软件包
 # apt-get install --reinstall aptitude # 重新安装package
@@ -27,7 +28,7 @@ debian,ubuntu等发行版的包管理.
 
 ## example
 ```
-$ sudo dpkg -i --force-bad-verify  acl_2.2.52-3_amd64.deb # 跳过签名验证
+$ sudo dpkg -i --force-bad-verify  acl_2.2.52-3_amd64.deb # 跳过签名验证, `--ignore-depends=<x1>,<x2>`忽略依赖
 $ dpkg -S file # 这个文件属于哪个已安装软件包
 $ dpkg -L package # 列出软件包中的所有文件
 $ dpkg -s package # 列出软件包中的描述信息
@@ -107,3 +108,6 @@ sudo apt purge snapd
 sudo rm -rf /var/cache/snapd
 sudo rm -rf ~/snap
 ```
+
+### 路径`debian/rules`
+dpkg-buildpackage的构建目录结构
