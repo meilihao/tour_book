@@ -626,4 +626,39 @@ du是通过stat命令来统计每个文件(包括子目录)的空间占用总和
 df是读取每个分区的superblock来获取空闲数据块、已使用数据块，从而计算出空闲空间和已使用空间，因此df统计的速度极快(superblock才占用1024字节).
 
 ### wine乱码
-`env LC_ALL=zh_CN.UTF-8 wine xxx.exe`
+方法1: `env LC_ALL=zh_CN.UTF-8 wine xxx.exe`
+
+方法2: 安装微软雅黑:
+```bash
+cp msyh.ttc msyhbd.ttc msyhl.ttc ~/.wine/drive_c/windows/Fonts # 准备雅黑字体
+
+vim msyh_font.reg # 添加一下内容
+REGEDIT4
+[HKEY_LOCAL_MACHINE\Software\Microsoft\Windows NT\CurrentVersion\FontLink\SystemLink]
+"Lucida Sans Unicode"="msyh.ttc"
+"Microsoft Sans Serif"="msyh.ttc"
+"MS Sans Serif"="msyh.ttc"
+"Tahoma"="msyh.ttc"
+"Tahoma Bold"="msyhbd.ttc"
+"msyh"="msyh.ttc"
+"Arial"="msyh.ttc"
+"Arial Black"="msyh.ttc"
+regedit msyh_font.reg
+
+vim ~/.wine/system.reg # 查找关键字"FontSubstitutes"
+"MS Shell Dlg"="SimSun" => "MS Shell Dlg"="msyh"
+"MS Shell Dlg 2"="SimSun" => "MS Shell Dlg"="msyh"
+
+winecfg # 在"应用程序"选项卡修改"windows版本"为"windows 10"
+```
+
+### wine执行exe崩溃报"fixme:actctx:parse_depend_manifests Could not find dependent assembly L"Microsoft.VC80.MFCLOC" (8.0.50608.0)"
+```bash
+sudo apt install winetricks
+winetricks vcrun2005
+```
+
+如过还是报该错, 删除`~/.wine`后安装vcrun2005, [安装雅黑字体解决文字方块], 再重新安装软件
+
+### 删除wine的快捷方式
+`rm -rf /.local/share/applications/wine/Programs/vivo/vivo手机助手/vivoAPK安装器.desktop`
