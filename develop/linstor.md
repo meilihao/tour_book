@@ -108,3 +108,36 @@ dpkg-buildpackage: error: debian/rules build subprocess returned exit status 2
 ```
 
 `make -C documentation/v9 doc`执行报错, 导致drbdsetup.8等文件未生成, 原因是未执行`make debrelease`. 恢复到git clone时的状态, 按照drbd-utils的流程重新构建即可.
+
+### linstor-client输出api调用信息
+client sub cmds在`linstor_client/commands/*.py`里, 它们都是调用了`/usr/lib/python3/dist-packages/linstor/linstorapi.py`里的接口, 因此:
+```python
+logging.basicConfig(level=logging.WARNING) => logging.basicConfig(level=logging.DEBUG)
+
+...
+    def _rest_request_base(self, apicall, method, path, body=None, reconnect=True):
+        ....
+            self._rest_conn.request(
+                method=method,
+                url=path,
+                body=json.dumps(body) if body is not None else None,
+                headers=headers
+            )
+            self._logger.info("method: {}, url: {}, body: {}, headers: {}".format(method, path, body, headers)) # append
+
+    def __convert_rest_response(self, apicall, response, path):
+        ...
+            data = json.loads(resp_data)
+            self._logger.info("resp.data: {}".format(data)) # append
+```
+
+> linstor -m node list # `-m`输出原始resp json
+
+### linstor-server输出api调用信息
+server api源码入口在`linstor-server/controller/src/main/java/com/linbit/linstor/api/rest/v1/*.java`, 发现代码未埋点, 改用logger
+
+[修改`/etc/linstor/linstor.toml`](https://github.com/LINBIT/linbit-documentation/blob/master/UG9/en/administration-linstor.adoc#logging):
+```toml
+[logging]
+   level="TRACE"
+```
