@@ -77,19 +77,29 @@ master是cluster的大脑, 主要职责是调度. 为了高可用, 通常会运�
 Master节点上面主要由五个组件组成：kube-apiserver、
 kube-scheduler、kube-controller-manager, cloud-controller-manager、etcd:
 
-- etcd是Kubernetes用于存储各个资源状态的分布式数据库，采用Raft协议作为一致性算法
+- etcd是Kubernetes用于存储各个资源状态和元数据的分布式数据库，采用Raft协议作为一致性算法保证强一致
 
-- API Server（kube-apiserver）主要提供认证与授权、管理API版本等功能，通过RESTful API向外提供服务，任何对资源（Pod、Deployment、Service等）进行增删改查等操作都要交给API Server处理后再提交给etcd, 是 Kubernetes 控制面的前端.
+- kube-apiserver 主要提供认证与授权、管理API版本等功能，通过RESTful API向外提供服务，任何对资源（Pod、Deployment、Service等）进行增删改查等操作都要交给它处理后再提交给etcd, 是 Kubernetes 控制面的前端.
 
   kubectl(k8s的客户端)就是通过kube-apiserver提供的api与k8s cluster交互
 
-- Scheduler（kube-scheduler）负责调度Pod到合适的Node上，根据集群的资源和状态选择合适的节点创建Pod。如果把Scheduler看作一个黑匣子，那么它的输入是Pod和由多个Node组成的列表，输出是Pod和一个Node的绑定，即将Pod部署到Node 上。Kubernetes 提供了调度算法的实现接口，用户可以根据自己的需求定义自己的调度算法。
+  > kube-apiserver是唯一与etcd交互的核心组件
+
+- kube-scheduler 负责调度Pod到合适的Node上，根据集群的资源和状态选择合适的节点创建Pod。如果把Scheduler看作一个黑匣子，那么它的输入是Pod和由多个Node组成的列表，输出是Pod和一个Node的绑定，即将Pod部署到Node 上。Kubernetes 提供了调度算法的实现接口，用户可以根据自己的需求定义自己的调度算法。
 
   调度决策考虑的因素包括单个 Pod 和 Pod 集合的资源需求、硬件/软件/策略约束、亲和性和反亲和性规范、数据位置、工作负载间的干扰和最后时限.
 
-- kube-controller-manager就是负责的“后台”。每个资源一般都对应有一个控制器，而kube-controller-manager就是负责管理这些控制器的。比如通过API Server创建一个Pod，当Pod创建成功后，API Server 的任务就算完成了，而后面保证 Pod 的状态始终和预期一样的重任就由Controller去完成.
+  为每一个Pod资源对象寻找合适节点的过程是一个调度周期.
+
+  kube-scheduler具备高可用性（即多实例同时运行）, 原理与kube-controller-manager相同.
+
+- kube-controller-manager 就是负责的“后台”。每个资源一般都对应有一个控制器，而kube-controller-manager就是负责管理这些控制器的。比如通过API Server创建一个Pod，当Pod创建成功后，API Server 的任务就算完成了，而后面保证 Pod 的状态始终和预期一样的重任就由Controller去完成.
 
   从逻辑上讲，每个控制器 都是一个单独的进程，但是为了降低复杂性，它们都被编译到同一个可执行文件，并在一个进程中运行.
+
+  每个控制器通过kube-apiserver组件提供的接口实时监控整个集群每个资源对象的当前状态，当因发生各种故障而导致系统状态出现变化时，会尝试将系统状态修复到“期望状态”, 即它确保Kubernetes系统的实际状态收敛到期望状态.
+
+  kube-controller-manager具备高可用性（即多实例同时运行），即基于Etcd集群上的分布式锁实现领导者选举机制，多实例同时运行，通过kube-apiserver提供的资源锁进行选举竞争. 抢先获取锁的实例被称为Leader节点（即领导者节点），并运行kube-controller-manager组件的主逻辑；而未获取锁的实例被称为Candidate节点（即候选节点），运行时处于阻塞状态. 在Leader节点因某些原因退出后，Candidate节点则通过领导者选举机制参与竞选，成为Leader节点后接替kube-controller-manager的工作.
 
   这些控制器包括:
 
@@ -107,18 +117,27 @@ kube-scheduler、kube-controller-manager, cloud-controller-manager、etcd:
   - 服务控制器（Service Controller）: 用于创建、更新和删除云提供商负载均衡器
   - 数据卷控制器（Volume Controller）: 用于创建、附加和装载卷、并与云提供商进行交互以编排卷
 
+> client-go是与kube-apiserver通信的go lib, kube-controller-manager, kube-scheduler等均通过它与kube-apiserver通信.
+
 ## node
 节点组件在每个节点上运行, 是具体负责运行容器的工作节点（worker machine, 工作机器），维护运行的 Pod 并提供 Kubernetes 运行环境. 它运行着pod、pod网络、kubelet、kube-proxy、Container Runtime等.
 
 node agent(kubelet)会监控并汇报容器状态, 同时会根据master的要求管理容器的生命周期.
 
-Node由Master来进行管理。每个Node上可以运行多个Pod,Master会根据集群中每个Node上的可用资源情况自动地调度Pod的部署。
+Node由Master来进行管理。每个Node上可以运行多个Pod,Master会根据集群中每个Node上的可用资源情况自动地调度Pod的部署
 
 每个Node上都会运行以下组件:
 
-- kubelet：是Master在每个Node节点上面的agent，负责Master和Node之间的通信，并管理Pod和容器。
+- kubelet：是Master在每个Node节点上面的agent，负责kube-apiserver和Node之间的通信(http/json)，并管理Pod和容器.
+
+  kubelet实现了3种开放接口:
+  - Container Runtime Interface ：简称CRI（容器运行时接口），提供容器运行时通用插件接口服务。CRI定义了容器和镜像服务的接口。CRI将kubelet组件与容器运行时进行解耦，将原来完全面向Pod级别的内部接口拆分成面向Sandbox和Container的gRPC接口，并将镜像管理和容器管理分离给不同的服务。
+  - Container Network Interface ：简称CNI（容器网络接口），提供网络通用插件接口服务。CNI定义了Kubernetes网络插件的基础，容器创建时通过CNI插件配置网络。
+  - Container Storage Interface ：简称CSI（容器存储接口），提供存储通用插件接口服务。CSI定义了容器存储卷标准规范，容器创建时通过CSI插件配置存储卷。
 
 - kube-proxy：是集群中每个节点上运行的网络代理,实现 Kubernetes Service 概念的一部分.
+
+  它监控kube-apiserver的服务和端点资源变化，并通过iptables/ipvs等配置负载均衡器，为一组Pod提供统一的TCP/UDP流量转发和负载均衡功能.
 
   kube-proxy实现了Kubernetes中的服务发现和反向代理功能:
 
@@ -126,7 +145,7 @@ Node由Master来进行管理。每个Node上可以运行多个Pod,Master会根�
   - 在服务发现方面，kube-proxy使用etcd的watch机制，监控集群中Service和Endpoint对象数据的动态变化，并且维护一个Service到Endpoint的映射关系，从而保证了后端Pod的IP变化不会对访问者造成影响.
   - 另外，kube-proxy还支持session affinity
 
-- 一个容器：负责从Registry拉取容器镜像、解压缩容器及运行应用程序
+- container：负责容器的基础管理服务, 接收kubelet组件的指令
 
 ## 其他组成
 ### DNS
