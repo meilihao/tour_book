@@ -624,3 +624,10 @@ blacklist snd_pcsp
 du是通过stat命令来统计每个文件(包括子目录)的空间占用总和. 因为会对每个涉及到的文件使用stat命令，所以速度较慢.
 
 df是读取每个分区的superblock来获取空闲数据块、已使用数据块，从而计算出空闲空间和已使用空间，因此df统计的速度极快(superblock才占用1024字节).
+
+### apt update报错, packages metadata的长度错误
+经核对报错文件的官方repo大小是正确的即仅是本地文件大小错误, 因此应该是本地apt cache出现了问题, 清理一下再更新即可.
+```bash
+sudo apt clean all # 先清理apt cache即可
+sudo apt update
+```
