@@ -111,3 +111,9 @@ sudo rm -rf ~/snap
 
 ### 路径`debian/rules`
 dpkg-buildpackage的构建目录结构
+
+### 删除`dpkg -l`显示状态为的"rc"包
+```bash
+aptitude search ~c # list the residual packages
+sudo aptitude purge ~c # purge them
+```
