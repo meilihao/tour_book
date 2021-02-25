@@ -789,6 +789,8 @@ Kubernetes的每个资源可使用metav1.APIResource结构进行描述，它描�
 - GroupKind   GK  资源组+资源种类
 - GroupVersion    GV  资源组+资源版本
 - GroupVersionKind    GVK 资源自+资源版本+资源种类
+
+    当资源对象的GVK输出为“/，Kind=”时，我们同样认为它是内部版本的资源对象.
 - GroupVersions   GVS 资源组内多个资源版本
 
 ## Group（资源组）
@@ -1042,3 +1044,162 @@ runtime.Object提供了两个方法，分别是GetObjectKind和DeepCopyObject:
 无法预知数据结构的数据类型或属性名称不确定的数据类型是非结构化数据，其无法通过构建预定的struct数据结构来序列化或反序列化数据.
 
 Kubernetes非结构化数据通过map[string]interface{}表达，并提供[Unstructured接口](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/runtime/interfaces.go). 在client-go编程式交互的DynamicClient内部，实现了Unstructured类型，用于处理非结构化数据.
+
+## Scheme资源注册表
+Kubernetes Scheme资源注册表类似于Windows操作系统上的注册表，只不过注册的是资源类型.
+
+Kubernetes系统拥有众多资源，每一种资源就是一个资源类型，这些资源类型需要有统一的注册、存储、查询、管理等机制. 目前Kubernetes系统中的所有资源类型都已注册到Scheme资源注册表中，其是一个内存型的资源注册表，拥有如下特点:
+- 支持注册多种资源类型，包括内部版本和外部版本
+- 支持多种版本转换机制
+- 支持不同资源的序列化/反序列化机制
+
+Scheme资源注册表支持两种资源类型（Type）的注册，分别是UnversionedType和KnownType资源类型，分别介绍如下:
+- UnversionedType ：无版本资源类型，这是一个早期Kubernetes系统中的概念，它主要应用于某些没有版本的资源类型，该类型的资源对象并不需要进行转换。在目前的Kubernetes发行版本中，**无版本类型已被弱化**，几乎所有的资源对象都拥有版本，但在metav1元数据中还有部分类型，它们既属于meta.k8s.io/v1又属于UnversionedType无版本资源类型，例如metav1.Status、metav1.APIVersions、metav1.APIGroupList、metav1.APIGroup、metav1.APIResourceList
+- KnownType ：是目前Kubernetes最常用的资源类型，也可称其为“拥有版本的资源类型”
+
+通过runtime.NewScheme可实例化一个新的Scheme资源注册表. 注册资源类型到Scheme资源注册表有两种方式: UnversionedType资源类型的对象通过[scheme.AddUnversionedTypes](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/runtime/scheme.go#L144)方法进行注册，KnownType资源类型的对象通过[scheme.AddKnownTypes](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/runtime/scheme.go#L162)方法进行注册.
+
+在Scheme资源注册表中，不同的资源类型使用的注册方法不同，分别介绍如下:
+- scheme.AddUnversionedTypes ：注册UnversionedType资源类型
+- scheme.AddKnownTypes ：注册KnownType资源类型
+    
+    与scheme.AddKnownTypeWithName区别: 在注册资源类型时，无须指定Kind名称，而是通过reflect机制获取资源类型的名称作为资源种类名称
+- scheme.AddKnownTypeWithName ：注册KnownType资源类型，须指定资源的Kind资源种类名称
+
+### Scheme资源注册表数据结构
+[Scheme](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/runtime/scheme.go#L46)资源注册表数据结构主要由4个map结构组成，它们分别是gvkToType、typeToGVK、unversionedTypes、unversionedKinds.
+
+Scheme资源注册表结构字段说明如下:
+- gvkToType ：存储GVK与Type的映射关系
+- typeToGVK ：存储Type与GVK的映射关系，一个Type会对应一个或多个GVK
+- unversionedTypes ：存储UnversionedType与GVK的映射关系
+- unversionedKinds ：存储Kind（资源种类）名称与UnversionedType的映射关系
+
+Scheme资源注册表通过Go语言的map结构实现映射关系，这些映射关系可以实现高效的正向和反向检索，从Scheme资源注册表中检索某个GVK的Type，它的时间复杂度为O(1).
+
+Scheme资源注册表在Kubernetes系统体系中属于非常核心的数据结构.
+
+参考[TestScheme](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/runtime/scheme_test.go#L67)和[TestUnversionedTypes](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/runtime/scheme_test.go#L399)代码.
+
+![资源注册表映射关系](/misc/img/container/k8s/scheme.jpg)
+
+GVK（资源组、资源版本、资源种类）在Scheme资源注册表中以<group>/<version>，Kind=<kind>的形式存在，其中对于Kind（资源种类）字段，在注册时如果不指定该字段的名称，那么默认使用类型的名称，例如corev1.Pod类型，通过reflect机制获取资源类型的名称，那么它的资源种类Kind=Pod.
+
+资源类型在Scheme资源注册表中以Go Type（通过reflect机制获取）形式存在.
+
+另外，需要注意的是，UnversionedType类型的对象在通过scheme.AddUnversionedTypes方法注册时，会同时存在于4个map结构中.
+
+在运行过程中，kube-apiserver组件常对Scheme资源注册表进行查询，它提供了如下方法:
+- scheme.KnownTypes ：查询注册表中指定GV下的资源类型
+- scheme.AllKnownTypes ：查询注册表中所有GVK下的资源类型
+- scheme.ObjectKinds ：查询资源对象所对应的GVK，一个资源对象可能存在多个GVK
+- scheme.New ：查询GVK所对应的资源对象
+- scheme.IsGroupRegistered ：判断指定的资源组是否已经注册
+- scheme.IsVersionRegistered ：判断指定的GV是否已经注册
+- scheme.Recognizes ：判断指定的GVK是否已经注册
+- scheme.IsUnversioned ：判断指定的资源对象是否属于UnversionedType类型
+
+## Codec编解码器
+Codec编解码器与Serializer序列化器之间的差异:
+- Serializer ：序列化器，包含序列化操作与反序列化操作。序列化操作是将数据（例如数组、对象或结构体等）转换为字符串的过程，反序列化操作是将字符串转换为数据的过程，因此可以轻松地维护数据结构并存储或传输数据
+- Codec ：编解码器，包含编码器与解码器。编解码器是一个通用术语，指的是可以表示数据的任何格式，或者将数据转换为特定格式的过程。所以，可以将Serializer序列化器也理解为Codec编解码器的一种
+
+k8s Codec编解码器通用接口定义在[`vendor/k8s.io/apimachinery/pkg/runtime/interfaces.go`](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/runtime/interfaces.go)
+
+从Codec编解码器通用接口的定义可以看出，Serializer序列化器属于Codec编解码器的一种，这是因为每种序列化器都实现了Encoder与Decoder方法. 只要实现了Encoder与Decoder方法的数据结构，就是序列化器. Kubernetes目前支持3种主要的序列化器: json, yaml, protobuf.
+
+在进行编解码操作时，每一种序列化器都对资源对象的metav1.TypeMeta（即APIVersion和Kind字段）进行验证，如果资源对象未提供这些字段，就会返回错误. 每种序列化器分别实现了Encode序列化方法与Decode反序列化方法，分别介绍如下:
+- jsonSerializer ：JSON格式序列化/反序列化器
+    
+    通过json.NewSerializerWithOptions函数进行实例化, 使用application/json的ContentType作为标识, 文件扩展名为json
+- yamlSerializer ：YAML格式序列化/反序列化器
+
+    通过json.NewSerializerWithOptions函数进行实例化, 使用application/yaml的ContentType作为标识, 文件扩展名为yaml
+- protobufSerializer ：Protobuf格式序列化/反序列化器
+
+    protobufSerializer通过protobuf.NewSerializer函数进行实例化，使用application/vnd.kubernetes.protobuf的ContentType标识，文件扩展名为pb.
+
+    [Encode](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/runtime/serializer/protobuf/protobuf.go#L163)函数首先验证资源对象是否为proto.Marshaler类型，proto.Marshaler是一个interface接口类型，该接口专门留给对象自定义实现的序列化操作。如果资源对象为proto.Marshaler类型，则通过t.Marshal序列化函数进行编码.
+
+    而且，通过unk.MarshalTo函数在编码后的数据前加上protoEncodingPrefix前缀，前缀为magic-number特殊标识，其用于标识一个包的完整性。所有通过protobufSerializer序列化器编码的数据都会有前缀。前缀数据共4字节，分别是0x6b、0x38、0x73、0x00，其中第4个字节是为编码样式保留的
+
+    [Decode](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/runtime/serializer/protobuf/protobuf.go#L97)函数首先验证protoEncodingPrefix前缀，前缀为magic-number特殊标识，其用于标识一个包的完整性，然后验证资源对象是否为proto.Message类型，最后通过proto.Unmarshal反序列化函数进行解码.
+
+Codec编解码器将Etcd集群中的数据进行编解码操作.
+
+Codec编解码器通过[NewCodecFactory→newSerializersForScheme](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/runtime/serializer/codec_factory.go#L51)函数实例化，在实例化的过程中会将jsonSerializer、yamlSerializer、protobufSerializer序列化器全部实例化.
+
+Kubernetes在jsonSerializer序列化器上做了一些优化，caseSensitiveJsonIterator函数实际封装了github.com/json-iterator/go第三方库，json-iterator有如下几个好处:
+- json-iterator支持区分大小写。Go语言标准库encoding/json在默认情况下不区分大小写
+- json-iterator性能更优
+- json-iterator 100%兼容Go语言标准库encoding/json，可随时切换两种编解码方式
+
+## Converter资源版本转换器
+在Kubernetes系统中，同一资源拥有多个资源版本，Kubernetes系统允许同一资源的不同资源版本进行转换，例如Deployment资源对象，当前运行的是v1beta1资源版本，但v1beta1资源版本的某些功能或字段不如v1资源版本完善，则可以将Deployment资源对象的v1beta1资源版本转换为v1版本. 可通过kubectl convert命令进行资源版本转换: `kubectl convert -f v1beta1Deployment.yaml --output-version=apps/v1`
+
+首先，定义一个YAML Manifest File资源描述文件，该文件中定义Deployment资源版本为v1beta1. 通过执行kubect convert命令，--output-version将资源版本转换为指定的资源版本v1. 如果指定的资源版本不在Scheme资源注册表中，则会报错. 如果不指定资源版本，则默认转换为资源的首选版本.
+
+Converter资源版本转换器主要**用于解决多资源版本转换问题**，Kubernetes系统中的一个资源支持多个资源版本，如果要在每个资源版本之间转换，最直接的方式是，每个资源版本都支持其他资源版本的转换，但这样处理起来非常麻烦. 例如，某个资源对象支持3个资源版本，那么就需要提前定义一个资源版本转换到其他两个资源版本（v1→v1alpha1，v1→v1beta1）、（v1alpha1→v1，v1alpha1→v1beta1）及（v1beta1→v1，v1beta1→v1alpha1）.
+
+随着资源版本的增加，资源版本转换的定义会越来越多. 为了解决这个问题，Kubernetes通过内部版本（Internal Version）机制实现资源版本转换. 当需要在两个资源版本之间转换时，例如v1alpha1→v1beta1或v1alpha1→v1。Converter资源版本转换器先将第一个资源版本转换为__internal内部版本，再转换为相应的资源版本。每个资源只要能支持内部版本，就能与其他任何资源版本进行间接的资源版本转换.
+
+### Converter转换器数据结构
+Converter转换器数据结构主要存放转换函数（即Conversion Funcs）. [Converter转换器](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/conversion/converter.go#L40)数据结构如下:
+- conversionFuncs ：默认转换函数。这些转换函数一般定义在资源目录下的conversion.go代码文件中
+- generatedConversionFuncs ：自动生成的转换函数。这些转换函数一般定义在资源目录下的zz_generated.conversion.go代码文件中，是由代码生成器自动生成的转换函数。
+- ignoredConversions ：若资源对象注册到此字段，则忽略此资源对象的转换操作。
+- nameFunc ：在转换过程中其用于获取资源种类的名称，该函数被定义在vendor/k8s.io/apimachinery/pkg/runtime/scheme.go代码文件中。
+
+Converter转换器数据结构中存放的转换函数（即Conversion Funcs）可以分为两类，分别为默认的转换函数（即conversionFuncs字段）和自动生成的转换函数（即generatedConversionFuncs字段）. 它们都通过[ConversionFuncs](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/conversion/converter.go#L40)来管理转换函数.
+
+ConversionFunc类型函数（即Type Function）定义了转换函数实现的结构，将资源对象a转换为资源对象b. a参数定义了转换源（即source）的资源类型，b参数定义了转换目标（即dest）的资源类型。scope定义了多次转换机制（即递归调用转换函数）.
+
+### Converter注册转换函数
+Converter转换函数需要通过注册才能在Kubernetes内部使用，目前Kubernetes支持5个注册转换函数，分别介绍如下:
+- scheme.AddIgnoredConversionType ：注册忽略的资源类型，不会执行转换操作，忽略资源对象的转换操作
+- [scheme.AddConversionFuncs](https://github.com/kubernetes/kubernetes/blob/master/vendor/k8s.io/apimachinery/pkg/runtime/scheme.go) ：注册多个Conversion Func转换函数
+- scheme.AddConversionFunc ：注册单个Conversion Func转换函数
+- scheme.AddGeneratedConversionFunc ：注册自动生成的转换函数
+- scheme.AddFieldLabelConversionFunc ：注册字段标签（FieldLabel）的转换函数
+
+以[apps/v1](https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/core/v1/conversion.go)资源组、资源版本为例，通过scheme.AddConversionFunc函数注册所有资源的转换函数.
+
+### Converter资源版本转换原理
+原理: 通过"_internal"桥梁的转换
+
+例如Deployment资源对象，起初使用v1beta1资源版本，而v1资源版本更稳定，则会将v1beta1资源版本转换为v1资源版本. 在将Deployment v1beta1资源版本转换为内部版本（即__internal版本），得到转换后资源对象的GVK为“/，Kind=”。在这里，会产生疑问，为什么v1beta1资源版本转换为内部版本以后得到的GVK为“/，Kind=”而不是“apps/__internal，Kind=Deployment”。这就需要看Kubernetes源码实现了.
+
+Scheme资源注册表可以通过两种方式进行版本转换:
+- scheme.ConvertToVersion ：将传入的（in）资源对象转换成目标（target）资源版本，在版本转换之前，会将资源对象深复制一份后再执行转换操作，相当于安全的内存对象转换操作
+- scheme.UnsafeConvertToVersion ：与scheme.ConvertToVersion功能相同，但在转换过程中不会深复制资源对象，而是直接对原资源对象进行转换操作，尽可能高效地实现转换。但该操作是非安全的内存对象转换操作
+
+scheme.ConvertToVersion与scheme.UnsafeConvertToVersion资源版本转换功能都依赖于s.convertToVersion函数来实现.
+
+![](/misc/img/container/k8s/convertion.jpg)
+
+Converter转换器转换流程:
+1. 获取传入的资源对象的反射类型
+    
+    资源版本转换的类型可以是runtime.Object或runtime.Unstructured，它们都属于Go语言里的Struct数据结构，通过Go语言标准库reflect机制获取该资源类型的反射类型，因为在Scheme资源注册表中是以反射类型注册资源的。获取传入的资源对象的反射类型
+1. 从资源注册表中查找到传入的资源对象的GVK
+
+    从Scheme资源注册表中查找到传入的资源对象的所有GVK，验证传入的资源对象是否已经注册，如果未曾注册，则返回错误
+
+1. 从多个GVK中选出与目标资源对象相匹配的GVK
+
+    target.KindForGroupVersionKinds函数从多个可转换的GVK中选出与目标资源对象相匹配的GVK. 这里有一个优化点，转换过程是相对耗时的，大量的相同资源之间进行版本转换的耗时会比较长。在Kubernetes源码中判断，如果目标资源对象的GVK在可转换的GVK列表中，则直接将传入的资源对象的GVK设置为目标资源对象的GVK，而无须执行转换操作，缩短部分耗时
+1. 判断传入的资源对象是否属于Unversioned类型
+
+    对于UnversionedType, 属于该类型的资源对象并不需要进行转换操作，而是直接将传入的资源对象的GVK设置为目标资源对象的GVK即可
+1. 执行转换操作
+
+    在执行转换操作之前，先判断是否需要对传入的资源对象执行深复制操作，然后通过s.converter.Convert转换函数执行转换操作.
+
+    实际的转换函数是通过doConversion函数执行的，执行过程如下:
+    - 从默认转换函数列表（即c.conversionFuncs）中查找出pair对应的转换函数，如果存在则执行该转换函数（即fn）并返回
+    - 从自动生成的转换函数列表（即generatedConversionFuncs）中查找出pair对应的转换函数，如果存在则执行该转换函数（即fn）并返回
+    - 如果默认转换函数列表和自动生成的转换函数列表中都不存在当前资源对象的转换函数，则使用[`(*Converter) Convert()`](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/conversion/converter.go#L281)函数传入的转换函数（即f）。调用f之前，需要将src与dest资源对象通过EnforcePtr函数取指针的值，因为`(*Converter) Convert()`函数传入的转换函数接收的是非指针资源对象
+
+1. 设置转换后资源对象的GVK
+
+    将v1beta1资源版本转换为内部版本（即__internal版本），得到转换后资源对象的GVK为“/，Kind=”。原因在于setTargetKind函数，转换操作执行完成以后，通过setTargetKind函数设置转换后资源对象的GVK，判断当前资源对象是否为内部版本（即APIVersionInternal），是内部版本则设置GVK为[`schema.GroupVersionKind{}`](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/runtime/scheme.go#L577)
