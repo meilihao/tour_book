@@ -391,7 +391,7 @@ make quick-release与make release相比多了两个变量，即KUBE_RELEASE_RUN_
     构建的组件由KUBE_SERVER_TARGETS变量(hack/lib/golang.sh)控制
 1. kube::build::copy_output
 
-    使用同步容器，将编译后的代码文件复制到主机上。
+    使用同步容器，将编译后的代码文件复制到主机上
 1. kube::release::package_tarballs
 
     进行打包，将二进制文件打包到_output目录中
@@ -1203,3 +1203,785 @@ Converter转换器转换流程:
 1. 设置转换后资源对象的GVK
 
     将v1beta1资源版本转换为内部版本（即__internal版本），得到转换后资源对象的GVK为“/，Kind=”。原因在于setTargetKind函数，转换操作执行完成以后，通过setTargetKind函数设置转换后资源对象的GVK，判断当前资源对象是否为内部版本（即APIVersionInternal），是内部版本则设置GVK为[`schema.GroupVersionKind{}`](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/runtime/scheme.go#L577)
+
+# kubectl
+kubectl工具是Kubernetes API Server的客户端. Kubernetes是一个完全以资源为中心的系统，而kubectl会通过向Kubernetes API Server发起HTTP请求来操纵这些资源（即对资源进行CRUD操作），以完全控制Kubernetes系统集群.
+
+Kubernetes官方提供了命令行工具（CLI），用户可以通过kubectl以命令行交互的方式与Kubernetes API Server进行通信，通信协议使用HTTP/JSON, kubectl的命令主要分为8个种类，分别如下:
+- Basic Commands （Beginner ）：基础命令（初级）
+- Basic Commands （Intermediate ）：基础命令（中级）
+- Deploy Commands ：部署命令
+- Cluster Management Commands ：集群管理命令
+- Troubleshooting and Debugging Commands ：故障排查和调试命令
+- Advanced Commands ：高级命令
+- Settings Commands ：设置命令
+- Other Commands ：其他命令
+
+## Cobra命令行参数解析
+
+kubectl基于Cobra, 它是一个创建强大的现代化CLI命令行应用程序的Go语言库，也可以用来生成应用程序的文件. 很多知名的开源软件都使用Cobra实现其CLI部分，例如Istio、Docker、Etcd等. Cobra提供了如下功能:
+- 支持子命令行（Subcommand）模式，如app server，其中server是app命令的子命令参数
+- 完全兼容posix命令行模式
+- 支持全局、局部、串联的命令行参数（Flag）
+- 轻松生成应用程序和命令
+- 如果命令输入错误，将提供智能建议，例如输入app srver，当srver参数不存在时，Cobra会智能提示用户是否应输入app server
+- 自动生成命令（Command）和参数（Flag）的帮助信息
+- 自动生成详细的命令行帮助（Help）信息，如app help
+- 自动识别-h、--help flag
+- 提供bash环境下的命令自动完成功能
+- 自动生成应用程序的帮助手册
+- 支持命令行别名
+- 自定义帮助和使用信息
+- 可与viper配置库紧密结合
+
+Cobra基本应用步骤分为如下3步:
+1. 创建rootCmd主命令，并定义Run执行函数（注意，此处是定义Run函数而非直接执行该函数）, 也可以通过rootCmd.AddCommand方法添加子命令
+1. 为命令添加命令行参数（Flag）
+1. 执行rootCmd命令调用的函数，rootCmd.Execute会在内部回调Run执行函数
+
+在Kubernetes系统中，Cobra被广泛使用，Kubernetes核心组件（kube-apiserver、kube-controller-manager、kube-scheduler、kubelet等）都通过Cobra来管理CLI交互方式. Kubernetes组件使用Cobra的方式类似.
+
+kubectl CLI命令行结构分别为Command、TYPE、NAME及Flag，分别介绍如下
+- Command ：指定命令操作，例如create、get、describe、delete等。命令后面也可以加子命令，例如kubectl config view
+- TYPE ：指定资源类型，例如pod、pods、rc等。**资源类型不区分大小写**
+- NAME ：指定资源名称，可指定多个，例如name1 name2. **资源名称需要区分大小写**
+- Flag ：指定可选命令行参数，例如-n命令行参数用于指定不同的命名空间
+
+同样，在Kubernetes中，Cobra的应用步骤也分为3步：
+1. 创建Command
+
+    实例化cobra.Command对象，并通过cmds.AddCommand方法添加命令或子命令。每个cobra.Command对象都可设置Run执行函数.
+
+    [NewKubectlCommand](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/kubectl/pkg/cmd/cmd.go#L469)函数实例化了cobra.Command对象，templates.CommandGroups定义了kubectl的8种命令类别，即基础命令（初级）、基础命令（中级）、部署命令、集群管理命令、故障排查和调试命令、高级命令及设置命令，最后通过cmds.AddCommand函数添加第8种命令类别——其他命令.
+
+    以[get命令的Command定义(`get.NewCmdGet()`)](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/kubectl/pkg/cmd/cmd.go#L555)为例.
+
+    在cobra.Command对象中，Use、Short、Long和Example包含描述命令的信息，其中最重要的是定义了Run执行函数. Run执行函数中定义了get命令的实现. Cobra中的Run函数家族成员有很多，在Run函数之前调用（PreRun）或之后调用（PostRun）. 它们的执行顺序为`PersistentPreRun→PreRun→Run→PostRun→PersistentPostRun.`
+
+1. 为get命令添加命令行参数
+
+    get命令下支持的命令行参数较多，[以--all-namespaces参数](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/kubectl/pkg/cmd/get/get.go#L182)为例:
+    ```go
+    cmd.Flags().BoolVarP(&o.AllNamespaces, "all-namespaces", "A", o.AllNamespaces, "If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even if specified with --namespace.")
+    ```
+
+    cmd.Flags实现了命令行参数的解析：第1个参数，接收命令行参数的变量；第2个参数，指定命令行参数的名称；第3个参数，指定命令行参数的名称简写；第4个参数，设置命令行参数的默认值；第5个参数，设置命令行参数的提示信息.
+
+1. 执行命令
+
+    kubectl的main函数中定义了执行函数[command.Execute](https://github.com/kubernetes/kubernetes/blob/master/cmd/kubectl/kubectl.go#L49)，原理是对命令行中的所有参数解析出Command和Flag，把Flag作为参数传递给Command并执行.
+
+## 创建资源对象的过程
+在Kubernetes系统中创建资源对象有很多种方法, 这里以kubectl create命令创建Deployment资源对象的过程进行分析.
+
+![](/misc/img/container/k8s/kubectl-crreate-deployment.jpg)
+
+使用kubectl创建资源对象是Kubernetes中最常见的操作之一，内部运行原理是客户端与服务端进行一次HTTP请求的交互. Kubernetes整个系统架构的设计方向是通用和具有高扩展性，所以以上功能在代码实现上略微复杂.
+
+创建资源对象的流程可分为：实例化Factory接口、通过Builder和Visitor将资源对象描述文件（deployment.yaml）文本格式转换成资源对象。将资源对象以HTTP请求的方式发送给kube-apiserver，并得到响应结果。最终根据Visitor匿名函数集的errors判断是否成功创建了资源对象.
+
+### 1. 编写资源对象描述文件
+Kubernetes系统的资源对象可以使用JSON或YAML文件来描述，一般使用YAML文件居多, 个人认为它在可读性上比yaml清晰.
+
+```yaml
+# from https://kubernetes.io/zh/docs/concepts/workloads/controllers/deployment/
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+```
+
+通过kubectl create命令与kube-apiserver交互并创建资源对象, 命令是`kubectl create -f deployment.yaml`
+
+### 2. 实例化Factory接口
+在执行每一个kubectl命令之前，都需要[执行实例化cmdutil Factory接口对象的操作](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/kubectl/pkg/cmd/cmd.go#L527). Factory是一个通用对象，它提供了与kube-apiserver的交互方式，以及验证资源对象等方法.
+
+cmdutil Factory接口说明:
+- DynamicClient ：动态客户端
+- KubernetesClientSet ：ClientSet客户端
+- RESTClient ：RESTClient客户端
+- NewBuilder ：实例化Builder，Builder用于将命令行获取的参数转换成资源对象
+- Validator ：验证资源对象
+
+cmdutil Factory接口封装了3种client-go客户端与kube-apiserver交互的方式, 它们各有不同的应用场景，分别是DynamicClient、KubernetesClientSet（简称ClientSet）及RESTClient.
+
+### 3. Builder构建资源对象
+
+Builder用于将命令行获取的参数转换成资源对象（Resource Object）. 它实现了一种通用的资源对象转换功能. Builder结构体保存了命令行获取的各种参数，并通过不同函数处理不同参数，将其转换成资源对象. Builder的实现类似于Builder建造者设计模式，提供了一种实例化对象的最佳方式.
+
+首先通过[f.NewBuilder](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/kubectl/pkg/cmd/create/create.go#L252)实例化Builder对象，通过函数Unstructured、Schema、ContinueOnError、NamespaceParam、FilenameParam、LabelSelectorParam、Flatten对参数赋值和初始化，将参数保存到Builder对象中。最后通过Do函数完成对资源的创建
+
+其中，FilenameParam函数用于识别kubectl create命令行参数是通过哪种方式传入资源对象描述文件的.
+
+    kubectl目前支持3种方式:
+    1. 标准输入Stdin（即cat deployment.yaml|kubectl create-f-）
+    1. 本地文件（即kubectl create-f deployment.yaml）
+    1. 网络文件（即kubectl create-f http://<host>/deployment.yaml）
+
+Do函数返回Result对象，Result对象的info字段保存了RESTClient与kube-apiserver交互产生的结果, 可以通过Result对象的Infos或Object方法来获取执行结果。而Result对象中的结果，是由Visitor执行产生的.
+
+### 4. Visitor多层匿名函数嵌套
+
+在Builder Do函数中，Result对象中的结果由Visitor执行并产生，Visitor的设计模式类似于Visitor访问者模式.
+
+[Visitor接口](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/cli-runtime/pkg/resource/interfaces.go#L94)包含Visit方法，实现了Visit（VisitorFunc） error的结构体都可以成为Visitor. 其中，VisitorFunc是一个匿名函数，它接收Info与error信息，Info结构用于存储RESTClient请求的返回结果，而VisitorFunc匿名函数则生成或处理Info结构.
+
+Visitor的设计较为复杂，并非单纯实现了访问者模式，它相当于一个匿名函数集. 在Kubernetes源码中，Visitor被设计为可以多层嵌套（即多层匿名函数嵌套，使用一个Visitor嵌套另一个Visitor）.
+![](/misc/img/container/k8s/kubectl_create_visitor.png)
+
+Visitor中的VisitorList（存放Visitor的集合）有两种，定义在vendor/k8s.io/cli-runtime/pkg/resource/visitor.go中:
+- EagerVisitorList ：当遍历执行Visitor时，如果遇到错误，则保留错误信息，继续遍历执行下一个Visitor. 最后一起返回所有错误
+- VisitorList ：当遍历执行Visitor时，如果遇到错误，则立刻返回
+
+Kubernetes Visitor中[存在多种实现方法](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/cli-runtime/pkg/resource/visitor.go)，不同实现方法的作用不同:
+1. URLVisitor
+
+    资源对象描述文件是网络形式, 该visitor会下载该文件并对内容进行检查, 再通过Streamvisitor将其转成Info对象.
+1. FileVisitor
+
+    资源对象描述文件是本地文件, 该visitor会读取该文件并对内容进行检查, 再通过Streamvisitor将其转成Info对象.
+1. Streamvisitor
+
+    从io.reader中读取数据, 并将其转成json, 通过schema进行检查, 最后将其转成Info对象.
+1. DecoratedVisitor
+
+    提供多种装饰器(decorator)函数, 通过遍历自身的装饰器函数对Info和error进行处理, 如果任意一个装饰器报错, 则终止并返回.
+
+    装饰器函数通过NewDecoratedVisitor进行注册.
+
+    DecoratedVisitor会执行注册过的VisitorFunc，分别介绍如下:
+    - resource.SetNamespace ：设置命名空间（Namespace），确保每个Info对象都有命名空间
+    - resource.RequireNamespace ：设置命名空间，并检查资源对象描述文件中提供的命名空间与命令行参数（--namespace）提供的命名空间是否相符，如果不相符则返回错误
+    - resource.FilterNamespace ：如果Info对象不在命名空间范围内，会忽略命名空间
+    - resource.RetrieveLazy ：如果info.Object为空，则根据info的Namepsace和Name等字段调用Helper获取obj，并更新info的Object字段
+
+1. ContinueOnErrorVisitor
+
+    在执行多层Visitor匿名函数时, 如果一个错误或多个错误, 则不会返回和退出, 而是将执行过程中所产生的错误收集到error数组中并聚合成一条error信息返回
+1. FlattenListVisitor
+
+    将通用资源类型(runtime.Object)转成Info对象
+1. KustomizeVisitor
+
+    从kustomize中获取资源对象描述文件, 然后将其交给StreamVisitor, 并转成Info对象
+1. FilteredVisitor
+
+    通过filters函数检查Info是否满足某些条件. 如果满足则继续执行; 否则返回error信息. filters通过NewFilteredVisitor进行注册.
+
+
+回到上面`kubectl create`操作上. 由result.Visit执行createAndRefresh：
+1. 通过Helper.Create向kube-apiserver发送创建资源的请求，Helper对client-go的RESTClient进行了封装，在此基础上实现了Get、List、Watch、Delete、Create、Patch、Replace等方法，实现了与kube-apiserver的交互功能
+1. 将与kube-apiserver交互后得到的结果通过info.Refresh函数更新到info.Object中
+1. 最后逐个退出Visitor，其过程为DecoratedVisitor→ContinueOnErrorVisitor → FlattenListVisitor → FlattenListVisitor → StreamVisitor →FileVisitor→EagerVisitorList
+
+最终根据Visitor的error信息为空判断创建资源请求执行成功
+
+# client-go
+参考:
+- [client-go 源码学习总结](https://cloudnative.to/blog/client-go-study/)
+
+Kubernetes系统使用client-go作为Go语言的官方编程式交互客户端库，提供对Kubernetes API Server服务的交互访问, 开发者常使用client-go基于Kubernetes做二次开发. Kubernetes的源码中已经集成了client-go的源码，路径为vendor/k8s.io/client-go.
+
+client-go源码目录结构说明:
+- discovery: 提供 DiscoveryClient 发现客户端
+- dynamic: 提供 DynamicClient 动态客户端
+- informers: 每种 K8S 资源的 Informer 实现
+- kubernetes: 提供 ClientSet 客户端
+- listers: 为每一个 K8S 资源提供 Lister 功能，该功能对 Get 和 List 请求提供只读的缓存数据
+- plugin: 提供 OpenStack，GCP 和 Azure 等云服务商授权插件
+- rest: 提供 RESTClient 客户端，对 K8S API Server 执行 RESTful 操作
+- scale: 提供 ScaleClient 客户端，用于扩容或缩容 Deployment, Replicaset, Replication Controller 等资源对象
+- tools: 提供常用工具，例如 SharedInformer, Reflector, DeltaFIFO 及 Indexers。 提供 Client 查询和缓存机制，以减少向 kube-apiserver 发起的请求数等. 主要子目录为/tools/cache.
+- transport: 提供安全的 TCP 连接，支持 HTTP Stream，某些操作需要在客户端和容器之间传输二进制流，例如 exec，attach 等操作。该功能由内部的 SPDY 包提供支持
+- util: 提供常用方法, 例如 WorkQueue 工作队列，Certificate 证书管理等
+
+client-go支持4种Client客户端对象, 都可以通过kubeconfig配置信息连接到指定的Kubernetes API Server进行交互:
+1. RESTClient是最基础的客户端
+
+    对HTTP Request进行了封装，实现了RESTful风格的API. ClientSet、DynamicClient及DiscoveryClient客户端都是基于RESTClient实现的.
+
+1. ClientSet在RESTClient的基础上封装了对Resource和Version的管理方法
+
+    每一个Resource可以理解为一个客户端，而ClientSet则是多个客户端的集合，每一个Resource和Version都以函数的方式暴露给开发者. ClientSet只能够处理Kubernetes内置资源，它是通过client-gen代码生成器自动生成的.
+1. DynamicClient与ClientSet最大的不同之处是，ClientSet仅能访问Kubernetes自带的资源（即Client集合内的资源），不能直接访问CRD自定义资源. 
+
+    DynamicClient能够处理Kubernetes中的所有资源对象，包括Kubernetes内置资源与CRD自定义资源, 请求的返回结果是`map[string]interface{}`
+
+1. DiscoveryClient发现客户端，用于发现kube-apiserver所支持的资源组、资源版本、资源信息（即Group、Versions、Resources）
+
+### kubeconfig配置管理
+kubeconfig用于管理访问kube-apiserver的配置信息，同时也支持访问多kube-apiserver的配置管理，可以在不同的环境下管理不同的kube-apiserver集群配置，不同的业务线也可以拥有不同的集群. Kubernetes的其他组件都使用kubeconfig配置信息来连接kube-apiserver组件，例如当kubectl访问kube-apiserver时，会默认加载kubeconfig配置信息.
+
+kubeconfig中存储了集群、用户、命名空间和身份验证等信息，在默认的情况下，kubeconfig存放在$HOME/.kube/config路径下.
+
+kubeconfig配置信息通常包含3个部分:
+- clusters ：定义Kubernetes集群信息，例如kube-apiserver的服务地址及集群的证书信息等
+- users ：定义Kubernetes集群用户身份验证的客户端凭据，例如client-certificate、client-key、token及username/password等
+- contexts ：定义Kubernetes集群用户信息和命名空间等，用于将请求发送到指定的集群
+
+client-go会读取kubeconfig配置信息并生成config对象，用于与kube-apiserver通信.
+
+clientcmd.BuildConfigFromFlags函数会读取kubeconfig配置信息并实例化rest.Config对象. 其中kubeconfig最核心的功能是管理多个访问kube-apiserver集群的配置信息，将多个配置信息合并（merge）成一份，在合并的过程中会解决多个配置文件字段冲突的问题, 该过程由[Load函数](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/tools/clientcmd/loader.go#L174)完成，可分为两步：
+1. 加载kubeconfig配置信息
+    
+    有两种方式可以获取kubeconfig配置信息路径：
+    1. 文件路径（即rules.ExplicitPath）
+    1. 环境变量（通过KUBECONFIG变量，即rules.Precedence，可指定多个路径）
+
+    最后将配置信息汇总到kubeConfigFiles中. 这两种方式都通过[LoadFromFile](https://github.com/kubernetes/kubernetes/blob/27c89b9aec73f66529a497910c460af2b25ab6dd/staging/src/k8s.io/client-go/tools/clientcmd/loader.go#L363)函数读取数据并把读取到的数据反序列化到Config对象中
+1. 合并多个kubeconfig配置信息
+
+    [mergo.Merge](https://github.com/kubernetes/kubernetes/blob/master/vendor/github.com/imdario/mergo/merge.go#L198)函数将src字段填充到dst结构中，私有字段除外，非空的dst字段将被覆盖。另外，dst和src必须拥有有效的相同类型结构.
+
+### RESTClient客户端
+RESTClient是最基础的客户端. 其他的ClientSet、DynamicClient及DiscoveryClient都是基于RESTClient实现的. RESTClient对HTTP Request进行了封装，实现了RESTful风格的API. 它具有很高的灵活性，数据不依赖于方法和资源，因此RESTClient能够处理多种类型的调用，返回不同的数据格式.
+
+rest.RESTClientFor函数通过kubeconfig配置信息实例化RESTClient对象，RESTClient对象构建HTTP请求参数，例如Get函数设置请求方法为get操作，它还支持Post、Put、Delete、Patch等请求方法, Namespace函数设置请求的命名空间, Resource函数设置请求的资源名称, VersionedParams函数将一些查询选项（如limit、TimeoutSeconds等）添加到请求参数中. 通过Do函数执行该请求，并将kube-apiserver返回的结果（Result对象）解析到目标对象中, 最终格式化输出结果.
+
+RESTClient发送请求的过程对Go语言标准库net/http进行了封装，由Do→request函数实现.
+
+请求发送之前需要根据请求参数生成请求的RESTful URL，由r.URL.String函数完成。例如，在RESTClient Example代码示例中，根据请求参数生成请求的RESTful URL为http://127.0.01：8080/api/v1/namespaces/default/pods？limit=500，其中api参数为v1，namespace参数为default，请求的资源为pods，limit参数表示最多检索出500条信息.
+
+最后通过Go语言标准库net/http向RESTful URL（即kube-apiserver）发送请求，请求得到的结果存放在http.Response的Body对象中，fn函数（即transformResponse）将结果转换为资源对象. 当函数退出时，会通过resp.Body.Close命令进行关闭，防止内存溢出.
+
+其他例子:
+```go
+package main
+
+import (
+    "fmt"
+
+    corev1 "k8s.io/api/core/v1"
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+    "k8s.io/client-go/kubernetes/scheme"
+    "k8s.io/client-go/rest"
+    "k8s.io/client-go/tools/clientcmd"
+)
+
+func main() {
+    config, err := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
+    if err != nil {
+        panic(err.Error())
+    }
+
+    config.APIPath = "api"
+    config.GroupVersion = &corev1.SchemeGroupVersion
+    config.NegotiatedSerializer = scheme.Codecs
+
+    restClient, err := rest.RESTClientFor(config)
+    if err != nil {
+        panic(err.Error())
+    }
+
+    result := &corev1.NodeList{}
+    err = restClient.Get().Namespace("").Resource("nodes").VersionedParams(&metav1.ListOptions{Limit: 100}, scheme.ParameterCodec).Do().Into(result)
+    if err != nil {
+        panic(err)
+    }
+
+    for _, d := range result.Items {
+        fmt.Printf("Node Name %v \n", d.Name)
+    }
+}
+```
+上例将会打印K8S集群中的node.
+
+### ClientSet客户端
+RESTClient是一种最基础的客户端，使用时需要指定Resource和Version等信息，编写代码时需要提前知道Resource所在的Group和对应的Version信息. 相比RESTClient，ClientSet使用起来更加便捷，一般情况下，开发者对Kubernetes进行二次开发时通常使用ClientSet.
+
+ClientSet在RESTClient的基础上封装了对Resource和Version的管理方法。每一个Resource可以理解为一个客户端，而ClientSet则是多个客户端的集合，每一个Resource和Version都以函数的方式暴露给开发者，例如，ClientSet提供的RbacV1、CoreV1、NetworkingV1等接口函数.
+
+注意 ：ClientSet仅能访问Kubernetes自身内置的资源（即客户端集合内的资源），不能直接访问CRD自定义资源。如果需要ClientSet访问CRD自定义资源，可以通过client-gen代码生成器重新生成ClientSet，在ClientSet集合中自动生成与CRD操作相关的接口.
+
+通过ClientSet列出所有运行中的Pod资源对象的example见[这里](https://github.com/kubernetes/client-go/blob/master/examples/out-of-cluster-client-configuration/main.go).
+
+上例中, 首先加载kubeconfig配置信息，kubernetes.NewForConfig通过kubeconfig配置信息实例化clientset对象，该对象用于管理所有Resource的客户端.
+
+其次, `clientset.CoreV1().Pods`函数表示请求core核心资源组的v1资源版本下的Pod资源对象，其内部设置了APIPath请求的HTTP路径，GroupVersion请求的资源组、资源版本，NegotiatedSerializer数据的编解码器. 其中，Pods函数是一个资源接口对象，用于Pod资源对象的管理，例如，对Pod资源执行Create、Update、Delete、Get、List、Watch、Patch等操作，这些操作实际上是对RESTClient进行了封装，可以设置选项（如Limit、TimeoutSeconds等）. `clientset.CoreV1().Pods().List`函数通过RESTClient获得Pod列表.
+
+其他例子:
+```go
+package main
+
+import (
+    apiv1 "k8s.io/api/core/v1"
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+    "k8s.io/client-go/kubernetes"
+    "k8s.io/client-go/tools/clientcmd"
+)
+
+func main() {
+    config, err := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
+    if err != nil {
+        panic(err)
+    }
+    clientset, err := kubernetes.NewForConfig(config)
+    if err != nil {
+        panic(err)
+    }
+
+    podClient := clientset.CoreV1().Pods(apiv1.NamespaceDefault)
+
+    list, err := podClient.List(metav1.ListOptions{Limit: 500})
+    if err != nil {
+        panic(err)
+    }
+    for _, d := range list.Items {
+        if d.Name == "" {
+        }
+        // fmt.Printf("NAME:%v \t NAME:%v \t STATUS: %+v\n ", d.Namespace, d.Name, d.Status)
+    }
+
+    //请求namespace为default下的deploy
+    deploymentClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
+    deployList, err2 := deploymentClient.List(metav1.ListOptions{Limit: 500})
+    if err2 != nil {
+        panic(err2)
+    }
+    for _, d := range deployList.Items {
+        if d.Name == "" {
+
+        }
+        // fmt.Printf("NAME:%v \t NAME:%v \t STATUS: %+v\n ", d.Namespace, d.Name, d.Status)
+    }
+
+    // 请求ds资源 todo  有兴趣可以尝试下
+    // clientset.AppsV1().DaemonSets()
+
+}
+```
+
+代码中分别打印了获取到K8S集群中的500个Pod和500个deploy.
+
+### DynamicClient客户端
+
+DynamicClient是一种动态客户端，它可以对任意Kubernetes资源进行RESTful操作，包括CRD自定义资源. DynamicClient与ClientSet操作类似，同样封装了RESTClient，同样提供了Create、Update、Delete、Get、List、Watch、Patch等方法.
+
+DynamicClient与ClientSet最大的不同之处是，ClientSet仅能访问Kubernetes自带的资源（即客户端集合内的资源），不能直接访问CRD自定义资源. ClientSet需要预先实现每种Resource和Version的操作，其内部的数据都是结构化数据（即已知数据结构）. 而DynamicClient内部实现了Unstructured，用于处理非结构化数据结构（即无法提前预知数据结构），这也是DynamicClient能够处理CRD自定义资源的关键.
+
+> 注意 ：DynamicClient不是类型安全的，因此在访问CRD自定义资源时需要特别注意, 例如，在操作指针不当的情况下可能会导致程序崩溃.
+
+DynamicClient的处理过程将Resource（例如PodList）转换成Unstructured结构类型，Kubernetes的所有Resource都可以转换为该结构类型. 处理完成后，再将Unstructured转换成PodList. 整个过程类似于Go语言的interface{}断言转换过程. 另外，Unstructured结构类型是通过map[string]interface{}转换的.
+
+通过DynamicClient列出所有deployment资源对象的example见[这里](https://github.com/kubernetes/client-go/blob/master/examples/dynamic-create-update-delete-deployment/main.go).
+
+它首先加载kubeconfig配置信息，dynamic.NewForConfig通过kubeconfig配置信息实例化dynamicClient对象，该对象用于管理Kubernetes的所有Resource的客户端，例如对Resource执行Create、Update、Delete、Get、List、Watch、Patch等操作.
+
+`dynamicClient.Resource(gvr)`函数用于设置请求的资源组、资源版本、资源名称, Namespace函数用于设置请求的命名空间, List函数用于获取Pod列表, 得到的Deployment列表为unstructured.UnstructuredList指针类型. 其实该列表然后通过`runtime.DefaultUnstructuredConverter.FromUnstructured(unstructured.UnstructuredList.UnstructedContent(), &v1.DeploymentList{})`函数将unstructured.UnstructuredList转换成DeploymentList类型.
+
+
+其他例子:
+```go
+package main
+
+import (
+    "fmt"
+
+    apiv1 "k8s.io/api/core/v1"
+    corev1 "k8s.io/api/core/v1"
+    metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+    "k8s.io/apimachinery/pkg/runtime"
+    "k8s.io/apimachinery/pkg/runtime/schema"
+    "k8s.io/client-go/dynamic"
+    "k8s.io/client-go/tools/clientcmd"
+)
+
+func main() {
+    config, err := clientcmd.BuildConfigFromFlags("", "/root/.kube/config")
+    if err != nil {
+        panic(err)
+    }
+
+    dymaicClient, err := dynamic.NewForConfig(config)
+    checkErr(err)
+    //map[string]interface{}
+
+         //TODO 获取CRD资源 这里是获取了TIDB的CRD资源
+    // gvr := schema.GroupVersionResource{Version: "v1alpha1", Resource: "tidbclusters", Group: "pingcap.com"}
+    // unstructObj, err := dymaicClient.Resource(gvr).Namespace("tidb-cluster").List(metav1.ListOptions{Limit: 500})
+    // checkErr(err)
+    // fmt.Println(unstructObj)
+
+    gvr := schema.GroupVersionResource{Version: "v1", Resource: "pods"}
+    unstructObj, err := dymaicClient.Resource(gvr).Namespace(apiv1.NamespaceDefault).List(metav1.ListOptions{Limit: 500})
+    checkErr(err)
+    // fmt.Println(unstructObj)
+    podList := &corev1.PodList{}
+    err = runtime.DefaultUnstructuredConverter.FromUnstructured(unstructObj.UnstructuredContent(), podList)
+    checkErr(err)
+    for _, d := range podList.Items {
+        fmt.Printf("NAME:%v \t NAME:%v \t STATUS: %+v\n ", d.Namespace, d.Name, d.Status)
+    }
+
+}
+
+func checkErr(err error) {
+    if err != nil {
+        panic(err)
+    }
+}
+```
+
+上案是打印了namespace为default下的500个pod，同样的，在案例中也有一个todo，获取CRD资源，如果K8S集群中没有TIDB的资源可以自行换成自己想要的CRD资源.
+
+代码中已经有获取v1alpha1版本的tidbclusters资源, 如果不知道CRD相关的信息，可以按照下面的步骤来找出对应的信息：
+- 通过kubectl api-resources 获取到资源的Group和Resource
+
+    源码: `pkg/kubectl/cmd/apiresources/apiresources.go`
+- 通过kubectl api-versions 找到对应Group的版本
+
+    源码: `pkg/kubectl/cmd/apiresources/apiversions.go`
+
+这样 资源的GVR(Group、Version、Resource)都有了, api-resources和api-versions都是通过discoveryClient客户端实现的.
+
+### DiscoveryClient客户端
+DiscoveryClient是发现客户端，它主要用于发现Kubernetes API Server所支持的资源组、资源版本、资源信息. Kubernetes API Server支持很多资源组、资源版本、资源信息，开发者在开发过程中很难记住所有信息，此时可以通过DiscoveryClient查看所支持的资源组、资源版本、资源信息.
+
+kubectl的api-versions和api-resources命令输出也是通过DiscoveryClient实现的. 另外，DiscoveryClient同样在RESTClient的基础上进行了封装.
+
+DiscoveryClient除了可以发现Kubernetes API Server所支持的资源组、资源版本、资源信息，还可以将这些信息存储到本地，用于本地缓存（Cache），以减轻对Kubernetes API Server访问的压力。在运行Kubernetes组件的机器上，缓存信息默认存储位置是~/.kube/cache和~/.kube/http-cache下,默认是每10分钟会和API Server同步一次.
+
+DiscoveryClient Example代码示例如下：
+```go
+package main
+
+import (
+    "fmt"
+    "k8s.io/apimachinery/pkg/runtime/schema"
+    "k8s.io/client-go/discovery"
+    "k8s.io/client-go/tools/clientcmd"
+)
+
+func main()  {
+    config, err := clientcmd.BuildConfigFromFlags("","/root/.kube/config")
+    if err != nil {
+        panic(err.Error())
+    }
+
+    discoveryClient, err := discovery.NewDiscoveryClientForConfig(config) # 通过kubeconfig配置信息实例化discoveryClient对象，该对象是用于发现Kubernetes API Server所支持的资源组、资源版本、资源信息的客户端
+    if err != nil {
+        panic(err.Error())
+    }
+
+    _, APIResourceList, err := discoveryClient.ServerGroupsAndResources() # 返回Kubernetes API Server所支持的资源组、资源版本、资源信息（即APIResourceList）
+    if err != nil {
+        panic(err.Error())
+    }
+    for _, list := range APIResourceList {
+        gv, err := schema.ParseGroupVersion(list.GroupVersion)
+        if err != nil {
+            panic(err.Error())
+        }
+        for _, resource := range list.APIResources {
+            fmt.Printf("name: %v, group: %v, version %v\n", resource.Name, gv.Group, gv.Version)
+        }
+    }
+}
+```
+上例打印了集群中的GVR, 具体细节:
+1. 获取Kubernetes API Server所支持的资源组、资源版本、资源信息
+
+    Kubernetes API Server暴露出/api和/apis接口. DiscoveryClient通过RESTClient分别请求/api和/apis接口，从而获取Kubernetes API Server所支持的资源组、资源版本、资源信息. 其核心实现位于ServerGroupsAndResources→[`(*DiscoveryClient).ServerGroups`](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/discovery/discovery_client.go)中.
+
+    首先，DiscoveryClient通过RESTClient请求/api接口，将请求结果存放于metav1.APIVersions结构体中. 然后，再次通过RESTClient请求/apis接口，将请求结果存放于metav1.APIGroupList结构体中. 最后，将/api接口中检索到的资源组信息合并到apiGroupList列表中并返回.
+1. [本地缓存的DiscoveryClient](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/discovery/cached/disk/cached_discovery.go#L64)
+
+    DiscoveryClient可以将资源相关信息存储于本地，默认存储位置为～/.kube/cache和～/.kube/http-cache, 缓存可以减轻client-go对Kubernetes API Server的访问压力. 默认每10分钟与Kubernetes API Server同步一次，同步周期较长，因为资源组、源版本、资源信息一般很少变动.
+
+    DiscoveryClient第一次获取资源组、资源版本、资源信息时，首先会查询本地缓存，如果数据不存在（没有命中）则请求Kubernetes API Server接口（回源），Cache将Kubernetes API Server响应的数据存储在本地一份并返回给DiscoveryClient. 当下一次DiscoveryClient再次获取资源信息时，会将数据直接从本地缓存返回（命中）给DiscoveryClient. 本地缓存的默认存储周期为10分钟.
+
+## Informer机制
+参考:
+- [Kubernetes informer 原理分析](https://segmentfault.com/a/1190000022643082)
+- [深入了解 Kubernetes Informer](https://cloudnative.to/blog/client-go-informer-source-code/)
+
+在Kubernetes系统中，Kubernetes的其他组件都是通过client-go的Informer机制以HTTP协议与Kubernetes API Server进行通信的, 可在不依赖任何中间件的情况下需要保证消息的实时性、可靠性、顺序性等.
+
+![arch](https://github.com/kubernetes/sample-controller/blob/master/docs/images/client-go-controller-interaction.jpeg)
+
+在Informer架构设计中，有多个核心组件:
+1. Reflector
+
+    Reflector用于监控（Watch）指定的Kubernetes资源，当监控的资源发生变化时，触发相应的变更事件，例如Added（资源添加）事件、Updated（资源更新）事件、Deleted（资源删除）事件，并将其资源对象存放到本地缓存DeltaFIFO中.
+
+2. DeltaFIFO
+
+    DeltaFIFO可以分开理解，FIFO是一个先进先出的队列，它拥有队列操作的基本方法，例如Add、Update、Delete、List、Pop、Close等，而Delta是一个资源对象存储，它可以保存资源对象的操作类型，例如Added（添加）操作类型、Updated（更新）操作类型、Deleted（删除）操作类型、Sync（同步）操作类型等.
+
+3. Indexer
+
+    Indexer是client-go用来存储资源对象并自带索引功能的本地存储，Reflector从DeltaFIFO中将消费出来的资源对象存储至Indexer. Indexer与Etcd集群中的数据完全保持一致. client-go可以很方便地从本地存储中读取相应的资源对象数据，而无须每次从远程Etcd集群中读取，以减轻Kubernetes API Server和Etcd集群的压力.
+
+Informers Example代码示例:
+```go
+package main
+
+import (
+    "log"
+    "os"
+
+    "k8s.io/apimachinery/pkg/apis/meta/v1"
+    "k8s.io/client-go/informers"
+    "k8s.io/client-go/kubernetes"
+    "k8s.io/client-go/tools/cache"
+    "k8s.io/client-go/tools/clientcmd"
+)
+
+func main() {
+    config, err := clientcmd.BuildConfigFromFlags("", "~/.kube/config")
+    if err != nil {
+        panic(err.Error())
+    }
+
+    clientset, err := kubernetes.NewForConfig(config)
+    if err != nil {
+        panic(err.Error())
+    }
+
+    factory := informers.NewSharedInformerFactory(clientset, 0)
+    informer := factory.Core().V1().Pods().Informer()
+
+    stopCh := make(chan struct{})
+    defer close(stopCh)
+    
+    informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+        AddFunc: func(obj interface{}) {
+            // "k8s.io/apimachinery/pkg/apis/meta/v1" provides an Object
+            // interface that allows us to get metadata easily
+            mObj := obj.(v1.Object)
+            log.Printf("New Pod Added to Store: %s", mObj.GetName())
+        },
+        DeleteFunc: func(obj interface{}) {
+            mObj := obj.(v1.Object)
+            log.Printf("Pod Deleted from Store: %s", mObj.GetName())
+        },
+        UpdateFunc: func(oldObj, newObj interface{}) {
+            oObj := oldObj.(v1.Object)
+            nObj := newObj.(v1.Object)
+            log.Printf("%s Pod Updated to %s", oObj.GetName(), mObj.GetName())
+        },
+    })
+
+    informer.Run(stopCh)
+}
+```
+
+上例首先通过kubernetes.NewForConfig创建clientset对象，Informer需要通过ClientSet与Kubernetes API Server进行交互.
+
+另外，创建stopCh对象，该对象用于在程序进程退出之前通知Informer提前退出，因为Informer是一个持久运行的goroutine.
+
+informers.NewSharedInformerFactory函数实例化了SharedInformer对象，它接收两个参数：第1个参数clientset是用于与Kubernetes API Server交互的客户端，第2个参数time.Minute用于设置多久进行一次resync（重新同步），resync会周期性地执行List操作，将所有的资源存放在Informer Store中，如果该参数为0，则禁用resync功能.
+
+在Informers Example代码示例中，通过`factory.Core().V1().Pods().Informer()`可以得到具体Pod资源的informer对象. 通过informer.AddEventHandler函数可以为Pod资源添加资源事件回调方法，支持3种资源事件回调方法:
+1. AddFunc ：当创建Pod资源对象时触发的事件回调方法
+1. UpdateFunc ：当更新Pod资源对象时触发的事件回调方法
+1. DeleteFunc ：当删除Pod资源对象时触发的事件回调方法
+
+在正常的情况下，Kubernetes的其他组件在使用Informer机制时触发资源事件回调方法，将资源对象推送到WorkQueue或其他队列中，在Informers Example代码示例中，我们直接输出触发的资源事件。最后通过informer.Run函数运行当前的Informer，内部为Pod资源类型创建Informer.
+
+通过Informer机制可以很容易地监控我们所关心的资源事件，例如，当监控Kubernetes Pod资源时，如果Pod资源发生了Added（资源添加）事件、Updated（资源更新）事件、Deleted（资源删除）事件，就通知client-go，告知Kubernetes资源事件变更了并且需要进行相应的处理.
+
+1. 资源Informer
+每一个Kubernetes资源上都实现了Informer机制. 每一个Informer上都会实现Informer和Lister方法，例如PodInformer的在[这](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/informers/core/v1/pod.go#PodInformer).
+
+定义不同资源的Informer，允许监控不同资源的资源事件，例如，监听Node资源对象，当Kubernetes集群中有新的节点（Node）加入时，client-go能够及时收到资源对象的变更信息.
+
+2. Shared Informer共享机制
+
+Informer也被称为Shared Informer，它是可以共享使用的. 在用client-go编写代码程序时，若同一资源的Informer被实例化了多次，每个Informer使用一个Reflector，那么会运行过多相同的ListAndWatch，太多重复的序列化和反序列化操作会导致Kubernetes API Server负载过重.
+
+Shared Informer可以使同一类资源Informer共享一个Reflector，这样可以节约很多资源. 通过map数据结构实现共享的Informer机制. Shared Informer定义了一个map数据结构，用于存放所有Informer的字段.
+
+[informers字段](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/informers/factory.go#L63)中存储了资源类型和对应于SharedIndexInformer的映射关系. InformerFor函数添加了不同资源的Informer，在添加过程中如果已经存在同类型的资源Informer，则返回当前Informer，不再继续添加.
+
+最后通过Shared Informer的Start方法使f.informers中的每个informer通过goroutine持久运行.
+
+### Reflector
+Informer可以对Kubernetes API Server的资源执行监控（Watch）操作，资源类型可以是Kubernetes内置资源，也可以是CRD自定义资源，其中最核心的功能是Reflector. Reflector用于监控指定资源的Kubernetes资源，当监控的资源发生变化时，触发相应的变更事件，例如Added（资源添加）事件、Updated（资源更新）事件、Deleted（资源删除）事件，并将其资源对象存放到本地缓存DeltaFIFO中.
+
+通过NewReflector实例化Reflector对象，实例化过程中须传入ListerWatcher数据接口对象，它拥有List和Watch方法，用于获取及监控资源列表. 只要实现了List和Watch方法的对象都可以称为ListerWatcher。Reflector对象通过Run函数启动监控并处理监控事件. 而在Reflector源码实现中，其中最主要的是ListAndWatch函数，它负责获取资源列表（List）和监控（Watch）指定的Kubernetes API Server资源.
+
+[ListAndWatch](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/tools/cache/reflector.go#L254)函数实现可分为两部分：
+1. 获取资源列表数据
+
+    ListAndWatch List在程序第一次运行时获取该资源下所有的对象数据并将其存储至DeltaFIFO中. 以Informers Example代码示例为例，在其中，获取的是所有Pod的资源数据. ListAndWatch List流程图:
+
+    1. r.listerWatcher.List用于获取资源下的所有对象的数据，例如，获取所有Pod的资源数据。获取资源数据是由options的ResourceVersion（资源版本1. 参数控制的，如果ResourceVersion为0，则表示获取所有Pod的资源数据；如果ResourceVersion非0，则表示根据资源版本号继续获取，功能有些类似于文件传输过程中的“断点续传”，当传输过程中遇到网络故障导致中断，下次再连接时，会根据资源版本号继续传输未完成的部分。可以使本地缓存中的数据与Etcd集群中的数据保持一致
+
+        [r.listerWatcher.List函数实际调用了Pod Informer下的ListFunc函数](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/informers/core/v1/pod.go#L65)，它通过ClientSet客户端与Kubernetes API Server交互并获取Pod资源列表数据.
+    1. listMetaInterface.GetResourceVersion用于获取资源版本号，ResourceVersion （资源版本号）非常重要，Kubernetes中所有的资源都拥有该字段，它标识当前资源对象的版本号。每次修改当前资源对象时，Kubernetes API Server都会更改ResourceVersion，使得client-go执行Watch操作时可以根据ResourceVersion来确定当前资源对象是否发生变化。更多关于ResourceVersion资源版本号的内容，请参考6.5.2节“ResourceVersion资源版本号”
+    1. meta.ExtractList用于将资源数据转换成资源对象列表，将runtime.Object对象转换成[]runtime.Object对象。因为r.listerWatcher.List获取的是资源下的所有对象的数据，例如所有的Pod资源数据，所以它是一个资源列表
+    1. r.syncWith用于将资源对象列表中的资源对象和资源版本号存储至DeltaFIFO中，并会替换已存在的对象
+    1. r.setLastSyncResourceVersion用于设置最新的资源版本号
+
+1. 监控资源对象
+
+    Watch（监控）操作通过HTTP协议与Kubernetes API Server建立长连接，接收Kubernetes API Server发来的资源变更事件. Watch操作的实现机制使用HTTP协议的分块传输编码（Chunked Transfer Encoding）. 当client-go调用Kubernetes API Server时，Kubernetes API Server在Response的HTTP Header中设置Transfer-Encoding的值为chunked，表示采用分块传输编码，客户端收到该信息后，便与服务端进行连接，并等待下一个数据块（即资源的事件信息）.
+
+    [r.listerWatcher.Watch](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/tools/cache/reflector.go#L414)函数实际调用了[Pod Informer下的WatchFunc函数](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/informers/core/v1/pod.go#L71)，它通过ClientSet客户端与Kubernetes API Server建立长连接，监控指定资源的变更事件.
+
+    [r.watchHandler](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/tools/cache/reflector.go#L454)用于处理资源的变更事件。当触发Added（资源添加）事件、Updated （资源更新）事件、Deleted（资源删除）事件时，将对应的资源对象更新到本地缓存DeltaFIFO中并更新ResourceVersion资源版本号.
+
+### DeltaFIFO
+[DeltaFIFO](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/tools/cache/delta_fifo.go#L159)可以分开理解，FIFO是一个先进先出的队列，它拥有队列操作的基本方法，例如Add、Update、Delete、List、Pop、Close等，而Delta是一个资源对象存储，它可以保存资源对象的操作类型，例如Added（添加）操作类型、Updated（更新）操作类型、Deleted（删除）操作类型、Sync（同步）操作类型等.
+
+DeltaFIFO与其他队列最大的不同之处是，它会保留所有关于资源对象（obj）的操作类型，队列中会存在拥有不同操作类型的同一个资源对象，消费者在处理该资源对象时能够了解该资源对象所发生的事情. queue字段存储资源对象的key，该key通过KeyOf函数计算得到. items字段通过map数据结构的方式存储，value存储的是对象的Deltas数组.
+
+DeltaFIFO本质上是一个先进先出的队列，有数据的生产者和消费者，其中生产者是Reflector调用的Add方法，消费者是Controller调用的Pop方法. 下面分析DeltaFIFO的核心功能：
+- 生产者方法
+
+    DeltaFIFO队列中的资源对象在Added（资源添加）事件、Updated（资源更新）事件、Deleted（资源删除）事件中都调用了[queueActionLocked函数](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/tools/cache/delta_fifo.go#L412)，它是DeltaFIFO实现的关键.
+
+    queueActionLocked代码执行流程如下:
+    1. 通过f.KeyOf函数计算出资源对象的key
+    1. 如果操作类型为Sync，则标识该数据来源于Indexer（本地存储）。如果Indexer中的资源对象已经被删除，则直接返回
+    1. 将actionType和资源对象构造成Delta，添加到items中，并通过dedupDeltas函数进行去重操作
+    1. 更新构造后的Delta并通过cond.Broadcast通知所有消费者解除阻塞
+
+- 消费者方法
+
+    [Pop方法](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/tools/cache/delta_fifo.go#L518)作为消费者方法使用，从DeltaFIFO的头部取出最早进入队列中的资源对象数据。Pop方法须传入process函数，用于接收并处理对象的回调方法.
+
+    当队列中没有数据时，通过f.cond.wait阻塞等待数据，只有收到cond.Broadcast时才说明有数据被添加，解除当前阻塞状态. 如果队列中不为空，取出f.queue的头部数据，将该对象传入process回调函数，由上层消费者进行处理. 如果process回调函数处理出错，则将该对象重新存入队列. 
+
+    Controller的processLoop方法负责从DeltaFIFO队列中取出数据传递给[process回调函数](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/tools/cache/shared_informer.go#L527).
+- Resync机制
+
+    Resync机制会将Indexer本地存储中的资源对象同步到DeltaFIFO中，并将这些资源对象设置为Sync的操作类型. Resync函数在Reflector中定时执行，它的执行周期由NewReflector函数传入的resyncPeriod参数设定. Resync→[syncKeyLocked](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/tools/cache/delta_fifo.go#L668).
+
+    f.knownObjects是Indexer本地存储对象，通过该对象可以获取client-go目前存储的所有资源对象，Indexer对象在NewDeltaFIFO函数实例化DeltaFIFO对象时传入.
+
+### Indexer
+Indexer是client-go用来存储资源对象并自带索引功能的本地存储，Reflector从DeltaFIFO中将消费出来的资源对象存储至Indexer. Indexer中的数据与Etcd集群中的数据保持完全一致. client-go可以很方便地从本地存储中读取相应的资源对象数据，而无须每次都从远程Etcd集群中读取，这样可以减轻Kubernetes API Server和Etcd集群的压力.
+
+在介绍Indexer之前，先介绍一下ThreadSafeMap. ThreadSafeMap是实现并发安全的存储. 作为存储，它拥有存储相关的增、删、改、查操作方法，例如Add、Update、Delete、List、Get、Replace、Resync等. Indexer在ThreadSafeMap的基础上进行了封装，它继承了与ThreadSafeMap相关的操作方法并实现了Indexer Func等功能，例如Index、IndexKeys、GetIndexers等方法，这些方法为ThreadSafeMap提供了索引功能.
+
+1. ThreadSafeMap并发安全存储
+
+    [ThreadSafeMap]()是一个内存中的存储，其中的数据并不会写入本地磁盘中，每次的增、删、改、查操作都会加锁，以保证数据的一致性. ThreadSafeMap将资源对象数据存储于一个名为items的map中.
+
+    [items字段](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/tools/cache/thread_safe_store.go#L65)中存储的是资源对象数据，其中items的key通过keyFunc函数计算得到，计算默认使用MetaNamespaceKeyFunc函数，该函数根据资源对象计算出<namespace>/<name>格式的key，如果资源对象的<namespace>为空，则<name>作为key，而items的value用于存储资源对象.
+2. Indexer索引器
+
+    在每次增、删、改ThreadSafeMap数据时，都会通过updateIndices或deleteFromIndices函数变更Indexer. Indexer被设计为可以自定义索引函数，这符合Kubernetes高扩展性的特点。Indexer有4个非常重要的数据结构，分别是Indices、Index、Indexers及IndexFunc.
+
+
+    Indexer Example代码示例:
+    ```go
+    package main
+
+    import (
+        "fmt"
+        "strings"
+
+        "k8s.io/api/core/v1"
+        metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+        "k8s.io/client-go/tools/cache"
+    )
+
+    func UsersIndexFunc(obj interface{})[[]string, error]{
+        pod := obj.(*v1.Pod)
+        usersString := pod.Annotations["users"]
+
+        return strings.Split(usersString, ","), nil
+    }
+
+    func main() {
+        index := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{"byUser", UsersIndexFunc}
+
+        pod1 := &v1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "one", Annotations: map[string]string{"users": "ernie,bert"}}}
+        pod2 := &v1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "two", Annotations: map[string]string{"users": "bert,oscar"}}}
+        pod3 := &v1.Pod{ObjectMeta: metav1.ObjectMeta{Name: "tre", Annotations: map[string]string{"users": "ernie,elmo"}}}
+
+        index.Add(pod1)
+        index.Add(pod2)
+        index.Add(pod3)
+
+        erniePods, err := index.ByIndex("byUser", "ernie")
+        if err != nil {
+            panic(err)
+        }
+
+        for _, erniePod := range erniePods {
+            fmt.Println(erniePod.(*v1.Pod).Name)
+        }
+
+        // output:
+        // one
+        // tre
+    }
+    ```
+
+    首先定义一个索引器函数UsersIndexFunc，在该函数中，我们定义查询出所有Pod资源下Annotations字段的key为users的Pod.
+
+    cache.NewIndexer函数实例化了Indexer对象，该函数接收两个参数：第1个参数是KeyFunc，它用于计算资源对象的key，计算默认使用cache.MetaNamespaceKeyFunc函数；第2个参数是cache.Indexers，用于定义索引器，其中key为索引器的名称（即byUser），value为索引器。通过index.Add函数添加3个Pod资源对象。最后通过index.ByIndex函数查询byUser索引器下匹配ernie字段的Pod列表。Indexer Example代码示例最终检索出名称为one和tre的Pod.
+
+    根据上例理解Indexer的4个重要的数据结构就非常容易了，它们分别是[Indexers、IndexFunc、Indices、Index](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/tools/cache/index.go#L65).
+
+    Indexer数据结构说明如下:
+    - Indexers ：存储索引器，key为索引器名称，value为索引器的实现函数
+    - IndexFunc ：索引器函数，定义为接收一个资源对象，返回检索结果列表
+    - Indices ：存储缓存器，key为缓存器名称（在Indexer Example代码示例中，缓存器命名与索引器命名相对应），value为缓存数据
+    - Index ：存储缓存数据，其结构为K/V
+3. Indexer索引器核心实现
+
+    [index.ByIndex函数](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/tools/cache/thread_safe_store.go#L180)通过执行索引器函数得到索引结果.
+
+    ByIndex接收两个参数：IndexName（索引器名称）和indexKey（需要检索的key）。首先从c.indexers中查找指定的索引器函数，从c.indices中查找指定的缓存器函数，然后根据需要检索的indexKey从缓存数据中查到并返回数据
+
+    提示： Index中的缓存数据为Set集合数据结构，Set本质与Slice相同，但Set中不存在相同元素。由于Go语言标准库没有提供Set数据结构，Go语言中的map结构类型是不能存在相同key的，所以Kubernetes将map结构类型的key作为Set数据结构，实现Set去重特性.
+
+## WorkQueue
+
+WorkQueue称为工作队列，Kubernetes的WorkQueue队列与普通FIFO（先进先出，First-In，First-Out）队列相比，实现略显复杂，它的主要功能在于标记和去重，并支持如下特性:
+- 有序 ：按照添加顺序处理元素（item）
+- 去重 ：相同元素在同一时间不会被重复处理，例如一个元素在处理之前被添加了多次，它只会被处理一次
+- 并发性 ：多生产者和多消费者
+- 标记机制 ：支持标记功能，标记一个元素是否被处理，也允许元素在处理时重新排队
+- 通知机制 ：ShutDown方法通过信号量通知队列不再接收新的元素，并通知metric goroutine退出
+- 延迟 ：支持延迟队列，延迟一段时间后再将元素存入队列
+- 限速 ：支持限速队列，元素存入队列时进行速率限制。限制一个元素被重新排队（Reenqueued）的次数
+- Metric ：支持metric监控指标，可用于Prometheus监控
+WorkQueue支持3种队列，并提供了3种接口，不同队列实现可应对不同的使用场景，分别介绍如下
+- Interface ：FIFO队列接口，先进先出队列，并支持去重机制
+- DelayingInterface ：延迟队列接口，基于Interface接口封装，延迟一段时间后再将元素存入队列
+- RateLimitingInterface ：限速队列接口，基于DelayingInterface接口封装，支持元素存入队列时进行速率限制
+
+### FIFO队列
+FIFO队列支持最基本的队列方法，例如插入元素、获取元素、获取队列长度等. 另外，WorkQueue中的限速及延迟队列都基于[Interface接口](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/util/workqueue/queue.go#L26)实现.
+
+FIFO队列Interface方法说明如下:
+- Add ：给队列添加元素（item），可以是任意类型元素
+- Len ：返回当前队列的长度
+- Get ：获取队列头部的一个元素
+- Done ：标记队列中该元素已被处理
+- ShutDown ：关闭队列
+- ShuttingDown ：查询队列是否正在关闭
+
+FIFO队列数据结构在[这](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/client-go/util/workqueue/queue.go#L71).
+
+FIFO队列数据结构中最主要的字段有queue、dirty和processing。其中queue字段是实际存储元素的地方，它是slice结构的，用于保证元素有序；dirty字段非常关键，除了能保证去重，还能保证在处理一个元素之前哪怕其被添加了多次（并发情况下），但也只会被处理一次；processing字段用于标记机制，标记一个元素是否正在被处理。应根据WorkQueue的特性理解源码的实现.
+
+FIFO存储过程示例:
+通过Add方法往FIFO队列中分别插入1、2、3这3个元素，此时队列中的queue和dirty字段分别存有1、2、3元素，processing字段为空。然后通过Get方法获取最先进入的元素（也就是1元素），此时队列中的queue和dirty字段分别存有2、3元素，而1元素会被放入processing字段中，表示该元素正在被处理。最后，当处理完1元素时，通过Done方法标记该元素已经被处理完成，此时队列中的processing字段中的1元素会被删除.
+
+在正常的情况下，FIFO队列运行在并发场景下. 高并发下FIFO会保证在处理一个元素之前哪怕其被添加了多次，但也只会被处理一次. 下面是说明.
+
+在并发场景下，假设goroutine A通过Get方法获取1元素，1元素被添加到processing字段中，同一时间，goroutine B通过Add方法插入另一个1元素，此时在processing字段中已经存在相同的元素，所以后面的1元素并不会被直接添加到queue字段中，当前FIFO队列中的dirty字段中存有1、2、3元素，processing字段存有1元素。在goroutine A通过Done方法标记处理完成后，如果dirty字段中存有1元素，则将1元素追加到queue字段中的尾部。需要注意的是，dirty和processing字段都是用Hash Map数据结构实现的，所以不需要考虑无序，只保证去重即可.

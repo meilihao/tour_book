@@ -153,7 +153,7 @@ mirror/raidz设备不能从pool中删除, 但可增删不活动的hot spares(热
 - o : 设置kv属性, 比如ashift
 - n : 仅模拟运行, 并输出日志, 用于检查错误, 但不是100%正确, 比如在配置中使用了相同的设备做mirror.
 
-> `blockdev --getpbsz /dev/sdXY`获取扇区大小, zfs默认是512, 与设备扇区不一致会导致性能下降, 比如具有4KB扇区大小的高级格式磁盘，建议将ashift更改为12(2^12=4096). 更改[ashift](https://github.com/zfsonlinux/zfs/wiki/faq#advanced-format-disks)选项的唯一方法是重新创建池.
+> `blockdev --getpbsz /dev/sdXY`获取扇区大小, zfs默认是512, 与设备扇区不一致会导致性能下降, 比如具有4KB扇区大小的高级格式磁盘，建议将ashift更改为12(2^12=4096). 更改[ashift](https://github.com/zfsonlinux/zfs/wiki/faq#advanced-format-disks)选项的唯一方法是重新创建池. `zdb -U /data/zfs/zpool.cache | grep ashift`可查看ashift default的具体值.
 
 ### zpool scrub
 只要读取数据或zfs遇到错误，`zpool scrub`就会在可能的情况下进行静默修复.
