@@ -1,6 +1,7 @@
 # scsi
 参考:
 - [sg3-utils的命令列表](http://sg.danny.cz/sg/sg3_utils.html)
+- [use sg_ses](https://matrix207.github.io/2013/06/20/use-sg_ses/)
 
 [sg3-utils](http://sg.danny.cz/sg/)是一个工具包，提供了与SCSI设备通信的命令工具.
 
@@ -10,6 +11,9 @@ ses = SCSI Enclosure Service
 ses标准:
 - [SCSI Enclosure Services - 3 (SES-3) ](https://www.t10.org/members/w_ses3.htm)
 - [SCSI Enclosure Services - 4 (SES-4) ](https://www.t10.org/members/w_ses4.htm)
+- [T10 (SCSI Storage Interfaces) Projects](https://www.t10.org/members/w_status.htm)
+
+根据 SES model: secondary subenclosures通过primary subenclosure与主机进行交互.
 
 # sg_map
 Linux实现了一个通用的SCSI设备驱动，如果一个设备支持SCSI协议，那么当它插入后，SCSI设备驱动将自动识别它，并创建一个相关联的设备文件，通常为/dev/sg0、/dev/sg1等（一切设备皆文件).
@@ -45,7 +49,7 @@ Linux实现了一个通用的SCSI设备驱动，如果一个设备支持SCSI协�
 # sg_ses -p 0x0 /dev/sg7 # 查看sg设备支持的pages
 # sg_ses -p 0x2 /dev/sg7 # 根据`sg_ses -p 0x0`返回的结果, 查看指定的page, 这里的0x2表示`Enclosure status/control (SES) [0x2]`
 # sg_ses -p 2 -I 27 /dev/sg7 # 查看指定element的enclosure status
-# sg_ses -p 0xa /dev/sg7 # 获取扩展柜中设备的SAS address, 槽位号
+# sg_ses -p 0xa /dev/sg7 # 获取扩展柜中设备的SAS address, 槽位号, "subenclosure id"(0表示primary enclosure)
 # sg_ses -p 0xa /dev/sg7 |grep -E 'slot|Element' |sed 'N;s/\n//' |awk '{print $3,$15}' # 获取element_index与slot_number的对应关系, 通常序号是对应的
 # sg_ses -p 0xa /dev/sg7 |grep -E 'slot|Element' |sed 'N;s/\n//' |awk '{print $15,$3}' |sort -n # 获取slot_number与element_index的对应关系
 # sg_ses -p 0xa /dev/sg7 |grep -E 'slot number|  SAS address' |sed 'N;s/\n//' |awk '{print $12,$15}' |sort -n # 槽位对应的SAS address, 0x0000000000000000(x86)或0x0(arm)表示没有盘

@@ -1,4 +1,7 @@
 # DRBD
+参考:
+- [DRBD使用](https://documentation.suse.com/zh-cn/sle-ha/11-SP4/html/SLE-ha-guide/cha-ha-drbd.html)
+
 DRBD (Distributed Replicated Block Device)分布式复制块设备是一种基于软件和网络(tcp/ip和RDMA)的**块复制**存储解决方案, 即多写.
 
 DRBD是Linux内存存储层中的一个分布式存储系统，具体来说两部分构成:
@@ -21,9 +24,10 @@ DRBD在远程传输上支持三种模式：
 > DRBD8.0以后的版本支持双主模式, 此时需要共享的集群文件系统(GFS，OCFS2等)来解决并发读写问题, 通过集群文件系统的分布式锁机制解决集群中两个主节点同时操作数据的问题.
 
 ## FAQ
+### drbd 9 role自动变primary
+drbd 9在所有都是secondary情况下, 某个drbd device一旦写入数据会自动变成primary
 ### 查看drbd的同步状态
 - `cat /proc/drbd`, 其中的索引是drbd设备的次设备号.
-- drbd-overview
 
 ### drbd的底层设备为什么还能挂载成功即不受drbd顶层设备的影响
 1. `meta-disk internal`
@@ -49,3 +53,6 @@ drbd设备超过限制, 目前了解最大是2^20, 已验证过的最大值是65
 
 ### 查看版本
 `modinfo drbd`
+
+### 多primariy
+/etc/drbd.d/global-common.conf设置allow-two-primaries, 由上层gfs2实现锁防止多写.

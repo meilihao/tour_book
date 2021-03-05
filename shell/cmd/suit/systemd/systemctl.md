@@ -102,6 +102,7 @@ systemd-ask-password-conso
 
 1. Linux中如何启动、重启、停止、重载服务以及检查服务（如 httpd.service）状态
 ```shell
+# systemctl edit linstor-satellite # 不建议直接编辑systemd service文件, 它通过覆盖配置实现, 类似ini配置覆盖的形式
 # systemctl start httpd.service
 # systemctl restart httpd.service
 # systemctl stop httpd.service

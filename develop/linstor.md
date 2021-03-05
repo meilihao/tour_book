@@ -85,8 +85,42 @@ configure_with = --prefix=/usr --localstatedir=/var --sysconfdir=/etc --without-
 LD_LIBRARY_PATH='' dpkg-buildpackage -rfakeroot -nc -uc # 使用`-nc`避免重新构建
 ```
 
+## linstor-client
+```bash
+linstor node restore <node> # 重新注册node
+linstor physical-storage list # 罗列node上的disk
+linstor storage-pool list # 已注册到linstor的pool
+zpool create mypool /dev/sdb # 在每个node上执行
+linstor storage-pool create zfs <node> mypool <pool_name on node> # 将底层pool注册为linstor pool. zpool需先手动创建, 不推荐使用`linstor physical-storage create-device-pool`, 因为linstor本身不维护zfs/lvm pool. zfsthin是zfs pool与zfs类型没区别, 但建vol时都是thin vol.
+
+pvcreate /dev/vdb
+vgcreate drbdpool /dev/vdb
+linstor storage-pool create lvm nodeA drbdpool drbdpool # 注册lvm
+
+lvcreate -L 800G --thinpool drbdpool pve # 创建lvm thin pool, 它是建立在vg上的
+linstor storage-pool create lvmthin pve1 drbdpool pve/drbdpool
+
+linstor resource-definition create demo # 创建名为demo的resource-definition
+linstor volume-definition create demo 15G # 指定demo大小
+linstor volume-definition list # volume-definition列表 
+linstor resource create nodeA demo --storage-pool mypool # 手动创建resource
+linstor resource create demo --auto-place 2 # 自动创建resource副本, `--layer-list storage`可只创建底层vol而没有drbd
+
+linstor resource list # 资源列表
+
+# resource-group是volume-definition的父对象，其中对资源组所做的所有属性更改都将由其资源定义的子级继承
+# 继承设置的层次结构: 卷定义 设置优先于 卷组 设置， 资源定义 设置优先于 资源组 设置
+linstor resource-group create my_group --storage-pool mypool --place-count 3 # `--place-count`分布在n个node上
+linstor resource-group drbd-options --verify-alg crc32c my_verify_group # 设置drbd选项
+linstor volume-group create my_group
+linstor resource-group spawn-resources my_group my_res 5G # 依据my_group创建resource, 此时drbd role都是secondary
+```
+
+## linstor-gateway
+linstor-gateway编译出来后重命名为linstor-iscsi/linstor-nfs即可使用.
+
 ## FAQ
-### 
+###
 ```bash
 $ LD_LIBRARY_PATH='' dpkg-buildpackage -rfakeroot -b -uc # for drbd-utils
 ...
@@ -140,4 +174,59 @@ server api源码入口在`linstor-server/controller/src/main/java/com/linbit/lin
 ```toml
 [logging]
    level="TRACE"
+```
+
+### ha
+参考:
+- [Highly available LINSTOR Controller with Pacemaker](https://www.linbit.com/blog/linstor-controller-pacemaker/)
+- [LINSTOR high availability](https://www.linbit.com/drbd-user-guide/linstor-guide-1_0-cn/#s-linstor_ha)
+
+默认情况下, linsor cluster只能有一个活动的controller(上面注册了nodes), 其他nodes即使安装了controller, 执行`linstor node list`也是返回空.
+
+linstor ha是通过drbd复制实现(h2数据库)的, 见[LINSTOR high availability](https://www.linbit.com/drbd-user-guide/linstor-guide-1_0-en/#s-linstor_ha)
+
+> 默认重启linstor-satellite会清除drbd resource, 需添加env LS_KEEP_RES=linstor避免.
+
+ha部署(base drbdd):
+1. 将所有satellites注册到某个controller作为primary node
+1. 准备linstor_db
+```bash
+# linstor resource-definition create linstor_db
+# linstor volume-definition create linstor_db 200M
+# linstor resource create linstor_db -s mypool --auto-place 3
+```
+
+> 不要手动分配linstor_db(drbd resource), 否则它的drbd minor会和以后controller分配的drbd minor重复从而引发错误
+
+1. 迁移linstor db
+```bash
+# systemctl disable --now linstor-controller # all nodes
+# systemctl disable linstor-controller # all nodes
+# cat << EOF | sudo tee -a /etc/systemd/system/var-lib-linstor.mount # copy /etc/systemd/system/var-lib-linstor.mount to all other nodes
+[Unit]
+Description=Filesystem for the LINSTOR controller
+
+[Mount]
+# you can use the minor like /dev/drbdX or the udev symlink
+What=/dev/drbd/by-res/linstor_db/0
+Where=/var/lib/linstor
+EOF
+# mv /var/lib/linstor{,.orig}
+# mkfs.ext4 /dev/drbd/by-res/linstor_db/0
+# systemctl start var-lib-linstor.mount
+# cp -r /var/lib/linstor.orig/* /var/lib/linstor # 保留备份, 避免意外
+# systemctl start linstor-controller # primary node
+# apt install drbdd # all nodes
+# cat << EOF | sudo tee -a /etc/drbdd.toml  # all nodes, linstor_db is drbd resource
+[promoter.resources.linstor_db]
+start = ["var-lib-linstor.mount", "linstor-controller.service"]
+EOF
+# systemctl enable drbdd # all nodes
+# systemctl restart drbdd # all nodes
+# systemctl edit linstor-satellite # all node
+[Service]
+Environment=LS_KEEP_RES=linstor
+[Unit]
+After=drbdd.service
+# systemctl restart linstor-satellite # all node
 ```

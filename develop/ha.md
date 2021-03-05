@@ -62,6 +62,8 @@ totem {                      //节点间的通信协议，主要定义通信方�
                 mcastport: 5405             //组播端口
                 ttl: 1                      //数据包的ttl值，由于不跨三层设备，这里用默认的1
         }
+        cluster_name: mycluster
+        transport: knet
 }
 logging {                   //跟日志相关配置
         fileline: off        //是否记录fileline
@@ -87,6 +89,7 @@ nodelist {       //节点列表
 　　　　node {
 　　　　　　ring0_addr: Node1.contoso.com   //节点名称：主机名或IP
 　　　　　　nodeid: 1                     //节点编号
+          name: node1
 　　　　　}
 　　　node {
 　　　　　ring0_addr: Node2.contoso.com
@@ -104,6 +107,8 @@ nodelist {       //节点列表
 pacemaker是一个开源的高可用集群资源管理器(CRM)，位于HA集群架构中资源管理、资源代理(RA)这个层次，它不能提供底层心跳信息传递的功能，要想与对方节点通信需要借助底层的心跳传递服务，将信息通告给对方. 通常它与corosync的结合方式有两种:
 - pacemaker作为corosync的插件运行
 - pacemaker作为独立的守护进程运行
+
+> Pacemaker集群对计算节点的瓶颈是集群通信机制Corosync, [集群节点可扩展性被限制在16个节点之内](https://clusterlabs.org/pacemaker/doc/en-US/Pacemaker/2.0/html-single/Pacemaker_Remote/). 通过pacemaker remote可放宽到几百个.
 
 配置文件: /etc/default/pacemaker. log功能需启用其中的PCMK_logfile和PCMK_logpriority. 同时因为pacemaker通过corosync通信, 通过看DC节点的corosync log也可以.
 
@@ -315,6 +320,7 @@ rule expression支持:
 
 环境准备for 每个node:
 ```bash
+# pcs-0.10与之前版本命令有较大改动, 参考资料: [Clusters from Scratch](https://clusterlabs.org/pacemaker/doc/en-US/Pacemaker/2.0/html-single/Clusters_from_Scratch/index.html)
 # ---每个node都执行
 # chronyc makestep # 同步时间, corosync的要求, 最好也设置crontab.
 # vim /etc/hosts # 设置hosts
@@ -327,9 +333,9 @@ rule expression支持:
 # apt install pacemaker corosync pcs crmsh # 使用了crmsh，就不再需要安装heartbeat
 # systemctl start pcsd && systemctl enable pcsd
 # echo hacluster:123456 | chpasswd # for ubuntu. `echo "123456" | passwd --stdin hacluster` for centos, 为hacluster用户(created by pcs)设置密码
-# ---在任一节点执行
-# pcs cluster auth node11  node12 -u hacluster # 认证节点
-# pcs cluster setup --force --name mycluster node11  node12 # 配置集群, 会自动创建/etc/corosync/corosync.onf, 并同步到所有node
+# ---在任一节点执行, 先停止每个node上的local cluster, 再删除该cluster
+# pcs host auth node11  node12 -u hacluster # 认证节点
+# pcs cluster setup --force mycluster node11 addr=192.168.1.1 node12 addr=192.168.1.2 # 配置集群, 会自动创建/etc/corosync/corosync.onf, 并同步到所有node, addr会用于corosync.onf nodelist.node.ring0_addr
 # pcs cluster start --all # 启动cluster
 # pcs cluster enable --all # 设置自动启动
 # pcs status # 检测cluster status, 类似`crm_mon -1`
@@ -741,3 +747,17 @@ san双活, 多路径软件.
 原因: 定义`ocf:heartbeat:IPaddr`时未指定`cidr_netmask`
 ### pacemaker failed action monitor not running
 对应的node因为某些原因没有执行monitor(比如reboot)导致该信息出现在`crm status`中.
+### pcs-0.10 `pcs cluster setup mycluster nod1 node2`创建集群报`None of hosts is known to pcs`
+参考:
+- [Upgrade to stein fails on creating pacemaker cluster](https://bugs.launchpad.net/tripleo/+bug/1834015)
+
+清理环境:
+```bash
+pcs cluster stop --force
+pcs cluster destroy
+```
+
+再重试.
+
+### iscsi crm configure portblock action="block/unblock"作用
+在iscsi target failover时阻止iscsi initiator收到"Connection refused"错误

@@ -31,6 +31,9 @@ ha需要解决的两个问题:
 > 基于心跳, 可能脑裂
 
 ### 4. heartbeat/DRDB
+参考:
+- [MySQL高可用之DRBD](https://wxy0327.blog.csdn.net/article/details/103070764)
+
 故障转移: 高可用集群软件heartbeat.
 数据共享: 基于块的数据同步软件DRBD
 

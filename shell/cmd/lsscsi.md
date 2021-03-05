@@ -7,7 +7,7 @@
 - -d : 显示设备节点的主要号码和次要号码
 - -H : 列出当前连接到系统的SCSI主机而不是SCSI设备
 - -l : 显示每一个SCSI设备（主机）的附加信息
-- -c : 相对于执行cat /proc/scsi/scsi命令的输出
+- -c : 相对于执行cat /proc/scsi/scsi命令的输出, 不推荐使用
 - -p : 显示额外的数据完整性（保护）的信息
 - -t : 显示传输信息
 - -L : 以“属性名=值”的方式显示附加信息
@@ -25,7 +25,7 @@
 
 ## example
 ```bash
-$ lsscsi # 列出SCSI设备及它们的属性, 机柜类型是enclosu, 可用`lsscsi -c`更清楚查看scsi信息, 其实是读取了`/proc/scsi/scsi`
+$ lsscsi # 列出SCSI设备及它们的属性, 机柜类型是enclosu
 [1:0:0:0]    disk    ATA      Hoodisk SSD      61.3  /dev/sda 
 $ lsscsi 2:0:0:0 # 显示匹配“2:0:0:0”的SCSI设备
 $ lsscsi -d # 显示SCSI设备节点的主要号码和次要号码
