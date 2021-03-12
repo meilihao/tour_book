@@ -7,10 +7,12 @@ syntax = "proto3";
 
 package check;
 
+import "google/protobuf/timestamp.proto";
 import "gogoproto/gogo.proto";
 
 message checkReq {
-    string book = 1 [(gogoproto.moretags) = 'customtag:"v"'];
+    string book = 1 [(gogoproto.jsontag) = "MyField2", (gogoproto.moretags) = 'customtag:"v"'];
+    google.protobuf.Timestamp created_at = 2 [(gogoproto.stdtime) = true];
 }
 
 message checkResp {
