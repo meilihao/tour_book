@@ -84,7 +84,7 @@ $ dpkg-scanpackages . | gzip -9c > Packages.gz #  制作本地软件源
 ### dpkg-deb: error: archive '<file>.deb' has premature member 'data.tar.gz' before
 dpkg的bug: [dpkg无法解析tar.xz格式-xz compressed control.tar files not supported](https://bugs.launchpad.net/ubuntu/+source/dpkg/+bug/1730627)
 
-升级dpkg版本(>=1.17.5)即可.
+升级dpkg版本(>=1.17.5), 即`apt install dpkg`.
 
 原因:
 对于软件安装包的提供者而言, 一定是希望安装包具有更好的兼容性. 最好可以使用xz压缩data部分, 仍然用gzip打control部分. 旧版的dpkg-deb, 默认会把control和data分开用不同的格式打包, control默认始终使用gzip的格式打包. 而新版的dpkg-deb(1.19.0)之后都会使用相同的格式压缩control和data. 如果你指定了-Z xz , 那就都是xz. 
@@ -117,3 +117,6 @@ dpkg-buildpackage的构建目录结构
 aptitude search ~c # list the residual packages
 sudo aptitude purge ~c # purge them
 ```
+
+### apt log
+`/var/log/apt/term.log`

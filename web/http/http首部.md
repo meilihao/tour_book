@@ -313,6 +313,8 @@ Via 首部是为了追踪传输路径，所以经常会和 TRACE 方法一起使
 
 和 Accept 首部字段一样，按权重值 q 来表示相对优先级.
 
+> 语言类型支持种类: [Language tags in HTML and XML](https://www.w3.org/International/articles/language-tags/), 它们已注册在[IANA registry](http://www.iana.org/assignments/language-subtag-registry),其类型是`Type: language`.
+
 ### Authorization
 
 用来告知服务器，用户代理的认证信息（证书值）.通常，想要通过服务器认证的用户代理会在接收到返回的 401 状态码响应后，把首部字段 Authorization 加入请求中.共用缓存在接收到含有 Authorization 首部字段的请求时的操作处理会略有差异.

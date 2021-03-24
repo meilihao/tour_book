@@ -107,6 +107,7 @@ linstor resource create nodeA demo --storage-pool mypool # 手动创建resource
 linstor resource create demo --auto-place 2 # 自动创建resource副本, `--layer-list storage`可只创建底层vol而没有drbd
 
 linstor resource list # 资源列表
+linstor volume list # volume列表, 包drbd devicename
 
 # resource-group是volume-definition的父对象，其中对资源组所做的所有属性更改都将由其资源定义的子级继承
 # 继承设置的层次结构: 卷定义 设置优先于 卷组 设置， 资源定义 设置优先于 资源组 设置

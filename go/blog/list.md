@@ -16,6 +16,7 @@
 - [Golang解决TCP粘包拆包问题](https://juejin.im/post/5d220f7b6fb9a07ec7553da4)
 
 ## 进阶
+- [为什么 Go 的泛型一拖再拖？- go泛型为什么不用尖括号](https://gocn.vip/topics/11272)
 - [Go 语言之三驾马车](https://cloud.tencent.com/community/article/649192)
 - [golang 汇编](https://lrita.github.io/2017/12/12/golang-asm/)
 - [Golang之轻松化解defer的温柔陷阱](http://www.cnblogs.com/qcrao-2018/p/10367346.html)
@@ -113,3 +114,6 @@
 ## 编译
 - [使用 upx 压缩 go build 打包的可执行文件](https://abelsu7.top/2019/10/24/go-build-compress-using-upx/)
 - [交叉编译Go程序](https://holmesian.org/golang-cross-compile)
+
+## example
+- [mattn/go-generics-example - 泛型](https://github.com/mattn/go-generics-example)

@@ -8,4 +8,5 @@ gpt分区工具. 与fdisk类似, 也分为两种模式: 命令模式(直接进�
 > sfdisk是fdisk的非交互式变体.
 
 ## 判断是否系统盘
-`parted /dev/sda print`输出的"Number"后是否存在`boot`/`swap`/`esp`
+- `parted /dev/sda print`输出的"Number"后是否存在`boot`/`swap`/`esp`
+- 通过`/dev/disk/by-lable`

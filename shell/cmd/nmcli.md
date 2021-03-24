@@ -5,7 +5,7 @@ Manager 服务. 即nmcli 是一款基于命令行的网络配置工具.
 
 **使用 nmcli 命令配置过的网络会话是永久生效的.**
 
-nmtui是nmcli的gui.
+nmtui是nmcli的terminal gui. nm-connection-editor是gui.
 
 > 在RHEL 8上，已经弃用Network.service，因此只能通过NetworkManager.service进行网络配置，包括动态IP和静态IP
 

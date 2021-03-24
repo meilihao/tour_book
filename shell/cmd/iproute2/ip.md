@@ -92,6 +92,12 @@ ip rule list的这三张路由表，又称为路由规则. 只不过路由规则
 CONFIG_BONDING=m
 ```
 
+team安装:
+```bash
+apt install libteam-utils
+dnf install teamd NetworkManager-team
+```
+
 #### 同网卡多IP技术
 有两种实现：
 - 早期的 ip alias : ip alias 是由 ifconfig 命令来创建和维护的，ifconfig显示的格式为`eth0:N`(即单独的网络接口). alias IP就是在网卡设备上绑定的第二个及以上的IP

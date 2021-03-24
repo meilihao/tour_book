@@ -28,7 +28,10 @@ service checker {
 `protoc -I=/home/chen/tmpfs/protobuf -I=/home/chen/tmpfs/protobuf/protobuf --gofast_out=plugins=grpc:. my.proto`报标题中的错误.
 
 
-一旦使用了`-I`参数则必须将my.proto所在的path也要用`-I`指定, 比如这里是`-I=.`. 注意`-I`不支持`~`路径形式.
+一旦使用了`-I`参数则必须将my.proto所在的path也要用`-I`指定, 比如这里是`-I=.`. 注意`-I`不支持`~`路径形式但支持`$GOPATH`.
+
+## 将google.protobuf.Timestamp生成为gogo的`*types.Timestamp`
+`protoc -I=$GOPATH/pkg/mod/github.com/gogo/protobuf@v1.3.2/protobuf  -I=$GOPATH/pkg/mod/github.com/gogo/protobuf@v1.3.2 -I=. --gofast_out=Mgoogle/protobuf/timestamp.proto=github.com/gogo/protobuf/types,plugins=grpc:. *.proto`
 
 ## protobuf 因为 XXX 插入数据库报错的情况
 ```go

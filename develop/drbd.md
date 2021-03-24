@@ -23,6 +23,9 @@ DRBD在远程传输上支持三种模式：
 
 > DRBD8.0以后的版本支持双主模式, 此时需要共享的集群文件系统(GFS，OCFS2等)来解决并发读写问题, 通过集群文件系统的分布式锁机制解决集群中两个主节点同时操作数据的问题.
 
+## cmd
+1. drbdadm status my_res : 查看资源状态, 包含role
+
 ## FAQ
 ### drbd 9 role自动变primary
 drbd 9在所有都是secondary情况下, 某个drbd device一旦写入数据会自动变成primary

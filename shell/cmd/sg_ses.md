@@ -74,9 +74,11 @@ fetch standard response, VPD pages or version descriptors. Also can perform IDEN
 
 ```bash
 # sg_inq /dev/sda # 获取磁盘的概要信息
-# sg_inq -p 0x0 /dev/sda # 获取磁盘支持的pages
+# sg_inq -p 0x0 [--vpd] /dev/sda # 获取磁盘支持的pages, `--vpd` sets the EVPD bit to one, `--page`获取指定的VPD page`
 # sg_inq -p 0x83 /dev/sda # 获取磁盘的设备标识信息, sg_inq读取的应是`/sys/block/sda/device/vpd_pg${N}`
 # sg_inq /dev/sda |grep "Unit serial number" # 获取磁盘的设备标识
+# sg_vpd /dev/sda # 获取磁盘支持的VPD
+# sg_vpd --page=bl /dev/sdb # 与sg_inq的区别是sg_vpd使用名称缩写来指定要查询的vpd
 ```
 
 ## sg_vpg
@@ -88,9 +90,20 @@ Decodes standard and some vendor Vital Product Data (VPD) pages.
 
 ## 扩展
 ### Control LED
+参考:
+- [The sg_ses utility](http://sg.danny.cz/sg/sg_ses.html)
+
 Insert harddisk, Blue LED light on, it is controlled by hardware.
 Read/write harddisk, Blue LED flash, it is controlled by hardware also.
 
 ```bash
 # sg_ses -ee
+sg_ses --dev-slot-num=0 --set=ident /dev/sg3 # 开启闪烁以定位enclosure的slot, 与该slot是否有盘无关
+$ sleep 10
+$ sg_ses --dsn=0 --clear=ident /dev/sg3 # 清除闪烁
+$ sg_ses -x 5 -S ident /dev/sg3 # 同上
+$ sleep 10
+$ sg_ses -x 5 -C ident /dev/sg3
 ```
+
+> `--dsn=0 = `--dev-slot-num=0` = `-x 5`
