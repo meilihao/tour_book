@@ -345,7 +345,7 @@ fn draw(ctx &gg.Context) {
 
 ## 类型
 
-### 原始类型
+### 基础类型
 
 ```v ignore
 bool
@@ -366,7 +366,7 @@ any // similar to C's void* and Go's interface{}
 
 请注意, 与C和Go不同, `int`总是一个32位的整数.
 
-V中的所有运算符的两边必须是相同类型的值这一规则有一个例外: 如果一边的原始类型完全适合于另一边类型的数据范围, 就可以自动推导. 下面是允许的可能性:
+V中的所有运算符的两边必须是相同类型的值这一规则有一个例外: 如果一边的基础类型完全适合于另一边类型的数据范围, 就可以自动推导. 下面是允许的可能性:
 
 ```v ignore
    i8 → i16 → int → i64
@@ -709,17 +709,11 @@ println(array_2) // [0, 1, 3, 5, 4]
 
 ### Fixed size arrays
 
-V also supports arrays with fixed size. Unlike ordinary arrays, their
-length is constant. You cannot append elements to them, nor shrink them.
-You can only modify their elements in place.
+V还支持固定大小的数组. 与普通数组不同，它们的长度是固定的. 你不能给它们追加元素，也不能缩小它们. 你只能修改它们的元素.
 
-However, access to the elements of fixed size arrays is more efficient,
-they need less memory than ordinary arrays, and unlike ordinary arrays,
-their data is on the stack, so you may want to use them as buffers if you
-do not want additional heap allocations.
+不过, 与普通数组不同, 访问固定大小的数组元素的效率更高, 它们比普通数组占用更少的内存. 它们的数据在堆栈上, 所以你可把它们作为缓冲区使用, 而不需要额外的堆分配.
 
-Most methods are defined to work on ordinary arrays, not on fixed size arrays.
-You can convert a fixed size array to an ordinary array with slicing:
+大多数方法都被定义为在普通数组上，而不是在固定大小的数组上. 但你可以通过分片将固定大小的数组转换为普通数组:
 ```v
 mut fnums := [3]int{} // fnums is a fixed size array with 3 elements.
 fnums[0] = 1
@@ -732,10 +726,9 @@ anums := fnums[0..fnums.len]
 println(anums) // => [1, 10, 100]
 println(typeof(anums).name) // => []int
 ```
-Note that slicing will cause the data of the fixed size array to be copied to
-the newly created ordinary array.
+请注意: 切片会导致固定大小的数组的数据会被复制到新创建的普通数组中.
 
-### Maps
+### Map
 
 ```v
 mut m := map[string]int{} // a map with `string` keys and `int` values
@@ -746,9 +739,9 @@ println(m['bad_key']) // "0"
 println('bad_key' in m) // Use `in` to detect whether such key exists
 m.delete('two')
 ```
-Maps can have keys of type string, rune, integer, float or voidptr.
+map可使用string, rune, integer, float 或 voidptr作为key. 
 
-The whole map can be initialized using this short syntax:
+整个map可以使用这个简短的语法来初始化:
 ```v
 numbers := map{
 	1: 'one'
@@ -757,7 +750,7 @@ numbers := map{
 println(numbers)
 ```
 
-If a key is not found, a zero value is returned by default:
+如果一个key没找到就会返回对应值的零值:
 
 ```v
 sm := map{
@@ -775,14 +768,14 @@ s := intm[3]
 println(s) // 0
 ```
 
-It's also possible to use an `or {}` block to handle missing keys:
+也可以使用`or {}`代码块来处理丢失的key:
 
 ```v
 mm := map[string]int{}
 val := mm['bad_key'] or { panic('key not found') }
 ```
 
-The same optional check applies to arrays:
+同样的可选检查也适用于数组:
 
 ```v
 arr := [1, 2, 3]
@@ -790,11 +783,11 @@ large_index := 999
 val := arr[large_index] or { panic('out of bounds') }
 ```
 
-## Module imports
+## Module导入
 
-For information about creating a module, see [Modules](#modules).
+关于创建module可参考 [Modules](#modules).
 
-Modules can be imported using the `import` keyword:
+Module导入使用`import`关键词:
 
 ```v
 import os
@@ -805,20 +798,16 @@ fn main() {
 	println('Hello, $name!')
 }
 ```
-This program can use any public definitions from the `os` module, such
-as the `input` function. See the [standard library](https://modules.vlang.io/)
-documentation for a list of common modules and their public symbols.
+这个程序可以使用`os`模块中的任何公共定义，如`input`函数. 见[标准库](https://modules.vlang.io/)文档中的常用模块及其公共符号的列表.
 
-By default, you have to specify the module prefix every time you call an external function.
-This may seem verbose at first, but it makes code much more readable
-and easier to understand - it's always clear which function from
-which module is being called. This is especially useful in large code bases.
+默认情况下, 每次调用外部函数时都必须指定模块前缀. 这在一开始可能会显得很啰嗦，但它使代码更易读, 并且更容易理解 - 总是很清楚地知道哪个函数从
+哪个模块中来. 这在大型代码库中特别有用.
 
-Cyclic module imports are not allowed, like in Go.
+循环导入是不允许的, 这与Go一样.
 
-### Selective imports
+### 选择性导入
 
-You can also import specific functions and types from modules directly:
+你也可以直接从模块中导入特定的函数和类型:
 
 ```v
 import os { input }
@@ -829,9 +818,9 @@ fn main() {
 	println('Hello, $name!')
 }
 ```
-Note: This is not allowed for constants - they must always be prefixed.
+注意: 常量不允许这样做, 它们必须总是有前缀.
 
-You can import several specific symbols at once:
+你可以同时导入几个特定的符号:
 
 ```v
 import os { input, user_os }
@@ -842,11 +831,11 @@ os := user_os()
 println('Your OS is ${os}.')
 ```
 
-### Module import aliasing
+### Module导入支持alias
 
-Any imported module name can be aliased using the `as` keyword:
+任何导入的模块名都可以使用`as`关键字进行重命名.
 
-NOTE: this example will not compile unless you have created `mymod/sha256.v`
+注意：除非你创建了`mymod/sha256.v`, 否则这个例子不会被编译.
 ```v failcompile
 import crypto.sha256
 import mymod.sha256 as mysha256
@@ -858,8 +847,7 @@ fn main() {
 }
 ```
 
-You cannot alias an imported function or type.
-However, you _can_ redeclare a type.
+你不能对一个导入的函数或类型进行别名. 但是, 你可以重新声明一个类型.
 
 ```v
 import time
@@ -882,7 +870,7 @@ fn main() {
 }
 ```
 
-## Statements & expressions
+## 语句和表达式
 
 ### If
 
@@ -898,11 +886,9 @@ if a < b {
 }
 ```
 
-`if` statements are pretty straightforward and similar to most other languages.
-Unlike other C-like languages,
-there are no parentheses surrounding the condition and the braces are always required.
+`if`语句非常直接, 与其他大多数语言类似. 与其他类似C语言不同的是, 条件周围没有括号, 而且总是需要括号(包裹代码块).
 
-`if` can be used as an expression:
+`if`可以作为表达式使用:
 
 ```v
 num := 777
@@ -911,10 +897,11 @@ println(s)
 // "odd"
 ```
 
-#### Type checks and casts
+#### 类型检查和强制转换
 You can check the current type of a sum type using `is` and its negated form `!is`.
+你可以使用`is`和它的否定形式`!is`来检查一个和类型的当前类型.
 
-You can do it either in an `if`:
+你可以在`if`中进行:
 ```v
 struct Abc {
 	val string
@@ -935,7 +922,7 @@ if x !is Abc {
 	println('Not Abc')
 }
 ```
-or using `match`:
+或使用`match`:
 ```v oksyntax
 match x {
 	Abc {
@@ -949,7 +936,7 @@ match x {
 }
 ```
 
-This works also with struct fields:
+这也适用于struct的字段:
 ```v
 struct MyStruct {
 	x int
@@ -981,12 +968,9 @@ match x.bar {
 }
 ```
 
-Mutable variables can change, and doing a cast would be unsafe.
-However, sometimes it's needed to have a type cast despite of mutability.
-In this case the developer has to mark the expression with a `mut` keyword
-to tell the compiler that you're aware of what you're doing.
+可变的变量可以发生变化, 进行类型转换是不安全的. 然而, 有时尽管变量是可变的, 但还是需要进行类型转换. 在这种情况下, 开发者必须用`mut`关键字来标记表达式, 来告诉编译器你知道自己在做什么.
 
-It works like this:
+它的方式是这样的:
 ```v oksyntax
 mut x := MySumType(MyStruct{123})
 if mut x is MyStruct {
@@ -1004,10 +988,10 @@ match mut x {
 }
 ```
 
-### In operator
+### In操作符
 
-`in` allows to check whether an array or a map contains an element.
-To do the opposite, use `!in`.
+`in`允许检查一个数组或一个map是否包含一个元素.
+相反操作用`!in`.
 
 ```v
 nums := [1, 2, 3]
@@ -1021,7 +1005,7 @@ println('one' in m) // true
 println('three' !in m) // true
 ```
 
-It's also useful for writing boolean expressions that are clearer and more compact:
+它对于书写布尔表达式也很有用, 使其更清晰, 更紧凑:
 
 ```v
 enum Token {
@@ -1044,17 +1028,15 @@ if parser.token in [.plus, .minus, .div, .mult] {
 }
 ```
 
-V optimizes such expressions,
-so both `if` statements above produce the same machine code and no arrays are created.
+V优化了这种表达方式. 所以上面两个`if`语句产生的机器代码是一样的, 都没有创建数组.
 
-### For loop
+### For循环
 
-V has only one looping keyword: `for`, with several forms.
+V只有一个循环关键词: `for`, 但有多种形式.
 
 #### `for`/`in`
 
-This is the most common form. You can use it with an array, map or
-numeric range.
+这是最常见的形式. 你可以在数组, map或数值范围中使用它.
 
 ##### Array `for`
 
@@ -1071,11 +1053,9 @@ for i, name in names {
 }
 ```
 
-The `for value in arr` form is used for going through elements of an array.
-If an index is required, an alternative form `for index, value in arr` can be used.
+`for value in arr`形式用于遍历一个数组的元素. 如果需要索引, 可以使用另一种形式`for index, value in arr`.
 
-Note, that the value is read-only.
-If you need to modify the array while looping, you need to declare the element as mutable:
+注意: 这个值是只读的. 如果你需要在循环时修改数组, 你需要将元素声明为可变的.
 
 ```v
 mut numbers := [0, 1, 2]
@@ -1084,7 +1064,7 @@ for mut num in numbers {
 }
 println(numbers) // [1, 2, 3]
 ```
-When an identifier is just a single underscore, it is ignored.
+当一个标识符只是一个下划线时, 它将被忽略.
 
 ##### Map `for`
 
@@ -1100,7 +1080,7 @@ for key, value in m {
 }
 ```
 
-Either key or value can be ignored by using a single underscore as the identifier.
+通过使用一个下划线作为标识符, 可以忽略任何一个键或值.
 ```v
 m := map{
 	'one': 1
@@ -1128,8 +1108,7 @@ for i in 0 .. 5 {
 	print(i)
 }
 ```
-`low..high` means an *exclusive* range, which represents all values
-from `low` up to *but not including* `high`.
+`low..high`指的是一个*排他性*的范围, 代表从`low`开始到`high`(不包括`high`)中的所有数值.
 
 #### Condition `for`
 
@@ -1143,9 +1122,7 @@ for i <= 100 {
 println(sum) // "5050"
 ```
 
-This form of the loop is similar to `while` loops in other languages.
-The loop will stop iterating once the boolean condition evaluates to false.
-Again, there are no parentheses surrounding the condition, and the braces are always required.
+这种形式的循环类似于其他语言中的`while`循环. 一旦布尔条件值为false, 循环将停止迭代. 同样地, 条件周围没有括号, 而且代码块总是需要括号.
 
 #### Bare `for`
 
@@ -1160,7 +1137,7 @@ for {
 println(num) // "10"
 ```
 
-The condition can be omitted, resulting in an infinite loop.
+这个条件可以省略, 会导致无限循环.
 
 #### C `for`
 
@@ -1174,17 +1151,14 @@ for i := 0; i < 10; i += 2 {
 }
 ```
 
-Finally, there's the traditional C style `for` loop. It's safer than the `while` form
-because with the latter it's easy to forget to update the counter and get
-stuck in an infinite loop.
+最后是传统的C风格的`for`循环. 它比`while`形式更安全. 因为使用后者, 很容易忘记更新计数器, 而导致卡在一个无限循环中.
 
-Here `i` doesn't need to be declared with `mut` since it's always going to be mutable by definition.
+这里`i`不需要用`mut`来声明, 因为根据定义, 它是可变的.
 
-#### Labelled break & continue
+#### 带标签的break/continue
 
-`break` and `continue` control the innermost `for` loop by default.
-You can also use `break` and `continue` followed by a label name to refer to an outer `for`
-loop:
+`break`和`continue`默认控制的是最里面的`for`循环. 你也可以使用`break` 和 `continue` 后面的标签名来跳转到外部的`for`循环:
+循环。
 
 ```v
 outer: for i := 4; true; i++ {
@@ -1198,8 +1172,8 @@ outer: for i := 4; true; i++ {
 	}
 }
 ```
-The label must immediately precede the outer loop.
-The above code prints:
+label必须紧接在外部循环之前.
+上面的代码会打印:
 ```
 4
 5
@@ -1219,9 +1193,7 @@ match os {
 }
 ```
 
-A match statement is a shorter way to write a sequence of `if - else` statements.
-When a matching branch is found, the following statement block will be run.
-The else branch will be run when no other branches match.
+match语句是编写一系列`if - else`语句的较短方法. 当找到一个匹配的分支时, 将执行其中的语句块. 当没有其他分支匹配时则执行else分支.
 
 ```v
 number := 2
@@ -1232,7 +1204,7 @@ s := match number {
 }
 ```
 
-A match expression returns the value of the final expression from the matching branch.
+match表达式从匹配分支返回最终表达式的值.
 
 ```v
 enum Color {
@@ -1249,9 +1221,8 @@ fn is_red_or_blue(c Color) bool {
 }
 ```
 
-A match statement can also be used to branch on the variants of an `enum`
-by using the shorthand `.variant_here` syntax. An `else` branch is not allowed
-when all the branches are exhaustive.
+match语句也可以使用简写的`.variant_here`语法作为`enum`变体的分支. 当所有的分支都是无穷尽的时候, 此时不允许使用`else`分支.
+
 
 ```v
 c := `v`
@@ -1265,19 +1236,15 @@ println(typ)
 // 'lowercase'
 ```
 
-You can also use ranges as `match` patterns. If the value falls within the range
-of a branch, that branch will be executed.
+你也可以使用范围作为`match`模式. 如果数值在分支的范围内, 则该分支将被执行.
 
-Note that the ranges use `...` (three dots) rather than `..` (two dots). This is
-because the range is *inclusive* of the last element, rather than exclusive
-(as `..` ranges are). Using `..` in a match branch will throw an error.
+请注意: 范围使用`...`(三点)而不是`...`(两点). 这就是因为范围是*包含*最后一个元素的, 而不是排他性的(比如`..`范围). 在匹配分支中使用`.`将引发一个错误.
 
-Note: `match` as an expression is not usable in `for` loop and `if` statements.
+注意: `match`作为表达式不能用于`for`循环和`if`语句.
 
 ### Defer
 
-A defer statement defers the execution of a block of statements
-until the surrounding function returns.
+defer语句会推迟执行一组语句, 直到外围函数返回.
 
 ```v
 import os
@@ -1318,8 +1285,7 @@ assert p.x == 10
 
 ### Heap structs
 
-Structs are allocated on the stack. To allocate a struct on the heap
-and get a reference to it, use the `&` prefix:
+struct是在堆栈上分配的. 要在堆上分配一个struct并获得对它的引用需使用`&`前缀:
 
 ```v
 struct Point {
@@ -1332,12 +1298,11 @@ p := &Point{10, 10}
 println(p.x)
 ```
 
-The type of `p` is `&Point`. It's a [reference](#references) to `Point`.
-References are similar to Go pointers and C++ references.
+`p`的类型是`&Point`. 它是对`Point`的[引用](#references). 引用类似于Go指针和C++引用.
 
-### Embedded structs
+### 嵌入式struct
 
-V doesn't allow subclassing, but it supports embedded structs:
+V不允许子类，但它支持嵌入式struct:
 
 ```v
 struct Widget {
@@ -1356,13 +1321,13 @@ mut button := Button{
 }
 button.x = 3
 ```
-Without embedding we'd have to name the `Widget` field and do:
+如果没有嵌入, 我们就必须给`Widget`字段命名, 然后做以下操作:
 
 ```v oksyntax
 button.widget.x = 3
 ```
 
-### Default field values
+### 字段默认值
 
 ```v
 struct Foo {
@@ -1373,10 +1338,7 @@ struct Foo {
 }
 ```
 
-All struct fields are zeroed by default during the creation of the struct.
-Array and map fields are allocated.
-
-It's also possible to define custom default values.
+在创建结构的过程中, 所有的结构字段默认为零值. 数组和map字段会被分配. 但也可以定义自定义的默认值.
 
 ### Required fields
 
@@ -1386,17 +1348,16 @@ struct Foo {
 }
 ```
 
-You can mark a struct field with the `[required]` attribute, to tell V that
-that field must be initialized when creating an instance of that struct.
+你可以用`[required]`属性标记一个结构体字段, 告诉V当创建该结构的实例时, 必须初始化该字段.
 
-This example will not compile, since the field `n` isn't explicitly initialized:
+由于字段`n`没有被显式初始化, 这个例子将无法编译:
 ```v failcompile
 _ = Foo{}
 ```
 
 <a id='short-struct-initialization-syntax' />
 
-### Short struct literal syntax
+### 简短的struct字面量语法
 
 ```v
 struct Point {
@@ -1416,13 +1377,14 @@ p = {
 assert p.y == 4
 ```
 
-Omitting the struct name also works for returning a struct literal or passing one
-as a function argument.
+省略struct名也可以用于返回一个struct的字面量或作为函数参数传递一个struct字面量.
 
-#### Trailing struct literal arguments
+#### 尾随struct的字面量参数
 
 V doesn't have default function arguments or named arguments, for that trailing struct
-literal syntax can be used instead:
+literal syntax can be used instead
+
+V没有默认的函数参数或命名的参数, 但可用尾随struct的字面量参数来代替:
 
 ```v
 struct ButtonConfig {
@@ -1451,19 +1413,17 @@ button := new_button(text: 'Click me', width: 100)
 assert button.height == 20
 ```
 
-As you can see, both the struct name and braces can be omitted, instead of:
+如你所见, struct名称和花括号都可以省略, 而不是:
 
 ```v oksyntax nofmt
 new_button(ButtonConfig{text:'Click me', width:100})
 ```
 
-This only works for functions that take a struct for the last argument.
+这仅适用于为最后一个参数是struct的函数.
 
-### Access modifiers
+### 访问修改器
 
-Struct fields are private and immutable by default (making structs immutable as well).
-Their access modifiers can be changed with
-`pub` and `mut`. In total, there are 5 possible options:
+struct字段默认是私有的, 不可变的(使得结构也是不可变的). 它们的访问修饰符可以用`pub`和`mut`, 总共有5个可能的选项.
 
 ```v
 struct Foo {
@@ -1481,7 +1441,7 @@ __global:
 }
 ```
 
-For example, here's the `string` type defined in the `builtin` module:
+例如, 这里是在`builtin`模块中定义的`string`类型:
 
 ```v ignore
 struct string {
@@ -1491,9 +1451,7 @@ pub:
 }
 ```
 
-It's easy to see from this definition that `string` is an immutable type.
-The byte pointer with the string data is not accessible outside `builtin` at all.
-The `len` field is public, but immutable:
+从这个定义中不难看出, `string`是一个不可改变的类型, 它包含字符串数据的字节指针在`builtin`之外根本无法访问. `len`字段是公共的, 但是不可变的:
 ```v failcompile
 fn main() {
     str := 'hello'
@@ -1502,8 +1460,7 @@ fn main() {
 }
 ```
 
-This means that defining public readonly fields is very easy in V,
-no need in getters/setters or properties.
+这意味着在V中定义公开可读字段非常容易, 不需要使用getters/setters或属性.
 
 ## Methods
 
@@ -1526,18 +1483,16 @@ user2 := User{
 println(user2.can_register()) // "true"
 ```
 
-V doesn't have classes, but you can define methods on types.
-A method is a function with a special receiver argument.
-The receiver appears in its own argument list between the `fn` keyword and the method name.
-Methods must be in the same module as the receiver type.
+V没有类, 但你可以在类型上定义方法. 一个方法是一个带有特殊接受者参数的函数, 接受者会出现在它自己的参数列表中，位于`fn`关键字和方法名之间.
+接收者出现在它自己的参数列表中，位于`fn`关键字和方法名之间。
+方法必须与接受者类型在同一个模块中.
 
-In this example, the `can_register` method has a receiver of type `User` named `u`.
-The convention is not to use receiver names like `self` or `this`,
-but a short, preferably one letter long, name.
+在这个例子中, `can_register`方法有一个名为`u`, 类型是`User`的接收器. 惯例是不使用诸如`self`或`this`这样的接收者名称, 
+但名字要简短，最好是一个字母长度.
 
 ## Unions
 
-Just like structs, unions support embedding.
+就像struct一样，union支持嵌入.
 
 ```v
 struct Rgba32_Component {
@@ -1570,28 +1525,26 @@ unsafe {
 
 Output: `Size: 4B, clr1.b: 136, clr2.b: 0`
 
-Union member access must be performed in an `unsafe` block.
+union成员的访问必须在一个`unsafe`块中进行.
 
-Note that the embedded struct arguments are not necessarily stored in the order listed.
+请注意: 嵌入的struct参数不一定按所列顺序存储.
 
 ## Functions 2
 
-### Pure functions by default
+### 默认是纯函数
 
-V functions are pure by default, meaning that their return values are a function of their
-arguments only, and their evaluation has no side effects (besides I/O).
+V函数默认为纯函数, 这意味着它们的返回值只由它们的参数决定，而且函数的计算求值时没有任何副作用(除了I/O).
+参数，而且它们的评估没有任何副作用（）。
 
-This is achieved by a lack of global variables and all function arguments being
-immutable by default, even when [references](#references) are passed.
+这是因为缺少全局变量和所有函数参数在默认情况下是不可变的, 即使在传递[引用](#引用)时也是如此.
 
-V is not a purely functional language however.
+然而, V并不是一种纯粹的函数式语言.
 
-There is a compiler flag to enable global variables (`--enable-globals`), but this is
-intended for low-level applications like kernels and drivers.
+有一个编译器标志来启用全局变量(`--enable-globals`), 但这是一个很重要的标志, 用于低级应用, 如内核和驱动程序.
 
-### Mutable arguments
+### 可变参数
 
-It is possible to modify function arguments by using the keyword `mut`:
+可以通过使用关键字 `mut`来修改函数参数:
 
 ```v
 struct User {
@@ -1610,8 +1563,7 @@ user.register()
 println(user.is_registered) // "true"
 ```
 
-In this example, the receiver (which is simply the first argument) is marked as mutable,
-so `register()` can change the user object. The same works with non-receiver arguments:
+在本例中, receiver(它只是第一个参数)被标记为可变的，因此register()可以更改user对象. 同样适用于没有接收者参数的函数:
 
 ```v
 fn multiply_by_2(mut arr []int) {
@@ -1626,22 +1578,17 @@ println(nums)
 // "[2, 4, 6]"
 ```
 
-Note, that you have to add `mut` before `nums` when calling this function. This makes
-it clear that the function being called will modify the value.
+注意: 调用这个函数时, 必须在`nums`前面加上`mut`. 很明显, 这使得被调用的函数可修改值.
 
-It is preferable to return values instead of modifying arguments.
-Modifying arguments should only be done in performance-critical parts of your application
-to reduce allocations and copying.
+最好是返回值而不是修改参数. 修改参数应该只在应用程序的性能关键部分进行, 以减少分配和复制.
 
-For this reason V doesn't allow the modification of arguments with primitive types (e.g. integers).
-Only more complex types such as arrays and maps may be modified.
+出于这个原因, V不允许修改基础类型的参数(例如整数). 只有更复杂的类型, 如数组和map才可以被修改.
 
-Use `user.register()` or `user = register(user)`
-instead of `register(mut user)`.
+使用`user.register()` 或 `user = register(user)` 代替 `register(mut user)`.
 
-#### Struct update syntax
+#### struct更新语法
 
-V makes it easy to return a modified version of an object:
+V使它很容易返回一个对象的修改版本:
 
 ```v
 struct User {
@@ -1665,7 +1612,7 @@ user = register(user)
 println(user)
 ```
 
-### Variable number of arguments
+### 可变的参数数量
 
 ```v
 fn sum(a ...int) int {
@@ -1686,7 +1633,7 @@ b := [5, 6, 7]
 println(sum(...b)) // output: 18
 ```
 
-### Anonymous & high order functions
+### 匿名和高阶函数
 
 ```v
 fn sqr(n int) int {
@@ -1725,7 +1672,7 @@ fn main() {
 }
 ```
 
-## References
+## 引用
 
 ```v
 struct Foo {}
@@ -1739,15 +1686,11 @@ fn bar_function(foo Foo) {
 }
 ```
 
-If a function argument is immutable (like `foo` in the examples above)
-V can pass it either by value or by reference. The compiler will decide,
-and the developer doesn't need to think about it.
+如果一个函数参数是不可改变的(比如上面例子中的`foo`), V可以通过值或引用来传递, 这由编译器决定, 而开发者不需要考虑这个问题.
 
-You no longer need to remember whether you should pass the struct by value
-or by reference.
+你不再需要考虑是否应该通过值还是引用来传递struct.
 
-You can ensure that the struct is always passed by reference by
-adding `&`:
+你可以通过增加`&`确保结构体总是通过引用来传递的:
 
 ```v
 struct Foo {
@@ -1759,11 +1702,9 @@ fn (foo &Foo) bar() {
 }
 ```
 
-`foo` is still immutable and can't be changed. For that,
-`(mut foo Foo)` must be used.
+`foo`仍然是不可改变的. 为此必须使用`(mut foo Foo)`.
 
-In general, V's references are similar to Go pointers and C++ references.
-For example, a generic tree structure definition would look like this:
+一般来说，V的引用类似于Go指针和C++引用. 例如, 一个通用的树结构的定义是这样的:
 
 ```v wip
 struct Node<T> {
@@ -1773,7 +1714,7 @@ struct Node<T> {
 }
 ```
 
-## Constants
+## 常亮
 
 ```v
 const (
@@ -1785,16 +1726,14 @@ println(pi)
 println(world)
 ```
 
-Constants are declared with `const`. They can only be defined
-at the module level (outside of functions).
-Constant values can never be changed. You can also declare a single
-constant separately:
+常量用`const`来声明. 它们只能被定义为在模块级(需在函数外).
+常量值永远不能被改变. 你也可以在模块中声明单个常量:
 
 ```v
 const e = 2.71828
 ```
 
-V constants are more flexible than in most languages. You can assign more complex values:
+V常量比大多数语言更灵活. 你可以分配更复杂的值:
 
 ```v
 struct Color {
@@ -1826,21 +1765,15 @@ println(numbers)
 println(red)
 println(blue)
 ```
-\* WIP - for now function calls are evaluated at program start-up
+\* WIP - 目前函数调用在程序启动时进行评估.
 
-Global variables are not normally allowed, so this can be really useful.
+全局变量通常是不被允许的, 所以这可能真的很有用.
 
-### Required module prefix
+### 所需模块前缀
 
-When naming constants, `snake_case` must be used. In order to distinguish consts
-from local variables, the full path to consts must be specified. For example,
-to access the PI const, full `math.pi` name must be used both outside the `math`
-module, and inside it. That restriction is relaxed only for the `main` module
-(the one containing your `fn main()`), where you can use the unqualified name of
-constants defined there, i.e. `numbers`, rather than `main.numbers`.
+在命名常量时, 必须使用`snake_case`. 为了区分常量和局部变量, 必须指定consts的完整路径. 例如要访问PI常量, 必须在`math`之外使用完整的`math.pi`名称. 这一限制仅对`main`模块放宽(包含你的`fn main()`), 在这里你可以使用非限定名称的常量, 即`numbers`, 而不是`main.numbers`.
 
-vfmt takes care of this rule, so you can type `println(pi)` inside the `math` module,
-and vfmt will automatically update it to `println(math.pi)`.
+vfmt会处理这个规则, 所以你可以在`math`模块中使用`println(pi)`, 而vfmt会自动更新为`println(math.pi)`.
 
 <!--
 Many people prefer all caps consts: `TOP_CITIES`. This wouldn't work
@@ -1853,9 +1786,9 @@ println('Top cities: ${top_cities.filter(.usa)}')
 ```
 -->
 
-## Builtin functions
+## 内置函数
 
-Some functions are builtin like `println`. Here is the complete list:
+有些函数是内置的, 如`println`. 以下是完整的列表:
 
 ```v ignore
 fn print(s string) // print anything on sdtout
@@ -1869,8 +1802,7 @@ fn panic(s string) // print a message and backtraces on stderr, and terminate th
 fn print_backtrace() // print backtraces on stderr
 ```
 
-`println` is a simple yet powerful builtin function, that can print anything:
-strings, numbers, arrays, maps, structs.
+`println`是一个简单而强大的内置函数, 它可以打印任何东西: string, number, array, map, struct.
 
 ```v
 struct User {
@@ -1886,10 +1818,9 @@ println(User{ name: 'Bob', age: 20 }) // "User{name:'Bob', age:20}"
 
 <a id='custom-print-of-types' />
 
-## Printing custom types
+## 打印自定义类型
 
-If you want to define a custom print value for your type, simply define a
-`.str() string` method:
+如果你想为你的类型定义一个自定义打印值, 只需定义一个简单的`.str() string`方法即可:
 
 ```v
 struct Color {
@@ -1910,15 +1841,12 @@ red := Color{
 println(red)
 ```
 
-## Modules
+## 模块
 
-Every file in the root of a folder is part of the same module.
-Simple programs don't need to specify module name, in which case it defaults to 'main'.
+文件夹目录下的每个文件都是同一个模块的一部分. 简单的程序不需要指定模块名, 在这种情况下, 它默认为'main'.
 
-V is a very modular language. Creating reusable modules is encouraged and is
-quite easy to do.
-To create a new module, create a directory with your module's name containing
-.v files with code:
+V是一种非常模块化的语言. 我们鼓励创建可重复使用的模块, 并且很容易做到. 要创建一个新的模块, 可用模块名称创建一个目录, 其中包含了
+带代码的.v文件即可:
 
 ```shell
 cd ~/code/modules
@@ -1935,7 +1863,7 @@ pub fn say_hi() {
 }
 ```
 
-You can now use `mymodule` in your code:
+现在你可用在代码中使用`mymodule`了:
 
 ```v failcompile
 import mymodule
@@ -1945,17 +1873,16 @@ fn main() {
 }
 ```
 
-* Module names should be short, under 10 characters.
-* Module names must use `snake_case`.
-* Circular imports are not allowed.
-* You can have as many .v files in a module as you want.
-* You can create modules anywhere.
-* All modules are compiled statically into a single executable.
+* 模块名称应简短, 10个字符以下。
+* 模块名称必须使用`snake_case`
+* 不允许循环导入
+* 一个模块中可以有任意多的.v文件
+* 你可以在任何地方创建模块
+* 所有的模块都可被静态地编译成一个可执行文件
 
-### `init` functions
+### `init` 函数
 
-If you want a module to automatically call some setup/initialization code when it is imported,
-you can use a module `init` function:
+如果你想让一个模块在导入时自动调用一些设置/初始化代码, 那么你可以使用模块的`init`函数.
 
 ```v
 fn init() {
@@ -1963,8 +1890,7 @@ fn init() {
 }
 ```
 
-The `init` function cannot be public - it will be called automatically. This feature is
-particularly useful for initializing a C library.
+`init`函数不能是公开的 - 它将被自动调用. 这一特点对初始化C库特别有用.
 
 ## Types 2
 
@@ -2004,12 +1930,11 @@ for item in arr {
 }
 ```
 
-A type implements an interface by implementing its methods and fields.
-There is no explicit declaration of intent, no "implements" keyword.
+一个类型通过实现其方法和字段来实现一个接口. 不需要明确的意图声明, 没有"implements"关键字.
 
-#### Casting an interface
+#### 接口断言
 
-We can test the underlying type of an interface using dynamic cast operators:
+我们可以使用`is`操作符来测试一个接口的底层类型:
 ```v oksyntax
 interface Something {}
 
@@ -2023,16 +1948,13 @@ fn announce(s Something) {
 	}
 }
 ```
-For more information, see [Dynamic casts](#dynamic-casts).
+更多信息参考 [动态断言](#动态断言).
 
-#### Interface method definitions
+#### 接口方法的定义
 
-Also unlike Go, an interface may implement a method.
-These methods are not implemented by structs which implement that interface.
+同样与Go不同, 一个接口可以实现一个方法. 这些方法不是由实现了该接口的struct实现的.
 
-When a struct is wrapped in an interface that has implemented a method
-with the same name as one implemented by this struct, only the method
-implemented on the interface is called.
+当一个struct被封装在一个已经实现了该方法的接口中时. 与这个struct所实现的名称相同，此时只有接口上的该方法会被调用.
 
 ```v
 struct Cat {}
@@ -2062,7 +1984,7 @@ fn main() {
 }
 ```
 
-### Enums
+### Enum
 
 ```v
 enum Color {
@@ -2082,11 +2004,9 @@ match color {
 }
 ```
 
-Enum match must be exhaustive or have an `else` branch.
-This ensures that if a new enum field is added, it's handled everywhere in the code.
+枚举匹配必须是详尽的, 或者有一个`else`分支. 这确保了如果增加了一个新的枚举字段, 它在代码中的所有地方都会被处理.
 
-Enum fields cannot re-use reserved keywords. However, reserved keywords may be escaped
-with an @.
+枚举字段不能使用保留关键字. 然而, 保留的关键字可以用`@`转义而是被使用.
 
 ```v
 enum Color {
@@ -2117,12 +2037,11 @@ println('Grocery IDs: $g1, $g2, $g3')
 
 Output: `Grocery IDs: 0, 5, 6`.
 
-Operations are not allowed on enum variables; they must be explicity cast to `int`.
+不允许在枚举变量上进行操作, 它们必须被明确地转换为`int`.
 
-### Sum types
+### 和类型
 
-A sum type instance can hold a value of several different types. Use the `type`
-keyword to declare a sum type:
+一个和类型的实例可以容纳几个不同类型的值. 使用`type`关键字来声明一个和类型:
 
 ```v
 struct Moon {}
@@ -2137,10 +2056,10 @@ sum := World(Moon{})
 assert sum.type_name() == 'Moon'
 println(sum)
 ```
-The built-in method `type_name` returns the name of the currently held
-type.
 
-With sum types you could build recursive structures and write concise but powerful code on them.
+内置方法`type_name`返回当前持有的类型.
+
+使用和类型, 你可以建立递归结构, 并在其上写出简洁但强大的代码.
 ```v
 // V's binary tree
 struct Empty {}
@@ -2169,10 +2088,10 @@ fn main() {
 }
 ```
 
-#### Dynamic casts
+#### 动态断言
 
-To check whether a sum type instance holds a certain type, use `sum is Type`.
-To cast a sum type to one of its variants you can use `sum as Type`:
+要检查一个和类型实例是否拥有某个类型，使用`sum is Type`.
+要将一个和类型转换为它的一个变体, 使用`sum as Type`.
 
 ```v
 struct Moon {}
@@ -2199,10 +2118,9 @@ fn main() {
 }
 ```
 
-`as` will panic if `w` doesn't hold a `Mars` instance.
-A safer way is to use a smart cast.
+如果`w`没有持有`Mars`实例, `as`会panic. 更安全的方法是使用智能转换.
 
-#### Smart casting
+#### 智能转换
 
 ```v oksyntax
 if w is Mars {
@@ -2212,10 +2130,9 @@ if w is Mars {
 	}
 }
 ```
-`w` has type `Mars` inside the body of the `if` statement. This is
-known as *flow-sensitive typing*.
-If `w` is a mutable identifier, it would be unsafe if the compiler smart casts it without a warning.
-That's why you have to declare a `mut` before the `is` expression:
+if`语句里的`w`内有`Mars`类型. 这就是所谓的 *流敏感类型*.
+因为`w`是一个可变的标识符, 如果编译器智能转换它而不发出警告, 那将是不安全的.
+这就是为什么你必须在`is`表达式之前声明一个`mut`.
 
 ```v ignore
 if mut w is Mars {
@@ -2225,12 +2142,12 @@ if mut w is Mars {
 	}
 }
 ```
-Otherwise `w` would keep its original type.
-> This works for both, simple variables and complex expressions like `user.name`
+否则`w`将保持其基础类型.
+> 这既适用于简单的变量, 也适用于复杂的表达式, 如`user.name`.
 
-#### Matching sum types
+#### 匹配和类型
 
-You can also use `match` to determine the variant:
+你也可以使用 `match` 来确定变种:
 
 ```v
 struct Moon {}
@@ -2260,7 +2177,7 @@ fn land(w World) {
 }
 ```
 
-`match` must have a pattern for each variant or have an `else` branch.
+`match`必须为每一个变体提供一个模式或有一个`else`分支.
 
 ```v ignore
 struct Moon {}
@@ -2283,9 +2200,9 @@ fn pass_time(w World) {
 }
 ```
 
-### Option/Result types and error handling
+### Option/Result 类型 和 error处理
 
-Option types are declared with `?Type`:
+Option类型用`?Type`定义:
 ```v
 struct User {
 	id   int
@@ -2318,20 +2235,16 @@ fn main() {
 }
 ```
 
-V combines `Option` and `Result` into one type, so you don't need to decide which one to use.
+V将`Option`和`Result`合并为一种类型, 因此你无需决定要使用哪种类型.
 
-The amount of work required to "upgrade" a function to an optional function is minimal;
-you have to add a `?` to the return type and return an error when something goes wrong.
+将一个函数"升级"为可选函数所需的工作量是很小的. 你必须在返回类型中添加`？`, 并在出现问题时返回错误.
 
-If you don't need to return an error message, you can simply `return none`
-(this is a more efficient equivalent of `return error("")`).
+如果你不需要返回错误消息, 则只需`return none`(这与`return error("")`等效).
 
-This is the primary mechanism for error handling in V. They are still values, like in Go,
-but the advantage is that errors can't be unhandled, and handling them is a lot less verbose.
-Unlike other languages, V does not handle exceptions with `throw/try/catch` blocks.
+这是V中错误处理的主要机制. 它们仍然是值, 类似于Go, 但优点是error必须处理，而且处理起来也不冗长. 与其他语言不同, V不用`throw/try/catch`块来处理异常.
 
-`err` is defined inside an `or` block and is set to the string message passed
-to the `error()` function. `err` is empty if `none` was returned.
+err是在or代码块中定义的, 并设置为传递字符串消息
+给`error()`函数. 如果返回了`none`则`err`为空.
 
 ```v oksyntax
 user := repo.find_user_by_id(7) or {
@@ -2340,10 +2253,9 @@ user := repo.find_user_by_id(7) or {
 }
 ```
 
-### Handling optionals
+### 处理可选
 
-There are four ways of handling an optional. The first method is to
-propagate the error:
+有四种方法可以处理一个可选. 第一种方法是传播错误:
 
 ```v
 import net.http
@@ -2354,14 +2266,9 @@ fn f(url string) ?string {
 }
 ```
 
-`http.get` returns `?http.Response`. Because `?` follows the call, the
-error will be propagated to the caller of `f`. When using `?` after a
-function call producing an optional, the enclosing function must return
-an optional as well. If error propagation is used in the `main()`
-function it will `panic` instead, since the error cannot be propagated
-any further.
+`http.get`返回`?http.Response`. 因为`?`跟在调用后面, 所以导致了error将被传播给`f`的调用者. 当使用`?`后, 函数调用产生一个可选函数, 则外层函数必须返回也是一个可选项. 如果在`main()`中使用了错误传播, 它将`panic`, 因为此时错误不能进一步传播.
 
-The body of `f` is essentially a condensed version of:
+`f`的body基本上是以下内容的浓缩版:
 
 ```v ignore
     resp := http.get(url) or { return err }
@@ -2369,24 +2276,18 @@ The body of `f` is essentially a condensed version of:
 ```
 
 ---
-The second method is to break from execution early:
+第二种方法是提前脱离执行:
 
 ```v oksyntax
 user := repo.find_user_by_id(7) or { return }
 ```
 
-Here, you can either call `panic()` or `exit()`, which will stop the execution of the
-entire program, or use a control flow statement (`return`, `break`, `continue`, etc)
-to break from the current block.
-Note that `break` and `continue` can only be used inside a `for` loop.
+在这里，你可以调用`panic()`或`exit()`, 这样整个程序就会停止执行. 或使用控制流语句(`return`, `break`, `continue`等)跳出当前的代码块. 注意`break`和`continue`只能在`for`中使用.
 
-V does not have a way to forcibly "unwrap" an optional (as other languages do,
-for instance Rust's `unwrap()` or Swift's `!`). To do this, use `or { panic(err.msg) }` instead.
+V没有办法强制"unwrap"一个optional(像其他语言那样, 例如Rust的`unwrap()`或Swift的`!`). 要做到这一点, 可以使用`or { panic(err.msg) }`代替.
 
 ---
-The third method is to provide a default value at the end of the `or` block.
-In case of an error, that value would be assigned instead,
-so it must have the same type as the content of the `Option` being handled.
+第三种方法是在`or`代码块的末尾提供一个默认值. 如果出现错误, 将以该值代替. 所以它必须与被处理的`Option`的内容具有相同的类型.
 
 ```v
 fn do_something(s string) ?string {
@@ -2403,7 +2304,7 @@ println(b)
 ```
 
 ---
-The fourth method is to use `if` unwrapping:
+第四种方法是使用`if`拆包:
 
 ```v
 import net.http
@@ -2414,10 +2315,9 @@ if resp := http.get('https://google.com') {
 	println(err)
 }
 ```
-Above, `http.get` returns a `?http.Response`. `resp` is only in scope for the first
-`if` branch. `err` is only in scope for the `else` branch.
+上面`http.get`返回一个`?http.Response`. `resp`只在`if`分支作用域内, 而`err'只属于`else'分支的作用域.
 
-## Generics
+## 泛型
 
 ```v wip
 
@@ -2454,12 +2354,10 @@ user := users_repo.find_by_id(1)? // find_by_id<User>
 post := posts_repo.find_by_id(1)? // find_by_id<Post>
 ```
 
-Currently generic function definitions must declare their type parameters, but in
-future V will infer generic type parameters from single-letter type names in
-runtime parameter types. This is why `find_by_id` can omit `<T>`, because the
-receiver argument `r` uses a generic type `T`.
+目前通用函数定义必须声明其类型参数, 但在未来V可以在运行时从单字母类型名推断出通用类型参数. 这就是为什么`find_by_id`可以省略`<T>`, 因为
+接收器参数`r`使用通用类型`T`.
 
-Another example:
+另一个例子:
 ```v
 fn compare<T>(a T, b T) int {
 	if a < b {
@@ -2486,10 +2384,9 @@ println(compare(1.1, 1.2)) //         -1
 ```
 
 
-## Concurrency
-### Spawning Concurrent Tasks
-V's model of concurrency is very similar to Go's. To run `foo()` concurrently in
-a different thread, just call it with `go foo()`:
+## 并发
+### 生成并发任务
+V的并发模型和Go的模型非常相似. 在V中要在其他线程并发执行`foo()`, 用`go foo()`即可:
 
 ```v
 import math
@@ -2505,9 +2402,7 @@ fn main() {
 }
 ```
 
-Sometimes it is necessary to wait until a parallel thread has finished. This can
-be done by assigning a *handle* to the started thread and calling the `wait()` method
-to this handle later:
+有时需要等待一个并行线程完成. 这可以通过给启动的线程分配一个*handle*, 并调用它的`wait()`方法来实现:
 
 ```v
 import math
@@ -2525,9 +2420,7 @@ fn main() {
 }
 ```
 
-This approach can also be used to get a return value from a function that is run in a
-parallel thread. There is no need to modify the function itself to be able to call it
-concurrently.
+这种方法也可以用来从一个在并行线程中运行的函数中获取返回值, 而并发调用时不需要修改函数本身.
 
 ```v
 import math { sqrt }
@@ -2545,8 +2438,7 @@ fn main() {
 }
 ```
 
-If there is a large number of tasks, it might be easier to manage them
-using an array of threads.
+如果有大量的任务, 使用线程数组来管理它们可能会更容易.
 
 ```v
 import time
@@ -2576,8 +2468,7 @@ fn main() {
 // done
 ```
 
-Additionally for threads that return the same type, calling `wait()`
-on the thread array will return all computed values.
+另外对于返回相同类型的线程, 在线程数组所在线程上调用`wait()`将返回所有计算值.
 
 ```v
 fn expensive_computing(i int) int {
@@ -2598,22 +2489,18 @@ fn main() {
 ```
 
 ### Channels
-Channels are the preferred way to communicate between coroutines. V's channels work basically like
-those in Go. You can push objects into a channel on one end and pop objects from the other end.
-Channels can be buffered or unbuffered and it is possible to `select` from multiple channels.
+通道是coroutine之间的首选通信方式. V的通道的工作原理基本上就像Go. 你可以在一端将对象推入一个通道, 并从另一端弹出对象.
+通道可以是缓冲的或无缓冲的, 并且可以用`select`对多个通道进行选择.
 
-#### Syntax and Usage
-Channels have the type `chan objtype`. An optional buffer length can specified as the `cap` property
-in the declaration:
+#### 语法和用法
+通道的类型为`chan objtype`. 一个可选的缓冲区长度可以在声明中指定为`cap`属性:
 
 ```v
 ch := chan int{} // unbuffered - "synchronous"
 ch2 := chan f64{cap: 100} // buffer length 100
 ```
 
-Channels do not have to be declared as `mut`. The buffer length is not part of the type but
-a property of the individual channel object. Channels can be passed to coroutines like normal
-variables:
+channel不必声明为`mut`. 缓冲区长度不是类型的一部分, 而是单个channel对象的一个属性. channel可以像普通的一样传递给coroutine变量:
 
 ```v
 fn f(ch chan int) {
@@ -2627,8 +2514,7 @@ fn main() {
 }
 ```
 
-Objects can be pushed to channels using the arrow operator. The same operator can be used to
-pop objects from the other end:
+可以使用箭头操作符将对象推送到通道. 同样的操作符可以用来从另一端弹出对象:
 
 ```v
 ch := chan int{}
@@ -2643,11 +2529,7 @@ m := <-ch // pop creating new variable
 y = <-ch2 // pop into existing variable
 ```
 
-A channel can be closed to indicate that no further objects can be pushed. Any attempt
-to do so will then result in a runtime panic (with the exception of `select` and
-`try_push()` - see below). Attempts to pop will return immediately if the
-associated channel has been closed and the buffer is empty. This situation can be
-handled using an or branch (see [Handling Optionals](#handling-optionals)).
+关闭channel表示不能再推入其他对象. 任何这样的尝试都会导致运行时的panic(除了`select`和`try_push()`--见下文). 如果相关的channel已经关闭并且缓冲区是空的, 那么弹出的尝试将立即返回. 这种情况可以使用or分支来处理(参见[处理选项](#处理选项)).
 
 ```v wip
 ch := chan int{}
@@ -2663,11 +2545,9 @@ m := <-ch or {
 y := <-ch2 ?
 ```
 
-#### Channel Select
+#### Channel选择
 
-The `select` command allows monitoring several channels at the same time
-without noticeable CPU load.  It consists of a list of possible transfers and associated branches
-of statements - similar to the [match](#match) command:
+`select`命令允许在没有明显的CPU负载的情况下同时监控几个通道. 它由一个可能的传输列表和相关的语句分支组成--类似于[match](#match)命令:
 ```v wip
 import time
 fn main () {
@@ -2693,13 +2573,9 @@ fn main () {
   }
 }
 ```
+超时分支是可选的. 如果没有超时分支, 则`select`等待的时间不受限制. 如果在调用`select`时没有通道准备好, 也可以立即进行, 增加一个`else { .... }`分支即可. `else`和`> timeout`是排斥的.
 
-The timeout branch is optional. If it is absent `select` waits for an unlimited amount of time.
-It is also possible to proceed immediately if no channel is ready in the moment `select` is called
-by adding an `else { ... }` branch. `else` and `> timeout` are mutually exclusive.
-
-The `select` command can be used as an *expression* of type `bool`
-that becomes `false` if all channels are closed:
+`select`命令可以作为`bool`类型的*表达式*使用, 如果所有通道都关闭, 则会变为false:
 ```v wip
 if select {
     ch <- a {
@@ -2712,9 +2588,9 @@ if select {
 }
 ```
 
-#### Special Channel Features
+#### 特殊的Channel功能
 
-For special purposes there are some builtin properties and methods:
+对于特殊用途, 有一些内置的属性和方法:
 ```v
 struct Abc {
 	x int
@@ -2734,21 +2610,19 @@ ch2 := chan Abc{}
 res2 := ch2.try_pop(b) // try to perform `b = <-ch2`
 ```
 
-The `try_push/pop()` methods will return immediately with one of the results
-`.success`, `.not_ready` or `.closed` - dependent on whether the object has been transferred or
-the reason why not.
-Usage of these methods and properties in production is not recommended -
-algorithms based on them are often subject to race conditions. Especially `.len` and
-`.closed` should not be used to make decisions.
-Use `or` branches, error propagation or `select` instead (see [Syntax and Usage](#syntax-and-usage)
-and [Channel Select](#channel-select) above).
+`try_push/pop()`方法将立即返回其中一个结果: `.success`, `.not_ready`或`.closed` - 取决于对象是否已被转移, 或为什么不这样做.
 
-### Shared Objects
+不建议在生产中使用这些方法和属性 - 基于它们的算法往往受制于竞赛条件, 特别是`.len`和 `.closed`不应被用来做决定.
 
-Data can be exchanged between a coroutine and the calling thread via a shared variable.
-Such variables should be created as `shared` and passed to the coroutine as such, too.
-The underlying `struct` contains a hidden *mutex* that allows locking concurrent access
-using `rlock` for read-only and `lock` for read/write access.
+使用`or`分支, 错误传播或`select`代替(见[语法和用法](#语法和用法) 和 上面的[通道选择](#通道选择)).
+
+### 共享对象
+
+数据可以通过共享变量在coroutine和调用线程之间共享.
+
+这样的变量应该创建为`shared`, 并且也以这样的方式传递给coroutine.
+
+底层的`struct`包含一个隐藏的*mutex*, 允许锁定并发访问: 使用`rlock`代表只读, 使用`lock`代表读/写访问.
 
 ```v
 struct St {
@@ -2773,9 +2647,9 @@ fn main() {
 	}
 }
 ```
-Shared variables must be structs, arrays or maps.
+共享变量必须是struct, array 或 map.
 
-## Decoding JSON
+## 解析JSON
 
 ```v
 import json
@@ -2808,18 +2682,15 @@ println(foos[0].x)
 println(foos[1].x)
 ```
 
-Because of the ubiquitous nature of JSON, support for it is built directly into V.
+由于JSON的普遍性，V中直接内置了对它的支持.
 
-The `json.decode` function takes two arguments:
-the first is the type into which the JSON value should be decoded and
-the second is a string containing the JSON data.
+`json.decode`函数有两个参数: 第一个是JSON值应该被解码成的类型, 第二个是包含JSON数据的字符串.
 
-V generates code for JSON encoding and decoding.
-No runtime reflection is used. This results in much better performance.
+V会生成JSON编码和解码的代码, 没有使用运行时反射, 这可以有更好的性能.
 
-## Testing
+## 测试
 
-### Asserts
+### Assert
 
 ```v
 fn foo(mut v []int) {
@@ -2830,13 +2701,9 @@ mut v := [20]
 foo(mut v)
 assert v[0] < 4
 ```
-An `assert` statement checks that its expression evaluates to `true`. If an assert fails,
-the program will abort. Asserts should only be used to detect programming errors. When an
-assert fails it is reported to *stderr*, and the values on each side of a comparison operator
-(such as `<`, `==`) will be printed when possible. This is useful to easily find an
-unexpected value. Assert statements can be used in any function.
+`assert`语句检查其表达式是否为`true`. 如果断言失败, 程序将被中止. 断言只能用于检测编程错误. 当一个assert失败后, 会被报告给*stderr*, 而且比较操作符(如`<`、`==`)两边的数值将尽可能地被打印出来. 这有利于轻松找到一个意外值. 断言语句可以在任何函数中使用.
 
-### Test files
+### 测试文件
 
 ```v
 // hello.v
@@ -2858,56 +2725,41 @@ fn test_hello() {
     assert hello() == 'Hello world'
 }
 ```
-To run the test above, use `v hello_test.v`. This will check that the function `hello` is
-producing the correct output. V executes all test functions in the file.
+使用`v hello_test.v`执行上述测试. 这将检查函数`hello`是否是产生正确的输出. V会执行文件中的所有测试函数.
 
-* All test functions have to be inside a test file whose name ends in `_test.v`.
-* Test function names must begin with `test_` to mark them for execution.
-* Normal functions can also be defined in test files, and should be called manually. Other
-  symbols can also be defined in test files e.g. types.
-* There are two kinds of tests: external and internal.
-* Internal tests must *declare* their module, just like all other .v
-files from the same module. Internal tests can even call private functions in
-the same module.
-* External tests must *import* the modules which they test. They do not
-have access to the private functions/types of the modules. They can test only
-the external/public API that a module provides.
+* 所有的测试函数必须在测试文件中, 文件名必须以`_test.v`结尾
+* 测试函数的名字必须以`test_`开头，以标记它们的执行
+* 普通函数也可以在测试文件中定义，并应手动调用. 其它符号也可以在测试文件中定义, 例如类型.
+* 有两种测试：外部测试和内部测试
+* 内部测试必须*声明*它们的模块，就像就像来自同一模块的所有其他.v文件一样. 内部测试甚至可以调用同一模块中的私有函数.
+* 外部测试必须*导入*需要测试的模块. 它们不能访问模块的私有函数/类型. 它们只能测试模块提供的外部/公共 API.
 
-In the example above, `test_hello` is an internal test, that can call
-the private function `hello()` because `hello_test.v` has `module main`,
-just like `hello.v`, i.e. both are part of the same module. Note also that
-since `module main` is a regular module like the others, internal tests can
-be used to test private functions in your main program .v files too.
+在上面的例子中, `test_hello`是一个内部测试, 它调用私有函数`hello()`, 因为`hello_test.v`有`module main`.
+就像`hello.v`一样，即两者都是同一个模块的一部分, 还请注意因为`module main`和其他模块一样是一个常规模块, 所以内部测试可以用来测试主程序.v文件中的私有函数.
 
-You can also define special test functions in a test file:
-* `testsuite_begin` which will be run *before* all other test functions.
-* `testsuite_end` which will be run *after* all other test functions.
+你也可以在测试文件中定义特殊的测试函数:
+* `testsuite_begin`将在所有其他测试函数之前运行
+* `testsuite_end`将在所有其他测试函数之后运行
 
-#### Running tests
+#### 执行测试
 
-To run test functions in an individual test file, use `v foo_test.v`.
+要在单个测试文件中运行测试函数, 使用`v foo_test.v`.
 
-To test an entire module, use `v test mymodule`. You can also use `v test .` to test
-everything inside your current folder (and subfolders). You can pass the `-stats`
-option to see more details about the individual tests run.
+要测试整个模块, 使用`v test mymodule`. 你也可以使用`v test .`来测试你当前文件夹(和子文件夹)内的所有内容. 你可以通过`-stats`选项来查看关于单个测试运行的更多细节.
 
 ## Memory management
 
-V avoids doing unnecessary allocations in the first place by using value types,
-string buffers, promoting a simple abstraction-free code style.
+V通过使用值类型和字符串缓冲区, 首先避免了做不必要的分配, 促进了简单的无抽象代码风格.
 
-Most objects (~90-100%) are freed by V's autofree engine: the compiler inserts
-necessary free calls automatically during compilation. Remaining small percentage
-of objects is freed via reference counting.
+大多数对象(约90-100%)都被V的自动释放引擎释放了: 编译器在编译过程中插入了自动进行必要的free调用, 剩余的小部分
+的对象是通过引用计数释放的.
 
-The developer doesn't need to change anything in their code. "It just works", like in
-Python, Go, or Java, except there's no heavy GC tracing everything or expensive RC for
-each object.
+开发者不需要在他们的代码中改变任何东西. "它只是工作", 就像在
+Python, Go或Java, 除了没有繁重的GC跟踪所有对象, 也没有为每个对象提供昂贵的RC.
 
-### Control
+### 控制
 
-You can take advantage of V's autofree engine and define a `free()` method on custom 
-data types:
+你可以利用V的自动释放引擎, 在自定义数据类型上定义一个`free()`方法即可:
 
 ```v
 struct MyType {}
@@ -2918,17 +2770,13 @@ fn (data &MyType) free() {
 }
 ```
 
-Just as the compiler frees C data types with C's `free()`, it will statically insert 
-`free()` calls for your data type at the end of each variable's lifetime.
+就像编译器使用C的`free()`释放C数据类型一样, 它会在每个变量的生存期末为数据类型静态插入`free()`调用.
 
-For developers willing to have more low level control, autofree can be disabled with
-`-manualfree`, or by adding a `[manualfree]` on each function that wants manage its
-memory manually. (See [attributes](#attributes)).
+对于愿意进行更多低级控制的开发人员, 可以使用`-manualfree`禁用自动释放, 或在要手动管理其内存的每个函数上添加一个`[manualfree]`来禁用自动释放, 请参阅[属性](#属性).
 
-_Note: right now autofree is hidden behind the -autofree flag. It will be enabled by
-default in V 0.3. If autofree is not used, V programs will leak memory._
+_注意：现在, 自动释放隐藏在`-autofree`标志的后面. 默认情况下, 它将在V 0.3中启用. 如果不使用autofree, 则V程序将会出现内存泄漏.
 
-### Examples
+### 例子
 
 ```v
 import strings
@@ -2948,11 +2796,9 @@ fn draw_scene() {
 }
 ```
 
-The strings don't escape `draw_text`, so they are cleaned up when
-the function exits.
+字符串不会转义`draw_text`, 因此当函数退出时它们会被清除.
 
-In fact, with the `-prealloc` flag, the first two calls won't result in any allocations at all.
-These two strings are small, so V will use a preallocated buffer for them.
+实际上, 使用`-prealloc`标志, 前两个调用根本不会导致任何分配. 这两个字符串很小, 因此V将为它们使用预分配的缓冲区.
 
 ```v
 struct User {
@@ -2973,19 +2819,17 @@ fn test() []int {
 
 ## ORM
 
-(This is still in an alpha state)
+(目前仍处于alpha状态)
 
-V has a built-in ORM (object-relational mapping) which supports SQLite,
-and will soon support MySQL, Postgres, MS SQL, and Oracle.
+V内置了ORM(对象关系映射), 支持SQLite, 并将很快支持MySQL, Postgres, MS SQL和Oracle.
 
-V's ORM provides a number of benefits:
+V的ORM提供了许多好处:
 
-- One syntax for all SQL dialects. (Migrating between databases becomes much easier.)
-- Queries are constructed using V's syntax. (There's no need to learn another syntax.)
-- Safety. (All queries are automatically sanitised to prevent SQL injection.)
-- Compile time checks. (This prevents typos which can only be caught during runtime.)
-- Readability and simplicity. (You don't need to manually parse the results of a query and
-    then manually construct objects from the parsed results.)
+- 所有的SQL方言都用一种语法 (在数据库之间的迁移变得更加容易)
+- 使用V的语法构建查询 (不需要学习另一种语法)
+- 安全性 (所有的查询都会自动处理, 以防止SQL注入)
+- 编译时的检查 (这可以防止只有在运行时才能发现的排版错误)
+- 可读性和简单性 (你不需要手动解析查询的结果, 也不需要从解析结果中手动构造对象)
 
 ```v
 import sqlite
@@ -3028,15 +2872,13 @@ sql db {
 }
 ```
 
-For more examples, see <a href='https://github.com/vlang/v/blob/master/vlib/orm/orm_test.v'>vlib/orm/orm_test.v</a>.
+更多例子见 <a href='https://github.com/vlang/v/blob/master/vlib/orm/orm_test.v'>vlib/orm/orm_test.v</a>.
 
-## Writing Documentation
+## 文档编写
 
-The way it works is very similar to Go. It's very simple: there's no need to
-write documentation separately for your code,
-vdoc will generate it from docstrings in the source code.
+它的工作方式与Go非常相似. 很简单: 不需要为你的代码单独写文档, vdoc会根据源代码中的docstrings生成文档.
 
-Documentation for each function/type/const must be placed right before the declaration:
+每个函数/类型/const的文档必须放在声明之前:
 
 ```v
 // clearall clears all bits in the array
@@ -3044,10 +2886,9 @@ fn clearall() {
 }
 ```
 
-The comment must start with the name of the definition.
+注释必须以定义的名称开始.
 
-Sometimes one line isn't enough to explain what a function does, in that case comments should
-span to the documented function using single line comments:
+有时一行不足以解释一个函数的作用, 在这种情况下, 注释应该使用单行注释跨越到文档中的函数前:
 
 ```v
 // copy_all recursively copies all elements of the array by their value,
@@ -3057,43 +2898,40 @@ fn copy_all(dupes bool) {
 }
 ```
 
-By convention it is preferred that comments are written in *present tense*.
+按照惯例, 最好用*现在时*写评论.
 
-An overview of the module must be placed in the first comment right after the module's name.
+模块的概述必须放在模块名称之后的第一条评论中.
 
-To generate documentation use vdoc, for example `v doc net.http`.
+要生成文档，请使用vdoc, 例如`v doc net.http`.
 
-## Tools
+## 工具
 
 ### v fmt
 
-You don't need to worry about formatting your code or setting style guidelines.
-`v fmt` takes care of that:
+你不需要担心你的代码格式化或设置风格准则. `v fmt`会处理这些问题:
 
 ```shell
 v fmt file.v
 ```
 
-It's recommended to set up your editor, so that `v fmt -w` runs on every save.
-A vfmt run is usually pretty cheap (takes <30ms).
+建议设置你的编辑器, 在每次保存时执行`v fmt -w`. vfmt执行成本通常很便宜(需要<30ms).
 
-Always run `v fmt -w file.v` before pushing your code.
+在推送代码之前, 一定要运行`v fmt -w file.v`.
 
-### Profiling
+### 剖析
 
-V has good support for profiling your programs: `v -profile profile.txt run file.v`
-That will produce a profile.txt file, which you can then analyze.
+V对程序剖析有很好的支持: `v -profile profile.txt run file.v`. 这将产生一个profile.txt文件, 你可以对其进行分析.
 
-The generated profile.txt file will have lines with 4 columns:
-a) how many times a function was called
-b) how much time in total a function took (in ms)
-c) how much time on average, a call to a function took (in ns)
-d) the name of the v function
+生成的profile.txt文件会有4列:
+a) 一个函数的调用次数
+b) 一个函数总共需要多少时间(毫秒)
+c) 调用一个函数平均需要多少时间(纳秒)
+d) v函数的名称
 
-You can sort on column 3 (average time per function) using:
+你可以使用以下方法对第3列(每个函数的平均时间)进行排序:
 `sort -n -k3 profile.txt|tail`
 
-You can also use stopwatches to measure just portions of your code explicitly:
+你也可以使用秒表来精确地测量代码的一部分:
 ```v
 import time
 
@@ -3104,26 +2942,20 @@ fn main() {
 }
 ```
 
-# Advanced Topics
+# 高级功能
 
-## Memory-unsafe code
+## 非内存安全的代码
+有时为了效率, 你可能会想写一些低级别的代码, 尽管这些代码可能会破坏内存或容易被安全漏洞利用. V支持编写这样的代码, 但不是默认的.
 
-Sometimes for efficiency you may want to write low-level code that can potentially
-corrupt memory or be vulnerable to security exploits. V supports writing such code,
-but not by default.
+V要求有意标记任何潜在的不安全的内存操作. 标记这些操作也向任何阅读代码的人表明, 这里违反了内存安全, 可能导致错误.
 
-V requires that any potentially memory-unsafe operations are marked intentionally.
-Marking them also indicates to anyone reading the code that there could be
-memory-safety violations if there was a mistake.
+潜在的内存不安全操作的例子有:
+* 指针运算
+* 指针索引
+* 从不兼容类型转换为指针
+* 调用某些C函数，如`free`, `strlen`和`strncmp`
 
-Examples of potentially memory-unsafe operations are:
-
-* Pointer arithmetic
-* Pointer indexing
-* Conversion to pointer from an incompatible type
-* Calling certain C functions, e.g. `free`, `strlen` and `strncmp`.
-
-To mark potentially memory-unsafe operations, enclose them in an `unsafe` block:
+要标记潜在的不安全内存操作, 请将其放在`unsafe`块中:
 
 ```v wip
 // allocate 2 uninitialized bytes & return a reference to them
@@ -3140,26 +2972,17 @@ unsafe {
 assert *p == `i`
 ```
 
-Best practice is to avoid putting memory-safe expressions inside an `unsafe` block,
-so that the reason for using `unsafe` is as clear as possible. Generally any code
-you think is memory-safe should not be inside an `unsafe` block, so the compiler
-can verify it.
+最好的做法是避免将内存安全表达式放在`unsafe` 块中, 以便尽可能明确使用`unsafe`的原因. 一般来说, 任何代码你认为是内存安全的就不应该放在一个`unsafe` 块中, 因为编译器可以验证它.
 
-If you suspect your program does violate memory-safety, you have a head start on
-finding the cause: look at the `unsafe` blocks (and how they interact with
-surrounding code).
+如果你怀疑你的程序违反了内存安全规定, 你就有了一个好的开端找出原因: 查看`unsafe`代码块(以及它们是如何与周边相互作用的).
 
-* Note: This is work in progress.
+* 注: 这是一项正在进行的工作.
 
-### Structs with reference fields
+### 带参考字段的struct
 
-Structs with references require explicitly setting the initial value to a
-reference value unless the struct already defines its own initial value.
+带有引用的struct需要明确地将初始值设置为一个引用值, 除非struct已经定义了自己的初始值.
 
-Zero-value references, or nil pointers, will **NOT** be supported in the future,
-for now data structures such as Linked Lists or Binary Trees that rely on reference
-fields that can use the value `0`, understanding that it is unsafe, and that it can
-cause a panic.
+零值引用或者nil指针, 未来将**不**支持. 目前依赖于可以使用值'0'的引用字段的数据结构Linked Lists或Binary Tree将被理解为不安全, 并且会引起panic.
 
 ```v
 struct Node {
@@ -3187,10 +3010,10 @@ println(baz)
 println(qux)
 ```
 
-## sizeof and __offsetof
+## sizeof 和 __offsetof
 
-* `sizeof(Type)` gives the size of a type in bytes.
-* `__offsetof(Struct, field_name)` gives the offset in bytes of a struct field.
+* `sizeof(Type)` 返回一个类型大小.
+* `__offsetof(Struct, field_name)` 返回struct字段的偏移量
 
 ```v
 struct Foo {
@@ -3203,9 +3026,9 @@ assert __offsetof(Foo, a) == 0
 assert __offsetof(Foo, b) == 4
 ```
 
-## Calling C from V
+## 在 V 中调用 C
 
-### Example
+### 例子
 
 ```v
 #flag -lsqlite3
@@ -3272,19 +3095,18 @@ fn main() {
 }
 ```
 
-### Passing C compilation flags
+### 传递C编译参数
 
-Add `#flag` directives to the top of your V files to provide C compilation flags like:
+在V文件的顶部添加`＃flag`指令, 以提供C编译标志, 例如：
 
-- `-I` for adding C include files search paths
-- `-l` for adding C library names that you want to get linked
-- `-L` for adding C library files search paths
-- `-D` for setting compile time variables
+-`-I'用于添加C包含文件搜索路径
+-`-l`用于添加要链接的C库名称
+-`-L`用于添加C库文件的搜索路径
+-`-D`设置编译时间变量
 
-You can (optionally) use different flags for different targets.
-Currently the `linux`, `darwin` , `freebsd`, and `windows` flags are supported.
+你可以(可选)对不同的目标使用不同的标志. 当前支持`linux`, `darwin`, `freebsd`和`windows`标志.
 
-NB: Each flag must go on its own line (for now)
+注意：每个标志必须用自己的行（暂时） 
 
 ```v oksyntax
 #flag linux -lsdl2
@@ -3294,42 +3116,34 @@ NB: Each flag must go on its own line (for now)
 #flag linux -DIMGUI_IMPL_API=
 ```
 
-In the console build command, you can use:
-* `-cflags` to pass custom flags to the backend C compiler.
-* `-cc` to change the default C backend compiler.
-* For example: `-cc gcc-9 -cflags -fsanitize=thread`.
+在控制台构建命令中, 你可以使用:
+* `-cflags`传递自定义标志给后端C语言编译器
+* `-cc`来改变默认的C语言后端编译器
+* 例如: `-cc gcc-9 -cflags -fsanitize=thread`
 
-You can define a `VFLAGS` environment variable in your terminal to store your `-cc`
-and `-cflags` settings, rather than including them in the build command each time.
+你可以在你的终端中定义一个 `VFLAGS` 环境变量来存储你的`-cc`和`-cflags`设置, 而不用每次在编译命令中包含它们.
 
 ### #pkgconfig
 
-Add `#pkgconfig` directive is used to tell the compiler which modules should be used for compiling
-and linking using the pkg-config files provided by the respective dependencies.
+添加`#pkgconfig`指令是用来告诉编译器应该使用哪些模块来编译, 并使用各自依赖提供的pkg-config文件进行链接.
 
-As long as backticks can't be used in `#flag` and spawning processes is not desirable for security
-and portability reasons, V uses its own pkgconfig library that is compatible with the standard
-freedesktop one.
+在`#flag`中不能使用backticks，而且出于安全和可移植性的考虑, 不希望产生进程，V使用自己的pkgconfig库, 它与标准的freedesktop库兼容.
 
-If no flags are passed it will add `--cflags` and `--libs`, both lines below do the same:
+如果没有传递flags, 它会添加`--cflags`和`--libs`, 下面两行都是一样的:
 
 ```v oksyntax
 #pkgconfig r_core
 #pkgconfig --cflags --libs r_core
 ```
 
-The `.pc` files are looked up into a hardcoded list of default pkg-config paths, the user can add
-extra paths by using the `PKG_CONFIG_PATH` environment variable. Multiple modules can be passed.
+pkgconfig会从一个硬编码的默认 pkg-config 路径列表查找`.pc`文件. 用户可以通过使用`PKG_CONFIG_PATH`环境变量来添加额外的路径. pkgconfig可以传入多个模块.
 
-### Including C code
+### 包含C代码
 
-You can also include C code directly in your V module.
-For example, let's say that your C code is located in a folder named 'c' inside your module folder.
-Then:
+你也可以直接在你的V模块中包含C代码.
+例如, 假设你的C代码位于你的模块文件夹中的一个名为'c'的文件夹中. 那么, 我们可以这样做:
 
-* Put a v.mod file inside the toplevel folder of your module (if you
-created your module with `v new` you already have v.mod file). For
-example:
+* 在top level文件夹中放一个v.mod 文件(如果你使用`v new`创建模块, 则你已经有了v.mod文件), 例如:
 ```v ignore
 Module {
 	name: 'mymodule',
@@ -3340,65 +3154,45 @@ Module {
 ```
 
 
-* Add these lines to the top of your module:
+* 在module的顶部添加以下几行:
 ```v oksyntax
 #flag -I @VROOT/c
 #flag @VROOT/c/implementation.o
 #include "header.h"
 ```
-NB: @VROOT will be replaced by V with the *nearest parent folder, where there is a v.mod file*.
-Any .v file beside or below the folder where the v.mod file is,
-can use `#flag @VROOT/abc` to refer to this folder.
-The @VROOT folder is also *prepended* to the module lookup path,
-so you can *import* other modules under your @VROOT, by just naming them.
+NB: @VROOT 将被 V 替换为 *最接近的父文件夹，那里有 v.mod 文件*. v.mod文件所在文件夹同级或下面的任何`.v`文件均可以使用`#flag @VROOT/abc`来引用这个文件夹. @VROOT文件夹也是模块查找路径的*前缀*, 所以你可以在你的@VROOT下*导入*其他模块, 只需给它们命名即可.
 
-The instructions above will make V look for an compiled .o file in
-your module `folder/c/implementation.o`.
-If V finds it, the .o file will get linked to the main executable, that used the module.
-If it does not find it, V assumes that there is a `@VROOT/c/implementation.c` file,
-and tries to compile it to a .o file, then will use that.
+上面的说明将使V在你的@VROOT中寻找一个编译过的`.o`文件, 路径是你的模块`folder/c/implementation.o`. 
+如果V找到它, `.o`文件将被链接到使用该模块的主可执行文件. 如果没有找到, V会认为有一个`@VROOT/c/implementation.c`文件, 先尝试将其编译成.o文件, 然后再使用该文件.
 
-This allows you to have C code, that is contained in a V module, so that its distribution is easier.
-You can see a complete minimal example for using C code in a V wrapper module here:
-[project_with_c_code](https://github.com/vlang/v/tree/master/vlib/v/tests/project_with_c_code).
-Another example, demonstrating passing structs from C to V and back again:
+这允许你把C代码包含在V模块中, 这样它的发布就更容易了. 你可以在这里看到一个完整的在V包装模块中使用C代码的最小例子[project_with_c_code](https://github.com/vlang/v/tree/master/vlib/v/tests/project_with_c_code). 另一个例子, 演示了将struct从C到V再从V传递回去
 [interoperate between C to V to C](https://github.com/vlang/v/tree/master/vlib/v/tests/project_with_c_code_2).
 
-### C types
+### C类型
+普通的c字符串可用`unsafe { charptr(cstring).vstring() }`转成V string, 如果已知道其长度还可用`unsafe { charptr(cstring).vstring_with_len(len) }`.
 
-Ordinary zero terminated C strings can be converted to V strings with
-`unsafe { charptr(cstring).vstring() }` or if you know their length already with
-`unsafe { charptr(cstring).vstring_with_len(len) }`.
+NB: .vstring()和.vstring_with_len()方法不创建`cstring`的副本. 所以你不应该在调用`.vstring()`方法后释放它. 如果你需要复制一个C语言字符串(一些libc API, 比如`getenv`就需要这样做, 因为它们返回指向内部libc内存的指针), 你可以使用`cstring_to_vstring(cstring)`.
 
-NB: The .vstring() and .vstring_with_len() methods do NOT create a copy of the `cstring`,
-so you should NOT free it after calling the method `.vstring()`.
-If you need to make a copy of the C string (some libc APIs like `getenv` pretty much require that,
-since they return pointers to internal libc memory), you can use `cstring_to_vstring(cstring)`.
+在Windows上，C API经常返回所谓的`wide`字符串(utf16编码). 这些字符串可以用`string_from_wide(&u16(cwidestring))`转换为V字符串.
 
-On Windows, C APIs often return so called `wide` strings (utf16 encoding).
-These can be converted to V strings with `string_from_wide(&u16(cwidestring))` .
-
-V has these types for easier interoperability with C:
+V 字符串有这些类型是为了更容易与 C 字符串互操作:
 
 - `voidptr` for C's `void*`,
 - `byteptr` for C's `byte*` and
 - `charptr` for C's `char*`.
 - `&charptr` for C's `char**`
 
-To cast a `voidptr` to a V reference, use `user := &User(user_void_ptr)`.
+要将`voidptr`转为V引用, 可使用`user := &User(user_void_ptr)`.
 
-`voidptr` can also be dereferenced into a V struct through casting: `user := User(user_void_ptr)`.
+`voidptr`也可以解引用到V struct中: `user := User(user_void_ptr)`.
 
-[an example of a module that calls C code from V](https://github.com/vlang/v/blob/master/vlib/v/tests/project_with_c_code/mod1/wrapper.v)
+[一个在V中调用C代码的例子](https://github.com/vlang/v/blob/master/vlib/v/tests/project_with_c_code/mod1/wrapper.v)
 
-### C Declarations
+### C 声明
 
-C identifiers are accessed with the `C` prefix similarly to how module-specific 
-identifiers are accessed. Functions must be redeclared in V before they can be used. 
-Any C types may be used behind the `C` prefix, but types must be redeclared in V in 
-order to access type members.
+C标识符的访问方式与特定模块标识符的访问方式类似，使用`C`前缀. 函数在使用前必须在V中重新声明. 任何C类型都可以在`C`前缀后面使用, 但类型必须在V中重新声明才能访问类型成员.
 
-To redeclare complex types, such as in the following C code:
+要重新声明复杂的类型, 例如在下面的C代码中:
 
 ```c
 struct SomeCStruct {
@@ -3415,7 +3209,7 @@ struct SomeCStruct {
 };
 ```
 
-members of sub-data-structures may be directly declared in the containing struct as below:
+子数据结构的成员可以直接在包含的struct中声明, 如下所示:
 
 ```v
 struct C.SomeCStruct {
@@ -3433,52 +3227,38 @@ struct C.SomeCStruct {
 }
 ```
 
-The existence of the data members is made known to V, and they may be used without 
-re-creating the original structure exactly.
+V知道了数据成员的存在, 可以不完全重新创建原始结构而使用它们.
 
-Alternatively, you may [embed](#embedded-structs) the sub-data-structures to maintain 
-a parallel code structure.
+另外, 可以将子数据结构[嵌入](#嵌入struct), 以保持一个并行的代码结构.
 
-## Debugging generated C code
+## 调试生成的C代码
 
-To debug issues in the generated C code, you can pass these flags:
+为了调试生成的C代码中的问题，你可以传递这些标志:
 
-- `-g` - produces a less optimized executable with more debug information in it.
-    V will enforce line numbers from the .v files in the stacktraces, that the
-    executable will produce on panic. It is usually better to pass -g, unless
-    you are writing low level code, in which case use the next option `-cg`.
-- `-cg` - produces a less optimized executable with more debug information in it.
-	The executable will use C source line numbers in this case. It is frequently
-    used in combination with `-keepc`, so that you can inspect the generated
-    C program in case of panic, or so that your debugger (`gdb`, `lldb` etc.)
-    can show you the generated C source code.
-- `-showcc` - prints the C command that is used to build the program.
-- `-show-c-output` - prints the output, that your C compiler produced
-    while compiling your program.
-- `-keepc` - do not delete the generated C source code file after a successful
-    compilation. Also keep using the same file path, so it is more stable,
-    and easier to keep opened in an editor/IDE.
+- `-g` : 产生一个优化程度较低的可执行文件, 其中包含更多的调试信息.
 
-For best debugging experience if you are writing a low level wrapper for an existing
-C library, you can pass several of these flags at the same time:
-`v -keepc -cg -showcc yourprogram.v`, then just run your debugger (gdb/lldb) or IDE
-on the produced executable `yourprogram`.
+    V将强制执行堆栈跟踪中.v文件的行号，以便可执行文件panic时可看到. 通常最好是通过`-g, 除非是你正在编写低级代码, 在这种情况下, 使用下一个选项`-cg`
+- `-cg` : 产生一个优化程度较低的可执行文件，其中包含更多的调试信息.
 
-If you just want to inspect the generated C code,
-without further compilation, you can also use the `-o` flag (e.g. `-o file.c`).
-This will make V produce the `file.c` then stop.
 
-If you want to see the generated C source code for *just* a single C function,
-for example `main`, you can use: `-printfn main -o file.c`.
+    在这种情况下, 可执行文件将使用C源代码行号, 它经常与`-keepc`结合使用, 这样你就可以检查生成的或者让你的调试器(`gdb`, `lldb`等) 可以向你展示生成的C源代码
+- `-showcc` : 打印用于构建程序的C命令
+- `-show-c-output` : 打印编译程序时C编译器产生的输出
+- `-keepc` : 在编译成功后不删除生成的C源代码文件. 同时继续使用相同的文件路径, 这样更稳定. 并且更容易在编辑器/IDE中使用.
 
-To see a detailed list of all flags that V supports,
-use `v help`, `v help build` and `v help build-c`.
+为了获得最佳的调试体验, 如果你正在封装一个现有的C库，你可以同时传递几个这样的标志: `v -keepc -cg -showcc yourprogram.v`, 然后运行你的调试器(gdb/lldb)或IDE.
 
-## Conditional compilation
+如果你只是想检查生成的C代码，那么无需进一步编译, 你也可以使用`-o`标志(例如`-o file.c`), 这将使V产生`file.c`后停止.
 
-### Compile time code
+如果你仅想看C源代码生成的某个C函数，例如`main`, 你可以使用`-o`标志(例如`-o file.c`), 即`-printfn main -o file.c`.
 
-`$` is used as a prefix for compile-time operations.
+要查看V支持的所有标志的详细列表，可使用`v help`, `v help build`和`v help build-c`.
+
+## 有条件的汇编
+
+### 编译时代码
+
+`$` 被用作编译时操作的前缀.
 
 #### $if
 ```v
@@ -3519,11 +3299,9 @@ $if option ? {
 }
 ```
 
-If you want an `if` to be evaluated at compile time it must be prefixed with a `$` sign.
-Right now it can be used to detect an OS, compiler, platform or compilation options.
-`$if debug` is a special option like `$if windows` or `$if x32`.
-If you're using a custom ifdef, then you do need `$if option ? {}` and compile with`v -d option`.
-Full list of builtin options:
+如果你想让一个`if`在编译时被评估, 它必须在前面加上`$`符号. 现在它可以用来检测操作系统, 编译器, 平台或编译选项. `$if debug`是一个特殊的选项, 像`$if windows`或`$if x32`, 如果你使用的是自定义的ifdef, 那么你确实需要`$if选项? {}`并使用`v -d option`编译.
+
+完整的内置选项列表:
 | OS                            | Compilers         | Platforms             | Other                     |
 | ---                           | ---               | ---                   | ---                       |
 | `windows`, `linux`, `macos`   | `gcc`, `tinyc`    | `amd64`, `aarch64`    | `debug`, `prod`, `test`   |
@@ -3542,24 +3320,15 @@ fn main() {
 }
 ```
 
-V can embed arbitrary files into the executable with the `$embed_file(<path>)`
-compile time call. Paths can be absolute or relative to the source file.
+V可以用`$embed_file(<path>)`将任意文件嵌入到可执行文件中, 是编译时调用的, 路径可以是源文件的绝对路径或相对路径.
 
-When you do not use `-prod`, the file will not be embedded. Instead, it will
-be loaded *the first time* your program calls `f.data()` at runtime, making
-it easier to change in external editor programs, without needing to recompile
-your executable.
+当你不使用`-prod`时, 文件将不会被嵌入. 相反，它将在你的程序运行时第一次调用`f.data()`时被加载, 使得更容易在外部编辑程序中进行修改, 而不需要重新编译可执行文件.
 
-When you compile with `-prod`, the file *will be embedded inside* your
-executable, increasing your binary size, but making it more self contained
-and thus easier to distribute. In this case, `f.data()` will cause *no IO*,
-and it will always return the same data.
+当你用`-prod`编译时, 该文件*会被嵌入*到可执行文件，增加二进制文件的大小, 但使它更加自由, 从而更容易分发. 在这种情况下，`f.data()`没有io操作, 且始终返回相同的数据.
 
-#### $tmpl for embedding and parsing V template files
+#### $tmpl: 内嵌和解析V template文件
 
-V has a simple template language for text and html templates, and they can easily
-be embedded via `$tmpl('path/to/template.txt')`:
-
+V有一个简单的模板语言, 用于文本和html模板, 它们可以通过`$tmpl('path/to/template.txt')`轻松嵌入:
 
 ```v ignore
 fn build() string {
@@ -3616,26 +3385,24 @@ fn main() {
 }
 ```
 
-V can bring in values at compile time from environment variables.
-`$env('ENV_VAR')` can also be used in top-level `#flag` and `#include` statements:
-`#flag linux -I $env('JAVA_HOME')/include`.
+V可以在编译时从环境变量中引入值. `$env('ENV_VAR')`也可以用在顶级的`#flag`和`#include`语句中: `#flag linux -I $env('JAVA_HOME')/include`.
 
-### Environment specific files
+### 特定环境文件
 
-If a file has an environment-specific suffix, it will only be compiled for that environment.
+如果一个文件有一个特定环境的后缀, 它将只针对该环境进行编译.
 
-- `.js.v` => will be used only by the JS backend. These files can contain JS. code.
-- `.c.v` => will be used only by the C backend. These files can contain C. code.
-- `.x64.v` => will be used only by V's x64 backend.
-- `_nix.c.v` => will be used only on Unix systems (non Windows).
-- `_${os}.c.v` => will be used only on the specific `os` system.
-For example, `_windows.c.v` will be used only when compiling on Windows, or with `-os windows`.
-- `_default.c.v` => will be used only if there is NOT a more specific platform file.
-For example, if you have both `file_linux.c.v` and `file_default.c.v`,
-and you are compiling for linux, then only `file_linux.c.v` will be used,
-and `file_default.c.v` will be ignored.
+- `.js.v` => 将仅由JS后端使用. 这些文件可以包含JS代码
+- `.c.v` => 仅供C后端使用, 这些文件可以包含C代码
+- `.x64.v` => 仅供V的x64后端使用
+- `_nix.c.v` => 仅供Unix系统(非Windows)使用
+- `_${os}.c.v` => 将只在特定的`os`系统上使用.
 
-Here is a more complete example:
+    例如, `_windows.c.v`将只在Windows系统上编译时使用, 或者使用`-os windows`
+- `_default.c.v` => 只有在没有更具体的平台文件时才会使用.
+
+    例如，如果你同时有`file_linux.c.v`和`file_default.c.v, 而你是为linux编译的, 那么只需要使用`file_linux.c.v`, 而`file_default.c.v`将被忽略
+
+这里有一个更完整的例子:
 main.v:
 ```v ignore
 module main
@@ -3660,88 +3427,63 @@ module main
 const ( message = 'Hello windows' )
 ```
 
-With the example above:
-- when you compile for windows, you will get 'Hello windows'
-- when you compile for linux, you will get 'Hello linux'
-- when you compile for any other platform, you will get the
-non specific 'Hello world' message.
+使用上面的例子:
+- 当你为windows编译时, 你会得到'Hello windows'
+- 当你为linux编译时，你会得到'Hello linux'
+- 当你在其他平台上编译时, 你会得到的是非特定的'Hello world'信息
+- `_d_customflag.v` => 只有当你把`-d customflag`传给V时才会使用
 
-- `_d_customflag.v` => will be used *only* if you pass `-d customflag` to V.
-That corresponds to `$if customflag ? {}`, but for a whole file, not just a
-single block. `customflag` should be a snake_case identifier, it can not
-contain arbitrary characters (only lower case latin letters + numbers + `_`).
-NB: a combinatorial `_d_customflag_linux.c.v` postfix will not work.
-If you do need a custom flag file, that has platform dependent code, use the
-postfix `_d_customflag.v`, and then use plaftorm dependent compile time
-conditional blocks inside it, i.e. `$if linux {}` etc.
+    这相当于`$if customflag ? {}`, 但是对于整个文件, 而不仅仅是一个代码块. `customflag`应该是一个snake_case标识符, 不能包含任意字符(只能是小写拉丁字母+数字+`_`).
 
-- `_notd_customflag.v` => similar to _d_customflag.v, but will be used 
-*only* if you do NOT pass `-d customflag` to V.
+    NB: 组合式的`_d_customflag_linux.c.v` postfix将无法工作. 如果你确实需要一个自定义的flag文件, 其中有依赖于平台的代码, 请使用`_d_customflag.v`, 然后在里面使用plaftorm依赖编译时的条件块, 即`$if linux {}`等.
+- `_notd_customflag.v` => 类似于_d_customflag.v, 但会被用于 *只有当你不向V传递`-d customflag`时才会出现
 
-## Compile time pseudo variables
+## 编译时伪变量
 
-V also gives your code access to a set of pseudo string variables,
-that are substituted at compile time:
+V还允许你的代码访问一组伪字符串变量, 其在编译时会被替换.
 
-- `@FN` => replaced with the name of the current V function
-- `@METHOD` => replaced with ReceiverType.MethodName
-- `@MOD` => replaced with the name of the current V module
-- `@STRUCT` => replaced with the name of the current V struct
-- `@FILE` => replaced with the path of the V source file
-- `@LINE` => replaced with the V line number where it appears (as a string).
-- `@COLUMN` => replaced with the column where it appears (as a string).
-- `@VEXE` => replaced with the path to the V compiler
-- `@VHASH`  => replaced with the shortened commit hash of the V compiler (as a string).
-- `@VMOD_FILE` => replaced with the contents of the nearest v.mod file (as a string).
+- `@FN` => 用当前V函数的名称代替
+- `@METHOD` => 用ReceiverType.MethodName替换
+- `@MOD` => 用当前V模块的名称代替
+- `@STRUCT` => 用当前V结构的名称代替
+- `@FILE` => 用V源文件的路径替换
+- `@LINE` => 替换为出现的V行号(作为字符串)
+- `@COLUMN` => 替换为出现的列号(作为一个字符串)
+- `@VEXE` => 替换为V编译器的路径
+- `@VHASH` => 替换为V编译器的缩短提交哈希值(作为一个字符串)
+- `@VMOD_FILE` => 用最近的v.mod文件的内容(作为一个字符串)替换
 
-That allows you to do the following example, useful while debugging/logging/tracing your code:
+这允许你做下面的例子, 在调试/记录/跟踪你的代码时很有用:
 ```v
 eprintln('file: ' + @FILE + ' | line: ' + @LINE + ' | fn: ' + @MOD + '.' + @FN)
 ```
 
-Another example, is if you want to embed the version/name from v.mod *inside* your executable:
+另一个例子是，如果你想把v.mod的版本/名称嵌入到你的可执行文件中:
 ```v ignore
 import v.vmod
 vm := vmod.decode( @VMOD_FILE ) or { panic(err.msg) }
 eprintln('$vm.name $vm.version\n $vm.description')
 ```
 
-## Performance tuning
+## 性能调整
 
-The generated C code is usually fast enough, when you compile your code
-with `-prod`. There are some situations though, where you may want to give
-additional hints to the compiler, so that it can further optimize some
-blocks of code.
+当编译代码时使用`-prod`, 生成的C代码一般都是够快的. 但在某些情况下, 你可能添加额外的提示给编译器, 这样它就可以进一步优化某些代码块.
 
-NB: These are *rarely* needed, and should not be used, unless you
-*profile your code*, and then see that there are significant benefits for them.
-To cite gcc's documentation: "programmers are notoriously bad at predicting
-how their programs actually perform".
+NB: 这些是很*少*用到, 甚至不应该使用, 除非 *剖析代码*后看到它们有显著的好处. 引用gcc的文档: "程序员在预测他们的程序是如何实际执行的方面是出了名的差劲".
 
-`[inline]` - you can tag functions with `[inline]`, so the C compiler will
-try to inline them, which in some cases, may be beneficial for performance,
-but may impact the size of your executable.
+`[inline]` - 你可以用`[inline]`标记函数, 这样C编译器会尽量将其内嵌, 在某些情况下, 可能对性能有利. 但可能会影响你的可执行文件的大小.
 
-`[direct_array_access]` - in functions tagged with `[direct_array_access]`
-the compiler will translate array operations directly into C array operations -
-omiting bounds checking. This may save a lot of time in a function that iterates
-over an array but at the cost of making the function unsafe - unless
-the boundaries will be checked by the user.
+`[direct_array_access]` - 在带有`[direct_array_access]`标记的函数中, 编译器会将数组操作直接翻译成C数组操作(省略边界检查), 这可能会在迭代一个数组的函数中节省很多时间, 但代价是使函数不安全, 除非由用户自己检查边界.
 
-`if _likely_(bool expression) {` this hints the C compiler, that the passed
-boolean expression is very likely to be true, so it can generate assembly
-code, with less chance of branch misprediction. In the JS backend,
-that does nothing.
+`if _likely_(bool表达式) {`这暗示了C编译器布尔表达式大概率为真, 所以它生成的汇编代码, 分支误判的几率较小. 在JS后端, 什么都不做.
 
-`if _unlikely_(bool expression) {` similar to `_likely_(x)`, but it hints that
-the boolean expression is highly improbable. In the JS backend, that does nothing.
+`if _unlikely_(bool表达式) {`类似于`_likely_(x)`, 但它暗示了的布尔表达式是非常不可能执行到的. 在JS后端, 这什么也做不了.
 
 <a id='Reflection via codegen'>
 
-## Compile-time reflection
+## 编译时反思
 
-Having built-in JSON support is nice, but V also allows you to create efficient
-serializers for any data format. V has compile-time `if` and `for` constructs:
+拥有内置的JSON支持是不错的, 但V也允许你为任何数据格式创建高效的序列化器. V有编译时的`if`和`for`结构:
 
 ```v wip
 // TODO: not fully implemented
@@ -3776,7 +3518,7 @@ fn decode_User(data string) User {
 }
 ```
 
-## Limited operator overloading
+## 有限的操作符重载
 
 ```v
 struct Vec {
@@ -3807,25 +3549,22 @@ fn main() {
 }
 ```
 
-Operator overloading goes against V's philosophy of simplicity and predictability.
-But since scientific and graphical applications are among V's domains,
-operator overloading is an important feature to have in order to improve readability:
+操作符超载违背了V的简单和可预测性的理念. 但由于科学和图形应用是V的领域之一. 为了提高可读性，运算符重载是一个重要的特征.
 
-`a.add(b).add(c.mul(d))` is a lot less readable than `a + b + c * d`.
+`a.add(b).add(c.mul(d))`比`a + b + c * d`可读性要差得多.
 
-To improve safety and maintainability, operator overloading is limited:
+为了提高安全性和可维护性, 对操作符的重载进行了限制:
 
-- It's only possible to overload `+, -, *, /, %, <, >, ==, !=, <=, >=` operators.
-- `==` and `!=` are self generated by the compiler but can be overriden.
-- Calling other functions inside operator functions is not allowed.
-- Operator functions can't modify their arguments.
-- When using `<` and `==` operators, the return type must be `bool`.
-- `!=`, `>`, `<=` and `>=` are auto generated when `==` and `<` are defined.
-- Both arguments must have the same type (just like with all operators in V).
-- Assignment operators (`*=`, `+=`, `/=`, etc)
-are auto generated when the operators are defined though they must return the same type.
+- 只能重载`+, -, *, /, %, <, >, ==, !=, <=, >=`运算符
+- `==`和`!=`由编译器自行生成, 但可以重载
+- 不允许在运算符函数里面调用其他函数
+- 运算符函数不能修改其参数
+- 当使用`<`和`==`运算符时, 返回类型必须是`bool`
+- 当定义了`==`和`<`时，`！=`、`>`、`<=`和`>=`会自动生成
+- 两个参数必须具有相同的类型(就像V中的所有操作符一样)
+- 赋值运算符(`*=`, `+=`, `/=`等)在定义运算符时, 会自动生成, 但它们必须返回相同的类型.
 
-## Inline assembly
+## 内联编译
 <!-- ignore because it doesn't pass fmt test (why?) --> 
 ```v ignore
 a := 100
@@ -3844,16 +3583,15 @@ println('b: $b') // 20
 println('c: $c') // 120
 ```
 
-For more examples, see [github.com/vlang/v/tree/master/vlib/v/tests/assembly/asm_test.amd64.v](https://github.com/vlang/v/tree/master/vlib/v/tests/assembly/asm_test.amd64.v)
+更多例子可见 [github.com/vlang/v/tree/master/vlib/v/tests/assembly/asm_test.amd64.v](https://github.com/vlang/v/tree/master/vlib/v/tests/assembly/asm_test.amd64.v)
 
-## Translating C to V
+## 将C翻译成V
 
-TODO: translating C to V will be available in V 0.3.
+TODO：在V 0.3中可以将C语言翻译成V语言.
 
-V can translate your C code to human readable V code and generate V wrappers on top of C libraries.
+V可以将你的C代码翻译成人类可读的V代码，并在C库之上生成V包装器.
 
-
-Let's create a simple program `test.c` first:
+我们先创建一个简单的程序`test.c`:
 
 ```c
 #include "stdio.h"
@@ -3866,7 +3604,7 @@ int main() {
 }
 ```
 
-Run `v translate test.c`, and V will generate `test.v`:
+执行`v translate test.c`, 然后V会生成 `test.v`:
 
 ```v
 fn main() {
@@ -3876,33 +3614,29 @@ fn main() {
 }
 ```
 
-To generate a wrapper on top of a C library use this command:
+要在C库的基础上生成一个封装器, 请使用以下命令:
 
 ```bash
 v wrapper c_code/libsodium/src/libsodium
 ```
 
-This will generate a directory `libsodium` with a V module.
+这将生成一个带有V模块的目录`libsodium`.
 
-Example of a C2V generated libsodium wrapper:
-
-https://github.com/medvednikov/libsodium
+C2V生成的libsodium包装器的例子, 见https://github.com/medvednikov/libsodium
 
 <br>
 
-When should you translate C code and when should you simply call C code from V?
+什么时候应该翻译C代码, 什么时候应该简单地从V中调用C代码?
 
-If you have well-written, well-tested C code,
-then of course you can always simply call this C code from V.
+如果你的C代码写得很好，经过很好的测试, 那么当然你可以一直简单地从V中调用这个C代码.
 
-Translating it to V gives you several advantages:
+将它翻译成V给你带来了几个好处:
 
-- If you plan to develop that code base, you now have everything in one language,
-    which is much safer and easier to develop in than C.
-- Cross-compilation becomes a lot easier. You don't have to worry about it at all.
-- No more build flags and include files either.
+- 如果你打算开发那个代码库, 你现在已经在一种语言中得到了所有的东西, 比C语言更安全，更容易开发
+- 交叉编译变得更加容易. 你根本不用担心这个问题.
+- 也没有更多的构建标志和包含文件
 
-## Hot code reloading
+## 热更新
 
 ```v live
 module main
@@ -3923,49 +3657,44 @@ fn main() {
 }
 ```
 
-Build this example with `v -live message.v`.
+用`v -live message.v`构建这个例子.
 
-Functions that you want to be reloaded must have `[live]` attribute
-before their definition.
+你想重载的函数在定义前必须有`[live]`属性.
 
-Right now it's not possible to modify types while the program is running.
+目前, 在程序运行时还不能修改类型.
 
-More examples, including a graphical application:
-[github.com/vlang/v/tree/master/examples/hot_code_reload](https://github.com/vlang/v/tree/master/examples/hot_reload).
+更多的例子(包括一个图形应用程序)可见
+[github.com/vlang/v/tree/master/examples/hot_code_reload](https://github.com/vlang/v/tree/master/examples/hot_reload)
 
-## Cross compilation
+## 交叉汇编
 
-To cross compile your project simply run
+要交叉编译你的项目, 只需运行:
 
 ```shell
 v -os windows .
 ```
 
-or
+或
 
 ```shell
 v -os linux .
 ```
 
-(Cross compiling for macOS is temporarily not possible.)
+(macOS的交叉编译暂时无法实现。)
 
-If you don't have any C dependencies, that's all you need to do. This works even
-when compiling GUI apps using the `ui` module or graphical apps using `gg`.
+如果你没有任何C语言的依赖, 那就只需要这样做. 这甚至在使用`ui`模块编译GUI应用程序或使用`gg`编译图形应用程序时也可这样.
 
-You will need to install Clang, LLD linker, and download a zip file with
-libraries and include files for Windows and Linux. V will provide you with a link.
+你需要安装Clang, LLD链接器, 并根据V提供的一个链接下载一个包含以下内容的zip文件, 它包含了为Windows和Linux提供支持的lib和include文件.
 
-## Cross-platform shell scripts in V
+## V中的跨平台shell脚本
 
-V can be used as an alternative to Bash to write deployment scripts, build scripts, etc.
+V可以作为Bash的替代品来编写部署脚本, 构建脚本等.
 
-The advantage of using V for this is the simplicity and predictability of the language, and
-cross-platform support. "V scripts" run on Unix-like systems as well as on Windows.
+使用V的优势在于语言的简单性和可预测性, 以及跨平台支持. "V script"既可以在类似Unix的系统上运行, 也可以在Windows上运行.
 
-Use the `.vsh` file extension. It will make all functions in the `os`
-module global (so that you can use `mkdir()` instead of `os.mkdir()`, for example).
+使用`.vsh`文件扩展名, 并将`os`模块中的所有函数成为全局函数(这样你就可以使用`mkdir()`而不是`os.mkdir()`).
 
-An example `deploy.vsh`:
+`deploy.vsh`例子:
 ```v wip
 #!/usr/bin/env -S v run
 // The shebang above associates the file to V on Unix-like systems,
@@ -4002,22 +3731,19 @@ if result.exit_code != 0 {
 // }
 ```
 
-Now you can either compile this like a normal V program and get an executable you can deploy and run
-anywhere:
+现在你可以像编译普通的V程序一样编译这个程序, 然后得到一个可执行文件, 并可以在任何地方部署和运行:
 `v deploy.vsh && ./deploy`
 
-Or just run it more like a traditional Bash script:
+或者就像传统的Bash脚本一样运行它:
 `v run deploy.vsh`
 
-On Unix-like platforms, the file can be run directly after making it executable using `chmod +x`:
+在类似Unix的平台上, 使用`chmod +x`使文件可执行后, 可直接运行:
 `./deploy.vsh`
 
-## Attributes
+## 属性
+V有几个属性可以修改函数和struct的行为.
 
-V has several attributes that modify the behavior of functions and structs.
-
-An attribute is a compiler instruction specified inside `[]` right before a
-function/struct/enum declaration and applies only to the following declaration.
+属性是指在`[]`内指定的编译器指令，它位于function/struct/enum声明, 并且只适用于以下声明.
 
 ```v
 // Calling this function will result in a deprecation warning
@@ -4096,11 +3822,7 @@ fn main() {
 
 ## Goto
 
-V allows unconditionally jumping to a label with `goto`. The label name must be contained
-within the same function as the `goto` statement. A program may `goto` a label outside
-or deeper than the current scope. `goto` allows jumping past variable initialization or
-jumping back to code that accesses memory that has already been freed, so it requires
-`unsafe`.
+V允许用`goto`无条件地跳转到一个标签. 标签名称必须与`goto`语句包含在同一个函数中. 程序可以goto到当前作用域之外或更深的地方. `goto`允许跳过变量初始化或跳回访问已经释放的内存的代码, 所以它需要`unsafe`.
 
 ```v ignore
 if x {
@@ -4114,15 +3836,13 @@ if x {
 }
 my_label:
 ```
-`goto` should be avoided, particularly when `for` can be used instead.
-[Labelled break/continue](#labelled-break--continue) can be used to break out of
-a nested loop, and those do not risk violating memory-safety.
+应避免使用`goto`, 特别是在可以使用 `for`的情况下. [带标签的break/continue](#带标签的break/continue)可以用来脱离嵌套循环, 这些不会有违反内存安全的风险.
 
-# Appendices
+# 附录
 
-## Appendix I: Keywords
+## 附录一：关键词
 
-V has 41 reserved keywords (3 are literals):
+V有41个保留关键词(3个是字词):
 
 ```v ignore
 as
@@ -4167,11 +3887,11 @@ union
 unsafe
 __offsetof
 ```
-See also [Types](#types).
+可见[类型](#类型).
 
-## Appendix II: Operators
+## 附录二: 运算符
 
-This lists operators for [primitive types](#primitive-types) only.
+这里只列出了[基础类型](#基础类型)的运算符.
 
 ```v ignore
 +    sum                    integers, floats, strings
