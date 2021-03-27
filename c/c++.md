@@ -61,7 +61,7 @@ using 声明`using  std::cout`和using指令`using namespace std;`的区别:
 编译单元(compilation unit)是一个文件, 它可能是类的实现文件, 以及通过`#include`包含的其他所有文件, 比如类的接口文件(即头文件). 每个编译单元都有一个无名命名空间.
 
 ## 类型
-c++11支持auto类型, 由右侧表达式推断变量类型, 但不能用于传参和推导数组类型.
+c++11支持auto类型, 由右侧表达式推断变量类型, 但**不能用于传参和推导数组类型**.
 c++11 支持`decltype (expr) value`, 可根据expr确定变量value的类型.
 c++没有字符串的原生类型, 但可使用`#include<string>`来定义和操作字符串.
 新版编译器支持bool类型, 而不是用1/0来表示true/false.
@@ -685,19 +685,20 @@ c++支持在函数中抛出异常再由外层try-catch捕获处理.
 异常能不用就尽量不用, 切记滥用.
 
 ## 模板
+模板的哲学在于**将一切能够在编译期处理的问题丢到编译期进行处理**，仅在运行时处理那些最核心的动态服务，进而大幅优化运行期的性能. 因此模板也被很多人视作 C++ 的黑魔法之一.
+
 函数模板的定义实际是多个函数定义的"合集". 编译器仅针对**用到的每种类型**生成单独的函数定义, 未用到的类型不生成定义.
 
-模板的哲学在于将一切能够在编译期处理的问题丢到编译期进行处理，仅在运行时处理那些最核心的动
-态服务，进而大幅优化运行期的性能. 因此模板也被很多人视作 C++ 的黑魔法之一.
-
 ```c++
-template<class T> // `template<class T>`为模板前缀, T为类型参数. 函数模板支持多个类型参数, 但通常只需一个.
+template<typename T> // `template<typename T>`为模板前缀, T为类型参数. 函数模板支持多个类型参数, 但通常只需一个.
 void swapValues(T& variable1, T& variable2)
 {
     T temp;
 	...
 }
 ```
+
+> typename 和 class 在模板参数列表中没有区别, 在 typename 这个关键字出现之前，都是使用 class 来定义模板参数的. 但在模板中定义有嵌套依赖类型的变量时，需要用 typename 消除歧义, 因此推荐使用typename.
 
 函数模板一般不使用其声明(即不提前声明函数), 而是在使用前include其实现文件.
 
@@ -737,6 +738,74 @@ STL最简单的列表是双链表(doubly linked list).
 
 泛型算法(generic algorithm)即STL模板函数.
 
+## lambda
+Lambda 表达式，实际上就是提供了一个类似匿名函数的特性.
+
+```code
+[捕获列表](参数列表) mutable(可选) 异常属性 -> 返回类型 {
+// 函数体
+}
+```
+
+捕获列表也分为以下几种：
+1. 值捕获
+
+    与参数传值类似，值捕获的前提是变量可以拷贝，不同之处则在于, **被捕获的变量在 Lambda 表达式被创建时拷贝， 而非调用时才拷贝**
+1.  引用捕获
+
+    与引用传参类似，引用捕获保存的是引用，值会发生变化
+1. 隐式捕获
+
+    手动书写捕获列表有时候是非常复杂的，这种机械性的工作可以交给编译器来处理，这时候可以在捕获列表中写一个 & 或 = 向编译器声明采用引用捕获或者值捕获.
+1. 表达式捕获
+
+总结一下，捕获提供了 Lambda 表达式对外部值进行使用的功能，捕获列表的最常用的四种形式可以是：
+
+    [] 空捕获列表
+    [name1, name2, ...] 捕获一系列变量
+    [&] 引用捕获, 让编译器自行推导引用列表
+    [=] 值捕获, 让编译器自行推导值捕获列表
+
+从 C++14 开始， Lambda 函数的形式参数可以使用 auto 关键字来产生意义上的泛型.
+```c++
+auto add = [](auto x, auto y) {
+    return x+y;
+};
+
+add(1, 2);
+add(1.1, 2.2);
+```
+
+## 右值引用
+**左值(lvalue, left value)**，顾名思义就是赋值符号左边的值。准确来说， 左值是表达式（不一定是赋值表达式）后依然存在的持久对象。
+
+**右值(rvalue, right value)**，右边的值，是指表达式结束后就不再存在的临时对象。
+
+而 C++11 中为了引入强大的右值引用，将右值的概念进行了进一步的划分，分为：纯右值、将亡值。
+
+**纯右值(prvalue, pure rvalue)**，纯粹的右值，要么是纯粹的字面量，例如 10, true； 要么是求值结果相当于字面量或匿名临时对象，例如 1+2. 非引用返回的临时变量、运算表达式产生的临时变量、 原始字面量、Lambda 表达式都属于纯右值.
+
+需要注意的是，字符串字面量只有在类中才是右值，当其位于普通函数中是左值:
+```c++
+class Foo {
+        const char*&& right = "this is a rvalue"; // 此处字符串字面量为右值
+public:
+        void bar() {
+            right = "still rvalue"; // 此处字符串字面量为右值
+        } 
+};
+
+int main() {
+    const char* const &left = "this is an lvalue"; // 此处字符串字面量为左值
+}
+```
+
+**将亡值(xvalue, expiring value)**，是 C++11 为了引入右值引用而提出的概念（因此在传统 C++ 中， 纯右值和右值是同一个概念），也就是即将被销毁、**却能够被移动的值**.
+
+要拿到一个将亡值，就需要用到右值引用：`T &&`，其中 T 是类型. 右值引用的声明让这个临时值的生命周期得以延长、只要变量还活着，那么将亡值将继续存活.
+
+C++11 提供了 std::move 这个方法将左值参数无条件的转换为右值.
+
 ## 智能指针
 c++11用新类shared_ptr简化了内存管理以及对象在内存中的共享.shared_ptr是一个模板, 是从自由存储分配的对象的包装器.
 包装器通过引用计数来追踪其他还有多少个指针在引用对象., 计数器归零, 对象即可安全删除, 分配的内存归还给自由存储.
@@ -745,7 +814,7 @@ c++11用新类shared_ptr简化了内存管理以及对象在内存中的共享.s
 
 注意: shared_ptr类不是万能的, 循环引用列表会出问题, 因为引用计数永远不为0, 内存会一直无法回收. c++提供另外的weak_ptr类来解决该问题, 只要weak_ptr是唯一的对象引用, 该对象就会被销毁, 只要至少一个链接由weak_ptr连接, 整个循环列表最终都会被销毁.
 
-c++11还提供了unique_ptr类, 不能把它赋给其他任何指针.
+c++11还提供了unique_ptr类, 是一种独占的智能指针，它禁止其他智能指针与其共享同一个对象，从而保证代码的安全, 因此不能把它赋给其他任何指针.
 
 ## 废弃(c++11开始)
 - 字符串字面值常量赋值和初始化应用`const char *`取代`char *`.
@@ -812,8 +881,58 @@ clean:
 ## modern c++ start from c++11
 ### 语言可用性强化
 - nullptr 出现的目的是为了替代 NULL. 因为在某种意义上来说，传统 C++ 会把 NULL、0 视为同一种东西，这取决于编译器如何定义 NULL，有些编译器会将 NULL 定义为 ((void*)0)，有些则会直接将其定义为 0.
-- C++11 提供了 constexpr 让用户显式的声明函数或对象构造函数在编译期会成为常量表达式，这个关键字明确的告诉编译器应该去验证 len_foo 在编译期就应该是一个常量表达式．C++17 将 constexpr 这个关键字引入到 if 语句中，允许在代码中声明常量
-表达式的判断条件.
+
+    ```c++
+    #include <iostream>
+    #include <type_traits>
+
+    void foo(char *);
+    void foo(int);
+
+    int main() {
+        if (std::is_same<decltype(NULL), decltype(0)>::value)
+            std::cout << "NULL == 0" << std::endl;
+        if (std::is_same<decltype(NULL), decltype((void*)0)>::value)
+            std::cout << "NULL == (void *)0" << std::endl;
+        if (std::is_same<decltype(NULL), std::nullptr_t>::value)
+            std::cout << "NULL == nullptr" << std::endl;
+        if (std::is_same<decltype(NULL), decltype(long(0))>::value)
+            std::cout << "NULL == long(0)" << std::endl; // llvm 11.1.0 x86_64
+
+        std::cout << "NULL's type name:" << typeid(NULL).name() << std::endl; // l = long
+
+        foo(0);          // will call foo(int)
+        // foo(NULL);    // doesn't compile
+        foo(nullptr);    // will call foo(char*)
+        return 0;
+    }
+
+    void foo(char *) {
+        std::cout << "foo(char*) is called" << std::endl;
+    }
+    void foo(int i) {
+        std::cout << "foo(int) is called" << std::endl;
+    }
+    ```
+- C++11 提供了 constexpr 让用户显式的声明函数或对象构造函数在编译期会成为常量表达式.
+
+    从 C++14 开始，constexpr 函数可以在内部使用局部变量、循环和分支等简单语句. C++17 将 constexpr 这个关键字引入到 if 语句中，允许在代码中声明常量表达式的判断条件.
+
+    **const 常数与常量表达式不是一个概念**
+
+    ```c++
+    constexpr int len_foo_constexpr() {
+    return 5;
+    }
+
+    int main() {
+        const int len_2 = 1;
+        constexpr int len_2_constexpr = 1 + 2 + 3;
+        // char arr_4[len_2];                // 非法
+        char arr_4[len_2_constexpr];         // 合法
+        char arr_6[len_foo_constexpr() + 1]; // 合法
+    }
+    ```
 
 ## FAQ
 ### 编译器支持c++进度
@@ -821,7 +940,13 @@ clean:
 - [C++ Support in Clang](http://clang.llvm.org/cxx_status.html)
 - [C++ 20的范围稳了，主流编译器的完整支持会在什么时候？](https://www.zhihu.com/question/313443905)
 
+用法:
+- `clang++ -std=c++2a`
+
 ### `gcc -lstdc++ slice.cpp`报: undefined reference to `std::cout'
 明明使用了`use namespace std;`, 编译时还是报错.
 
 使用`gcc slice.cpp -lstdc++`或`g++ slice.cpp`. 用gcc时要注意参数位置.
+
+### 用GCC或者Clang观察预处理后的C++代码
+`g++/clang++ -E -P -std=c++11 -Wall -DBOOST_LOG_DYN_LINK -c ./main.cc >> main.output`
