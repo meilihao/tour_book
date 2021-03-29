@@ -744,3 +744,57 @@ func main() {
 	fmt.Println(reflect.TypeOf(z), (*z).Error())
 }
 ```
+
+### timeout
+参考:
+- [一文搞懂如何实现 Go 超时控制](https://my.oschina.net/kevwan/blog/5001043)
+
+```go
+func requestWork(ctx context.Context, job interface{}) error {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*2)
+	defer cancel()
+
+	done := make(chan error)
+	go func() {
+		done <- hardWork(job)
+	}()
+
+	select {
+	case err := <-done:
+		return err
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+func main() {
+	const total = 1000
+	var wg sync.WaitGroup
+	wg.Add(total)
+	now := time.Now()
+	for i := 0; i < total; i++ {
+		go func() {
+			defer wg.Done()
+			requestWork(context.Background(), "any")
+		}()
+	}
+	wg.Wait()
+	fmt.Println("elapsed:", time.Since(now))
+
+	time.Sleep(time.Minute*2)
+	fmt.Println("number of goroutines:", runtime.NumGoroutine())
+}
+```
+
+output:
+```
+elapsed: 2.005725931s
+number of goroutines: 1001
+```
+
+执行上面的代码发现timeout功能已正常执行, 但存在goroutine泄露: requestWork 函数在2秒钟超时后就退出了, 一旦 requestWork 函数退出，那么 done channel 就没有goroutine接收了，导致执行`done <- hardWork(job)` 这行代码的时候就会一直卡着写不进去，导致每个超时的请求都会一直占用掉一个goroutine.
+
+改进:
+只要 make chan 的时候把 buffer size 设为1，即`done := make(chan error, 1)`. 这样就可以让`done <- hardWork(job)`不管在是否超时都能写入而不卡住goroutine. 此时可能有人会问如果这时写入一个已经没goroutine接收的channel会不会有问题，在Go里面channel不像我们常见的文件描述符一样，不是必须关闭的，只是个对象而已，close(channel) 只是用来告诉接收者没有东西要写了，没有其它用途.
+
+ps: 改进后就没有对象泄露了???
