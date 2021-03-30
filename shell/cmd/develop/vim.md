@@ -21,6 +21,12 @@ Vim 的三种模式:
 # vim -r file # 恢复删除vim打开时崩溃的文件
 ```
 
+## 编码
+```
+:set fileencoding # 查看编码
+:set fileencoding=utf-8 # 编码修改
+```
+
 ## 命令/快捷键
 
 ### 其他
