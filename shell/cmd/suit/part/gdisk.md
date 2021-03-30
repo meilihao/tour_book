@@ -2,6 +2,7 @@
 参考:
 - [gPT fdisk](https://wiki.archlinux.org/index.php/GPT_fdisk_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87))
 - [Partitioning (简体中文)](https://wiki.archlinux.org/index.php/Partitioning_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87))
+- [C语言读取GPT分区信息](https://blog.csdn.net/qq_37734256/article/details/88384750)
 
 gdisk是支持gpt的分区工具.
 

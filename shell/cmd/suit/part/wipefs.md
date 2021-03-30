@@ -8,5 +8,7 @@ wipefs不会擦除文件系统本身或设备中的任何其他数据;
 
 ## example
 ```bash
-# wipefs -a /dev/sda
+# wipefs -a /dev/sdd # 清除分区表(gpt/mbr)
+dd if=/dev/zero of=/dev/sdd bs=512 count=1 conv=notrunc # 清除mbr
+sfdisk --delete /dev/sdd # 清除分区表
 ```
