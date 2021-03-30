@@ -537,3 +537,20 @@ make -s -j$(nproc)
 	- zfs 2.0.0
 
 		写满后不会变成只读而是报"No space left on device", 部分文件大小为0(写入部分后再遇到空间不足, 文件会创建但大小为0). 删除部分文件后, 仍可再cp文件
+
+### zfs 在磁盘开始的位置
+参考:
+- [C语言读取GPT分区信息 # PMBR](https://blog.csdn.net/qq_37734256/article/details/88384750)
+
+env: zfs 2.0.0
+
+zfs使用一块盘前会将该盘划为两个分区(gpt), 一个8M([Solaris reserved 1](https://github.com/openzfs/zfs/issues/6110), 假设是sdd9), 一个剩余空间(假设是sdd1), 分区表中8M在后.
+
+```bash
+zdb -l /dev/sdd1 # 获取zfs label
+hexdump -C -n 102400 /dev/sdd1 # 结合上面的label信息, 发现zfs从0x3fd8开始使用磁盘
+```
+
+通过`wipefs -a /dev/sdd`抹除分区表, 并将mbr内容全部置为`1`, 再创建pool发现, 磁盘的mbr内容已变化即pmbr被重置了, 因此制作磁盘签名时要回写.
+
+根据PMBR的定义可回写位置是0~446B内.
