@@ -104,7 +104,7 @@ RENAME TABLE tbl_name TO new_tbl_name
 ### [隔离级别](https://juejin.im/post/5b90cbf4e51d450e84776d27)
 - 脏读(dirty read/Read uncommitted)：一个事务读取了另一个事务尚未提交的修改
 - 不可重复读(non-repeatable read/Read committed)：一个事务对同一行数据读取两次，得到不同结果, 即读到其他事务已提交的数据
-- 幻读(phantom read/Repeatable read)：事务在操作过程中进行了两次查询，第二次的结果包含了第一次未出现的新数据或部分数据消失
+- 幻读(phantom read/Repeatable read)：事务在操作过程中进行了两次查询，第二次的结果包含了第一次未出现的新行或部分行消失
 - 串行化(Serializable)：一个事务在执行过程中完全看不到其他事务对数据库所做的更新．`写`会加`写锁`，`读`会加`读锁`,当出现读写锁冲突的时候，后访问的事务必须等前一个事务执行完成，才能继续执行.
 
 > 现在为止:所有的数据库都避免脏读

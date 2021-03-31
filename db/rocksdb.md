@@ -58,14 +58,14 @@ RocksDB是一个嵌入式的K-V（任意字节流）存储. 所有的数据在�
 ## SSTFile(SSTTable)
 RocksDB在磁盘上的file结构sstfile由block作为基本单位组成，一个sstfile结构由多个data block和meta block组成， 其中data block就是数据实体block，meta block为元数据block， 其中data block就是数据实体block，meta block为元数据block。 sstfile组成的block有可能被压缩(compression)，不同level也可能使用不同的compression方式。 sstfile如果要遍历block，会逆序遍历，从footer开始。
 
-sst里面的数据按照key进行排序能方便对其进行二分查找. 在SST文件内，还额外包含以下特殊信息：
+sst里面的数据已**按照key进行排序**能方便对其进行二分查找. 在SST文件内，还额外包含以下特殊信息：
 - Bloom Fileter : 用于快速判断目标查询key是否存在于当前SST文件内
 - Index / Partition Index，SST内部数据块索引文件快速找到数据块的位置
 
 compaction输入的SST file并不是立即就从SST file集合中删除，因为有可能在这些SST file上正进行着get or iterator操作. 只有当冗余的SST file上没有任何操作的时候，才会执行真正的删除文件操作. [这些逻辑是通过引用计数来实现的](https://www.jianshu.com/p/b95db752178f).
 
 写流程：
-rocksdb写入时，直接以append方式写到log文件以及memtable，随即返回，因此非常快速. memtable/immute memtable触发阈值后， flush 到Level0 SST，Level0 SST触发阈值后，经合并操作(compaction)生成level 1 SST， level1 SST 合并操作生成level 2 SST，以此类推，生成level n SST.
+rocksdb写入时，直接以append方式写到log文件, 成功后应用到memtable，随即返回，因此非常快速. memtable/immute memtable触发阈值后， flush 到Level0 SST，Level0 SST触发阈值后，经合并操作(compaction)生成level 1 SST， level1 SST 合并操作生成level 2 SST，以此类推，生成level n SST.
 
 ![rocksdb 写入原理](/misc/img/rocksdb/1f950c8b30fe6992437242c368f0f8b1.png)
 
