@@ -669,3 +669,15 @@ winetricks vcrun2005
 
 ### 删除wine的快捷方式
 `rm -rf /.local/share/applications/wine/Programs/vivo/vivo手机助手/vivoAPK安装器.desktop`
+
+### dpkg-query: 错误: --listfiles 需要一个有效的软件包名。而 libldap-2.4-2 不是: 软件包名 'libldap-2.4-2' 含糊不清， 它有一个以上的安装实例
+deepin wine应用依赖i386, i386和amd64共存导致`apt dist-upgrade`失败, 先卸载wine应用再`apt autoremove`, 最后重新更新即可.
+
+### deepin更新并重启后发现无法进入图形界面，而是变成字符界面，且用正确的账号无法在字符界面登录
+`apt reinstall lightdm dde-session-shell`
+
+安装lightdm重启后, 发现登录背景是黑色, 且输入账号登录界面会崩溃, 但字符界面已能正常登录.
+
+`sudo apt reinstall dde*`, 或用`apt search dde |egrep "^dde" |grep -v "dbgsym" |grep -v "dev"`精确筛选dde相关包.
+
+安装dde相关包后能正常登录, 但控制中心无法打开, `sudo dde-control-center --show`直接崩溃待解决.

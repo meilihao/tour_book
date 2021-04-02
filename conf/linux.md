@@ -165,3 +165,7 @@ tpm资料,[TPM安全芯片](http://baike.baidu.com/view/687208.htm),[Trusted Pla
 # 快捷键
 1. `super + shift + tab`: 重启窗口管理器
 1. `sudo systemctl restart lightdm`: 注销用户
+
+# deepin
+## 升级内核
+`sudo apt install linux-image-deepin-stable-amd64 linux-headers-deepin-stable-amd64`

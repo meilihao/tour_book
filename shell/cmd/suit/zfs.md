@@ -174,6 +174,7 @@ $ sudo zfs set atime = off <pool> # 设置pool参数
 $ sudo zfs set compression=gzip-9 mypool # 设置压缩的级别
 $ sudo zfs inherit -rS atime  <pool> # 重置参数到default值. `-r`以递归的方式应用inherit子命令
 $ sudo zfs get keylocation <pool>/<filesystem> # 获取filesystem属性
+$ sudo zfs get volsize -o value -H -p <pool>/<vol> # 获取zvol大小
 $ sudo zfs set acltype = posixacl <pool> / <filesystem> # 使用ACL
 $ sudo zfs set sharenfs=on <pool> # 通过nfs共享pool
 $ sudo zfs create -o mountpoint=none mypool/test/storage # 创建未挂载的dataset, 常用于zfs recv的场景.

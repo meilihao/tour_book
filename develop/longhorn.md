@@ -20,7 +20,7 @@
 操作iscsi的工具: [go-iscsi-helper](https://github.com/longhorn/go-iscsi-helper)
 
 限制:
-1. volume <= 1T
+1. volume max未知
 
     1TB卷消耗256MB的内存读取索引(为了提高读取性能).
 1. snap max 254

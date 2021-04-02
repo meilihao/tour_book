@@ -39,6 +39,8 @@ secure.gravatar.com          gravatar.lug.ustc.edu.cn
 6、修改完成后按ctrl + alt + del重启电脑
 ```
 
+单用户默认启用网络: `systemctl start NetworkManager`
+
 ## [fish添加环境变量](https://github.com/fish-shell/fish-shell/issues/527)
 将相应的fish配置文件放入`/home/chen/.config/fish/conf.d`即可, fish的`conf.d`类似于nginx的`conf.d`.
 
@@ -161,3 +163,6 @@ root:x:0:0:root:/root:fish # root的shell的路径不对
 
 ### linux 字符界面输入出现`]`等乱码
 用`shift + backspace`来删除
+
+### 强制命令输出是英文
+`LANG="POSIX" ls -l`
