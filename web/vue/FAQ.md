@@ -83,3 +83,10 @@ methods不带缓存, vm.$data中任何值变化都会被重新调用.
 
 异步请求数据用`action`.
 modules声明`namespaced: true`, 用于区分同名变量或函数.
+
+### gin支持vue history mode
+```go
+r.NoRote(func(c *gin.Context){
+    c.File("web/dist/index.html") // vue spa index.html
+})
+```
