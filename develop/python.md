@@ -10,6 +10,7 @@
     - Python基础教程（第3版）
     - Python编程：从入门到实践
     - Python编程快速上手
+    - [python3-cookbook](https://python3-cookbook.readthedocs.io/zh_CN/latest/index.html)
 - 进阶
     - Python高性能编程
     - 流畅的Python
