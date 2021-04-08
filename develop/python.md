@@ -56,6 +56,35 @@ $ autopep8 --in-place --aggressive --aggressive *.py # style 修正
 
 pycharm设置pep8: [Pycharm配置autopep8教程，让Python代码更符合pep8规范](https://segmentfault.com/a/1190000005816556)
 
+### 利用Cython将Python项目编译为`.so`
+参考:
+- [尝试利用Cython将Python项目转化为单个.so](https://paper.seebug.org/1139/)
+
+编译Cython module的主要过程:
+1. Cython compiler将.py/.pyx文件编译为C/C++文件
+2. C compiler再将C/C++编译为.so(windows 为.pyd)
+
+```bash
+$ mkdir test && cd test
+$ cat fn.py 
+def say_hello_to(name):
+
+    print("Hello %s!" % name)
+$ cat main.py 
+import fn
+
+fn.say_hello_to('xxx')
+$ cat setup.py # 包含了构建指令
+from distutils.core import setup
+from Cython.Build import cythonize
+
+setup(name='test',
+   ext_modules=cythonize("fn.py"))
+$ python3 setup.py build_ext --inplace # --inplace 参数让 Cython 在当前目录中构建编译模块，而不是在一个独立的构建
+目录中
+$ python3 main.py
+```
+
 ### 其他
 ```sh
 $ pip --version
@@ -1942,3 +1971,5 @@ urlpatterns = patterns(
 
 #### W291 trailing whitespace
 行尾有多余的空格
+
+#### ImportError: No module named Cython.Build
