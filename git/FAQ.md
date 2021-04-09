@@ -339,3 +339,6 @@ error: 推送一些引用到 'git@gitee.com:chenhao/hello_minio.git' 失败
 
 ### go get报"Error -50 setting GnuTLS cipher list starting with +VERS-TLS1.3:+SRP:
 git依赖的guntls不支持tls 1.3, 让go get使用git ssh即可: `git config --global url.git@github.com:.insteadOf https://github.com/`
+
+### git remote test
+`ssh -T git@github.com`
