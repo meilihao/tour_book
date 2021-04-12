@@ -1,4 +1,6 @@
 # 安装
+参考:
+- [rust离线安装](https://forge.rust-lang.org/infra/other-installation-methods.html)
 
 通过官方的安装脚本安装.
 
