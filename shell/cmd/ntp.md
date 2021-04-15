@@ -12,6 +12,9 @@ ntp是用来使计算机时间同步化的一种协议.
 ```
 
 ## FAQ
+### ntpdate `-t`参数
+通过实践: `-t`参数设置越大, ntpdate执行时间越长, 推荐使用`5`.
+
 ### ntp no server suitable for synchronization found
 在ntp客户端运行ntpdate 10.0.0.106，出现`no server suitable for synchronization found`的错误.
 在ntp客户端用ntpdate -d 10.0.0.106查看，发现有`Server dropped: Strata too high`的错误，并且显示`stratum 16`, 而正常情况下stratum这个值得范围是`0~15`.

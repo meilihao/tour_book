@@ -172,6 +172,10 @@ rust编译器解析代码时, 如果遇到分号, 就会继续往后面执行; �
 
 > 赋值号左边的部分是一个“模式”，`let (mut a, mut b) = (1, 2);`是对 tuple 的模式解构，`let Point { x : ref a, y : ref b} = p;`是对结构体的模式解构.
 
+> 模式匹配可能导致变量所有权转移, 使用ref可避免该情况. ref是模式的一部分, 它只能出现在赋值操作符的左边. `&`是借用运算符, 是表达式的一部分, 只能出现在赋值操作符的右边.
+
+> mut在模式匹配中是修饰变量绑定, `&mut`是表示引用, mut的意义完全不同.
+
 let创建的变量一般称为绑定(bingding).
 
 rust的表达式可分为位置表达式(place expression)和值表达式(value expression), 即其他语言中的左值和右值.
@@ -266,7 +270,8 @@ pub fn two_times_impl() -> impl Fn(i32) -> i32 {
 变量绑定支持if表达式. `if ... else if ... else`: `if n <  30 {} else if n > 50 else {}`, `let x = if condition {} else {}`
 rust循环支持while, loop, for...in, break/continue; 无限循环需使用loop.
 rust支持match, 其使用了模式匹配(pattern matching)技术, 支持绑定模式(bingding mode, 即使用操作符@将模式中的值绑定给一个变量, 供分支右侧的代码使用). match使用`_`来兜底.
-match表达式要求所有的分支都必须返回相同的类型.
+match表达式要求所有的分支都必须返回相同的类型. **Rust match 需要对所有情况做完整的, 无遗漏的匹配，如果漏掉了某些情
+况，是不能编译通过的**.
 rust提供if let和while let表达式, 分别在某些场合代替match表达式.
 
 ### 操作符
@@ -741,6 +746,9 @@ rust提供5种复合类型:
         Rust enum 类型的变量需要区分它里面的数据究竟是哪种变体, 所以它包含了一个内部的`tag 标记`来描述当前变量属于哪种类型. 这个标记对用户是不可见的, 通过恰当的语法设计, 保证标记与类型始终是匹配的，以防止用户错误地使用内部数据, 可用`std::mem::size_of::<Number>()`输出大小来验证.
 1. 联合体(Union) 
     rust也支持 union 类型, 这个类型与C中的 union 完全一致, 但在 Rust 里面, 读取它内部的值被认为是 unsafe 行为, 一般情况下不使用这种类型, 而它存在的主要目的是为了方便与C语言进行交互.
+
+
+> tuple, struct, tuple struct 这几种类型，实质上是同样的内存布局，区别仅仅在于是否给类型及成员起了名字.
 
 ### 常用集合类型
 std::collections提供了4种通用集合类型:
