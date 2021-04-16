@@ -441,7 +441,7 @@ $ pdbedit -v username    #显示账户详细信息
 $ sudo pdbedit -L -v # 查看smbpasswd创建的samba用户
 $ sudo systemctl restart smbd # 使**配置生效**
 # smbcontrol all reload-config # 重新加载Samba配置, 使授权生效, **推荐**
-$ sudo mount -t cifs //127.0.0.1/{samba_share_name} /mnt [-o username=josh -o password=xxx -o vers=2.0  -o uid=$(id -u),gid=$(id -g) ] # 挂载samba分享的内容, client端支持的smb protocol 版本可通过`man mount.cifs#vers查看`. samba使用samba_share_name, 而不像nfs那样的export路径. 未登录用户(密码登录)映射为nobody:nogroup, 否则用指定的username:username.
+$ sudo mount -t cifs //127.0.0.1/{samba_share_name} /mnt [-o username=josh -o password=xxx -o vers=2.0  -o uid=$(id -u),gid=$(id -g) ] # 挂载samba分享的内容, client端支持的smb protocol 版本可通过`man mount.cifs#vers查看`. samba使用samba_share_name, 而不像nfs那样的export路径. 未登录用户(密码登录)映射为nobody:nogroup, 否则用指定的username:username. `vers`建议使用2.1或者3.0
 $ sudo mount | grep cifs # 挂载的详细参数, 可参考[通过云服务器ECS（Linux）访问SMB文件系统#挂载文件系统](https://www.alibabacloud.com/help/zh/doc-detail/128737.htm)
 $ sudo smbstatus # 查看连接到samba server的client及使用的protocol version + samba server version, 映射的用户及用户组. version显示`Unknown`: 客户端支持的smb协议比smbd新.
 ```
@@ -766,6 +766,9 @@ samba client挂载测试情况:
 
 ### 查看本机运行的nfs的版本
 `rpcinfo -p|grep nfs`
+
+### cifs挂在报`No dialect specified on mount. Default has changed to a more secure dialect, SMB2.1 or later (e.g. SMB3), from CIFS (SMB1). To use the less secure SMB1 dialect to access old servers which do not support SMB3 (or SMB2.1) specify vers=1.0 on mount`
+必须使用比`vers=1.0`更高的smb协议.
 
 ## zfs xfs nas
 **推荐使用zfs fs, 不推荐ext4,xfs + zvol, 特别是xfs**
