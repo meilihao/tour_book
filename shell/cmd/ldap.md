@@ -125,6 +125,7 @@ systemctl start slapd
 slapd -VV
 ss -tnlp | grep 389
 slapd -d ? # 支持哪些模块的log
+man slapd-config # slapd配置
 ```
 
 安装过程中需要输入admin entry的密码.
@@ -325,7 +326,7 @@ changetype: modify
 add: olcRootPW
 olcRootPW: {SHA}W6ph5Mm5Pz8GgiULbPgzG37mj9g=
 # ldapmodify -Y EXTERNAL -H ldapi:/// -f change_pwd.ldif # olcRootPW已存在时用`replace`替换`add`即可
-# ldapsearch -H ldapi:// -Y EXTERNAL -b "cn=config" -LLL -Q "olcDatabase=*" dn # 查找所有db
+# ldapsearch -H ldapi:/// -Y EXTERNAL -b "cn=config" -LLL -Q "olcDatabase=*" dn # 查找所有db
 olcDatabase={-1}frontend,cn=config # 此条目用于定义特定“frontend”数据库的功能。这是一套pseudo-database，用于定义适用于全部其它数据库（除非特别指定）的全局设置。
 olcDatabase={0}config,cn=config # 此条目用于定义我们目前正在使用的cn=config数据库设置。多数情况下，其主要负责访问控制设置与复制配置等。
 olcDatabase={1}mdb,cn=config # 此条目定义设置特定类型的数据库（本示例中为mdb）. 其一般负责定义访问控制、数据存储细节、缓存与缓冲、DIT的root条目以及管理细节
@@ -398,3 +399,22 @@ wget --no-check-certificate https://raw.githubusercontent.com/alexanderjackson/l
 1. server port
 1. base dn
 1. admin dn
+
+### ldap log
+直接配置`olcLogFile: /var/log/sladp.log`没有效果. 因此间接方式(重定向到文件):
+1. 配置`olcLogLevel: stats`或修改/etc/default/slapd
+
+    ```bash
+    $ grep SLAPD_OPTIONS /etc/default/slapd
+    SLAPD_OPTIONS="-s 256"
+    ```
+1. 通过systemd unit查看(**推荐**)或使用rsyslog
+
+    ```bash
+    # vim etc/rsyslog.d/10-slapd.conf
+    $template slapdtmpl,"[%$DAY%-%$MONTH%-%$YEAR% %timegenerated:12:19:date-rfc3339%] %app-name% %syslogseverity-text% %msg%\n"
+    local4.*    /var/log/slapd.log;slapdtmpl
+    # systemctl restart rsyslog
+    # ldapsearch -Y external -H ldapi:/// -b dc=ldaptuto,dc=net
+    # cat /var/log/slapd.log
+    ```
