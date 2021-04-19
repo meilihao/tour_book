@@ -153,6 +153,8 @@ ldapmodify
 - -E 设置客户端证书私钥文件,例: -E cert/client.key
 - -f file 从文件内读取条目的修改信息而不是从标准输入读取.
 - -H ldapuri 指定连接到服务器uri。常见格式为ldap://hostname:port
+
+    使用`ldap:///`时必须在ldap server上执行.
 - -h ldaphost 指定要连接的主机的名称/ip 地址.它和-p 一起使用.
 - -p ldapport 指定要连接目录服务器的端口号.它和-h 一起使用.
 - -M[M] 打开manage DSA IT 控制. -MM 把该控制设置为重要的.
@@ -164,13 +166,16 @@ ldapmodify
 - -w bindpasswd 直接指定用户的密码. 它和-W 参数相对使用.
 - -x 使用简单认证.
 - -Y SASL机制
+
+    `-Y EXTERNAL`没查到具体资料, 感觉有点类似postgres psql账号的无密码授权
 - -Z[Z] 使用StartTLS 扩展操作.如果使用-ZZ,命令强制使用StartTLS 握手成功.
 
 ldapsearch
  - -x : 进行简单认证
- - -D : 用来绑定服务器的DN
- - -w : 绑定DN的密码
- - -b : 指定要查询的根节点
+ - -D : bind dn
+ - -w : bind password
+ - -W : 从stdin获取bind password
+ - -b : base dn
  - -H : 制定要查询的服务器
  - -L : 输出ldif格式, `-LLL`输出内容不包含注释
 
@@ -253,7 +258,7 @@ delete: description
 description: sx
 # ldapmodify -x -D "cn=root,dc=it,dc=com" -W -f modify_entry.ldif # 添加mail属性，修改sn的值，删除一个description属性
 # ldappasswd -x -D cn=admin,dc=wecash,dc=net -w weopenldap -H ldapi:/// "cn=wedba,ou=Groups,dc=wecash,dc=net" -S # ldappasswd 命令用于修改密码
-# ldapsearch -H ldapi://192.168.0.245:389 -b dc=xx,dc=cn -LLL 
+# ldapsearch -H ldapi:/// -b dc=xx,dc=cn -D cn=admin,dc=xx,dc=cn -LLL -W # 查看base dn下的内容
 # ldapsearch -Q -LLL -Y EXTERNAL -H ldapi:/// -b cn=config dn # 查看初始化信息
 # ldapsearch -x -D "cn=root,dc=kevin,dc=com" -w secret -b "dc=kevin,dc=com" # 使用简单认证，用 "cn=root,dc=kevin,dc=com" 进行绑定，要查询的根是 "dc=kevin,dc=com"。这样会把绑定的用户能访问"dc=kevin,dc=com"下的所有数据显示出来
 # ldapsearch -x -W -D "cn=administrator,cn=users,dc=osdn,dc=cn" -b "cn=administrator,cn=users,dc=osdn,dc=cn" -h troy.osdn.zzti.edu.cn
@@ -300,7 +305,9 @@ loginShell: /bin/bash
 homeDirectory: /home/john
 shadowLastChange: 0
 shadowMax: 0
+shadowMin: 0
 shadowWarning: 0
+shadowInactive: 0
 # ldapadd -x -W -D "cn=admin,dc=wecash,dc=net" -f add_content.ldif # posixGroup, posixAccount会建出Linux账号
 # cat logging.ldif
 dn: cn=config
@@ -332,6 +339,9 @@ olcDatabase={0}config,cn=config # 此条目用于定义我们目前正在使用�
 olcDatabase={1}mdb,cn=config # 此条目定义设置特定类型的数据库（本示例中为mdb）. 其一般负责定义访问控制、数据存储细节、缓存与缓冲、DIT的root条目以及管理细节
 # ldapsearch -H ldapi:// -Y EXTERNAL -b "cn=schema,cn=config" -s base -LLL -Q # 查看cn=schema,cn=config条目下内置schema
 # ldapsearch -H ldapi:// -Y EXTERNAL -b "cn=schema,cn=config" -s one -Q -LLL dn # 查看系统中已载入的其它schema. 大括号加数字代表该schema被系统读取时的顺序。在添加schema时, 数字一般由系统自动添加
+# ldapsearch -x -LLL -b "" -s base namingContexts # 获取base dn
+# ldapsearch -H ldapi:/// -Y EXTERNAL -b "cn=config" -LLL -Q | grep olcRootDN: # 获取root dn
+# ldapsearch -H ldapi:/// -Y EXTERNAL -b "cn=config" -LLL -Q | grep olcLogLevel: # 查看日志级别
 ```
 
 ## FAQ
@@ -393,6 +403,14 @@ wget --no-check-certificate https://raw.githubusercontent.com/alexanderjackson/l
 `ldappasswd -H ldap://172.16.0.21 -x -D "cn=admin,ou=People,dc=expmale,dc=com" -W -S "uid=zhang3,ou=People,dc=expmale,dc=com"`报该错.
 
 管理员DN不正确/管理员密码错误
+
+### ldapi协议
+参考:
+- [Using LDAP over IPC Mechanisms](https://ldapwiki.com/wiki/Using%20LDAP%20over%20IPC%20Mechanisms)
+
+在IPC机制上使用LDAP（LDAPI）当LDAP客户端和服务器都位于同一台计算机上时，使用主机特定的IPC机制而不是TCP会话可以大大提高通信效率.
+
+openldap是基于Unix IPC实现的LDAPI, 此时`-H`必须是`-H ldapi:///`
 
 ### 连接ldap server的必选配置
 1. server ip

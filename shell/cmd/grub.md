@@ -23,6 +23,16 @@ kernel的完整启动参数列表见[这里](http://redsymbol.net/linux-kernel-b
 - biosdevname=0：用于CentOS 7，也是禁止网络设备采用一致性命名方式
              ：只有net.ifnames和biosdevname同时设置为0时，才能完全禁止一致性命名，得到eth0-N的设备名
 
+## grub terminal
+```bash
+grub> md5sum $vtoy_iso_part/xxx.iso # 也可以使用 sha1sum/sha256sum/sha512sum 命令
+# --- 启动系统
+grub> root (hd0,1)   # 假设 /dev/hda2 是 /boot 所在的分区
+grub> kernel /boot/vmlinuz-2.6.15-26-386 ro dev=/dev/hda3 # 假设 /dev/hda3 是 / 所在的分区
+grub> initrd /boot/initrd.img-2.6.15-26-386
+grub> boot
+```
+
 ## FAQ
 ### 添加bootargs
 ```bash

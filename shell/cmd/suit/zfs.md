@@ -107,6 +107,8 @@ $ sudo zpool add <pool> log mirror <device-id-1> <device-id-2> # 添加 SLOG
 $ sudo zpool add <pool> spare devices # 添加热备, 大小应>=max(pool's vdev),且无法移除当前正在使用的热备. 移除用`zpool remove`
 $ sudo zpool add <pool> cache <device-id> # 添加L2ARC
 $ sudo zpool iostat -v <pool> N # 每隔N秒输出一次pool的io状态
+$ sudo zpool iostat <pool> <vdev> # pool中vdev的iostate
+# sudo zpool iostat -vly 1 1
 $ sudo zpool remove <pool> mirror-1 # 移除mirror/不在使用的热备
 $ sudo zpool attach <pool> <existing-device> <new-device> # 将新设备追加到已有vdev
 $ sudo zpool detach  # 分离设备, 对象必须是mirror中的设备/raidz中已由其他物理设备或备用设备替换的设备

@@ -196,3 +196,14 @@ go mod项目嵌套时, go get需要指定具体的路径比如`go get -u golang.
 
 ### /home/chen/git/go/pkg/mod/go.uber.org/zap@v1.16.0/level.go:24:2: missing go.sum entry for module providing package go.uber.org/atomic; try 'go mod tidy' to add it
 需到go.mod所在目录执行`go mod tidy`
+
+### go mod update管理
+```bash
+go get -u github.com/oligot/go-mod-upgrade
+go-mod-upgrade
+```
+模块名称中的颜色有助于标识更新类型：
+
+- 绿色进行较小的更新（minor update）
+- 黄色，用于补丁更新（patch）
+- 红色表示预发行更新（prerelease）

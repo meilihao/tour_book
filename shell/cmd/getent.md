@@ -34,7 +34,7 @@ group: compat systemd files ldap
 shadow: compat files ldap
 gshadow: files
 ...
-$ sudo apt install nslcd # 安装过程需要输入ldap信息, nslcd配置在`/etc/nslcd.conf`
+$ sudo apt install nslcd # 以前叫nss-pam-ldapd. 安装过程需要输入ldap信息, nslcd配置在`/etc/nslcd.conf`
 $ cat /etc/nslcd.conf
 ...
 uri ldap://192.168.0.245:389
@@ -44,4 +44,5 @@ log /var/log/nslcd.log debug # 或 log syslog debug
 $ sudo systemctl restart nslcd # 存在相近的服务nscd, 不要输错
 $ getent passwd chen # 测试是否会输出ldap账户
 chen:x:1000:1000::/home/chen:/bin/bash
+$ id chen # 同样会有输出
 ```

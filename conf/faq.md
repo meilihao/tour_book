@@ -166,3 +166,6 @@ root:x:0:0:root:/root:fish # root的shell的路径不对
 
 ### 强制命令输出是英文
 `LANG="POSIX" ls -l`
+
+### 进入单用户模式, `systemctl start NetworkManager`报`System has not been booted with systemd as init system (PID 1). Can't operate.`
+将进入单用户模式的init参数换成`init=/sbin/init`即可.

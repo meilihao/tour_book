@@ -1024,3 +1024,32 @@ Filesystem            blocks       soft       hard     inodes     soft     hard
 
 1. 配置samba
 启用quota后, `df -h`挂载点大小即为quota的大小, 设置软限制时为软限制大小, 否则是硬限制大小. server端setquota后, client执行`df -h`能立即看到变化.
+
+## openldap
+参考:
+- [samba + OPENldap 搭建文件共享服务器](https://www.cnblogs.com/somata/archive/2019/09/30/sambaAndOPENldapBuildFileShareServer.html)
+- [truenas ldap配置](https://www.ixsystems.com/documentation/truenas/11.3-U5/directoryservices.html#ldap)
+
+因为使用了samba的文件共享功能，与文件权限有直接的联系，所以samba中的使用的用户必须是Linux系统中能查询到的. 而且因为使用了 openldap 作为samba 的后端数据库，所以这里还需要配置Linux系统能查询到openldap 中的用户信息，也就是需要配置 NSS.
+
+参考truenas ldap配置, openldap client配置需要uri, base dn, bind dn, bind password.
+
+```bash
+# ---- on ldap server
+$ ldapadd -Q -Y EXTERNAL -H ldapi:/// -f /usr/share/doc/samba/examples/LDAP/samba.ldif # samba.ldif是samba包自带内容
+$ ldapsearch -Q -LLL -Y EXTERNAL -H ldapi:/// -b cn=schema,cn=config 'cn=*samba*'
+# --- on samba server
+$ sudo vim /etc/samba/smb.conf
+# passdb backend = tdbsam
+passdb backend = ldapsam:ldap://127.0.0.1	# 指定passdb 的后端数据库使用ldapsam
+ldap suffix = "dc=black,dc=com"	# 指定ldap的 suffix
+ldap user suffix = "ou=People,dc=black,dc=com"	# 指定用户
+ldap group suffix = "ou=Group,dc=black,dc=com"	# 上同，指定的是用户组
+ldap admin dn = "cn=admin,dc=black,dc=com"	# 指定查询ldap服务使用的管理员用户
+ldap ssl = no	# 指定不使用SSL加密
+ldap delete dn = no
+ldap passwd sync = yes
+# unix password sync = yes
+$ smbpasswd -w 123456	# 存储用于连接 LDAP 服务的bind password, 非常重要, 不能遗漏
+
+```
