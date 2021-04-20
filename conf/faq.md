@@ -169,3 +169,8 @@ root:x:0:0:root:/root:fish # root的shell的路径不对
 
 ### 进入单用户模式, `systemctl start NetworkManager`报`System has not been booted with systemd as init system (PID 1). Can't operate.`
 将进入单用户模式的init参数换成`init=/sbin/init`即可.
+
+### 字符界面下启用wifi
+1. 启动NetworkManager: `systemctl start NetworkManager`
+1. 执行nmtui, 选择第二项`Active a connection`
+1. 选中wifi输入密码即可
