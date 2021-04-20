@@ -22,6 +22,7 @@ debian,ubuntu等发行版的包管理.
 # apt list --installed # 查看已安装的package
 # apt-cache show cpio # 查看软件依赖
 # apt purge package_name # remove命令卸载指定软件包，但是留下一些包文件. 如果想彻底卸载软件包，包括它的文件，使用purge替换remove
+# apt build-dep xxx # 获取构建包xxx的依赖(包括源码), 前提是取消`/etc/apt/sources.list*`中相应deb-src源的注释
 ```
 
 # dpkg
