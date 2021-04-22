@@ -4,7 +4,7 @@
 
 Apache提供了方便的工具用于切换站点，就是a2ensite和a2dissite，它们都在apache2-common包里.  a2ensite可以激活apache文件夹下sites-available里包含配置文件的站点，a2dissite的作用正好相反.
 
-> 启动命令: `systemctl start httpd`
+> 启动命令: `systemctl start httpd`/`service apache2 start`
 
 > 虚拟主机以其指定的DocumentRoot为主.
 
@@ -87,4 +87,30 @@ authuserfile "/etc/httpd/passwd"
 #用户进行账户密码登录时需要验证的用户名称
  require user linuxprobe 
  </Directory> 
+```
+
+## FAQ
+### 多站点
+1. 基于端口
+```bash
+# cat /etc/httpd/conf/httpd.conf # apache2是`/etc/apache2/ports.conf` 
+Listen  81
+
+# cat /etc/httpd/conf.d/xx.conf # apache2是`/etc/apache2/sites-available/default`
+NameVirtualHost *:81
+<VirtualHost *:81>
+  ServerName localhost
+  include /etc/httpd/conf-available/xxx.conf
+</VirtualHost>
+
+# cat /etc/httpd/conf-available/xxx.conf
+<Directory "/usr/share/bareos-webui/public"> 
+...
+</Directory> 
+```
+
+### log
+```bash
+$ grep -r CustomLog /etc/apache2
+$ grep -r ErrorLog /etc/apache2
 ```

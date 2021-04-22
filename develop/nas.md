@@ -1036,7 +1036,7 @@ Filesystem            blocks       soft       hard     inodes     soft     hard
 
 ```bash
 # ---- on ldap server
-$ ldapadd -Q -Y EXTERNAL -H ldapi:/// -f /usr/share/doc/samba/examples/LDAP/samba.ldif # samba.ldif是samba包自带内容
+$ ldapadd -Q -Y EXTERNAL -H ldapi:/// -f /usr/share/doc/samba/examples/LDAP/samba.ldif # samba.ldif是samba包自带内容, ldap需要启用samba的相关配置
 $ ldapsearch -Q -LLL -Y EXTERNAL -H ldapi:/// -b cn=schema,cn=config 'cn=*samba*'
 # --- on samba server
 $ sudo vim /etc/samba/smb.conf
