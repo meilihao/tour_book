@@ -41,3 +41,5 @@ func main() {
 
 	}
 }
+
+// v := reflect.ValueOf(map[string]string{}) ; v.CanSet()==false
