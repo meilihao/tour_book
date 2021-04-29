@@ -100,7 +100,7 @@ Listen  81
 NameVirtualHost *:81
 <VirtualHost *:81>
   ServerName localhost
-  include /etc/httpd/conf-available/xxx.conf
+  include /etc/httpd/conf-available/xxx.conf # 或不用include而是在/etc/httpd/conf-available/xxx.conf添加Alias /xxx /usr/share/bareos-webui/public来启用
 </VirtualHost>
 
 # cat /etc/httpd/conf-available/xxx.conf

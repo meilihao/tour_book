@@ -3,23 +3,29 @@ Bareos 由 bacula fork而來.
 
 [Bareos组成](https://docs.bareos.org/IntroductionAndTutorial/WhatIsBareos.html#bareos-components-or-services):
 - bconsole : 全功能cli, 与Director进行通信
-- webui : 只用于备份和恢复功能
+- webui : 只用于备份和恢复功能, 同时支持基于Web的bconsole界面
 - Director : Bareos中控, 它计划并监督所有备份, 还原, 验证和存档操作.
 - Storage Daemon : 在Bareos上作为备份数据的存储空间, 允许多个
 
-    应Bareos Director的请求负责从Bareos File后台驻留程序接受数据，并将文件属性和数据存储到物理备份介质或卷中
+    应Bareos Director的请求负责从Bareos File后台驻留程序接受数据, 并将文件属性和数据存储到物理备份介质或卷中
 - File Daemon : **在客户机**, 管理本地文件的备份和恢复.
 
-    它会应Director的请求它会找到要备份的文件，并将指定数据发送到Bareos Storage Daemon
+    它会应Director的请求它会找到要备份的文件, 并将指定数据发送到Bareos Storage Daemon
 - Catalog : 目录服务由负责维护所有备份文件的文件索引和卷数据库.
 
     目录服务允许系统管理员或用户快速查找和还原任何所需的文件.
 
 > Bareos推荐使用postgres, mysql/mariadb已废弃.
 
-> 要成功执行保存或还原，必须配置并运行以下四个守护程序：Director daemon, File daemon, Storage daemon 以及 Catalog service(即DB).
+> 要成功执行保存或还原, 必须配置并运行以下四个守护程序：Director daemon, File daemon, Storage daemon 以及 Catalog service(即DB).
 
 > [Bareos所有相关package](https://docs.bareos.org/IntroductionAndTutorial/WhatIsBareos.html#bareos-packages)
+
+> [bareos网络连接概览](https://docs.bareos.org/TasksAndConcepts/NetworkSetup.html#network-connections-overview)
+
+## 概念
+- volume : Bareos将在其上写入备份数据的单个物理磁带（或可能是单个文件）
+- pool : 定义接收备份数据的多个volume（磁带或文件）组成的逻辑组
 
 
 ## [部署](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareos.html#install-the-bareos-software-packages)
@@ -40,7 +46,7 @@ systemctl restart postgres
 
 apt install bareos bareos-database-postgresql # 输入db密码. bareos-database-postgresql会利用dbconfig-common mechanism, 在apt install过程中配置db, db配置在`/etc/dbconfig-common/bareos-database-common.conf`. 可用`dpkg-reconfigure bareos-database-common`重新配置, 手动配置db见[这里](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareos.html#other-platforms)
 
-systemctl restart bareos-dir
+systemctl restart bareos-dir # db config in /etc/bareos/bareos-dir.d/catalog/MyCatalog.conf
 systemctl restart bareos-sd
 systemctl restart bareos-fd
 
@@ -54,5 +60,787 @@ systemctl restart bareos-dir
 cp /etc/bareos/bareos-dir.d/console/admin.conf.example vim /etc/bareos/bareos-dir.d/console/admin.conf && chown bareos:bareos /etc/bareos/bareos-dir.d/console/admin.conf
 vim /etc/bareos/bareos-dir.d/console/admin.conf # 设置bareos-dir admin用于bareos-webui
 systemctl restart bareos-dir # 不能省略, 否则可能webui无法登入(账号正确)
-systemctl restart apache2 # 访问http://HOSTNAME/bareos-webui即可使用webui
+systemctl restart apache2 # 访问http://HOSTNAME/bareos-webui即可使用webui, webui也可使用[nginx](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareosWebui.html#nginx), 但访问地址要变为`http://bareos:9100/`
+```
+
+### bareos-fd配置
+1. 需备份的机器(client端, 使用9102端口, 等待来自bareos-dir的连接)安装客户端软件bareos-filedaemon
+
+    - `apt install bareos-filedaemon`
+
+    > [Windows client下载地址](http://download.bareos.org/bareos/release/20/windows/), `netstat -ano|findstr "9102"`
+1. bareos director配置bareos-dir
+```bash
+$ bconsole
+* configure add client name=client2-fd address=192.168.0.2 password=secret # 注册client, 会创建`/etc/bareos/bareos-dir.d/client/client2-fd.conf`和`/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf`(bareos-fd访问bareos-dir的授权)
+exit
+```
+1. 配置clients
+
+    需备份的机器(client端, 使用9102端口, 等待来自bareos-dir的连接)安装客户端软件
+
+    - linux
+
+        ```bash
+        # apt install bareos-filedaemon
+        # scp dareos-server:/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf /etc/bareos/bareos-fd.d/director # director对client的授权
+        # vim /etc/bareos/bareos-fd.d/director/director-mon.conf # 用/etc/bareos/bareos-dir.d/bareos-dir.d/console/bareos-mon.conf文件中的Password替换该文件中的Password
+        # systemctl restart bareos-fd
+        ```
+
+    - windows
+
+        需要设置的参数:
+        - Client Name: bconsole注册clients时的名称, 最好是clients os的hostname
+        - Director Name: 不修改
+        - Password: dareos-server:/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf中的Password
+        - Network Address: bareos-dir的ip
+        - Client Monitor Password: 用/etc/bareos/bareos-dir.d/bareos-dir.d/console/bareos-mon.conf文件中的Password
+
+## bconsole cmd
+```bash
+* reload # 重载配置
+* status client # 测试client connection
+* status storage
+* show client
+* show fileset
+* list clients
+* list pools
+* list volumes
+* list jobs
+* configure add console name=admin password=pwd111111 profile=webui-admin # 注册bconsole
+* configure add client name=client2-fd address=192.168.0.2 password=secret # 注册client, 需要重启bareos-dir
+* setdebug client=bareos-fd level=200 # [测试client](https://docs.bareos.org/TasksAndConcepts/TheWindowsVersionOfBareos.html#enable-debuggging)
+* configure add job name=client2-job client=client2-fd jobdefs=DefaultJob # 添加job
+* run [job=Client1 yes]# 手动开始job, 未指定job时需要选择job
+* status [Director]
+* restore # 选择文件的命令在[restore-command](https://docs.bareos.org/TasksAndConcepts/TheRestoreCommand.html#restore-command), 被选中的文件名前带`*`
+```
+
+## webui
+### 还原
+- 客户端：从下拉菜单中选择备份所属的客户端
+- 备份作业：从下拉菜单中选择需要的备份作业
+- 合并所有客户端文件集：自动把该客户端该作业和该作业以前的所有备份（**含不同作业**）集合在一起供恢复文件使用; 如选"否", 只从选择的备份中恢复文件
+- 合并所有相关作业：如选"是", 自动把该客户端该作业和该作业以前的所有**同一作业**的备份集合在一起供恢复文件使用; 如选"否", 只从选择的备份中恢复文件
+- 还原到客户端：从下拉菜单中选择恢复文件的目标客户端
+- 还原作业：从下拉菜单中选择预定义的还原作业
+- 替换客户端上的文件：选择同名文件的覆盖规则. 可选规则为：总是、从不、比现有文件旧和比现有文件新
+- 要恢复到客户端的位置：指定恢复文件的目标路径
+- 文件选择：点击文件/路径前的`□`来选择是否要恢复此文件/路径; 如选择路径, 在该路径下的所有文件都会被恢复
+
+## FAQ
+### bconsole配置
+`/etc/bareos/bconsole.conf`
+
+### bareos-sd配置
+> 修改bareos-sd的配置后, 必须重启bareos-sd. 在重启bareos-sd前, 请首先使用`bareos-sd -t -v`检查bareos-sd配置文件, 如它没有任何输出, 说明配置文件没有任何语法问题.
+
+`/etc/bareos/bareos-sd.d`:
+- device : [数据存储位置](https://docs.bareos.org/Configuration/StorageDaemon.html#device-resource)
+
+    ```conf
+    # HDD 存储设备
+    Device {
+      Name = FileStorage                  # 设备名称
+      Media Type = File                   # 类型, bareos是基于文件的备份/恢复系统, 类型永远是文件
+      Archive Device = /bareos/hdd        # Ubuntu下的备份文件目录（或mount point）
+      LabelMedia = yes;                   # lets Bareos label unlabeled media
+      Random Access = yes;                # 可随机读写
+      AutomaticMount = yes;               # 自动加载
+      RemovableMedia = no;                # 媒体介质不可移除
+      AlwaysOpen = yes;                   # 建议总是打开, FIFO存储设备除外
+      Description = "File device. A connecting Director must have the same Name and MediaType"
+    }
+
+    # 磁带存储设备
+    Device {
+      Name = TapeStorage                  # 设备名称
+      Media Type = File                   # 类型, bareos是基于文件的备份/恢复系统, 类型永远是文件
+      Archive Device = /bareos/tape       # Ubuntu下的mount point
+      LabelMedia = yes;                   # lets Bareos label unlabeled media
+      Random Access = no;                 # 不能随机读写
+      AutomaticMount = no;                # 不自动加载
+      RemovableMedia = yes;               # 媒体介质可移除
+      AlwaysOpen = yes;                   # 按需打开
+    }
+    ```
+- director
+
+    - bareos-dir.conf : 管理storage对director的授权
+    - bareos-mon.conf : 管理storage对bareos traymonitor的授权
+- message : storage message管理
+    
+    - Standard.conf : bareos-sd日志处理
+- storage
+
+    - bareos-sd.conf : bareos-sd配置
+
+### bareos-dir配置
+> 修改bareos-dir的配置后(比如添加fileset), 必须重启Director. 在重启Director前, 请首先使用`bareos-dir -t -v`检查bareos-dir配置文件. 如命令没有任何输出, 说明配置文件没有任何语法问题.
+
+> 创建文件时注意owner需要是bareos, 否则`systemctl restart bareos-dir`会因为权限导致执行失败.
+
+`/etc/bareos/bareos-dir.d`:
+- catalog : 备份/还原索引信息来源
+
+    - MyCatalog.conf : db配置
+- client : clients信息
+
+    - xxx.conf : client注册信息
+- console
+
+    - admin.conf : web ui访问的授权
+    - bareos-mon.conf : monitor访问bareos-dir的授权
+- director
+
+    - bareos-dir.conf : bareos-dir配置
+- fileset : 备份文件组(定义如何备份一组文件)配置
+
+    - win.conf
+
+        ```conf
+        # all office files in users (c:/ and d:/)
+        # for win 7     = D
+        # for win 10    = C 
+
+
+        FileSet {
+          Name = "Win7_office"
+          
+          # volume shadow copy service
+          Enable VSS = yes
+          Include {
+          
+          # location
+            File = "D:/Users"
+            File = "D:/My Documents"
+          
+          Options {
+            # config
+            Signature = MD5
+            compression = LZ4
+            IgnoreCase = yes
+            noatime = yes
+            
+            # Word
+            WildFile = "*.doc"
+            WildFile = "*.dot"
+            WildFile = "*.docx"
+            WildFile = "*.docm"
+
+            # Excel
+            WildFile = "*.xls"
+            WildFile = "*.xlt"
+            WildFile = "*.xlsx"
+            WildFile = "*.xlsm"
+            WildFile = "*.xltx"
+            WildFile = "*.xltm"
+
+            # Powerpoint
+            WildFile = "*.ppt"
+            WildFile = "*.pot"
+            WildFile = "*.pps"
+            WildFile = "*.pptx"
+            WildFile = "*.pptm"
+            WildFile = "*.ppsx"
+            WildFile = "*.ppsm"
+            WildFile = "*.sldx"
+
+            # access
+            WildFile = "*.accdb"
+            WildFile = "*.mdb"
+            WildFile = "*.accde"
+            WildFile = "*.accdt"
+            WildFile = "*.accdr"
+
+            # publisher
+            WildFile = "*.pub"
+
+            # open office
+            WildFile = "*.odt"
+            WildFile = "*.ods"
+            WildFile = "*.odp"
+
+            # pdf
+            WildFile = "*.pdf"
+            
+            # flat text / code
+            WildFile = "*.xml"
+            WildFile = "*.log"
+            WildFile = "*.rtf"
+            WildFile = "*.tex"
+            WildFile = "*.sql"
+            WildFile = "*.txt"
+            WildFile = "*.tsv"
+            WildFile = "*.csv"
+            WildFile = "*.php"
+            WildFile = "*.sh"
+            WildFile = "*.py"
+            WildFile = "*.r"
+            WildFile = "*.rProj"
+            WildFile = "*.js"
+            WildFile = "*.html"
+            WildFile = "*.css"
+            WildFile = "*.htm"
+          } 
+
+          # exclude everything else
+            Options {
+            
+            # all files not in include
+            RegExFile = ".*"
+            
+            # default user profiles
+            WildDir = "[C-D]:/Users/All Users/*"
+            WildDir = "[C-D]:/Users/Default/*"
+            
+            # explicit don't backup
+            WildDir = "[C-D]:/Users/*/AppData"
+            WildDir = "[C-D]:/Users/*/Music"
+            WildDir = "[C-D]:/Users/*/Videos"
+            WildDir = "[C-D]:/Users/*/Searches"
+            WildDir = "[C-D]:/Users/*/Saved Games"
+            WildDir = "[C-D]:/Users/*/Favorites"
+            WildDir = "[C-D]:/Users/*/Links"
+          
+            # application specific
+            WildDir = "[C-D]:/Users/*/MicrosoftEdgeBackups"
+            WildDir = "[C-D]:/Users/*/Documents/R"
+            WildDir = "*iCloudDrive*"
+            WildDir = "*.svn/*"
+            WildDir = "*.git/*"
+            WildDir = "*.metadata/*"
+            WildDir = "*cache*"
+            WildDir = "*temp*"
+            WildDir = "*OneDrive*"
+            WildDir = "*RECYCLE.BIN*"
+            WildDir = "[C-D]:/System Volume Information"
+            Exclude = yes
+          }
+           
+          }
+        }
+
+        FileSet {
+          Name = "Win10_office"
+          
+          # volume shadow copy service
+          Enable VSS = yes
+          Include {
+          
+          # location
+            File = "C:/Users"
+          
+          Options {
+            # config
+            Signature = MD5
+            compression = LZ4
+            IgnoreCase = yes
+            noatime = yes
+            
+            # Word
+            WildFile = "*.doc"
+            WildFile = "*.dot"
+            WildFile = "*.docx"
+            WildFile = "*.docm"
+
+            # Excel
+            WildFile = "*.xls"
+            WildFile = "*.xlt"
+            WildFile = "*.xlsx"
+            WildFile = "*.xlsm"
+            WildFile = "*.xltx"
+            WildFile = "*.xltm"
+
+            # Powerpoint
+            WildFile = "*.ppt"
+            WildFile = "*.pot"
+            WildFile = "*.pps"
+            WildFile = "*.pptx"
+            WildFile = "*.pptm"
+            WildFile = "*.ppsx"
+            WildFile = "*.ppsm"
+            WildFile = "*.sldx"
+
+            # access
+            WildFile = "*.accdb"
+            WildFile = "*.mdb"
+            WildFile = "*.accde"
+            WildFile = "*.accdt"
+            WildFile = "*.accdr"
+
+            # publisher
+            WildFile = "*.pub"
+
+            # open office
+            WildFile = "*.odt"
+            WildFile = "*.ods"
+            WildFile = "*.odp"
+
+            # pdf
+            WildFile = "*.pdf"
+            
+            # flat text / code
+            WildFile = "*.xml"
+            WildFile = "*.log"
+            WildFile = "*.rtf"
+            WildFile = "*.tex"
+            WildFile = "*.sql"
+            WildFile = "*.txt"
+            WildFile = "*.tsv"
+            WildFile = "*.csv"
+            WildFile = "*.php"
+            WildFile = "*.sh"
+            WildFile = "*.py"
+            WildFile = "*.r"
+            WildFile = "*.rProj"
+            WildFile = "*.js"
+            WildFile = "*.html"
+            WildFile = "*.css"
+            WildFile = "*.htm"
+          } 
+
+          # exclude everything else
+            Options {
+            
+            # all files not in include
+            RegExFile = ".*"
+            
+            # default user profiles
+            WildDir = "[C-D]:/Users/All Users/*"
+            WildDir = "[C-D]:/Users/Default/*"
+            
+            # explicit don't backup
+            WildDir = "[C-D]:/Users/*/AppData"
+            WildDir = "[C-D]:/Users/*/Music"
+            WildDir = "[C-D]:/Users/*/Videos"
+            WildDir = "[C-D]:/Users/*/Searches"
+            WildDir = "[C-D]:/Users/*/Saved Games"
+            WildDir = "[C-D]:/Users/*/Favorites"
+            WildDir = "[C-D]:/Users/*/Links"
+          
+            # application specific
+            WildDir = "[C-D]:/Users/*/MicrosoftEdgeBackups"
+            WildDir = "[C-D]:/Users/*/Documents/R"
+            WildDir = "*iCloudDrive*"
+            WildDir = "*.svn/*"
+            WildDir = "*.git/*"
+            WildDir = "*.metadata/*"
+            WildDir = "*cache*"
+            WildDir = "*temp*"
+            WildDir = "*OneDrive*"
+            WildDir = "*RECYCLE.BIN*"
+            WildDir = "[C-D]:/System Volume Information"
+            Exclude = yes
+          }
+           
+          }
+        }
+        ```
+- jobdefs : 备份任务定义, 可被多个作业重复调用, 类似于job template
+
+    ```conf
+    JobDefs {
+      Name = "TestJob"                                          # 测试任务
+      Type = Backup                                             # 类型：备份（Backup）
+      Level = Incremental                                       # 方式：递进（Incremental）
+      Client = bareos-fd                                        # 被备份客户端：bareos-fd （在Client中定义）
+      FileSet = "TestSet"                                       # 备份文件组：TesetSet （在FileSet中定义）
+      Schedule = "WeeklyCycle"                                  # 备份周期：WeeklyCy（在schedule中定义）
+      Storage = File                                            # 备份媒体： File（在Storage中定义）
+      Messages = Standard                                       # 消息方式：Standard（在Message中定义）
+      Pool = Incremental                                        # 存储池：Incremental（在pool中定义） 
+      Priority = 10                                             # 优先级：10
+      Write Bootstrap = "/var/lib/bareos/%c.bsr"                # 
+      Full Backup Pool = Full                  # Full备份, 使用 "Full" 池（在storage中定义）
+      Differential Backup Pool = Differential  # Differential备份, 使用 "Differential" 池（在storage中定义）
+      Incremental Backup Pool = Incremental    # Incremental备份, 使用 "Incremental" 池（在storage中定义）
+    }
+    ```
+- job : 任务配置
+
+    任务类型分: Backup(备份)/Restore(还原), 默认存在的backup-bareos-fd.conf和BackupCatalog.conf是备份job, RestoreFiles.conf是还原job.
+
+    ```conf
+    Job {
+      Name = "backup-test-on-bareos-fd"              # 任务名
+      JobDefs = "TestJob"                            # 使用已定义的备份任务TestJob （在jobdefs中定义）
+      Client = "bareos-fd"                           # 客户端名称： bareos-fd（在client中定义）
+    }
+    ```
+- storage : 备份保存位置的配置
+
+    ```conf
+    Storage {
+      Name = File
+      Address = bareos                # director-sd名字, 使用FQDN (不要使用 "localhost" ).
+      Password = "JgwtSYloo93DlXnt/cjUfPJIAD9zocr920FEXEV0Pn+S"
+      Device = FileStorage            # 在bareos-sd中定义
+      Media Type = File
+    }
+    ```
+
+    > Device, Media Type项必须与bareos-sd定义的一致
+- pool : pool配置
+
+    - full : 完整备份
+
+        ```conf
+        Pool {
+          Name = Full
+          Pool Type = Backup
+          Recycle = yes                       # Bareos 自动回收重复使用 Volumes（Volume备份文件标记）
+          AutoPrune = yes                     # 自动清除过期的Volumes
+          Volume Retention = 365 days         # Volume有效时间
+          Maximum Volume Bytes = 50G          # Volume最大尺寸
+          Maximum Volumes = 100               # 单个存储池允许的Volume数量
+          Label Format = "Full-"              # Volumes 将被标记为 "Differential-<volume-id>"
+        }
+        ```
+    - incremental : 增量备份, 备份所有状态变化的文件. 前提是有full备份, 否则转为full备份.
+
+        ```conf
+        Pool {
+          Name = Incremental
+          Pool Type = Backup
+          Recycle = yes                       # Bareos 自动回收重复使用 Volumes（Volume备份文件标记）
+          AutoPrune = yes                     # 自动清除过期的Volumes
+          Volume Retention = 30 days          # Volume有效时间
+          Maximum Volume Bytes = 1G           # Volume最大尺寸
+          Maximum Volumes = 100               # 单个存储池允许的Volume数量
+          Label Format = "Incremental-"       # Volumes 将被标记为 "Differential-<volume-id>"
+        }
+        ```
+    - differential : 差异备份, 备份所有modified标志变化的文件. 前提是有full备份, 否则转为full备份.
+
+        ```conf
+        Pool {
+          Name = Differential
+          Pool Type = Backup
+          Recycle = yes                       # Bareos 自动回收重复使用 Volumes（Volume备份文件标记）
+          AutoPrune = yes                     # 自动清除过期的Volumes
+          Volume Retention = 90 days          # Volume有效时间
+          Maximum Volume Bytes = 10G          # Volume最大尺寸
+          Maximum Volumes = 100               # 单个存储池允许的Volume数量
+          Label Format = "Differential-"      # Volumes 将被标记为 "Differential-<volume-id>"
+        }
+        ```
+    - scratch: 当系统找不到需要的volume时, 自动使用该pool. 该pool名称不可修改, 其他pool名称没有重命名限制.
+- schedule: 计划配置
+
+    ```conf
+    Schedule {
+      Name = "WeeklyCycle"
+      Run = Full 1st sat at 21:00                   # 每月第一个周六/晚九点, 完整备份
+      Run = Differential 2nd-5th sat at 21:00       # 其余周六/晚九点, 差异备份
+      Run = Incremental mon-fri at 21:00            # 周一至周五, 递增备份
+    }
+    ```
+- message : 提示信息(job完成后如何发送提示信息)的配置
+
+    ```conf
+    Messages {
+      Name = Standard
+      Description = "Reasonable message delivery -- send most everything to email address and to the console."
+      # operatorcommand = "/usr/bin/bsmtp -h localhost -f \"\(Bareos\) \<%r\>\" -s \"Bareos: Intervention needed for %j\" %r"
+      # mailcommand = "/usr/bin/bsmtp -h localhost -f \"\(Bareos\) \<%r\>\" -s \"Bareos: %t %e of %c %l\" %r"
+      operator = root@localhost = mount                                 # 执行operatorcommand命令, 用户：root@localhost, 操作：mount
+      mail = root@localhost = all, !skipped, !saved, !audit             # 执行mailcommand, 用户：root@localhost, 操作：所有（除skipped, saved和audit）
+      console = all, !skipped, !saved, !audit                           # 所有操作, 除skipped, saved和audit
+      append = "/var/log/bareos/bareos.log" = all, !skipped, !saved, !audit  # 所有操作, 除skipped, saved和audit
+      catalog = all, !skipped, !saved, !audit                           # 所有操作, 除skipped, saved和audit
+       # 可用参数
+      # %% = %
+      # %c = Client’s name
+      # %d = Director’s name
+      # %e = Job Exit code (OK, Error, ...)
+      # %h = Client address
+      # %i = Job Id
+      # %j = Unique Job name
+      # %l = Job level
+      # %n = Job name
+      # %r = Recipients
+      # %s = Since time
+      # %t = Job type (e.g. Backup, ...)
+      # %v = Read Volume name (Only on director side)
+      # %V = Write Volume name (Only on director side)
+      # console：定义发送到console的信息
+      # append：定义发送到日志文件的信息
+      # catalog：定义发送到数据库的信息
+    }
+    ```
+- profile : 定义一组访问控制用于针对不同控制台或角色
+
+### fileset
+- `One FS=no` : no, 不检查是否在同一个fs上; yes, 检查是否在同一个fs上
+- `FS Type=ext4` : 支持备份的fs类型
+- `File=/` : 备份开始位置
+- `Exclude {}` : 排除位置
+- `WildDir` : 指定文件
+- `Exclude = yes`: 排除`WildDir`指定的文件
+
+### backup参数
+```conf
+Run Backup job
+JobName:  backup-test-on-bareos-fd
+Level:    Full
+Client:   lswin7-1-fd
+Format:   Native
+FileSet:  TestSet
+Pool:     Full (From Job FullPool override)
+Storage:  File (From Job resource)
+When:     2018-10-05 10:39:59
+Priority: 10
+OK to run? (yes/mod/no):
+```
+### restore参数
+```conf
+Run Restore job
+JobName:         RestoreFiles
+Bootstrap:       /var/lib/bareos/client1.restore.3.bsr
+Where:           /tmp/bareos-restores
+Replace:         Always
+FileSet:         Full Set
+Backup Client:   client1
+Restore Client:  client1
+Format:          Native
+Storage:         File
+When:            2013-06-28 13:30:08
+Catalog:         MyCatalog
+Priority:        10
+Plugin Options:  *None*
+OK to run? (yes/mod/no):
+```
+
+### bconsole命令行调用形式
+bconsole是交互式命令, 无法直接后接子命令的形式试用, 因此使用:
+```bash
+bconsole -c ./bconsole.conf <<END_OF_DATA
+show pool
+quit
+END_OF_DATA
+```
+
+[组合使用(备份+还原)](https://docs.bareos.org/TasksAndConcepts/BareosConsole.html#running-the-console-from-a-shell-script):
+```bash
+bconsole <<END_OF_DATA
+@output /dev/null
+messages
+@output /tmp/log1.out
+label volume=TestVolume001
+run job=Client1 yes
+wait
+messages
+@#
+@# now do a restore
+@#
+@output /tmp/log2.out
+restore current all
+yes
+wait
+messages
+@output
+quit
+END_OF_DATA
+```
+
+### job执行过程中报`BnetHost2IpAddrs() for host "ubuntu-18" failed: ERR=`
+ubuntu-18是storage daemon的参数在`/etc/bareos/bareos-dir.d/storage/File.conf`的`Address`.
+
+file daemon备份时, 从dareos-dir获取storage参数, 因为网络中没有dns, 因此无法获取到storage的ip.
+
+解决方法: 将Address的参数换成ip即可.
+
+> 错误来源: `/var/log/bareos/bareos.log`或 webui中job的log
+
+### job备份windows文件时报`no drive letters found for generating vss snapshots`
+fileset中备份文件路径错误.
+
+错误路径: `File=/c/dsDefault.log`, 正确路径: `File="C:/dsDefault.log"`
+
+### job备份Windows 10文件报`error:14094417:SSL routines:ssl3_read_bytes:sslv3 alert illegal parameter`, `TLS negotiation failed(while probing client protocol)`和`Network error during CRAM MD5 With 192.168.0.197`
+
+此时Windows 10 log报"SSL routines:tls_psk_do_binder:binder does not verify", `TLS negotiation failed`.
+
+解决方法: 卸载并重新安装bareos windows client, 安装时填入正确的参数即可.
+
+> 出问题时安装是使用默认参数(即错误参数), 安装完成后修正`C:\Program Files\Bareos\defaultconfigs\bareos-fd.d\director`下的`*.conf`并重启`Bareos File Backup Service`进行配置的.
+
+### 修改Director邮件发送命令
+参考:
+- [备份/恢复系统BAREOS的安装、设置和使用（四）](https://blog.csdn.net/laotou1963/article/details/82939355)
+
+在Director默认使用bsmtp发送邮件, 由于bsmtp的局限性，无法使用一般外部商业SMTP服务，我们必须对此进行修改。在示例中，我们对/etc/bareos/bareos-dir.d/message/Standard.conf做修改，您可以参照示例，对其他的邮件发送配置做对应的修改。
+
+配置文件中的默认邮件命令为：
+`mailcommand = "/usr/bin/bsmtp -h localhost -f \"\(Bareos\) \<%r\>\" -s \"Bareos: %t %e of %c %l\" %r"`
+
+改为: `mailcommand = "/usr/local/bin/sendmail -c %c -d %d -e %e -h %h -i %i -j %j -n %n -r %r -t %t -s \"%s\"  -l %l -v \"%v\" -V \"%V\%"`
+
+`/user/local/bin/sendmail`是自定义的发送邮件脚本程序. 以`%`开头的是在Bareos中可用的参数，可把所有可用参数全部传递到脚本程序.
+
+> ps: `%s、%v和%V`用`" "`包起来的原因是，这些参数有可能为空，如不把它们包起来，当它们为空时，会造成参数处理问题.
+
+```bash
+#!/usr/bin/env bash
+# available mailcommand parameters
+# %% = %
+# %c = Client’s name
+# %d = Director’s name
+# %e = Job Exit code (OK, Error, ...)
+# %h = Client address
+# %i = Job Id
+# %j = Unique Job name
+# %l = Job level
+# %n = Job name
+# %r = Recipients
+# %s = Since time
+# %t = Job type (e.g. Backup, ...)
+# %v = Read Volume name (Only on director side)
+# %V = Write Volume name (Only on director side)
+
+bareos_admin="admin@lswin.cn"
+mail_receiver="s.zhang@lswin.cn"
+
+# get input opts
+while getopts ":c:d:e:h:i:j:l:n:r:s:t:v:V:" o; do
+  case "${o}" in
+    c)
+       client_name=${OPTARG}
+       ;;
+    d)
+       director_name=${OPTARG}
+       ;;
+    e)
+       job_exit_code=${OPTARG}
+       ;;
+    h)
+       client_address=${OPTARG}
+       ;;
+    i)
+       job_id=${OPTARG}
+       ;;
+    j)
+       unique_job_name=${OPTARG}
+       ;;
+    l)
+       job_level=${OPTARG}
+       ;;
+    n)
+       job_name=${OPTARG}
+       ;;
+    r)
+       recipients=${OPTARG}
+       ;;
+    s)
+       since_time=${OPTARG}
+       ;;
+    t)
+       job_type=${OPTARG}
+       ;;
+    v)
+       read_volume_name=${OPTARG}
+       ;;
+    V)
+       write_volume_name=${OPTARG}
+       ;;
+    *)
+       ;;
+    esac
+done
+
+# 建立邮件 Subject
+ubject="BAREOS任务执行"
+if [[ "$job_exit_code" == "OK" ]]
+then
+  Subject=$Subject"完成通知"
+else
+  Subject=$Subject"失败通知！"
+fi
+
+# 建立邮件内容
+Content="\"任务 "$job_name" 执行简况:\n 任务ID："$job_id"\n 任务名字："$unique_job_name"\n 任务类型："$job_type
+if [[ ! -z "$job_level" && "$job_type" == "Backup" ]]; then Content=$Content"\n 备份级别："$job_level; fi
+Content=$Content"\n 完成情况："$job_exit_code"\n 主控端名字："$director_name"\n 客户端名字："$client_name"\n 客户端地址："$client_address
+if [[ ! -z "$read_volume_name" && "$job_type" == "RestoreFiles" ]]; then Content=$Content"\n 读取卷名字："$read_volume_name; fi
+if [[ ! -z "$write_volume_name" && "$job_type" == "Backup" ]]; then Content=$Content"\n 写入卷名字："$write_volume_name; fi
+Content=$Content"\""
+
+# 建立邮件发送命令
+cmd="echo -e $Content | /usr/bin/mail -s \"Subject: $Subject\" -r $bareos_admin $mail_receiver"
+
+# 执行邮件发送命令
+eval $cmd
+
+exit 0
+```
+
+email example:
+```conf
+Subject: BAREOS任务执行完成通知
+
+发件人：admin <admin@lswin.cn>      
+时   间：2018年10月18日(星期四) 上午10:26  纯文本 |  
+收件人：
+S Zhang<s.zhang@lswin.cn>
+任务 backup-bareos-fd 执行简况:
+ 任务ID：52
+ 任务名字：backup-bareos-fd.2018-10-18_10.26.39_12
+ 任务类型：Backup
+ 备份级别：Full
+ 完成情况：OK
+ 主控端名字：bareos-dir
+ 客户端名字：bareos-fd
+ 客户端地址：localhost
+ 写入卷名字：Full-0001
+
+# ----
+Subject: BAREOS任务执行失败通知！
+
+发件人：admin <admin@lswin.cn>      
+时   间：2018年10月18日(星期四) 上午10:45  纯文本 |  
+收件人：
+S Zhang<s.zhang@lswin.cn>
+任务 backup-test-on-bareos-fd 执行简况:
+ 任务ID：53
+ 任务名字：backup-test-on-bareos-fd.2018-10-18_10.42.13_17
+ 任务类型：Backup
+ 备份级别：Full
+ 完成情况：Error
+ 主控端名字：bareos-dir
+ 客户端名字：lscms-fd
+ 客户端地址：lscms.lswin.cn
+
+ # ---
+Subject: BAREOS任务执行完成通知
+
+发件人：admin <admin@lswin.cn>      
+时   间：2018年10月18日(星期四) 上午10:45  纯文本 |  
+收件人：
+S Zhang <s.zhang@lswin.cn>
+任务 RestoreFiles 执行简况:
+ 任务ID：54
+ 任务名字：RestoreFiles.2018-10-18_10.43.18_37
+ 任务类型：Restore
+ 完成情况：OK
+ 主控端名字：bareos-dir
+ 客户端名字：bareos-fd
+ 客户端地址：localhos
+
+# ---
+Subject: BAREOS任务执行失败通知！
+
+发件人：admin <admin@lswin.cn>      
+时   间：2018年10月18日(星期四) 上午10:45  纯文本 |  
+收件人：
+S Zhang<s.zhang@lswin.cn>
+任务 RestoreFiles 执行简况:
+ 任务ID：55
+ 任务名字：RestoreFiles.2018-10-18_10.44.20_01
+ 任务类型：Restore
+ 完成情况：Error
+ 主控端名字：bareos-dir
+ 客户端名字：lswin7-1-fd
+ 客户端地址：lswin7-1.lswin.cn
 ```

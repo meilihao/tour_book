@@ -310,3 +310,76 @@ brotli_min_length 20; # 设置需要进行压缩的最小响应大小
 	    proxy_read_timeout            15m;
     } 
 ```
+
+### conf.d/sites-enabled/sites-available
+> 新版nginx的目录设置与httpd类似.
+
+conf.d
+这是一个目录, 用于全局服务器配置,文件结尾一
+定是.conf才可以生效(当然也可以通过修改nginx.conf来取消这个限制)
+
+sites-enabled
+这里面的配置文件其实就是sites-available里面的配置文件的软
+连接,但是由于nginx.conf默认包含的是这个文件夹,所以在
+sites-available里面建立了新的站点之后,还要建立个软连接到sites-enabled里面才行
+
+sites-available
+虚拟主机的目录，可在这里面可以创建多个虚拟主机
+
+### nginx server_name directive is not allowed here
+nginx.conf配置错误, 当前加载文件中的server配置在nginx的配置嵌套层次不正确, 它因在`http`配置项下.
+
+### php-fpm
+env: ubuntu 20.4, nginx 1.18
+
+```bash
+apt install php php-fpm
+service php7.4-fpm status
+```
+
+```conf
+server {
+
+        listen       9100;
+        server_name  bareos;
+        root         /var/www/bareos-webui/public;
+
+        location / {
+                index index.php;
+                try_files $uri $uri/ /index.php?$query_string;
+        }
+
+        location ~ .php$ {
+                include snippets/fastcgi-php.conf;
+
+                # php7-cgi alone:
+                # pass the PHP
+                # scripts to FastCGI server
+                # listening on 127.0.0.1:9000
+                #fastcgi_pass 127.0.0.1:9000;
+
+                # php7-fpm:
+                fastcgi_pass unix:/var/run/php/php-fpm.sock;
+
+                # APPLICATION_ENV:  set to 'development' or 'production'
+                #fastcgi_param APPLICATION_ENV development;
+                fastcgi_param APPLICATION_ENV production;
+        }
+
+}
+```
+
+> php-fpm access log: `/etc/php/7.4/fpm/pool.d/xxx.conf`的`[xxx]`项的`access_log`
+
+nginx+php原理:
+1. nginx的worker进程直接管理每一个到nginx的网络请求
+
+1. 对于php而言，由于在整个网络请求的过程中php是一个cgi程序的角色，所以采用名为php-fpm的进程管理程序来对这些被请求的php程序进行管理. php-fpm程序也如同nginx一样，需要监听端口，并且有master和worker进程. worker进程直接管理每一个php进程.
+
+    1. 关于fastcgi：fastcgi是一种进程管理器，管理cgi进程. 当前有多种实现了fastcgi功能的进程管理器，php-fpm就是其中的一种. 再提一点，php-fpm作为一种fast-cgi进程管理服务，会监听端口(也可使用unix socks)，一般默认监听9000端口，并且是监听本机，也就是只接收来自本机的端口请求，可通过`ss -nlpt|grep php-fpm`查看
+
+    1. 关于fastcgi的配置文件，目前fastcgi的配置文件一般放在nginx.conf同级目录下，配置文件形式，一般有两种：fastcgi.conf 和 fastcgi_params.
+
+1. 当需要处理php请求时，nginx的worker进程会将请求移交给php-fpm的worker进程进行处理，也就是最开头所说的nginx调用了php，其实严格得讲是nginx间接调用php.
+
+> [PHP Notice: compact(): Undefined variable: extras in src\Helper\HeadLink.php](https://github.com/zendframework/zend-view/pull/170/files)
