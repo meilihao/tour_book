@@ -1,6 +1,10 @@
 # zstack 4.1.0
 参考:
 - [zstack - 任杰的博客](https://blog.csdn.net/Snail_Ren?type=blog)
+- [zstack工作流程分析](https://github.com/SnailJie/ZstackWithComments)
+- [zstack二次开发](https://blog.csdn.net/Snail_Ren/article/details/70318783)
+
+zstack是一款数据中心的资源管理软件.
 
 ## 构建
 env: centos 7.6
@@ -32,7 +36,17 @@ $ vim $CATALINA_HOME/conf/tomcat-users.xml # 添加tomcat用户
 $ git clone --depth 1 git@github.com:zstackio/zstack.git
 $ git clone --depth 1 git@github.com:zstackio/zstack-utility.git
 $ git clone --depth 1 git@github.com:zstackio/zstack-vyos.git
-$ cd zstack/build
+$ git clone --depth 1 https://github.com/zstackio/zstack-dashboard
+# --- 编译zstack-dashboard
+cd ~/test/zstack-test/zstack-dashboard
+sudo apt install python-pip
+python2 setup.py sdist # 打包结果在dist/zstack_dashboard-0.7.tar.gz
+cp zstack-dashboard/dist/zstack_dashboard-*.tar.gz ~/test/zstack-test/apache-tomcat-8.5.65/webapps/zstack/WEB-INF/classes/tools/ # 拷贝到tomcat里
+$ /etc/init.d/zstack-dashboard stop # 关闭dashboard
+$ zstack-ctl install_ui # 安装dashboard
+$ /etc/init.d/zstack-dashboard start # 启动dashboard
+# --- 编译zstack
+$ cd ~/test/zstack-test/zstack/build
 $ ./deploydb.sh root password localhost 3306
 $ vim ../conf/zstack.properties # 更新db参数, 在文件部署到tomcat时路径是webapps/zstack/WEB-INF/classes/zstack.properties
 DB.user=root
@@ -98,6 +112,33 @@ zstack-utility目录
 - zstackcli	zstackcli命令管理工具
 - zstackctl	zstackctl命令管理工具
 - zstacklib	提供运行中所需要的一些工具. 守护进程、Http服务等
+
+zstack-dashboard目录:
+- zstack_dashboard    web所有的文件
+- zstacl_dashboard/static 静态资源，包含页面的html文件以及js、image等文件
+- zstack_dashboard/web.py 后台文件，对消息的收发
+- zstack_dashboard.sh 部署脚本
+
+安装目录:
+- /usr/local/zstack
+
+    ZStack的主要安装路径(All-In-One安装路径)，为ManagementNode安装保存路径，即此路径会安装在ManagementNode上。此路径包含ZStack的Tomcat服务、Ansible服务、安装源码包、垃圾收集等等。
+
+    ManagementNode会不断轮询Agent，来收集Agent信息。当发现有服务down后，会自动重新部署安装Agent节点，替换代码
+
+- /var/lib/zstack
+
+    zstack的Agent运行时环境，即此路径会安装在host节点. 在virtualenv中包含console代理、virtualenv、KVM Agent等等.
+
+    KVM Agent使用cherrypy来提供http服务. 即在Agent端提供Http server功能，接收来自ManagementNode的请求，如该agent的状态收集请求、控制请求等
+
+### 总览
+zstack其实质上，是一个单进程多线程程序.
+
+在ZStack内部，利用的是消息队列进行的交互
+在zstack agent和zstack之间，是利用RESTful进行的交互
+
+源码阅读见: [hello_zstack](https://gitee.com/chenhao/hello_zstack)
 
 ### 异步架构
 参考:

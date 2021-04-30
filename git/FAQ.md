@@ -167,7 +167,7 @@ git config --global http.lowSpeedTime 300
 ### shallow update not allowed
 该仓库使用`git clone –depth=1`**浅克隆**而来, 其有限制: 不能将它推送到一个新的存储库.
 
-解决方法: 先使用`git fetch --unshallow old_repo`补全再推送即可.
+解决方法: 先使用`git fetch --unshallow <origin_repo>`补全再推送即可.
 
 ### submodule 和 subtree的区别
 [submodule is link; subtree is copy](https://gb.yekai.net/concepts/subtree-vs-submodule)
@@ -343,3 +343,9 @@ git依赖的guntls不支持tls 1.3, 让go get使用git ssh即可: `git config --
 
 ### git remote test
 `ssh -T git@github.com`
+
+### git submodule update --init --recursive
+`git submodule init` + `git submodule update`
+
+### `git submodule add git@gitee.com:chenhao/hello_zstack.git __read_source`报`fatal: You are on a branch yet to be born`
+hello_zstack.git是全新repo, 必须有git log(即有内容)才行.
