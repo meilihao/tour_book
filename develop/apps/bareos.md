@@ -129,6 +129,17 @@ exit
 - 要恢复到客户端的位置：指定恢复文件的目标路径
 - 文件选择：点击文件/路径前的`□`来选择是否要恢复此文件/路径; 如选择路径, 在该路径下的所有文件都会被恢复
 
+##  流程图/时序
+
+[连接流程](https://docs.bareos.org/TasksAndConcepts/NetworkSetup.html#network-connections-overview)
+如果dir-fd之间的连接有正在执行的job, 那么fd不会复用该连接而是在需要时发起新连接, 用于发送其他命令, 比如`cancel`.
+
+[job的网络时序图](https://docs.bareos.org/DeveloperGuide/netprotocol.html#network-sequence-diagrams)
+
+[使用sd device的流程图](https://docs.bareos.org/DeveloperGuide/reservation.html#usedevicecmd)
+
+[job执行的流程图](https://docs.bareos.org/DeveloperGuide/jobexec.html)
+
 ## FAQ
 ### bconsole配置
 `/etc/bareos/bconsole.conf`

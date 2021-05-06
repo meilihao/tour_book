@@ -24,6 +24,8 @@ TLS_AES_128_GCM_SHA256, 分解:
 为了降低非前向加密连接和Bleichenbacher漏洞所带来的风险，RSA加密已从TLS 1.3中删除，仅支持三种key exchange:
 - (EC)DHE (Diffie-Hellman over either finite fields or elliptic curves)
 - PSK-only
+
+    client写死一个key，server写死一个相同的key
 - PSK with (EC)DHE
 
 因此TLS 1.3定义了一组经过测试的DH参数，从而无需与服务器协商参数.
@@ -53,3 +55,25 @@ HKDF包括extract_then_expand的两阶段过程. extract过程增加密钥材料
 TLS协议的最终目的是协商出会话过程使用的对称密钥和加密算法，双方最终使用该密钥和对称加密算法对报文进行加密. AEAD将完整性校验和数据加密两种功能集成在同一算法中完成，是TLS 1.3中唯一支持的加密方式.
 
 TLS 1.2还支持流加密和CBC分组模式的块加密方法，使用MAC来进行完整性校验数据，这两种方式均被证明有一定的安全缺陷. 但是有研究表明AEAD也有一定局限性：使用同一密钥加密的明文达到一定长度后，就不能再保证密文的安全性。因此，TLS 1.3中引入了密钥更新机制，一方可以（通常是服务器）向另一方发送Key Update（KU）报文，对方收到报文后对当前会话密钥再使用一次HKDF，计算出新的会话密钥，使用该密钥完成后续的通信.
+
+### ssl_ciphers选择
+筛选命令(只包含tls1.2):
+```sh
+$ openssl ciphers -V 'ALL'|grep "1.2"|egrep -v "Kx=DH|Kx=PSK|Kx=ECDHEPSK|RSAPSK|Camellia"|egrep -v "Enc=AESGCM\(256\)|Enc=AESCCM\(256\)|Enc=AESCCM8"|grep -v "Mac=SHA384"|egrep -v "Enc=AES\(256\)"|column  -t
+TLS_AES_128_GCM_SHA256 TLS_CHACHA20_POLY1305_SHA256 TLS_AES_256_GCM_SHA384 \ # tls1.3
+ECDHE-ECDSA-AES128-GCM-SHA256 ECDHE-ECDSA-CHACHA20-POLY1305 \ # ECDHE+ECDSA+AEAD
+ECDHE-RSA-AES128-GCM-SHA256 ECDHE-RSA-CHACHA20-POLY1305 \ # ECDHE+RSA+AEAD
+ECDHE-ECDSA-AES128-SHA256 ECDHE-RSA-AES128-SHA256 # ECDHE+!AEAD
+ECDHE-ECDSA-AES128-SHA ECDHE-RSA-AES128-SHA # TLSv1 for win7,旧Android
+```
+
+通过[ssllabs](https://www.ssllabs.com/ssltest/analyze.html)对比发现`ECDHE-ECDSA-*`和`ECDHE-RSA-*`支持的设备跨度是一样的,因此仅保留`ECDSA`即可:
+```
+TLS_AES_128_GCM_SHA256 TLS_CHACHA20_POLY1305_SHA256 TLS_AES_256_GCM_SHA384 \ # tls1.3
+ECDHE-ECDSA-AES128-GCM-SHA256 ECDHE-ECDSA-CHACHA20-POLY1305 \ # ECDHE+ECDSA+AEAD
+ECDHE-ECDSA-AES128-SHA256 # ECDHE+!AEAD
+ECDHE-ECDSA-AES128-SHA # TLSv1 for win7,旧Android
+```
+
+> 在配置 CipherSuite 时，请务必参考权威文档，如：[CloudFlare 使用的配置](https://github.com/cloudflare/sslconfig/blob/master/conf);[Mozilla 的推荐配置](https://wiki.mozilla.org/Security/Server_Side_TLS#Recommended_configurations)
+> ssl_ecdh_curve选择: `ssl_ecdh_curve   X25519:P-256:P-384:P-224:P-521;`
