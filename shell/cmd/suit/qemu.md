@@ -43,6 +43,7 @@ $ qemu-system-x86_64 --version
 
 > `--enable-sdl`是为了启用qemu gui, 便于查看early boot, 比如uefi/grub信息.
 > qemu 5.2.0构建切换到ninja+meson后, 构建速度贼快.
+> qemu 6.0.0需要libzstd>=1.4.0
 
 生成的相关程序:
 - ivshmem-client/server：这是一个 guest 和 host 共享内存的应用程序，遵循 C/S 的架构
@@ -275,3 +276,6 @@ i440fx是1996年推出的架构, 已过时. q35是2009年推出的架构, 更现
 # rm -f /null.dat                //删除这个文件
 ```
 最后关机并使用`初始磁盘压缩`方法即可.
+
+### 获得更多输出
+qemu窗口-视图-勾选"显示标签页"
