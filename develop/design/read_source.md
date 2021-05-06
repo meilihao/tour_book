@@ -10,7 +10,7 @@
         {
             "vcs":"git",
             "repo":"git@github.com:zstackio/zstack.git",
-            "hash":"2f7d7c0634da00efcccd265ab99429a1349ba3fb"
+            "hash":"2f7d7c0634da00efcccd265ab99429a1349ba3fb",
             "hash_datetime":"2021-04-12T13:19:42Z",
             "tag":"",
             "remark":"阅读zstack v4.1.0"
