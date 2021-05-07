@@ -108,6 +108,8 @@ exit
 * list pools
 * list volumes
 * list jobs
+* llist jobs # 更详细的`list jobs`
+* .jobs # 更精简的`list jobs`, 只有job name
 * configure add console name=admin password=pwd111111 profile=webui-admin # 注册bconsole
 * configure add client name=client2-fd address=192.168.0.2 password=secret # 注册client, 需要重启bareos-dir
 * setdebug client=bareos-fd level=200 # [测试client](https://docs.bareos.org/TasksAndConcepts/TheWindowsVersionOfBareos.html#enable-debuggging)
@@ -139,6 +141,9 @@ exit
 [使用sd device的流程图](https://docs.bareos.org/DeveloperGuide/reservation.html#usedevicecmd)
 
 [job执行的流程图](https://docs.bareos.org/DeveloperGuide/jobexec.html)
+
+## api
+bareos console支持非交互式的[点命令](https://docs.bareos.org/DeveloperGuide/api.html#dot-commands), 同时支持json输出(执行`.api json`即可).
 
 ## FAQ
 ### bconsole配置
@@ -855,3 +860,14 @@ S Zhang<s.zhang@lswin.cn>
  客户端名字：lswin7-1-fd
  客户端地址：lswin7-1.lswin.cn
 ```
+### BVFS
+BVFS（Bareos虚拟文件系统）提供了一个API来浏览目录中的备份文件并选择文件进行恢复.
+
+### bareos webui如何获取data
+以job列表页`localhost:9100/job/`举例, 找到其ajax req(`localhost:9100/job/getData/?data=jobs&period=7&sort=jobid&order=desc`)
+
+在bareos webui root(`/usr/share/bareos-webui/module/Job`)下执行`grep -r getData`, 在`src/Job/Controller/JobController.php`中找到`getDataAction()`, 再在其中找到关键函数`getJobs`.
+
+执行`grep -r getJobs`, 在`src/Job/Model/JobModel.php`中找到它, 看其实现基本可推断是基于bsock, 通过`$bsock->send_command()`逆推, 在`src/Job/Controller/JobController.php`中找到`$this->bsock=$this->getServiceLocator()->get('director')`.
+
+在`/usr/share/bareos-webui`执行`grep -r "send_command" |grep -v "bsock"`, 在`vender/Bareos/library/Bareos/BSock/BareosBSock.php`找到其实现(需考虑send_command有参数列表). 在找到它的上层函数send(), 发现它是操作`fwrite($this->socket,...)`, 找到socket定义: [`stream_socket_client()`](https://php.golaravel.com/function.stream-socket-client.html).
