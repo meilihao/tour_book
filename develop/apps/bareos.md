@@ -145,6 +145,23 @@ exit
 ## api
 bareos console支持非交互式的[点命令](https://docs.bareos.org/DeveloperGuide/api.html#dot-commands), 同时支持json输出(执行`.api json`即可).
 
+### Bareos REST API
+参考:
+- [README](https://github.com/bareos/bareos/tree/master/rest-api#readme)
+
+```bash
+wget https://github.com/bareos/bareos/archive/refs/tags/Release/20.0.1.tar.gz
+tar -xf 20.0.1.tar.gz && cd bareos/rest-api
+pip3 install -r requirements.txt
+vim api.ini # 配置Director并设置secret_key
+uvicorn bareos-restapi:app --reload
+```
+
+Serve the Swagger UI to explore the REST API: http://127.0.0.1:8000/docs
+Alternatively you can use the redoc format: http://127.0.0.1:8000/redoc
+
+> 页面有cdn资源依赖. 该功能由fastapi提供, [离线资源加载看这里](https://fastapi.tiangolo.com/advanced/extending-openapi/#self-hosting-javascript-and-css-for-docs), 在自身项目上引入fastapi资源来解决. 注意不能忘记这两属性`FastAPI(docs_url=None, redoc_url=None)`, 否则应用还是使用fastapi默认的渲染函数.
+
 ## FAQ
 ### bconsole配置
 `/etc/bareos/bconsole.conf`

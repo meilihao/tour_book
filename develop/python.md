@@ -1974,3 +1974,15 @@ urlpatterns = patterns(
 行尾有多余的空格
 
 #### ImportError: No module named Cython.Build
+
+#### AttributeError: '_ssl._SSLSocket' object has no attribute '_sslobj'
+使用了[bareos example](https://pypi.org/project/python-bareos/)中的`Use JSON objects of the API mode 2`, 并用python3.8.5执行时报错.
+
+```bash
+wget https://github.com/drbild/sslpsk/archive/master.zip
+tar -xvf master
+cd sslpsk-master
+
+python setup.py build
+python setup.py install
+```

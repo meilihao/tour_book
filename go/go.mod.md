@@ -207,3 +207,8 @@ go-mod-upgrade
 - 绿色进行较小的更新（minor update）
 - 黄色，用于补丁更新（patch）
 - 红色表示预发行更新（prerelease）
+
+### go mod tidy报"module declares its path as: xxx\nbut was required as: xxx"
+修正相关项目的go.mod命名后, 执行`go mod tidy`仍然报该错.
+
+因为使用了GOPROXY, 其存在缓存的原因. 解决方法: `GOPROXY="" go mod tidy`
