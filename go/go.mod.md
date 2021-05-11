@@ -212,3 +212,5 @@ go-mod-upgrade
 修正相关项目的go.mod命名后, 执行`go mod tidy`仍然报该错.
 
 因为使用了GOPROXY, 其存在缓存的原因. 解决方法: `GOPROXY="" go mod tidy`
+
+还是不行的话, 先删除go.mod对应的rule, 再执行`GOPROXY="" go get -u github.com/xxx/xxx`

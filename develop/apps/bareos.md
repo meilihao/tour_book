@@ -154,13 +154,17 @@ wget https://github.com/bareos/bareos/archive/refs/tags/Release/20.0.1.tar.gz
 tar -xf 20.0.1.tar.gz && cd bareos/rest-api
 pip3 install -r requirements.txt
 vim api.ini # 配置Director并设置secret_key
-uvicorn bareos-restapi:app --reload
+uvicorn [--host 0.0.0.0 --port 8000] bareos-restapi:app --reload
 ```
 
 Serve the Swagger UI to explore the REST API: http://127.0.0.1:8000/docs
 Alternatively you can use the redoc format: http://127.0.0.1:8000/redoc
 
+原理: 将账户名和密码创建[bareos.bsock.DirectorConsoleJson](https://pypi.org/project/python-bareos/), 再将DirectorConsoleJson和用户名关联, 返回包含该用户名的JWT, 调用restful api with JWT即使用`DirectorConsoleJson.call(cmd)`执行拼接好的cmd.
+
 > 页面有cdn资源依赖. 该功能由fastapi提供, [离线资源加载看这里](https://fastapi.tiangolo.com/advanced/extending-openapi/#self-hosting-javascript-and-css-for-docs), 在自身项目上引入fastapi资源来解决. 注意不能忘记这两属性`FastAPI(docs_url=None, redoc_url=None)`, 否则应用还是使用fastapi默认的渲染函数.
+
+> 只需设置`http://127.0.0.1:8000/docs`页面的"Authorize"按钮里的username和password即可使用openapi的`try it out`
 
 ## FAQ
 ### bconsole配置

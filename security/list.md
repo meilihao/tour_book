@@ -80,3 +80,6 @@
 
 ## 加密文件系统
 - [Chrome OS 基于 EXT4 Encryption 的用户数据安全保护机制](https://paper.seebug.org/433/)
+
+## vpn
+- [用 NetworkManager 配置 WireGuard 虚拟私有网络](https://linux.cn/article-13379-1.html)
