@@ -467,6 +467,8 @@ on linux:
 # username=gacanepa
 # password=XXXXXX
 ```
+## 第三方nas
+### [truenas](/develop/app/truenas.md)
 
 ## FAQ
 ### 注意点

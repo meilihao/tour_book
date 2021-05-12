@@ -1986,3 +1986,16 @@ cd sslpsk-master
 python setup.py build
 python setup.py install
 ```
+
+#### vscode python自定义包无法跳转报: `Import "xxx" could not be resolved Pylance(reportMissingImports)`
+在settings.json文件中添加:
+```
+"python.analysis.extraPaths": [
+        "/home/chen/test/truenas/src/middlewared" # 路径必须正确
+    ]
+```
+
+或`export PYTHONPATH="$PYTHONPATH:xxx"`
+
+
+

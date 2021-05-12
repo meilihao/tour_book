@@ -131,7 +131,7 @@ exit
 - 要恢复到客户端的位置：指定恢复文件的目标路径
 - 文件选择：点击文件/路径前的`□`来选择是否要恢复此文件/路径; 如选择路径, 在该路径下的所有文件都会被恢复
 
-##  流程图/时序
+## 流程图/时序
 
 [连接流程](https://docs.bareos.org/TasksAndConcepts/NetworkSetup.html#network-connections-overview)
 如果dir-fd之间的连接有正在执行的job, 那么fd不会复用该连接而是在需要时发起新连接, 用于发送其他命令, 比如`cancel`.
@@ -165,6 +165,28 @@ Alternatively you can use the redoc format: http://127.0.0.1:8000/redoc
 > 页面有cdn资源依赖. 该功能由fastapi提供, [离线资源加载看这里](https://fastapi.tiangolo.com/advanced/extending-openapi/#self-hosting-javascript-and-css-for-docs), 在自身项目上引入fastapi资源来解决. 注意不能忘记这两属性`FastAPI(docs_url=None, redoc_url=None)`, 否则应用还是使用fastapi默认的渲染函数.
 
 > 只需设置`http://127.0.0.1:8000/docs`页面的"Authorize"按钮里的username和password即可使用openapi的`try it out`
+
+## plugin
+> [官方plugins](https://github.com/bareos/bareos/tree/master/contrib)
+
+bareos原生支持dir, storage, filedaemon的插件扩展. 使用插件前必须在配置中启用它们, 当前支持python 2/3. bareos 20开始推荐使用python3. 
+
+> 前提: `apt install bareos-{director,storage,filedaemon}-python3-plugin`
+
+> [Porting existing Python plugins和Switching to Python 3](https://docs.bareos.org/TasksAndConcepts/Plugins.html)
+
+> [bpluginfo](https://docs.bareos.org/Appendix/BareosPrograms.html#bpluginfo)可用于查看plugin相关信息, 比如`bpluginfo -v /usr/lib/bareos/plugins/python3-fd.so`
+
+因为最常用的是fd-plugins, 这里重点介绍. 其他两种请参考[bareos docs](https://docs.bareos.org/TasksAndConcepts/Plugins.html)
+
+### fd-plugins
+以官方MySQL Plugin举例:
+1. 配置
+
+    - client的`bareos-fd.d/client/myself.conf`的`Plugin Directory`和`Plugin Names = "python3"`
+    - director中的`bareos-dir.d/fileset/mysql.conf`: `Include.Plugin = "python3:module_path=/usr/lib64/bareos/plugins:module_name=bareos-fd-mysql"`
+
+        插件参数拼接在Plugin中以`:`分隔即可, 比如`Plugin = "python3:module_path=/usr/lib64/bareos/plugins:module_name=bareos-fd-mysql:mysqlhost=dbhost:mysqluser=bareos:mysqlpassword=bareos"`
 
 ## FAQ
 ### bconsole配置
