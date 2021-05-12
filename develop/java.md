@@ -340,3 +340,107 @@ static 关键字主要有以下四种使用场景:
 1. 静态代码块: 静态代码块定义在类中方法外, 静态代码块在非静态代码块之前执行(静态代码块—>非静态代码块—>构造方法). 该类不管创建多少对象, 静态代码块只执行一次.
 1. 静态内部类(static修饰类的话只能修饰内部类): 静态内部类与非静态内部类之间存在一个最大的区别: 非静态内部类在编译完成之后会隐含地保存着一个引用, 该引用是指向创建它的外围类, 但是静态内部类却没有。没有这个引用就意味着:1. 它的创建是不需要依赖外围类的创建。2. 它不能使用任何外围类的非static成员变量和方法
 1. 静态导包(用来导入类中的静态资源, 1.5之后的新特性): 格式为:import static 这两个关键字连用可以指定导入某个类中的指定静态资源, 并且不需要使用类名调用类中静态成员, 可以直接使用类中静态成员变量和成员方法
+
+### Interface、extends、implement的区别
+interface是定义接口的关键字
+implement是实现接口的关键字
+extends是子类继承父类的关键字
+
+# java框架
+## Spring
+### Spring MVC的web.xml配置详解
+web.xml文件的作用是配置web工程启动,对于一个web工程来说，web.xml可以有也可以没有，如果存在web.xml文件；web工程在启动的时候，web容器(tomcat容器)会去加载web.xml文件，然后按照一定规则配置web.xml文件中的组件.
+
+
+web容器加载顺序：ServletContext -> context-param -> listener -> filter ->servlet, **不会因在web.xml中的书写顺序改变**：
+1. web容器启动后,会去加载web.xml文件，读取listener和context-param两个节点
+1. 创建一个ServletContext（Servlet上下文）这个上下文供所有部分共享
+1. 容器将context-param转换成键值对，交给ServletContext
+1. 接着按照上述顺序继续执行
+
+在Web容器中使用Spring MVC，就要进行四个方面的配置:
+
+1. 编写”(servlet-name)”-servlet.xml：这里的servlet-name是标签<servlet-name>指定的值，必须是相同的，下面例子中是springmvc-servlet.xml
+
+    ```xml
+    <beans>
+        <!-- 扫描包 spring可以自动去扫描base-pack下面或者子包下面的java文件，如果扫描到有@Component @Controller@Service等这些注解的类，则把这些类注册为bean-->
+        <context:component-scan base-package="com.controller"/>
+
+        <!-- don't handle the static resource -->
+        <mvc:default-servlet-handler />
+
+        <!-- 注解驱动-->
+        <mvc:annotation-driven />
+
+       <!-- 对转向页面的路径解析。prefix：前缀， suffix：后缀   如：http://127.0.0.1:8080/springmvc/jsp/****.jsp-->
+        <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" 
+                id="internalResourceViewResolver">
+            <!-- 前缀 -->
+            <property name="prefix" value="/WEB-INF/jsp/" />
+            <!-- 后缀 -->
+            <property name="suffix" value=".jsp" />
+        </bean>
+    </beans>
+    ```
+
+1. 添加servlet定义配置DispatcherServlet：前端处理器控制器，接受HTTP请求和转发请求的类，是分发Controller请求的，是Spring的核心要素
+
+    ```xml
+     <!-- 配置前端控制器DispatcherServlet -->
+     <servlet>
+          <servlet-name>springmvc</servlet-name>
+          <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+          <!-- 初始applicationContext.xml:applicationContext.xml配置文件也可以使用<init-param>标签在servlet标签中进行配置 -->
+          <init-param>
+          <!-- 配置spring文件 -->
+          <param-name>contextConfigLocation</param-name>
+          <param-value>classpath:springmvc-servlet.xml</param-value>
+          </init-param>
+          <!--标记容器启动的时候就启动这个servlet-->
+          <load-on-startup>1</load-on-startup>
+      </servlet>
+
+      <!-- 配置请求地址拦截url -->
+      <servlet-mapping>
+          <servlet-name>springmvc</servlet-name>
+          <!--拦截所有-->
+          <url-pattern>/</url-pattern>
+      </servlet-mapping>
+    ```
+
+1. 配置contextConfigLocation初始化参数：指定Spring IOC容器需要读取的定义了非web层的Bean（DAO/Service）的XML文件路径。可以指定多个XML文件路径，可以用逗号、冒号等来分隔。如果没有指定”contextConfigLocation”参数，则会在 /WEB-INF/下查找 “servlet-name(就是下图中必须相同的servlet-name)-servlet.xml” 这样的文件加载，也就是springmvc-servlet.xml
+
+    ```xml
+    <!-- 如果不配置contextConfigLocation，则会默认寻找<servlet-name>标签中定义的值，也就是默认找到WEB-INF(classpath)/springmvc-servlet.xml -->
+    <context-param>
+        <!-- 指定spring bean的配置文件所在目录 -->
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:springmvc-servlet.xml</param-value>
+    </context-param>
+    ```
+
+1. 配置ContextLoaderListerner：Spring MVC在Web容器中的启动类，负责Spring IOC(IOC介绍)容器在Web上下文中的初始化
+
+    ```xml
+     <listener>
+        <listener-class>
+            org.springframework.web.context.ContextLoaderListener
+        </listener-class>
+     </listener>
+    ```
+
+    ContextLoaderListener(listener-class)的作用就是启动Web容器时，自动装配ApplicationContext的配置信息. 因为它实现了ServletContextListener这个接口，在web.xml配置这个监听器，启动容器时，就会默认执行它实现的方法
+
+### bean xml
+Spring框架的本质其实是：通过XML配置来驱动Java代码，这样就可以把原本由java代码管理的耦合关系，提取到XML配置文件中管理. 这样就实现了系统中各组件的解耦，有利于后期的升级和维护.
+
+beans是Spring配置文件的根元素，该元素可以指定如下属性：
+- default-lazy-init:指定元素下配置的所有bean默认的延迟初始化行为
+- default-merge:指定元素下配置的所有bean默认的merge行为
+- default-autowire:指定元素下配置的所有bean默认的自动装配行为
+- default-init-method:指定元素下配置的所有bean默认的初始化方法
+- default-destroy-method:指定元素下配置的所有bean默认的回收方法
+- default-autowire-candidates:指定元素下配置的所有bean默认是否作为自动装配的候选Bean
+
+使用bean的init-method和destroy-method属性可初始化和销毁单独的bean
