@@ -346,6 +346,25 @@ interface是定义接口的关键字
 implement是实现接口的关键字
 extends是子类继承父类的关键字
 
+### transient属性
+一个对象只要实现了Serilizable接口，这个对象就可以被序列化， 此时将不需要序列化的属性前添加关键字transient，序列化对象的时候，这个属性就不会序列化到指定的目的地中.
+
+### implements Serializable, Cloneable
+Cloneable接口与Serializable接口都是定义接口而没有任何的方法. Cloneable可以实现对象的克隆复制，Serializable主要是对象序列化的接口定义. 很多时候我们涉及到对象的复制, 我们不可能都去使用setter去实现，这样编写代码的效率太低. JDK提供的Cloneable接口正是为了解决对象复制的问题而存在. Cloneable结合Serializable接口可以实现JVM对象的深度复制.
+
+Cloneable接口是一个空接口，仅用于标记对象，Cloneable接口里面是没有clone()方法，的clone()方法是Object类里面的方法！默认实现是一个Native方法
+```java
+protected native Object clone() throws CloneNotSupportedException;
+```
+如果对象implement Cloneable接口的话，需要覆盖clone方法（因为Object类的clone方法是protected，需要覆盖为public）
+```java
+public Object clone() throws CloneNotSupportedException{
+    return super.clone();
+}
+```
+Object类里的clone()方法仅仅用于**浅拷贝**（拷贝基本成员属性，对于引用类型仅返回指向改地址的引用.
+
+
 # java框架
 ## Spring
 ### Spring MVC的web.xml配置详解
