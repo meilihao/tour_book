@@ -34,6 +34,8 @@ middlewared设置的主要参数:
 - [truenas scale api](https://www.truenas.com/docs/core/api/)
 
 ## 源码剖析
+middlewared doc: `src/middlewared/middlewared/docs/index.rst`
+
 ### api调用
 webui通过websocket api进行调用, api req由`src/middlewared/middlewared/main.py#Application.on_message`中的`if message['msg'] == 'method'`逻辑处理.
 
@@ -80,7 +82,7 @@ class Resource(object):
 添加log埋点:
 - restful api : `src/middlewared/middlewared/restful.py#Resource.do`中的`result = await self.middleware.call(methodname, *method_args, **method_kwargs)`前添加`self.middleware.logger.info("--- r call: {} {} {}".format(methodname, method_args, method_kwargs))`
 
-    或在`src/middlewared/middlewared/main.py#Middleware.call`中的开头添加`self.logger.info("--- r call: {}".format(locals()))`, 好处是不漏掉`middleware.call`嵌套调用.
+    或在`src/middlewared/middlewared/main.py#Middleware.call`中的开头添加`self.logger.info("--- r call: {}".format(locals()))`, 好处是不漏掉`middleware.call`嵌套调用, **推荐**
 
 - websocket api : `src/middlewared/middlewared/main.py#Application.on_message`中的`serviceobj, methodobj = self.middleware._method_lookup(message['method'])`前添加`self.logger.info("--- w call: {} {}".format(message['method'], message.get('params') or []))`
 
@@ -102,6 +104,9 @@ class Resource(object):
 1. 点`self.middleware`跳转发现来自`src/middlewared/middlewared/alert/base.py#AlertSource`的`def __init__(self, middleware)`, 同时发现`base.py`中很多类初始化都包含`middleware`, 根据其调用的方法`grep -r "def call_sync("`和`grep -r "def call("`定位到`middlewared/main.py#Middleware.call()`.
 1. 根据`grep -r "query(" $(grep -rl "enclosure")`, 发现`enclosure.query`实际是`src/middlewared/middlewared/plugins/enclosure.py#EnclosureService.query()`
 1. 最后也调到了`src/middlewared/middlewared/plugins/enclosure_/ses_enclosure_linux.py#EnclosureService.get_ses_enclosures()`
+
+### `src/middlewared/middlewared/service.py#CRUDService.query()`中的`self._config`是什么?
+通过`grep -r "\._config = "`查找, 发现CRUDService父类定义`class Service(object, metaclass=ServiceBase)`中的ServiceBase.__new__()设置了`_config`, 其实就是CRUDService子类如DiskService的嵌套类`class Config`.
 
 ### table定义
 `class xxxModel(sa.Model)`

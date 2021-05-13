@@ -4,7 +4,7 @@ Qemu是一个广泛使用的开源计算机仿真器和虚拟机.
 操作:
 ```
 $ sudo yum install qemu -y
-$ sudo apt-get install qemu
+$ sudo apt-get install qemu/qemu-system-x86 # ubuntu 20.04用qemu-system-x86
 $ qemu- + <tab> 查看支持的arch
 $ qemu-system-x86_64 -boot menu=on,splash-time=15000 # 查看seabios version
 ```
