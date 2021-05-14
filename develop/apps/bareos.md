@@ -51,6 +51,7 @@ systemctl restart bareos-sd
 systemctl restart bareos-fd
 
 bareos-dir -t -f -d 500 -v # 测试bareos-dir是否正常, 包括与pg的连接
+bareos-fd -t -f -d 500 -v
 bareos-dbcheck -B # 作用同上, 显示db的连接信息
 
 apt install bareos-webui # 基于php+apache2
@@ -63,7 +64,7 @@ systemctl restart bareos-dir # 不能省略, 否则可能webui无法登入(账�
 systemctl restart apache2 # 访问http://HOSTNAME/bareos-webui即可使用webui, webui也可使用[nginx](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareosWebui.html#nginx), 但访问地址要变为`http://bareos:9100/`
 ```
 
-### bareos-fd配置
+### bareos-fd部署
 1. 需备份的机器(client端, 使用9102端口, 等待来自bareos-dir的连接)安装客户端软件bareos-filedaemon
 
     - `apt install bareos-filedaemon`
@@ -96,6 +97,11 @@ exit
         - Password: dareos-server:/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf中的Password
         - Network Address: bareos-dir的ip
         - Client Monitor Password: 用/etc/bareos/bareos-dir.d/bareos-dir.d/console/bareos-mon.conf文件中的Password
+1. 测试client by bconsole
+
+  ```bash
+  status client=client2-fd
+  ```
 
 ## bconsole cmd
 ```bash
@@ -103,7 +109,7 @@ exit
 * status client # 测试client connection
 * status storage
 * show client
-* show fileset
+* show fileset[=xxx]
 * list clients
 * list pools
 * list volumes
@@ -145,7 +151,10 @@ exit
 ## api
 bareos console支持非交互式的[点命令](https://docs.bareos.org/DeveloperGuide/api.html#dot-commands), 同时支持json输出(执行`.api json`即可).
 
-### Bareos REST API
+### python-bareos
+[python-bareos](https://github.com/bareos/bareos/tree/master/python-bareos/)是bareos官方的python sdk, 用于与bareos-dir通信.
+
+### Bareos REST API (based on python-bareos)
 参考:
 - [README](https://github.com/bareos/bareos/tree/master/rest-api#readme)
 
@@ -169,13 +178,15 @@ Alternatively you can use the redoc format: http://127.0.0.1:8000/redoc
 ## plugin
 > [官方plugins](https://github.com/bareos/bareos/tree/master/contrib)
 
-bareos原生支持dir, storage, filedaemon的插件扩展. 使用插件前必须在配置中启用它们, 当前支持python 2/3. bareos 20开始推荐使用python3. 
+bareos原生支持dir, storage, filedaemon的插件扩展. 使用插件前必须在配置中启用它们, **修改后需要重启服务**, 当前支持python 2/3. **bareos 20开始推荐使用python3, 虽然官方20.0.1目前plugins都是python2的**.
 
-> 前提: `apt install bareos-{director,storage,filedaemon}-python3-plugin`
+> 前提: `apt install bareos-{director,storage,filedaemon}-python3-plugin`或`apt install bareos-{director,storage,filedaemon}-python2-plugin`, 都装时先安装python3的.
 
 > [Porting existing Python plugins和Switching to Python 3](https://docs.bareos.org/TasksAndConcepts/Plugins.html)
 
 > [bpluginfo](https://docs.bareos.org/Appendix/BareosPrograms.html#bpluginfo)可用于查看plugin相关信息, 比如`bpluginfo -v /usr/lib/bareos/plugins/python3-fd.so`
+
+> 插件依赖的python package在`core/src/plugins/{dir,file,store}d/python/pyfiles`下, 会由`bareos-{directoor,storage,filedaemon}-python-plugins-common`安装在`/usr/lib/bareos/plugins`下
 
 因为最常用的是fd-plugins, 这里重点介绍. 其他两种请参考[bareos docs](https://docs.bareos.org/TasksAndConcepts/Plugins.html)
 
@@ -183,10 +194,17 @@ bareos原生支持dir, storage, filedaemon的插件扩展. 使用插件前必须
 以官方MySQL Plugin举例:
 1. 配置
 
-    - client的`bareos-fd.d/client/myself.conf`的`Plugin Directory`和`Plugin Names = "python3"`
-    - director中的`bareos-dir.d/fileset/mysql.conf`: `Include.Plugin = "python3:module_path=/usr/lib64/bareos/plugins:module_name=bareos-fd-mysql"`
+    - client的`bareos-fd.d/client/myself.conf`的`Plugin Directory`
+    - director中的`bareos-dir.d/fileset/mysql.conf`: `Include.Plugin = "python:module_path=/usr/lib64/bareos/plugins:module_name=bareos-fd-mysql"`
 
-        插件参数拼接在Plugin中以`:`分隔即可, 比如`Plugin = "python3:module_path=/usr/lib64/bareos/plugins:module_name=bareos-fd-mysql:mysqlhost=dbhost:mysqluser=bareos:mysqlpassword=bareos"`
+        插件参数拼接在Plugin中以`:`分隔即可, 比如`Plugin = "python:module_path=/usr/lib64/bareos/plugins:module_name=bareos-fd-mysql:mysqlhost=dbhost:mysqluser=bareos:mysqlpassword=bareos"`
+
+    > bareos-fd-mysql插件中的[_mysqlbackups_](https://docs.bareos.org/Appendix/Howtos.html#backup-of-mysql-databases-using-the-python-mysql-plugin)是虚拟目录, 说明fd plugins可将io流(mysqldump的输出)发送到storage中.
+
+其他官方插件:
+- [`bareos-fd-local-fileset`](https://github.com/aussendorf/bareos-fd-python-plugins/wiki): 备份时动态将filename=/etc/bareos/extra-files中的文件列表加入fileset
+
+fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
 
 ## FAQ
 ### bconsole配置
@@ -914,3 +932,30 @@ BVFS（Bareos虚拟文件系统）提供了一个API来浏览目录中的备份�
 执行`grep -r getJobs`, 在`src/Job/Model/JobModel.php`中找到它, 看其实现基本可推断是基于bsock, 通过`$bsock->send_command()`逆推, 在`src/Job/Controller/JobController.php`中找到`$this->bsock=$this->getServiceLocator()->get('director')`.
 
 在`/usr/share/bareos-webui`执行`grep -r "send_command" |grep -v "bsock"`, 在`vender/Bareos/library/Bareos/BSock/BareosBSock.php`找到其实现(需考虑send_command有参数列表). 在找到它的上层函数send(), 发现它是操作`fwrite($this->socket,...)`, 找到socket定义: [`stream_socket_client()`](https://php.golaravel.com/function.stream-socket-client.html).
+
+### log
+使用`-d 500`参数, 可打印详细日志
+
+bareos-dird log在`/var/log/bareos/bareos.log`
+bareos-fd log在systemd.
+
+### 使用官方plugin [bareos-fd-mysql](https://docs.bareos.org/Appendix/Howtos.html#backup-mysql-python)执行job时报`... PluginSave: Command plugin "<python plugin>" required, but is not loaded`
+fd `/etc/bareos/bareos-fd.d/client/myself.conf`配置:
+```
+Client {
+  ...
+
+  # remove comment from "Plugin Directory" to load plugins from specified directory.
+  # if "Plugin Names" is defined, only the specified plugins will be loaded,
+  # otherwise all filedaemon plugins (*-fd.so) from the "Plugin Directory".
+  #
+  Plugin Directory = "/usr/lib/bareos/plugins"
+  Plugin Names = "python"
+
+  ...
+}
+```
+
+使用`-d 500`参数, 打印详细日志可见, fd log提示`field/fd_plugins.cc:1750-0 No plugin loaded`.
+
+结合myself.conf和日志调试发现, 只要启用了`Plugin Names`即使其value为空, 均会按`Plugin Names`指定的名称去load plugin. 将`Plugin Names`注释默认加载全部插件即可.
