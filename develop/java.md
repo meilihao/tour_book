@@ -365,13 +365,53 @@ public Object clone() throws CloneNotSupportedException{
 Object类里的clone()方法仅仅用于**浅拷贝**（拷贝基本成员属性，对于引用类型仅返回指向改地址的引用.
 
 
+### [static](https://zhuanlan.zhihu.com/p/70110497)
+静态变量存放在java vm的方法区中，并且是被所有线程所共享的.
+
+static关键字总结:
+
+1. 特点:
+　　1. static是一个修饰符，用于修饰成员。（成员变量，成员函数）static修饰的成员变量 称之为静态变量或类变量.
+　　2. static修饰的成员被所有的对象共享.
+　　3. static优先于对象存在，因为static的成员随着类的加载就已经存在.
+　　4. static修饰的成员多了一种调用方式，可以直接被类名所调用，（类名.静态成员）.
+　　5. static修饰的数据是共享数据，对象中的存储的是特有的数据.
+
+1. 成员变量和静态变量的区别:
+　　1. 生命周期的不同:
+
+　　　　成员变量随着对象的创建而存在随着对象的回收而释放.
+
+　　　　静态变量随着类的加载而存在随着类的消失而消失.
+　　2. 调用方式不同:
+
+　　　　成员变量只能被对象调用.
+
+　　　　静态变量可以被对象调用，也可以用类名调用.（推荐用类名调用）
+　　3. 别名不同:
+
+　　　　成员变量也称为实例变量.
+
+　　　　静态变量称为类变量.
+　　4. 数据存储位置不同:
+
+　　　　成员变量数据存储在堆内存的对象中，所以也叫对象的特有数据.
+
+　　　　静态变量数据存储在方法区（共享数据区）的静态区，所以也叫对象的共享数据.
+
+1. 静态使用时需要注意的事项:
+
+　　1. 静态方法只能访问静态成员（非静态既可以访问静态，又可以访问非静态）
+　　2. 静态方法中不可以使用this或者super关键字
+　　3. java主函数是静态的
+
 # java框架
 ## Spring
 ### Spring MVC的web.xml配置详解
 web.xml文件的作用是配置web工程启动,对于一个web工程来说，web.xml可以有也可以没有，如果存在web.xml文件；web工程在启动的时候，web容器(tomcat容器)会去加载web.xml文件，然后按照一定规则配置web.xml文件中的组件.
 
 
-web容器加载顺序：ServletContext -> context-param -> listener -> filter ->servlet, **不会因在web.xml中的书写顺序改变**：
+web容器加载顺序:ServletContext -> context-param -> listener -> filter ->servlet, **不会因在web.xml中的书写顺序改变**:
 1. web容器启动后,会去加载web.xml文件，读取listener和context-param两个节点
 1. 创建一个ServletContext（Servlet上下文）这个上下文供所有部分共享
 1. 容器将context-param转换成键值对，交给ServletContext
@@ -379,7 +419,7 @@ web容器加载顺序：ServletContext -> context-param -> listener -> filter ->
 
 在Web容器中使用Spring MVC，就要进行四个方面的配置:
 
-1. 编写”(servlet-name)”-servlet.xml：这里的servlet-name是标签<servlet-name>指定的值，必须是相同的，下面例子中是springmvc-servlet.xml
+1. 编写”(servlet-name)”-servlet.xml:这里的servlet-name是标签<servlet-name>指定的值，必须是相同的，下面例子中是springmvc-servlet.xml
 
     ```xml
     <beans>
@@ -392,7 +432,7 @@ web容器加载顺序：ServletContext -> context-param -> listener -> filter ->
         <!-- 注解驱动-->
         <mvc:annotation-driven />
 
-       <!-- 对转向页面的路径解析。prefix：前缀， suffix：后缀   如：http://127.0.0.1:8080/springmvc/jsp/****.jsp-->
+       <!-- 对转向页面的路径解析. prefix:前缀， suffix:后缀   如:http://127.0.0.1:8080/springmvc/jsp/****.jsp-->
         <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" 
                 id="internalResourceViewResolver">
             <!-- 前缀 -->
@@ -403,7 +443,7 @@ web容器加载顺序：ServletContext -> context-param -> listener -> filter ->
     </beans>
     ```
 
-1. 添加servlet定义配置DispatcherServlet：前端处理器控制器，接受HTTP请求和转发请求的类，是分发Controller请求的，是Spring的核心要素
+1. 添加servlet定义配置DispatcherServlet:前端处理器控制器，接受HTTP请求和转发请求的类，是分发Controller请求的，是Spring的核心要素
 
     ```xml
      <!-- 配置前端控制器DispatcherServlet -->
@@ -428,7 +468,7 @@ web容器加载顺序：ServletContext -> context-param -> listener -> filter ->
       </servlet-mapping>
     ```
 
-1. 配置contextConfigLocation初始化参数：指定Spring IOC容器需要读取的定义了非web层的Bean（DAO/Service）的XML文件路径。可以指定多个XML文件路径，可以用逗号、冒号等来分隔。如果没有指定”contextConfigLocation”参数，则会在 /WEB-INF/下查找 “servlet-name(就是下图中必须相同的servlet-name)-servlet.xml” 这样的文件加载，也就是springmvc-servlet.xml
+1. 配置contextConfigLocation初始化参数:**指定Spring IOC容器需要读取的定义了非web层的Bean（DAO/Service）的XML文件路径。可以指定多个XML文件路径，可以用逗号、冒号等来分隔**。如果没有指定”contextConfigLocation”参数，则会在 /WEB-INF/下查找 “servlet-name(就是下图中必须相同的servlet-name)-servlet.xml” 这样的文件加载，也就是springmvc-servlet.xml
 
     ```xml
     <!-- 如果不配置contextConfigLocation，则会默认寻找<servlet-name>标签中定义的值，也就是默认找到WEB-INF(classpath)/springmvc-servlet.xml -->
@@ -439,7 +479,9 @@ web容器加载顺序：ServletContext -> context-param -> listener -> filter ->
     </context-param>
     ```
 
-1. 配置ContextLoaderListerner：Spring MVC在Web容器中的启动类，负责Spring IOC(IOC介绍)容器在Web上下文中的初始化
+    > 其实`<context-param>`就是用于创建spring的 xxxApplicationContext, 比如`org.springframework.context.support.ClassPathXmlApplicationContext`
+
+1. 配置ContextLoaderListerner:Spring MVC在Web容器中的启动类，负责Spring IOC(IOC介绍)容器在Web上下文中的初始化
 
     ```xml
      <listener>
@@ -449,12 +491,12 @@ web容器加载顺序：ServletContext -> context-param -> listener -> filter ->
      </listener>
     ```
 
-    ContextLoaderListener(listener-class)的作用就是启动Web容器时，自动装配ApplicationContext的配置信息. 因为它实现了ServletContextListener这个接口，在web.xml配置这个监听器，启动容器时，就会默认执行它实现的方法
+    ContextLoaderListener(listener-class)的作用就是启动Web容器时，自动装配ApplicationContext的配置信息. 因为它实现了ServletContextListener这个接口，在web.xml配置这个监听器，启动容器时，就会默认执行它实现的contextInitialized方法
 
 ### bean xml
-Spring框架的本质其实是：通过XML配置来驱动Java代码，这样就可以把原本由java代码管理的耦合关系，提取到XML配置文件中管理. 这样就实现了系统中各组件的解耦，有利于后期的升级和维护.
+Spring框架的本质其实是:通过XML配置来驱动Java代码，这样就可以把原本由java代码管理的耦合关系，提取到XML配置文件中管理. 这样就实现了系统中各组件的解耦，有利于后期的升级和维护.
 
-beans是Spring配置文件的根元素，该元素可以指定如下属性：
+beans是Spring配置文件的根元素，该元素可以指定如下属性:
 - default-lazy-init:指定元素下配置的所有bean默认的延迟初始化行为
 - default-merge:指定元素下配置的所有bean默认的merge行为
 - default-autowire:指定元素下配置的所有bean默认的自动装配行为
@@ -463,3 +505,11 @@ beans是Spring配置文件的根元素，该元素可以指定如下属性：
 - default-autowire-candidates:指定元素下配置的所有bean默认是否作为自动装配的候选Bean
 
 使用bean的init-method和destroy-method属性可初始化和销毁单独的bean
+
+**bean可不实现bean xml中定义的`default-xxx`方法**.
+
+### [`<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer>`](https://blog.csdn.net/qyf_5445/article/details/8211136)
+通过可将bean.xml的设定(bean的`<property>`)移到`.properties`文件中，而`.properties`文件可以作为自定义需求，动态设定bean参数
+
+### beanRefContext.xml(位于Classpath的根目录下)
+用来创建这个ApplicationContext实例, 配置中指明创建这个ApplicationContext所需的配置文件.
