@@ -12,7 +12,7 @@
 ```sql
 postgres=# CREATE DATABASE mytestdb;
 CREATE DATABASE
-postgres=# CREATE USER mytestuser WITH ENCRYPTED PASSWORD '123456';
+postgres=# CREATE USER mytestuser WITH ENCRYPTED PASSWORD '123456'; # 或`create user root with password 'password';`
 CREATE ROLE
 postgres=# GRANT ALL PRIVILEGES ON DATABASE mytestdb to mytestuser;
 GRANT
