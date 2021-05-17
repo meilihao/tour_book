@@ -105,7 +105,7 @@ METHOD 连接数据库时的认证方式，常见的有几个特殊值：
 解决:
 ```
 > sudo -u postgres psql # 进入psql
-> alter user postgres with password 'postgres' # 为postgres创建密码
+> alter user postgres with password 'postgres'; # 为postgres创建密码
 > psql -h localhost -p 5432 -U postgres -W # 使用密码登录
 ```
 
