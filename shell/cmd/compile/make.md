@@ -215,3 +215,21 @@ all:
                 echo "-----"
                 echo "$(SCRIPTS)"
 ```
+
+### 调用shell
+```makfile
+buildtime = $(shell date +"%Y%m%d%H%M")
+```
+
+### 调用python
+```makfile
+setversion:
+    python3 xxx.py
+```
+
+### make 传递参数
+```makefile
+version = $(version)
+```
+
+执行`make version=1.0.0`即可
