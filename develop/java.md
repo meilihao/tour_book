@@ -405,8 +405,125 @@ static关键字总结:
 　　2. 静态方法中不可以使用this或者super关键字
 　　3. java主函数是静态的
 
+### java properties文件加载包含反斜杠
+在java中，利用Properties.load()加载配置文件时，如果配置文件含有"\", 则会将反斜杠作为转义符处理，而不是作为正常字符.
+
+### volatile
+volatile是Java提供的一种轻量级的同步机制。Java 语言包含两种内在的同步机制：同步块（或方法）和 volatile 变量，相比于synchronized（synchronized通常称为重量级锁），volatile更轻量级，因为它不会引起线程上下文的切换和调度。但是volatile 变量的同步性较差（有时它更简单并且开销更低），而且其使用也更容易出错.
+
+volatile可以保证线程可见性且提供了一定的有序性，但是无法保证原子性。在JVM底层volatile是采用“内存屏障”来实现的。观察加入volatile关键字和没有加入volatile关键字时所生成的汇编代码发现，加入volatile关键字时，会多出一个lock前缀指令，lock前缀指令实际上相当于一个内存屏障（也成内存栅栏），内存屏障会提供3个功能：
+
+1. 它确保指令重排序时不会把其后面的指令排到内存屏障之前的位置，也不会把前面的指令排到内存屏障的后面；即在执行到内存屏障这句指令时，在它前面的操作已经全部完成；
+1. 它会强制将对缓存的修改操作立即写入主存；
+1. 如果是写操作，它会导致其他CPU中对应的缓存行无效
+
+### jdbc
+在Spring中，通过JDBC驱动定义数据源是最简单的配置方式。Spring提供了三个这样的数据源类供选择：
+- DriverManagerDataSource：在每个连接请求时都会返回一个新建的连接。与JDBC的BasicDataSource不同，由DriverManagerDataSource提供的连接并没有进行池化管理。
+- SimpleDriverDataSource：与DriverManagerDataSource工作方式类似，但是它直接使用JDBC驱动，来解决在特定环境下的类加载问题，这样的环境包括OSGi容器。
+- SingleConnectionDataSource：在每个连接请求时都会返回同一个的连接。尽管SingleConnectionDataSource不是严格意义上的连接池数据源，但是可以将其视为只有一个连接的池。
+
+注意：**SingleConnectionDataSource有且只有一个数据库连接，不适于多线程**，DriverManagerDataSource和SimpleDriverDataSource尽管支持多线程，但是在每次请求的时候都会创建新连接，这是以性能为代价的.
+
+JdbcTemplate是Spring对JDBC的封装，目的是使JDBC更加易于使用。JdbcTemplate是Spring的一部分。JdbcTemplate处理了资源的建立和释放。他帮助我们避免一些常见的错误，比如忘了总要关闭连接。他运行核心的JDBC工作流，如Statement的建立和执行，而我们只需要提供SQL语句和提取结果.
+
+### ExecutorService
+ExecutorService是Java中对线程池定义的一个接口.
+
+## 注解
+### Java语言使用@interface语法来定义注解（Annotation）
+注解：提供一种为程序元素设置元数据的方法.
+
+基本原则：注解不能直接干扰程序代码的运行，无论增加或删除注解，代码都能够正常运行。
+注解（也被成为元数据）为我们在代码中添加信息提供了一种形式化的方法，使我们可以在稍后某个时刻非常方便地使用这些数据。 ———摘自《Thinking in Java》
+
+简单来说注解的作用就是将我们的需要的数据储存起来，在以后的某一个时刻（可能是编译时，也可能是运行时）去调用它.
+
+```java
+@Target(ElementType.TYPE) // 只能应用于类上
+@Retention(RetentionPolicy.RUNTIME) // 保存到运行时
+public @interface DBTable {
+    String name() default "";
+}
+
+//在类上使用该注解
+@DBTable(name = "MEMBER")
+public class Member {
+    //.......
+}
+```
+
+上述定义一个名为DBTable的注解，该用于主要用于数据库表与Bean类的映射. 声明一个String类型的name元素，其默认值为空字符，但是必须注意到对应任何元素的声明应采用方法的声明方式，同时可选择使用default提供默认值.
+
+
+#### 自定义注解
+自定义注解，是使用元注解来实现的.
+
+元注解:
+- `@Target`说明了Annotation所修饰的对象范围
+
+  Annotation可被用于 packages、types（类、接口、枚举、Annotation类型）、类型成员（方法、构造方法、成员变量、枚举值）、方法参数和本地变量（如循环变量、catch参数）. 在Annotation类型的声明中使用了target可更加明晰其修饰的目标.
+
+  作用：用于描述注解的使用范围（即：被描述的注解可以用在什么地方）
+
+  取值(ElementType)有：
+  - CONSTRUCTOR:用于描述构造器
+  - FIELD:用于描述域
+  - LOCAL_VARIABLE:用于描述局部变量
+  - METHOD:用于描述方法
+  - PACKAGE:用于描述包
+  - PARAMETER:用于描述参数
+  - TYPE:用于描述类、接口(包括注解类型) 或enum声明
+- `@Retention`定义了注解的保留策略即该Annotation被保留的时间长短
+
+  某些Annotation仅出现在源代码中，而被编译器丢弃；而另一些却被编译在class文件中；编译在class文件中的Annotation可能会被虚拟机忽略，而另一些在class被装载时将被读取（请注意并不影响class的执行，因为Annotation与class在使用上是被分离的）。使用这个meta-Annotation可以对 Annotation的“生命周期”限制
+
+  作用：表示需要在什么级别保存该注释信息，用于描述注解的生命周期（即：被描述的注解在什么范围内有效）
+
+  取值（RetentionPoicy）有：
+  - SOURCE:在源文件中有效（即源文件保留）
+  - CLASS:在class文件中有效（即class保留）
+  - RUNTIME:在运行时有效（即运行时保留）
+- `@Documented`用于描述其它类型的annotation应该被作为被标注的程序成员的公共API，因此可以被例如javadoc此类的工具文档化。Documented是一个标记注解，没有成员
+- `@Inherited`是一个标记注解，@Inherited阐述了某个被标注的类型是被继承的。如果一个使用了@Inherited修饰的annotation类型被用于一个class，则这个annotation将被用于该class的子类。
+
+  注意：@Inherited annotation类型是被标注过的class的子类所继承。类并不从它所实现的接口继承annotation，方法并不从它所重载的方法继承annotation。
+
+  当@Inherited annotation类型标注的annotation的Retention是RetentionPolicy.RUNTIME，则反射API增强了这种继承性。如果我们使用java.lang.reflect去查询一个@Inherited annotation类型的annotation时，反射代码检查将展开工作：检查class和其父类，直到发现指定的annotation类型被发现，或者到达类继承结构的顶层
+
+使用@interface自定义注解时，自动继承了java.lang.annotation.Annotation接口，由编译程序自动完成其他细节。在定义注解时，不能继承其他的注解或接口。@interface用来声明一个注解，其中的每一个方法实际上是声明了一个配置参数。方法的名称就是参数的名称，返回值类型就是参数的类型（返回值类型只能是基本类型、Class、String、enum）。可以通过default来声明参数的默认值.
+
+定义注解格式: `public @interface 注解名 {定义体}`
+
+注解参数的可支持数据类型:
+- 所有基本数据类型（int,float,boolean,byte,double,char,long,short)
+- String类型
+- Class类型
+- enum类型
+- Annotation类型
+- 以上所有类型的数组
+
+Annotation类型里面的参数该怎么设定:
+- 首先,只能用public或默认(default)这两个访问权修饰.例如,String value();这里把方法设为defaul默认类型；　 　
+- 其次,参数成员只能用基本类型byte,short,char,int,long,float,double,boolean八种基本数据类型和 String,Enum,Class,annotations等数据类型,以及这一些类型的数组.例如,String value();这里的参数成员就为String;　　
+- 最后,如果只有一个参数成员,最好把参数名称设为”value”,后加小括号.例:下面的例子FruitName注解就只有一个参数成员。
+
 # java框架
 ## Spring
+### ioc
+生成流程: xml定义bean -> BeanDefinition(封装bean的定义信息) -> bean.
+
+BeanDefinition->bean, 由BeanFactory生成, 创建bean实例由三种方法:
+1. 反射
+1. 工厂方法: @Bean
+1. 工厂类: FactoryBean
+
+bean实例创建后会利用`@Autowired`, `@Value`进行属性注入, 此时会利用三级缓存解决循环依赖.
+
+之后bean会调用其生命周期的方法和aware, 可见BeanFactory注释.
+
+> FactoryBean是一个特殊的接口，实现getObject()达到替换object的目的.
+
 ### Spring MVC的web.xml配置详解
 web.xml文件的作用是配置web工程启动,对于一个web工程来说，web.xml可以有也可以没有，如果存在web.xml文件；web工程在启动的时候，web容器(tomcat容器)会去加载web.xml文件，然后按照一定规则配置web.xml文件中的组件.
 
