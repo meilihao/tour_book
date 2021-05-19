@@ -101,7 +101,7 @@ $ sudo zpool exprot <pool> # 如果要在另一个系统上使用该存储池，
 $ sudo zpool export oldname # 重命名已创建的zpool的过程分为2个步骤, export + import
 $ sudo zpool import oldname newname
 $ sudo zpool import -d /dev/disk/by-uuid
-$ sudo zpool import <poolname> -d /dev/disk/by-uuid
+$ sudo zpool import -F <poolname> -d /dev/disk/by-uuid # `-F`强制导入, 可解决突然断电导致的pool数据损坏(在truenas scale上碰到多次该损坏而导致系统启动进入Initramfs的问题)
 $ sudo zpool create <pool> mirror <device-id-1> <device-id-m1> mirror <device-id-2> <device-id-m2> # 创建RAID10
 $ sudo zpool add <pool> log mirror <device-id-1> <device-id-2> # 添加 SLOG
 $ sudo zpool add <pool> spare devices # 添加热备, 大小应>=max(pool's vdev),且无法移除当前正在使用的热备. 移除用`zpool remove`

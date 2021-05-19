@@ -23,6 +23,28 @@ Bareos 由 bacula fork而來.
 
 > [bareos网络连接概览](https://docs.bareos.org/TasksAndConcepts/NetworkSetup.html#network-connections-overview)
 
+## 编译
+env: Ubuntu 20.04
+
+```bash
+apt install libreadline-dev libpq-dev chrpath
+# mkdir build && cd build
+# cmake -Dpostgresql=yes -Dtraymonitor=no -Dmysql=no -Dsqlite3=no .. # make install时用, 而非deb打包时, cmake参数参考`debian/rules`
+dpkg-checkbuilddeps
+# generate changelog from [here](https://github.com/bareos/bareos/blob/15f82cd288f295f4ae13c3f27775eb2df46f2c98/.travis.yml)
+NOW=$(LANG=C date -R -u)
+BAREOS_VERSION=$(cmake -P get_version.cmake | sed -e 's/-- //')
+printf "bareos (%s) unstable; urgency=low\n\n  * See https://docs.bareos.org/release-notes/\n\n -- nobody <nobody@example.com>  %s\n\n" "${BAREOS_VERSION}" "${NOW}" | tee debian/changelog
+vim debian/rules # ~~根据上面的cmake参数定制deb打包编译bareos时需要的参数~~. 不能修改参数, 只能装全依赖, 因为deb打包时dh_install并没有根据参数(比如`-Dmysql=no`, `-Dtraymonitor=no`等)忽略相关依赖文件.
+fakeroot debian/rules binary
+```
+
+仅cmake编译(非fakeroot打包编译)的缺陷:
+1. arm没有vmware插件, 因为依赖的vmware不提供arm so
+1. xxx.service 没有User/Group, 可使用root
+1. 数据库配置在`/usr/local/etc/bareos-dir.d/catalog/Mycatalog.conf`, 且默认使用sqlite3, 需改用postgres
+1. `bareos-dir -t -f -d 500 -v`发现database bareos不存在. 需手动配置db见[这里](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareos.html#other-platforms)
+
 ## 概念
 - volume : Bareos将在其上写入备份数据的单个物理磁带（或可能是单个文件）
 - pool : 定义接收备份数据的多个volume（磁带或文件）组成的逻辑组
@@ -77,7 +99,7 @@ systemctl restart apache2 # 访问http://HOSTNAME/bareos-webui即可使用webui,
 1. bareos director配置bareos-dir
 ```bash
 $ bconsole
-* configure add client name=client2-fd address=192.168.0.2 password=secret # 注册client, 会创建`/etc/bareos/bareos-dir.d/client/client2-fd.conf`和`/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf`(bareos-fd访问bareos-dir的授权)
+* configure add client name=client2-fd address=192.168.0.2 password=secret # 注册client, 会创建`/etc/bareos/bareos-dir.d/client/client2-fd.conf`和`/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf`(bareos-fd访问bareos-dir的授权, **如果其中不包含Address-<dir_ip>时请添加**)
 exit
 ```
 1. 配置clients
@@ -89,7 +111,7 @@ exit
         ```bash
         # apt install bareos-filedaemon
         # scp dareos-server:/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf /etc/bareos/bareos-fd.d/director # director对client的授权
-        # vim /etc/bareos/bareos-fd.d/director/director-mon.conf # 用/etc/bareos/bareos-dir.d/bareos-dir.d/console/bareos-mon.conf文件中的Password替换该文件中的Password
+        # vim /etc/bareos/bareos-fd.d/director/director-mon.conf # 用/etc/bareos/bareos-dir.d/console/bareos-mon.conf文件中的Password替换该文件中的Password
         # systemctl restart bareos-fd
         ```
 
@@ -100,7 +122,7 @@ exit
         - Director Name: 不修改
         - Password: dareos-server:/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf中的Password
         - Network Address: bareos-dir的ip
-        - Client Monitor Password: 用/etc/bareos/bareos-dir.d/bareos-dir.d/console/bareos-mon.conf文件中的Password
+        - Client Monitor Password: 用/etc/bareos/bareos-dir.d/console/bareos-mon.conf文件中的Password
 1. 测试client by bconsole
 
   ```bash
@@ -963,3 +985,6 @@ Client {
 使用`-d 500`参数, 打印详细日志可见, fd log提示`field/fd_plugins.cc:1750-0 No plugin loaded`.
 
 结合myself.conf和日志调试发现, 只要启用了`Plugin Names`即使其value为空, 均会按`Plugin Names`指定的名称去load plugin. 将`Plugin Names`注释默认加载全部插件即可.
+
+### 使用自编译bareos 20.0.1 arm版本, linux备份还原正常, 官方对应版本的windows client无法备份
+dir, sd, fd均无报错.
