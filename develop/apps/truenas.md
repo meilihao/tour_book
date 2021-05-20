@@ -86,6 +86,8 @@ class Resource(object):
 
 - websocket api : `src/middlewared/middlewared/main.py#Application.on_message`中的`serviceobj, methodobj = self.middleware._method_lookup(message['method'])`前添加`self.logger.info("--- w call: {} {}".format(message['method'], message.get('params') or []))`
 
+- 可在`middlewared.py#Middleware.call()`里为打印result.
+
 ### middlewared处理http逻辑
 在`src/middlewared/middlewared/main.py#Middleware.__initialize`
 

@@ -100,6 +100,7 @@ systemctl restart apache2 # 访问http://HOSTNAME/bareos-webui即可使用webui,
 ```bash
 $ bconsole
 * configure add client name=client2-fd address=192.168.0.2 password=secret # 注册client, 会创建`/etc/bareos/bareos-dir.d/client/client2-fd.conf`和`/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf`(bareos-fd访问bareos-dir的授权, **如果其中不包含Address-<dir_ip>时请添加**)
+reload # 不能丢
 exit
 ```
 1. 配置clients
@@ -121,7 +122,7 @@ exit
         - Client Name: bconsole注册clients时的名称, 最好是clients os的hostname
         - Director Name: 不修改
         - Password: dareos-server:/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf中的Password
-        - Network Address: bareos-dir的ip
+        - Network Address: 注册client时本机的ip
         - Client Monitor Password: 用/etc/bareos/bareos-dir.d/console/bareos-mon.conf文件中的Password
 1. 测试client by bconsole
 

@@ -21,7 +21,7 @@ $ dmesg | grep -i zfs
 zfs有两个工具: zpool和zfs. zpool用于维护zfs pools, zfs负责维护zfs filesystems.
 
 > zfs可充当卷管理器
-> zfs已实现零管理, 通过zfs daemon(zed,zfs Event Daemon)实现, 因此无需将pool信息写入`/etc/fstab`, pool配置在`/etc/zfs/zpool.cache`里.
+> zfs已实现零管理, 通过zfs daemon(zed,zfs Event Daemon)实现, 因此无需将pool信息写入`/etc/fstab`, pool配置在`/etc/zfs/zpool.cache`里(可通过`zpool get "all" <pool>`找到`zpool.cache`的位置).
 > zfs pool使用zfs_vdev_scheduler来调度io.
 > zdb 是zpool的调试工具.
 > zgenhostid : generate and store a hostid in /etc/hostid
@@ -92,7 +92,7 @@ zfs支持分层组织filesystem, 每个filesystem仅有一个父级, 而且支�
 ```sh
 $ sudo zpool create pool-test /dev/sdb /dev/sdc /dev/sdd # 创建了一个零冗余的RAID-0存储池, zfs 会在`/`中创建一个目录,目录名是pool name 
 $ sudo zpool [option] list # 显示系统上pools的列表, `-o`只显示指定列,`-H`隐藏列头
-$ sudo zpool status <pool> # 查看pool的状态,read/write列显示读写io时的错误次数, cksum列显示设备对读取请求返回损坏数据(校验和错误)的次数. `-v`输出详细信息, `-x`仅显示有错误或因其他原因不可用的pool
+$ sudo zpool status [-D] <pool> # 查看pool的状态,read/write列显示读写io时的错误次数, cksum列显示设备对读取请求返回损坏数据(校验和错误)的次数. `-v`输出详细信息, `-D`, dedup信息;`-x`仅显示有错误或因其他原因不可用的pool
 $ sudo zpool destroy <pool> # 销毁pool
 $ sudo zpool destroy <pool>/data-set # 销毁dataset
 $ sudo zpool upgrade [<pool> | -a] # 更新 zfs 时，就需要更新指定/全部池
@@ -328,6 +328,8 @@ zfs dedup 将丢弃重复数据块，并以到现有数据块的引用来替代.
 $ sudo zfs set dedup=on mypool/projects # 启用去重
 ```
 
+**dedup**只对开启后的新数据块有效.
+
 ## 属性
 - used : 只读属性，表明此数据集及其所有后代占用的磁盘空间量.
 	
@@ -557,3 +559,19 @@ hexdump -C -n 102400 /dev/sdd1 # 结合上面的label信息, 发现zfs从0x3fd8�
 通过`wipefs -a /dev/sdd`抹除分区表, 并将mbr内容全部置为`1`, 再创建pool发现, 磁盘的mbr内容已变化即pmbr被重置了, 因此制作磁盘签名时要回写.
 
 根据PMBR的定义可回写位置是0~446B内.
+
+### zpool加密
+参考:
+- [Encrypting ZFS File Systems](https://docs.oracle.com/cd/E53394_01/html/E54801/gkkih.html)
+- [How-To: Using ZFS Encryption at Rest in OpenZFS (ZFS on Linux, ZFS on FreeBSD, …)](https://blog.heckel.io/2017/01/08/zfs-encryption-openzfs-zfs-on-linux/)
+
+```bash
+zpool create -O encryption=on -O keylocation=file:///root/keys/hdd256.key \
+             -O keyformat=raw \
+             mypool /dev/disk/by-id/mydisk
+zfs get encryption,keystatus,keysource,pbkdf2iters mypool
+```
+
+`-O pbkdf2iters=350000`用于`-O keyformat=passphrase`选项, 迭代passphrase来保证安全.
+
+`head -c 32 /dev/urandom > /dev/shm/enc3key` for `-O encryption=aes-256-gcm`
