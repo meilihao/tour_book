@@ -127,6 +127,8 @@ $ sudo zpool import [option] [pool/id-number] # 导入pool, 导入时允许重�
 $ sudo zpool upgrade # 升级pool, 以使用新版的zfs功能. `-v`表示当前zfs支持的功能, `-a`表示升级到最新的zfs.
 $ blkid /dev/sdg # 检查盘是否被zfs使用过
 /dev/sdg: LABEL="t" ... TYPE="zfs_member" # t是pool name, zpool destroy后该信息还保留.
+$ zpool set cachefile=/etc/zfs/zpool.cache tank # 强制更新pool.cache
+$ zpool set cachefile = / etc / zfs / zpool.cache # 适用于故障转移配置(高可用)的设置, 此时必须由高可用软件显示import pool
 ```
 
 pool status:
@@ -575,3 +577,7 @@ zfs get encryption,keystatus,keysource,pbkdf2iters mypool
 `-O pbkdf2iters=350000`用于`-O keyformat=passphrase`选项, 迭代passphrase来保证安全.
 
 `head -c 32 /dev/urandom > /dev/shm/enc3key` for `-O encryption=aes-256-gcm`
+
+import pool时, keystatus可显示加密pool的状态.
+
+`zfs load-key -L file:///xxx.key -n <pool>`加载秘钥.
