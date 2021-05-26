@@ -233,3 +233,7 @@ version = $(version)
 ```
 
 执行`make version=1.0.0`即可
+
+## cmake
+参考:
+- [抛弃 Autotools 向 CMake 迈进吧](https://linux.cn/article-13419-1.html)

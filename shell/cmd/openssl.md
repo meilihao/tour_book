@@ -25,3 +25,8 @@ This is a test email.
 .
 > quit
 ```
+
+## rsa
+```bash
+# openssl rsautl -inkey my_private_key -decrypt -oaep -in my_encrypted_file # default is PKCS#1 v1.5
+```

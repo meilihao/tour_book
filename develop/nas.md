@@ -201,7 +201,7 @@ NFS server 关机的时候一点要确保NFS服务关闭，没有客户端处于
 	1. 用户映射选项
 
 	    all_squash：将远程访问的所有普通用户及所属组都映射为匿名用户/用户组（默认是`nobody:nogroup`）, 可由anonuid/anongid指定
-	    no_all_squash：与all_squash取反（默认设置）
+	    no_all_squash（默认设置）: 先匹配客户端用户的UID和GID与服务器端共享文件UID和GID，匹配失败后再映射为匿名用户或用户组
 	    root_squash：将root用户及所属组都映射为匿名用户/用户组（默认是`nobody:nogroup`， 如此对服务器的系统会较有保障）, 可由anonuid/anongid指定
 	    no_root_squash：与rootsquash取反, 允许使用 root 身份来操作服务器的文件系统. 这个选项会留下严重的安全隐患，一般不建议采用.
 	    anonuid=xxx：将远程访问的所有用户都映射为匿名用户，并指定该用户为本地用户（UID=xxx, 该 UID 必需要存在于你的 /etc/passwd 当中）
@@ -210,6 +210,8 @@ NFS server 关机的时候一点要确保NFS服务关闭，没有客户端处于
 	    > allSquash,rootSquash允许联用: allSquash的取值为`all_squash`或`no_all_squash`，rootSquash的取值包括`root_squash`或`no_root_squash`, 但all_squash会覆盖no_root_squash.
 
 	    > anonuid/anongid要和root_squash 以及 all_squash一同使用，用于指定使用NFS的用户限定后的uid和gid，前提是本机的/etc/passwd中存在这个uid和gid
+
+	    > no_root_squash,no_all_squash: 表示不映射.
 
 	1. 其它选项
 

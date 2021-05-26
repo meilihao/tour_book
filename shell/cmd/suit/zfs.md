@@ -562,6 +562,9 @@ hexdump -C -n 102400 /dev/sdd1 # 结合上面的label信息, 发现zfs从0x3fd8�
 
 根据PMBR的定义可回写位置是0~446B内.
 
+
+**推荐: truenas scale方案**, 使用`/dev/disk/by-partuuid`中的partuuid作为磁盘签名.
+
 ### zpool加密
 参考:
 - [Encrypting ZFS File Systems](https://docs.oracle.com/cd/E53394_01/html/E54801/gkkih.html)
