@@ -3,7 +3,7 @@
 1. 初始化保存`read_source`信息的repo
 
     1. 创建git repo: `git@gitee.com:chenhao/hello_zstack.git`
-    1. 添加version.json, 并push到repo
+    1. 添加version.json
 
         ```json
         $ cat <<'EOF' > version.json
@@ -16,6 +16,12 @@
             "remark":"阅读zstack v4.1.0"
         }
         EOF
+        ```
+    1. push到repo
+
+        ```bash
+        git remote add origin git@gitee.com:chenhao/hello_zstack.git
+        git push -u origin main
         ```
 
 
