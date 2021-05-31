@@ -126,6 +126,9 @@ server-main.go#serverMain -> [routers.go#configureServerHandler(endpointServerPo
 
 [api.GetObjectHandler](https://github.com/minio/minio/blob/master/cmd/object-handlers.go#L302)函数是实现如何从一个桶中获取一个对象.
 
+### ErasureCoding
+ec代码在`cmd/erasure-*.go`, 入口在`cmd/erasure-coding.go#NewErasure`
+
 ## FAQ
 1. `Disk /usr/minio/data1 is a root disk. Please ensure the disk is mounted properly, refusing to use root disk.`
 使用了挂载在`/`下的export, 即分布式minio必须使用数据盘.
