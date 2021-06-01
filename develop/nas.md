@@ -774,6 +774,10 @@ samba client挂载测试情况:
 ### cifs挂在报`No dialect specified on mount. Default has changed to a more secure dialect, SMB2.1 or later (e.g. SMB3), from CIFS (SMB1). To use the less secure SMB1 dialect to access old servers which do not support SMB3 (or SMB2.1) specify vers=1.0 on mount`
 必须使用比`vers=1.0`更高的smb协议.
 
+### nfs touch文件报"Read-only file system"
+1. 查看nfs server是否使用了`ro`选项
+1. 用fsck修复nfs server的文件系统(先umount)
+
 ## zfs xfs nas
 **推荐使用zfs fs, 不推荐ext4,xfs + zvol, 特别是xfs**
 **不能使用zvol精简卷做nas, 见[zfs的`写满测试`](/shell/cmd/suit/zfs.md)***
