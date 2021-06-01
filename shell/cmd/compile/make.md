@@ -234,6 +234,18 @@ version = $(version)
 
 执行`make version=1.0.0`即可
 
+### if...elseif...else...
+```makefile
+TARGET_CPU = unknown
+ifeq ($(TARGET_CPU),x86)
+  TARGET_CPU_IS_X86 := 1
+else ifeq ($(TARGET_CPU),x86_64)
+  TARGET_CPU_IS_X86 := 1
+else
+  TARGET_CPU_IS_X86 := 0
+endif
+```
+
 ## cmake
 参考:
 - [抛弃 Autotools 向 CMake 迈进吧](https://linux.cn/article-13419-1.html)
