@@ -778,6 +778,9 @@ samba client挂载测试情况:
 1. 查看nfs server是否使用了`ro`选项
 1. 用fsck修复nfs server的文件系统(先umount)
 
+### nfs server restart后nfs clinet操作报`... Stale file handle`
+nfs restart后export rule使用新的句柄导致旧句柄失效, 需重新挂载.
+
 ## zfs xfs nas
 **推荐使用zfs fs, 不推荐ext4,xfs + zvol, 特别是xfs**
 **不能使用zvol精简卷做nas, 见[zfs的`写满测试`](/shell/cmd/suit/zfs.md)***
