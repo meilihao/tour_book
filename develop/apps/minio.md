@@ -105,9 +105,16 @@ pprof -http=0.0.0.0:2222 ./profiling-10.189.33.60\:9000.pprof #  使⽤ google p
     一个set中的drive尽可能分布在不同的节点上
 
 ### code
-MinIOn对外提供http接口的入口点(相关文件都在[`/cmd`](https://github.com/minio/minio/tree/master/cmd)):
-server-main.go#serverMain -> [routers.go#configureServerHandler(endpointServerPools EndpointServerPools)](https://github.com/minio/minio/blob/master/cmd/routers.go#L86)
--> [api-router.go#registerAPIRouter(router *mux.Router)](https://github.com/minio/minio/blob/master/cmd/api-router.go#L82), 它注册了所有http相关的url处理函数, url分发由`github.com/gorilla/mux`处理. 
+MinIO对外提供http接口的入口相关文件都在[`/cmd`](https://github.com/minio/minio/tree/master/cmd).
+
+Object handle的接口是`cmd/object-api-interface.go#ObjectLayer`, 当前有两个实现(`cmd/server-main.go#newObjectLayer()`):
+- NewFSObjectLayer(), 单disk
+- newErasureServerPools(), 基于ec
+
+`minio server`的调用链路是:
+1. server-main.go#serverMain
+1. [routers.go#configureServerHandler(endpointServerPools EndpointServerPools)](https://github.com/minio/minio/blob/master/cmd/routers.go#L86)
+1. [api-router.go#registerAPIRouter(router *mux.Router)](https://github.com/minio/minio/blob/master/cmd/api-router.go#L82), 它注册了所有http相关的url处理函数, url分发由`github.com/gorilla/mux`处理.
 
 比如PutObject:
 ```go
