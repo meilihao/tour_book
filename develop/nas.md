@@ -117,8 +117,8 @@ NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nf
 192.168.0.10:/nfs_share /mnt/nfs nfs defaults 0 0
 ```
 
-### FS系统守护进程
-- nfsd ：它是基本的NFS守护进程，主要功能是通过登入者ip, 用户id等管理客户端是否能够登录服务器
+### NFS系统守护进程
+- nfsd ：它是基本的NFS守护进程，主要功能是通过登入者ip, 用户id等管理客户端是否能够登录服务器等. 它是NFS服务的用户态部分, 负责建立nfsd内核进程, NFS服务的大部分功能都由nfsd内核进程处理.
 
 	- 支持`/etc/exports.d/*.exports`
 	- 默认绑定所有ip
@@ -127,6 +127,8 @@ NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nf
 - statd : 检查文件的一致性，与lockd有关. 若发生因为客户端同时使用同一档案造成档案可能有所损毁时， statd 可以用来检测并尝试恢复该档案. 与 lockd 同样的，这个功能必须要在服务器端与客户端都启动才会生效.
 - rpc.idmapd : 名字映射后台进程
 - rpcbind : 主要功能是进行端口映射工作. 当客户端尝试连接并使用RPC服务器提供的服务（如NFS服务）时，rpcbind会将所管理的与服务对应的端口提供给客户端，从而使客户可以通过该端口向服务器请求服务, 因此rpcbind必须在nfs前启动.
+
+> nfsd源码在[这里](https://sourceforge.net/projects/nfs/)
 
 ### 其他相关命令
 
@@ -198,10 +200,10 @@ NFS server 关机的时候一点要确保NFS服务关闭，没有客户端处于
 	    设置输出目录只读：ro
 	    设置输出目录读写：rw
 
-	1. 用户映射选项
+	1. 用户映射选项(见`https://linux.die.net/man/5/exports`)
 
 	    all_squash：将远程访问的所有普通用户及所属组都映射为匿名用户/用户组（默认是`nobody:nogroup`）, 可由anonuid/anongid指定
-	    no_all_squash（默认设置）: 先匹配客户端用户的UID和GID与服务器端共享文件UID和GID，匹配失败后再映射为匿名用户或用户组
+	    no_all_squash（默认设置, 适用于非root用户）: 先匹配客户端用户的UID和GID与服务器端共享文件UID和GID，匹配失败后再映射为匿名用户或用户组
 	    root_squash：将root用户及所属组都映射为匿名用户/用户组（默认是`nobody:nogroup`， 如此对服务器的系统会较有保障）, 可由anonuid/anongid指定
 	    no_root_squash：与rootsquash取反, 允许使用 root 身份来操作服务器的文件系统. 这个选项会留下严重的安全隐患，一般不建议采用.
 	    anonuid=xxx：将远程访问的所有用户都映射为匿名用户，并指定该用户为本地用户（UID=xxx, 该 UID 必需要存在于你的 /etc/passwd 当中）
@@ -211,7 +213,7 @@ NFS server 关机的时候一点要确保NFS服务关闭，没有客户端处于
 
 	    > anonuid/anongid要和root_squash 以及 all_squash一同使用，用于指定使用NFS的用户限定后的uid和gid，前提是本机的/etc/passwd中存在这个uid和gid
 
-	    > no_root_squash,no_all_squash: 表示不映射.
+	    > no_root_squash,no_all_squash: 表示不映射即阿里nfs的no_squash.
 
 	1. 其它选项
 
@@ -223,7 +225,7 @@ NFS server 关机的时候一点要确保NFS服务关闭，没有客户端处于
 	    no_wdelay：若有写操作则立即执行，应与sync配合使用
 	    subtree_check：若输出目录是一个子目录，则nfs服务器将检查其父目录的权限. 在客户端打开文件时重命名该文件会导致许多问题. 在几乎所有情况下，最好禁用子树检查.
 	    no_subtree_check：即使输出目录是一个子目录，nfs服务器也不检查其父目录的权限，这样可以提高效率, (默认设置)
-	    fsid: NFS需要通过fsid识别导出的每个文件系统. 通过同一zfs dataset的快照clone制作的多个nfs因为fs uuid相同, 挂载时会看看相同数据, 此时可通过fsid区分.
+	    fsid: NFS需要通过fsid识别导出的每个文件系统. 通过同一zfs dataset的快照clone制作的多个nfs因为fs uuid相同, 挂载时会看看相同数据, 此时可通过fsid区分. 注意: 使用fsid后不能重置它, 否则nfs client会报`Stale file handle`.
 
 > nfs 支持使用no_acl来禁用acl.
 
@@ -648,6 +650,8 @@ mount: can't find nfs in /etc/fstab
 
 nfs client存在多ip且它们属于同网段(未确定此时多网卡是否也有影响)时, nfs mount使用了非nfs server export中指定的ip去连接nfs server导致权限(ip)不正确被拒绝.
 
+nfs V3客户端的IP是自动适配的; V4客户端支持mount clientaddr参数，能够指定客户端特定的IP地址.
+
 ```bash
 # mount -t nfs -o vers=3,clientaddr=192.160.0.31  192.168.0.141:/mnt/xfs nfs # 报错:`unmatched host`. 192.168.0.121与192.160.0.31是同一台电脑.
 # ### nsf server: 0.141
@@ -780,6 +784,10 @@ samba client挂载测试情况:
 
 ### nfs server restart后nfs clinet操作报`... Stale file handle`
 nfs restart后export rule使用新的句柄导致旧句柄失效, 需重新挂载.
+
+> client挂载成功后，它通过rpc.mountd会得到服务器文件系统的一个文件句柄(fh).
+
+> nfs export的fsid重置后再执行`exportfs -ra`, nfs client也会报该问题. 
 
 ## zfs xfs nas
 **推荐使用zfs fs, 不推荐ext4,xfs + zvol, 特别是xfs**
