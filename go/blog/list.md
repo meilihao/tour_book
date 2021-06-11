@@ -34,6 +34,11 @@
 - [从零开始的 Go 内存分配器可视化指南（golang）](https://ictar.xyz/2019/02/25/trans-a-visual-guide-to-golang-memory-allocator-from-ground-up/)
 - [+changkun/Go-Questions](https://github.com/changkun/Go-Questions)
 - [Go: gops如何与Go运行时交互？ - 判断是否go程序by symbols table](https://www.tuicool.com/articles/VfU73yv)
+- [Go Runtime 的调度器](https://mp.weixin.qq.com/s/hU6Xmp5zeh9vgUEV5otjWg)
+- [一文讲懂服务的优雅重启和更新](https://mp.weixin.qq.com/s/yryqf8SCzvt-BFj8j5bZ2w)
+- [你不知道的 Go 之 pprof](https://mp.weixin.qq.com/s/pSD2k1uNH9WFZumw24I4uQ)
+- [源码剖析Go语言的timer](https://mp.weixin.qq.com/s/GwY6650MNF07MOb79-A-jQ)
+- [一文教你搞懂 Go 中栈操作](https://mp.weixin.qq.com/s/hU6Xmp5zeh9vgUEV5otjWg)
 
 ## go src
 - [go-under-the-hood](https://github.com/changkun/go-under-the-hood)

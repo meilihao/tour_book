@@ -90,6 +90,7 @@ mc admin update <minio alias, e.g., myminio>
 mc admin profile start -type cpu # possible values are 'cpu', 'mem', 'block', 'mutex', 'trace', 'threads' and 'goroutines' (default: "cpu,mem,block")
 mc admin profile stop
 pprof -http=0.0.0.0:2222 ./profiling-10.189.33.60\:9000.pprof #  使⽤ google pprof ⼯具进⾏可视化展示
+mc watch local/rclone/source #  local是host配置, `rclone/source`是path, event type仅[这里](https://docs.min.io/docs/minio-bucket-notification-guide.html)
 ```
 
 ## source
@@ -137,5 +138,5 @@ Object handle的接口是`cmd/object-api-interface.go#ObjectLayer`, 当前有两
 ec代码在`cmd/erasure-*.go`, 入口在`cmd/erasure-coding.go#NewErasure`
 
 ## FAQ
-1. `Disk /usr/minio/data1 is a root disk. Please ensure the disk is mounted properly, refusing to use root disk.`
+### 1. `Disk /usr/minio/data1 is a root disk. Please ensure the disk is mounted properly, refusing to use root disk.`
 使用了挂载在`/`下的export, 即分布式minio必须使用数据盘.
