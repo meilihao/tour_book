@@ -174,3 +174,8 @@ root:x:0:0:root:/root:fish # root的shell的路径不对
 1. 启动NetworkManager: `systemctl start NetworkManager`
 1. 执行nmtui, 选择第二项`Active a connection`
 1. 选中wifi输入密码即可
+
+### chrome无法同步, 登录账号后提示：`无法同步到“xxx@gmail.com” Request canceled`, 然后chrome账号退出
+和 SwitchyOmega 有关, 解决方法:
+1. 同步时直接将其直接切换到proxy模式
+1. SwitchyOmega中添加规则`*.googleapis.com`(**推荐**)
