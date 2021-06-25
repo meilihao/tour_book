@@ -30,6 +30,7 @@
 ## 微服务
 - [使用Micro构建有弹性的、高容错的应用](http://gogap.cn/2016/05/15/resiliency/)
 - [Golang 微服务框架 Go kit 介绍（一）](https://toutiao.io/posts/yfwvyt/preview)
+- [字节跳动微服务架构体系演进](https://zhuanlan.zhihu.com/p/382833278)
 
 ## mq
 - [RabbitMQ的四种交换机](http://www.jianshu.com/p/469f4608ce5d)
