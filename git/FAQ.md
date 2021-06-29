@@ -349,3 +349,22 @@ git依赖的guntls不支持tls 1.3, 让go get使用git ssh即可: `git config --
 
 ### `git submodule add git@gitee.com:chenhao/hello_zstack.git __read_source`报`fatal: You are on a branch yet to be born`
 hello_zstack.git是全新repo, 必须有git log(即有内容)才行.
+
+### git只克隆仓库某个目录
+```bash
+# mkdir devops
+# cd devops/
+# git init                  #初始化空库
+
+## step 2 :  拉取remote的all objects信息
+# git remote add -f origin git@github.com:gopherchina/conference.git   #拉取remote的all objects信息
+
+
+## step 3 :  #3.1 开启sparse clone, #3.2 设置需要pull的目录 devlops
+# git config core.sparsecheckout true   #开启sparse clone
+# echo "devops" >> .git/info/sparse-checkout   #设置需要pull的目录，*表示所有，!表示匹配相反的
+# more .git/info/sparse-checkout
+
+## step 4 :  # 将origin 端，由第三步（文件 .git/info/sparse-checkout）设置的 目录下的文件 pull 到本地
+# git pull --depth 1 origin master
+```
