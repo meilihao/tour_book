@@ -99,6 +99,7 @@
 - [Go项目收藏](http://php-note.com/article/detail/d5d8d5a3518840a7af4e4c6ae5b49a48)
 - [Go 资源大全中文版](https://mlog.club/topic/239)
 - [Java 程序员的 Golang 入门笔记](https://ehlxr.me/2017/07/22/from-java-to-golang/)
+- [深入Go Module.pdf](/misc/pdf/深入Go Module.pdf)
 
 ## 推荐源码阅读
 - [badger](https://github.com/dgraph-io)

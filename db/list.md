@@ -17,3 +17,6 @@
 - 一下
 
 	将数据库的一些分库分表的功能给下放到底层分布式数据库层面来解决，减少一些研发的成本和工作量，让开发者更专注于代码功能的实现，加快项目的上线效率.
+
+## 其他
+- [记一次微信数据库解密过程](https://www.freebuf.com/articles/endpoint/195107.html), 也可参考[ppwwyyxx/wechat-dump(**推荐**)](https://github.com/ppwwyyxx/wechat-dump)

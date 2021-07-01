@@ -107,3 +107,7 @@ $ sg_ses -x 5 -C ident /dev/sg3
 ```
 
 > `--dsn=0 = `--dev-slot-num=0` = `-x 5`
+
+## FAQ
+### 主机柜`/sys/class/enclosure/xxx/Slot<N>/device/block`下没有盘符
+系统驱动与scsi阵列卡不匹配.
