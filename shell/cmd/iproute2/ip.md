@@ -6,7 +6,7 @@
 
 ## 例
 ```bash
-# ip route [list/show] # 显示系统路由
+# ip route [list/show] # 显示系统路由, 或使用`route -n`
 default via 192.168.0.1 dev bond0 
 192.168.0.0/24 dev bond0  proto kernel  scope link  src 192.168.0.141 # 如果进程没有bind一个源地址，将会使用src域里面的源地址作为数据包的源地址进行发送; 但是如果进程提前bind了，命中了这个条目，但仍然会使用进程bind的源地址作为数据包的源地址. 因此这里的src只是一个建议的作用
 # ip -4 addr show dev eth0 # 获取eth0上的ipv4
@@ -122,3 +122,29 @@ nmtui 通过字符界面来配置网络.
 > nmtui配置后需`vim /etc/sysconfig/network-scripts/ifcfg-eno16777736`配置`ONBOOT=yes`来支持重启仍激活网卡
 
 > 配置网络需激活: `systemctl restart network`
+
+## 查看网卡细节: ethtool
+## 启用网卡
+```bash
+ifconfig <interface> up # 推荐
+ifup <interface> # 部分网卡不支持, 因为该interface未在/etc/network/interfaces文件中明确定义.
+```
+
+## 双网卡同网段IP实现
+双网卡同网段IP, 默认仅能使用一个.
+
+解决方法, 用工具 iproute2 把两个网卡分到两个不同路由表:
+```conf
+echo "210    local100" >> /etc/iproute2/rt_tables
+echo "220    local200" >> /etc/iproute2/rt_tables
+
+ip route add 192.168.1.0/24 dev wlo0 src 192.168.1.11 table local100
+ip route add 192.168.1.0/24 dev eno1 src 192.168.1.22 table local200
+ip route add default dev wlo0 table local100
+ip route add default dev eno1 table local200
+
+ip rule add from 192.168.1.11 table local100
+ip rule add from 192.168.1.22 table local200
+
+ip route flush cache
+```
