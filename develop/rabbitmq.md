@@ -224,6 +224,8 @@ Log files (may contain more information):
 
 经搜索应该是rabbitmq 3.5与erlang 22不兼容导致, 直接升级rabbitmq到`3.8`.
 
+> [erlang下载地址](https://www.erlang-solutions.com/downloads/)
+
 ### rabbit 3.8.9 gust登录报错: `user can only log in via localhost`
 rabbitmq从3.3.0开始禁止使用guest/guest权限通过除localhost外的访问. 建议参考本文的`用户权限管理`添加自定义帐号.
 

@@ -133,6 +133,8 @@ ifup <interface> # 部分网卡不支持, 因为该interface未在/etc/network/i
 ## 双网卡同网段IP实现
 双网卡同网段IP, 默认仅能使用一个.
 
+> linux网关也是默认只能使用一个.
+
 解决方法, 用工具 iproute2 把两个网卡分到两个不同路由表:
 ```conf
 echo "210    local100" >> /etc/iproute2/rt_tables

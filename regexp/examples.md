@@ -38,6 +38,7 @@
 - `^/([^/]*)/?.*$` : 提取url中的第一个分片, 比如`/a/b`中的`a`, `/?`表示后面的`/`可有可无. 用于匹配`/a`的情况
 - `^[[:space:]]*[^#]*/` : 匹配nfs的/etc/exports有有效的导出规则即`/`前有任意个空白字符和任意个非`#`的字符.
 - `^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$` : [匹配hostname](https://stackoverflow.com/questions/106179/regular-expression-to-match-dns-hostname-or-ip-address)
+- [`(?=^.{3,50}$)(^[a-z0-9][a-z0-9-]+[a-z0-9]$)`](https://stackoverflow.com/questions/50480924/regex-for-s3-bucket-name/50484916) : 匹配minio, aliyun ,huawei, tencent obs bucket name
 
 ## replace
 - `: .\[1;\d\dm(.+).\[0m` -> `: \1` ; `: [1;37mINFO[0m -`->`: INFO -` # 去掉log中的ANSI escape code

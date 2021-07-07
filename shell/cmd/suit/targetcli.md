@@ -362,6 +362,8 @@ Online
 1. `echo 1 > /sys/class/fc_host/host<N>/issue_lip`, **推荐** # 此时会通过issue_lip重置HBA链路，重新扫描整个链路并配置SCSI target. 该操作是一种异步操作类型，具体完成时间需要参考system log.
 1. `echo "- - -" |tee -a /sys/class/scsi_host/*/scan` # `- - -`分别代表通道，SCSI目标ID和LUN, 此时破折号充当通配符，表示"重新扫描所有内容"
 
+> 有时明明fc target配置正确但fc client还是不能扫出新盘: 有坏的fc链路占用了相同的盘符(比如sdc), 导致不能扫出. 解决方法:1. `rescan-scsi-bus.sh -r`; 2. `reboot`
+
 ### Could not create Qla2xxxFabricModule in configFS | Could not create Target in configFS | 看不到FC fabric
 `modprobe tcm_qla2xxx`
 
@@ -409,3 +411,14 @@ def list_eth_names(max_eth=1024):
 ...
     if os.uname()[4].endswitch("_64") # arm64的输出是aarch64, 去掉"_64"中的"_"即可
 ```
+
+### `Abort command issued nexus` error messages in /var/log/syslog
+参考: [“Abort command issued nexus” error messages in /var/log/messages file](https://www.thegeekdiary.com/abort-command-issued-nexus-error-messages-in-var-log-messages-file/)
+
+现象：fio测试multipath时出现报错, 用`multipath -F`解除多路径进行单盘测试. 在fc client端测试(`dd if=/dev/sdc of=/dev/null bs=1M count=100`)过程中发现`cat /sys/class/fc_remote_ports/*/port_state`fc盘的链路有时一直时Online有时Blocked(过会会恢复成Online), 且syslog报错: `Abort command issued nexus=8:2:0 -- 2002`, 根据参考的资料的结论是: 这些日志条目的存在表明 fc链路 I/O 性能严重下降, 从而导致一系列问题.
+
+在target端进行同样的dd测试发现原盘同样很慢, 因此断定是原盘的问题.
+
+### 获取fc链路的client port_name
+1. 通过`/sys/class/fc_host/xxx`确认名称
+1. 读取`/sys/class/scsi_host/xxx/sns_table`, 其中包含就是与该host通信的client port_name

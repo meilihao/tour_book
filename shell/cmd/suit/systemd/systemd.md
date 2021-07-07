@@ -61,6 +61,7 @@ Systemd为每一个守护进程记录一个初始化结构文件，我们称之�
 Description=HelloWorldApp
 After=docker.service
 Requires=docker.service
+AssertFileIsExecutable=/usr/bin/docker # 断言是否可执行文件，不常用
 
 [Service]
 TimeoutStartSec=0
@@ -117,6 +118,15 @@ WantedBy=multi-user.target
 - Restart：定义何种情况 Systemd 会自动重启当前服务，可能的值包括always（总是重启）、on-success、on-failure、on-abnormal、on-abort、on-watchdog
 - TimeoutSec：定义 Systemd 停止当前服务之前等待的秒数
 - Environment：指定环境变量
+
+	```conf
+	Environment=ETCD_CA_FILE=/path/to/CA.pem
+	Environment=ETCD_CERT_FILE=/path/to/server.crt
+	```
+	或者
+	```conf
+	Environment="ETCD_CA_FILE=/path/to/CA.pem" "ETCD_CERT_FILE=/path/to/server.crt"
+	```
 
 > [Unit 配置文件的完整字段清单](https://www.freedesktop.org/software/systemd/man/systemd.unit.html)
 > 所有的启动设置之前，都可以加上一个连词号（-），表示"抑制错误"，即发生错误的时候，不影响其他命令的执行。比如，EnvironmentFile=-/etc/sysconfig/sshd（注意等号后面的那个连词号），就表示即使/etc/sysconfig/sshd文件不存在，也不会抛出错误.

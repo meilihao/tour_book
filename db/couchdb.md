@@ -507,14 +507,12 @@ a, b同时更新一个文档, 假设a先提交了, b提交报409引发重试, �
 ```bash
 # git clone --depth 1 git@github.com:apache/couchdb-pkg.git
 # cd couchdb-pkg
-# make couch-js-rpms # 可能需要安装一些依赖
+# make couch-js-rpms # 可能需要安装一些依赖 `yum install readline-devel nspr-devel ncurses-devel`
 ```
 
 > ubuntu打包命令: make couch-js-rpms PLATFORM=ubuntu-xenial # 其他ubuntu版本替换`ubuntu-xenial`即可
 
 方法2, 使用其他源的js-devel:
-1. yum install readline-devel nspr-devel ncurses-devel
-
 1. 下载rpm并依次安装
 - https://centos.pkgs.org/7/centos-aarch64/js-1.8.5-20.el7.aarch64.rpm.html
 - https://centos.pkgs.org/7/centos-x86_64/js-devel-1.8.5-20.el7.x86_64.rpm.html

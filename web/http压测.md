@@ -35,3 +35,10 @@ $ apt-get install apache2 # Ubuntu/Debian
 ```
 $ yum install nghttp2
 ```
+
+### neokylin安装php报缺httpd-mmn, 但Google httpd-mmn没找到具体package
+参考: [Run-Time Dependencies](https://fedoraproject.org/wiki/PackagingDrafts/ApacheHTTPModules#Run-Time_Dependencies)
+
+使用`yumdownloader httpd-mmn`发现就是httpd, 再用`dnf install httpd-2.4.34-18...aarch64.rpm`, 最后再用`dnf install php`即可(也可先用yumdownloader下载再安装).
+
+> [Module Magic Number (MMN)](http://httpd.apache.org/docs/2.0/glossary.html), 其实httpd-mmn就是httpd, 用于确保mod_xxx仅与提供相同二进制模块接口的 httpd 包一起使用
