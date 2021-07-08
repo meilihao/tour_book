@@ -1,6 +1,7 @@
 # targetcli
 参考:
 - [Managing storage devices#Getting started with iSCSI](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/managing_storage_devices/getting-started-with-iscsi_managing-storage-devices)
+- [FC 和iSCSI的使用差异](https://www.huaweicloud.com/articles/57a2047190a7768914f2a0040d3da26f.html)
 
 
 ```bash
@@ -20,6 +21,7 @@ targetcli概念:
         target共享名的要求：iqn规范
             iqn规范 = iqn.yyyy-mm.主机域名反写:任意字串,  例: iqn.2018-02.com.example:data
 - lun(逻辑单元)：Logic Unit Number ，绑定、关联存储设备
+- tpg : Target Portal Group, 实际是为了方便管理target下众多LUN,而添加的一个虚拟层
 
 在执行 targetcli 命令后就能看到交互式的配置界面了, 利用 ls 查看目录参数的结构,使用 cd 切换到不同的目录中等.
 
@@ -37,7 +39,7 @@ acls 参数目录用于存放允许访问 iSCSI 服务端共享存储资源的�
 - [targetcli配置iSCSI](https://www.cnblogs.com/luxiaodai/p/9851214.html)
 
 targetcli(服务端)使用步骤:
-1. `/backstores/block> create disk0 /dev/md0` 创建磁盘映射,  `disk0`是后端存储名, `/dev/md0`是后端存储磁盘路径
+1. `/backstores/block> create disk0 /dev/md0` 创建磁盘映射,  `disk0`是后端存储名, `/dev/md0`是后端存储磁盘路径, 删除backstores对象时target中相应的lun, mapped_lun也会被删除
 
     ```
     /backstores/block> create disk0 /dev/md0
@@ -65,7 +67,7 @@ targetcli(服务端)使用步骤:
           o- portals ...................................................................................................... [Portals: 1]
             o- 0.0.0.0:3260 ....................................................................................................... [OK]
     ```
-1. 创建lun
+1. 创建lun(当luns存在多个lun时, iscsiadm login可一次性挂载这些luns, 同理iscsiadm logout也会一次性卸载这些盘)
     ```
     /iscsi> cd iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80/
     /iscsi/iqn.20....d497c356ad80> ls
@@ -132,6 +134,8 @@ targetcli(服务端)使用步骤:
     ```
 
 ## targetcli CHAP（质询握手身份验证协议）
+参考:
+- [Applying CHAP Authentication to iSCSI ACLs](https://docs.softnas.com/display/SD/Applying+CHAP+Authentication+to+iSCSI+ACLs)
 
 配置targetcli CHAP认证, 分为全局配置和局部配置:
 - /iscsi 下为全局配置
@@ -140,13 +144,18 @@ targetcli(服务端)使用步骤:
     cd /iscsi
     set discovery_auth enable=1 # 启用发现 CHAP 验证
 
+    # 用于单向验证, 客户端登入验证用户和密码
     set discovery_auth userid=InUser
-    set discovery_auth password=InPassword  # 客户端登入验证用户和密码
+    set discovery_auth password=InPassword
 
+    # 用于双向验证, 设置反向验证用户名和密码，当只设置单向验证时，请取消下面的设置
     set discovery_auth mutual_userid=OutUse
-    set discovery_auth mutual_password=OutPassword # 设置反向验证用户名和密码，当只设置单向验证时，请取消该设置
+    set discovery_auth mutual_password=OutPassword
     ```
 - 在 iscsi/iqn.2019-10.cc.pipci.iscsi:debian.tgt1/tpg1/ 下为单个Target的配置，配置只对单个IQN生效为局部配置
+
+    > 其实Normal Authentication可通过TPG节点和ACL节点中的set auth命令配置, 这取决于 TPG 的 generate_node_acls 属性设置.
+如果generate_node_acls是1，则将使用tpg范围的设置, 如果generate_node_acls为0，则将使用用户创建的ACLs的设置. **在targetcli 2.1.fb48(deepin 20.2-kernel 5.12)/2.1.51(ubuntu 20.04-kernel 5.4)上实践发现normal auth仅设置在acl下才有效.**
 
     ```bash
     cd iscsi/
@@ -154,13 +163,15 @@ targetcli(服务端)使用步骤:
      
     cd /iscsi/iqn.2018-07.com.holoem.iscsi:target/tpg1/
      
-    set attribute authentication=0 # 关闭验证
-     
+    set attribute authentication=1 # 开启验证
+    
+    # 这两项也可以不设置
     set attribute generate_node_acls=1
-    set attribute cache_dynamic_acls = 1 # 设置强制使用 TPG 的身份验证
-     
-    set auth userid=InAuthUser password=InAuthPassword # 启用客户端登入验证,并设置登入用户名和密码
-     
+    set attribute cache_dynamic_acls=1 # 设置强制使用 TPG 的身份验证
+    
+    # 下面两项配置位置取决于generate_node_acls: 1在tpg, 0在acl
+    set auth userid=InAuthUser password=InAuthPassword # 启用客户端登入验证,并设置登入用户名和密码, kv的value上不能用`"`包裹否则不能生效. 取消时必须逐个取消(比如``set auth userid=``), 一起取消会发生错乱
+
     # 设置反向验证用户名和密码，当只设置单向验证时，请取消该设置
     set auth mutual_userid=OutAuthUser mutual_password=OutAuthPassword
      
@@ -171,9 +182,9 @@ targetcli(服务端)使用步骤:
     systemctl restart target # 重启服务
     ```
 
-全局配置下只能设置发现认证，局部配置只能设置登录认证，其中每种认证又分为单向认证和双向认证, 无论那种认证都是在target端配置的:
-- 单向认证是指initiator端在发现target端的时候，要提供正确的认证才能发现在target端的iSCSI服务
-- 双向认证是指在单向认证的基础上，target端需要正确设置initiator端设置的认证才能被initiator端发现
+全局配置下只能设置发现(discovery)认证，局部配置只能设置登录(normal)认证，其中每种认证又分为单向认证和双向认证, 无论那种认证都是在target端配置的:
+- 单向认证是target server认证initiator, 即initiator端在发现target端的时候，要提供正确的认证才能发现在target端的iSCSI服务
+- 双向认证是target server和inititor互相认证, 即在单向认证的基础上，target端需要正确设置initiator端设置的认证才能被initiator端发现
 
 > 设置双向认证必须建立在单向认证的基础上，因为在initiator登录的时候要先进行单项认证.
 
@@ -219,11 +230,19 @@ systemctl restart iscsi
 systemctl restart iscsid # 重启 iscsi和iscsid 服务
 ```
 
+> 在targetcli 2.1.fb48(deepin 20.2-kernel 5.12)/2.1.51(ubuntu 20.04-kernel 5.4)上实践发现配置/etc/iscsi/iscsid.conf的normal chap后, `sudo iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.chen-aliyun.x8664:sn.186dcf05e59b |grep auth`仍为空. 但针对某个target设置normal认证(见iscsiadm example)是生效的.
+
 ## targetcli cmd模式
 ```bash
 # targetcli /backstores/block create name=disk1 dev=/dev/nbd1 [wwn=bb3f4d39-881a-4932-9e3e-9537ba9be9f4] # wwn会保存到/sys/kernel/config/target/core/iblock_1/disk1/wwn/vpd_unit_serial中
 # targetcli /backstores/block help create
 ```
+
+## targetcli 部分参数/属性
+- demo_mode_write_protect=0 : 设置为 demo 模式, 即无需要配置 ACL 权限控制列表即可连接
+- authentication=0 : 关闭密码认证(chap信息未删除不会影响密码认证的关闭)
+- generate_node_acls=1 # 此项为将 Initiator 自动添加进 ACL 认证列表，设置generate_node_acls时必须与authentication同时配置, 它可控制Normal Authentication设置在TPG节点还是ACL节点
+- cache_dynamic_acls=1 # 此项为记录 ACL 信息, 方便 SCSI 保持连接，设置成 demo 模式后，默认即为1
 
 ## targetcli backstores
 backstores分类:
@@ -237,7 +256,7 @@ backstores分类:
     如果新建的FILEIO 中，参数 buffered =True，就可以使用buffer cache ，将明显提高其有效性能
     同时伴随的风险是一系列数据的整体风险：如果系统崩溃，一个 unflushed buffer cache将导致整个后
     备存储不能挽回的损坏.
-- [pscsi(parallel SCSI)](https://en.wikipedia.org/wiki/Parallel_SCSI): 已淘汰, 建议使用 block 代替
+- [pscsi(parallel SCSI)](https://en.wikipedia.org/wiki/Parallel_SCSI): 物理scsi设备，不推荐使用, 建议使用 block 代替
 
     /backstores> pscsi/ create name=pscsi_backend dev=/dev/sr0
 - ramdisk : RAM 硬盘后备存储
@@ -292,6 +311,15 @@ UUID=eb9cbf2f-fce8-413a-b770-8b0f243e8ad6 /iscsi xfs defaults,_netdev 0 0 # 由�
 # iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linux.x8664:sn.d497c356ad80 -u # 登出
 ```
 
+针对某个target设置chap:
+```bash
+sudo iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664:sn.0d690d398ec5 |grep auth # 查看是否设置了auth
+sudo iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664:sn.0d690d398ec5 -o update --name=node.session.auth.authmethod --value=CHAP
+sudo iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664:sn.0d690d398ec5 -o update --name=node.session.auth.username --value=user
+sudo iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664:sn.0d690d398ec5 -o update --name=node.session.auth.password --value=password
+sudo cat /etc/iscsi/nodes/iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664\:sn.0d690d398ec5/127.0.0.1\,3260\,1/default # 配置位置, `127.0.0.1`是target server ip, `1`未知, 但`iscsiadm -m discovery -t st -p 127.0.0.1`时都能找到
+```
+
 ## FAQ
 ### 查找iSCSI initiator挂载生成的盘符
 方法1, **推荐**:
@@ -334,7 +362,7 @@ UUID=eb9cbf2f-fce8-413a-b770-8b0f243e8ad6 /iscsi xfs defaults,_netdev 0 0 # 由�
 一旦配置成自动生成acl节点，当initiator认证成功后，再配置成自定义的acl实现访问控制是无效的 只有重启系统后恢复正常，我感觉这个是因为有认证记忆的功能.
 
 ### iscsiadm -m node xxx 无法login, 报"initiator reported error ( 24 - ..."
-开启了CHAP认证, 禁用即可: `.../tpg1> set attribute authentication=0`
+开启了CHAP认证, 禁用即可: `.../tpg1> set attribute authentication=0` 或 iscsiadm添加chap信息(见iscsiadm example)
 
 此时target端是报: `kernel: Initiator is requesting CSG: 1, has not been successfully authenticated, and the Target is enforcing iSCSI Authentication, login failed.`
 
@@ -422,3 +450,27 @@ def list_eth_names(max_eth=1024):
 ### 获取fc链路的client port_name
 1. 通过`/sys/class/fc_host/xxx`确认名称
 1. 读取`/sys/class/scsi_host/xxx/sns_table`, 其中包含就是与该host通信的client port_name
+
+### CHAP user or password not set for Initiator ACL
+- case1:
+
+    chap应设置在target的acl下, 比如在`/iscsi/iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664:sn.0d690d398ec5/tpg1/acls/iqn.1993-08.org.debian:01:7ed7bee79b74`下设置`set auth userid=user password=password`
+
+- case2:
+
+    target server已取消CHAP, 但initiator端仍未取消, 因此在Initiator端注释chap配置即可
+
+# tgtadm
+参考:
+- [github.com/longhorn/go-iscsi-helper](https://github.com/longhorn/go-iscsi-helper/blob/master/iscsi/target.go)
+
+安装tgt:
+```bash
+apt-get install tgt
+ll /etc/tgt # 配置文件位置
+```
+
+常用命令:
+```bash
+tgtadm --mode target --op show
+```
