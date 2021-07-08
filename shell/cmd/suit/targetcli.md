@@ -75,7 +75,7 @@ targetcli(服务端)使用步骤:
             o- luns ........................................................ [LUNs: 0]
             o- portals .................................................. [Portals: 0]
     /iscsi/iqn.20....d497c356ad80> cd tpg1/luns
-    /iscsi/iqn.20...d80/tpg1/luns> create /backstores/block/disk0 # 创建lun，关联共享名和后端存储设备
+    /iscsi/iqn.20...d80/tpg1/luns> create /backstores/block/disk0 # 创建lun，关联共享名和后端存储设备, lun id must in [0,255]
     Created LUN 0.
     /iscsi/iqn.20...d80/tpg1/luns> ls
     o- luns .................................................................................................................. [LUNs: 1]
