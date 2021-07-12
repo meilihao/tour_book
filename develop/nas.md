@@ -711,7 +711,7 @@ if (nfs_mount_data_version == 1) {
 # rpcinfo -p 192.168.1.35 # 查看与nfs server间的rpc通信是否正常, service列表中显示mountd+nfs表示正常
 # rpcdebug -vh
 # rpcdebug -m nfs -s all # Enable all NFS (client-side) debugging
-# rpcdebug -m rpc -s call # only Enable RPC Call (client-side) debugging
+# rpcdebug -m rpc -s call # Enable RPC Call (client/server-side) debugging
 # rpcdebug -m nfsd -s all # Enable NFSD (server-side) debugging
 # ### Disable debugging
 # rpcdebug -m nfs -c all
@@ -745,10 +745,10 @@ env: ubuntu14.04 + samba 4.3.11
 smb server端权限正确, 重启后正常.
 
 ### clnt_create: RPC: Program not registered
-`showmount -e 192.168.0.248`时报该错误, 网上的提示是`rpcbind`没运行, 但查了`ss -anlpt|grep rpcbind`是运行的,`exportfs -ra`后有时正常但有时还是不行. 推测是nfs本身的问题.
+`showmount -e 192.168.0.248`时报该错误, 网上的提示是`rpcbind`没运行, 但查了`ss -anlpt|grep rpcbind`是运行的(`rpcinfo 192.168.0.248`也有输出), `exportfs -ra`后有时正常但有时还是不行. 推测是nfs本身的问题.
 
 验证过程:
-通过tcpdump抓取mount.nfs与rpcbind(端口111)的通信过程, 发现它们能正常通信, 重启rpcbind后问题仍存在, 重启nfs-kernel-server后正常, 因此就是nfs-kernel-server的问题.
+通过tcpdump抓取mount.nfs与rpcbind(端口111)的通信过程, 发现它们能正常通信, 重启rpcbind后问题仍存在; 在rpcbind-nfsd(`:2049`)间未抓取到任何数据, 重启nfs-kernel-server后正常, 因此就是nfs-kernel-server的问题.
 
 ### 修改/etc/export后, 仍提示"权限不够"
 1. client使用root挂载nfs export(/mnt/abc, root_squash, all_squash), client能挂载成功但没有权限进入挂载目录
@@ -774,6 +774,8 @@ samba client挂载测试情况:
 
 ### 查看本机运行的nfs的版本
 `rpcinfo -p|grep nfs`
+
+> ` 0.0.0.0.8.1`是nfsd在rpcinfo的地址, `0.0.0.0`是server端的ip, `8.1是service port的两个字节表示, 2049 =(8 * 256)+ 1`. 也可用`rpcinfo -p`显示port.
 
 ### cifs挂在报`No dialect specified on mount. Default has changed to a more secure dialect, SMB2.1 or later (e.g. SMB3), from CIFS (SMB1). To use the less secure SMB1 dialect to access old servers which do not support SMB3 (or SMB2.1) specify vers=1.0 on mount`
 必须使用比`vers=1.0`更高的smb协议.
