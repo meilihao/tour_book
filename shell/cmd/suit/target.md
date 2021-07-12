@@ -9,6 +9,7 @@
 
 # apt install targetcli-fb # ubuntu 18.04
 # apt install targetcli # [ubuntu 16.04](https://packages.ubuntu.com/search?suite=xenial&section=all&arch=any&keywords=targetcli&searchon=contents), 不推荐
+# systemctl status iscsid
 ```
 
 > targetcli的官方git repo已不再维护, 推荐使用**[targetcli-fb](https://github.com/open-iscsi/targetcli-fb)**
@@ -460,9 +461,15 @@ def list_eth_names(max_eth=1024):
 
     target server已取消CHAP, 但initiator端仍未取消, 因此在Initiator端注释chap配置即可
 
+### Could not create NetworkPortal in configFS
+3260端口被tgtd占用, 当前未知如何修改portal, 但可直接停止tgtd.
+
 # tgtadm
 参考:
 - [github.com/longhorn/go-iscsi-helper](https://github.com/longhorn/go-iscsi-helper/blob/master/iscsi/target.go)
+- [Linux上配置使用iSCSI详细说明](https://www.cnblogs.com/f-ck-need-u/p/9067906.html)
+
+> tgtadm和tgt-admin都是管理和配置target的工具，它们作用是一样的，只不过tgtadm是命令行下的工具，而tgt-admin是根据配置文件/etc/tgt/targets.conf调用tgtadm来实现.
 
 安装tgt:
 ```bash
@@ -472,5 +479,6 @@ ll /etc/tgt # 配置文件位置
 
 常用命令:
 ```bash
+systemctl status tgt.service
 tgtadm --mode target --op show
 ```

@@ -106,7 +106,7 @@ $ sudo zpool create <pool> mirror <device-id-1> <device-id-m1> mirror <device-id
 $ sudo zpool add <pool> log mirror <device-id-1> <device-id-2> # 添加 SLOG
 $ sudo zpool add <pool> spare devices # 添加热备, 大小应>=max(pool's vdev),且无法移除当前正在使用的热备. 移除用`zpool remove`
 $ sudo zpool add <pool> cache <device-id> # 添加L2ARC
-$ sudo zpool iostat -v <pool> N # 每隔N秒输出一次pool的io状态
+$ sudo zpool iostat -v <pool> N # 每隔N秒输出一次pool的io状态. 第一次输出的数值可能较大, 因为那是`(pool_imported_total_count)/(time.now - pool_imported_at)`, 第二次开始才是`(time.now_total_count-lasttime_total_count)/(time.now-lasttime)`
 $ sudo zpool iostat <pool> <vdev> # pool中vdev的iostate
 # sudo zpool iostat -vly 1 1
 $ sudo zpool remove <pool> mirror-1 # 移除mirror/不在使用的热备
