@@ -126,9 +126,9 @@ NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nf
 - lockd : 用在管理档案的锁定 (lock) 用途. 当多个客户端同时尝试写入某个档案时， 需要lockd 来解决多客户端同时写入的问题. 但 lockd 必须要同时在客户端与服务器端都开启才行. 此外， lockd 也常与 rpc.statd 同时启用.
 - statd : 检查文件的一致性，与lockd有关. 若发生因为客户端同时使用同一档案造成档案可能有所损毁时， statd 可以用来检测并尝试恢复该档案. 与 lockd 同样的，这个功能必须要在服务器端与客户端都启动才会生效.
 - rpc.idmapd : 名字映射后台进程
-- rpcbind : 主要功能是进行端口映射工作. 当客户端尝试连接并使用RPC服务器提供的服务（如NFS服务）时，rpcbind会将所管理的与服务对应的端口提供给客户端，从而使客户可以通过该端口向服务器请求服务, 因此rpcbind必须在nfs前启动.
+- rpcbind : 见[rpcbind](/shell/cmd/rpcbind.md), rpcbind必须在nfs前启动.
 
-> nfsd源码在[这里](https://sourceforge.net/projects/nfs/)
+> nfsd源码在[这里](https://sourceforge.net/projects/nfs/), 编译依赖: `apt install libevent1-dev libnfsidmap-dev libsqlite3-dev libdevmapper-dev`
 
 ### 其他相关命令
 
@@ -707,27 +707,7 @@ if (nfs_mount_data_version == 1) {
 
 
 ### nfs debug
-```bash
-# rpcinfo -p 192.168.1.35 # 查看与nfs server间的rpc通信是否正常, service列表中显示mountd+nfs表示正常
-# rpcdebug -vh
-# rpcdebug -m nfs -s all # Enable all NFS (client-side) debugging
-# rpcdebug -m rpc -s call # Enable RPC Call (client/server-side) debugging
-# rpcdebug -m nfsd -s all # Enable NFSD (server-side) debugging
-# ### Disable debugging
-# rpcdebug -m nfs -c all
-# rpcdebug -m nfsd -c all
-```
-
-rpcdebug module:
-- nfs 	NFS client
-- nfsd 	NFS server
-- nlm 	Network Lock Manager Protocol(NLM)
-- rpc 	Remote Procedure Call
-
-rpcdebug选项:
-- -m : module name to set or clear kernel debug flags
-- -s : To set available kernel debug flag for a module
-- -c : Clear Kernel debug flags
+见[rpcbind](/shell/cmd/rpcbind.md)的rpcdebug.
 
 > 将nfsd日志输入syslog: `RPCNFSDOPTS="-d -s"`. "-d", 启用debug; "-s", 写入syslog
 
@@ -748,7 +728,13 @@ smb server端权限正确, 重启后正常.
 `showmount -e 192.168.0.248`时报该错误, 网上的提示是`rpcbind`没运行, 但查了`ss -anlpt|grep rpcbind`是运行的(`rpcinfo 192.168.0.248`也有输出), `exportfs -ra`后有时正常但有时还是不行. 推测是nfs本身的问题.
 
 验证过程:
-通过tcpdump抓取mount.nfs与rpcbind(端口111)的通信过程, 发现它们能正常通信, 重启rpcbind后问题仍存在; 在rpcbind-nfsd(`:2049`)间未抓取到任何数据, 重启nfs-kernel-server后正常, 因此就是nfs-kernel-server的问题.
+通过tcpdump抓取mount.nfs与rpcbind的通信过程(`showmount -e 192.168.16.153`+`tcpdump -vvv -nn -XX port 111`), 发现它们能正常通信, 重启rpcbind后问题仍存在; 在rpcbind-nfsd间有抓取到数据`mount -t nfs -o vers=4 192.168.16.153:/mnt/test2 mnt`+`tcpdump -vvv -nn -XX port 2049`, 重启nfs-kernel-server后正常, 因此应是`rpcbind与nfs-kernel-server间`或`nfs-kernel-server(大概率)`的问题.
+
+通过`mount -t nfs -o vers=4 192.168.16.153:/mnt/test2 mnt`+rpcdebug发现(nfs v3通信过程没有明显报错, 但nfs v4有), 报错在`<kernel>/net/sunrpc`里.
+
+在通过`mount -t nfs -o vers=3 192.168.16.153:/mnt/test2 mnt -v`+ nfs server端rpcdebug的`nfsd+rpc`日志发现mount client报`Program not registered`是因为rpcinfo中没有注册mountd(100005), 即`nfs-mountd.service`未启动, 手动启动后挂载正常.
+
+最后检查到Ubuntu 16.04.6 arm 的systemd在启动nfs-kernel-server.service(通过应用来启动, 而不是开机自启)时不会启动nfs-mountd.service, [可能的原因](https://bugs.launchpad.net/ubuntu/+source/nfs-utils/+bug/1590799), 通过提前调用`systemctl start nfs-mountd.service`解决.
 
 ### 修改/etc/export后, 仍提示"权限不够"
 1. client使用root挂载nfs export(/mnt/abc, root_squash, all_squash), client能挂载成功但没有权限进入挂载目录

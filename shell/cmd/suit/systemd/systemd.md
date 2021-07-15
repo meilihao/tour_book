@@ -52,8 +52,8 @@ Systemd为每一个守护进程记录一个初始化结构文件，我们称之�
 每个配置文件的状态，一共有四种:
 - enabled：已建立启动链接
 - disabled：没建立启动链接
-- static：该配置文件没有[Install]部分（无法执行），只能作为其他配置文件的依赖
-- masked：该配置文件被禁止建立启动链接
+- static：该配置文件没有[Install]部分, 不可以自己启动, 不过可能会被其它的 enabled 的服务来唤醒
+- masked：这个 unit 无论如何都无法被启动！因为已经被强制注销. 可通过 systemctl unmask 改回原来的状态
 
 下面我们演示创建一个Hello_world.service的简单Unit文件：
 ```
@@ -76,7 +76,7 @@ WantedBy=multi-user.target
 
 ### `[Unit]`
 [Unit]区块通常是配置文件的第一个区块，用来定义 Unit 的元数据，以及配置与其他 Unit 的关系.它的主要字段如下:
-- Description：简短描述,可以在Systemd日志展示（可以通过journalctl和Systemdctl来检查日志文件）
+- Description：简短描述,systemd服务启停时会打印到Systemd日志（可以通过journalctl和Systemdctl来检查日志文件）
 - Documentation：文档地址
 - Requires：当前 Unit 依赖的其他 Unit(强依赖)，如果它们没有运行，当前 Unit 会启动失败
 - Wants：与当前 Unit 配合的其他 Unit(弱依赖)，如果它们没有运行，当前 Unit 不会启动失败
@@ -395,10 +395,9 @@ $ sudo systemctl set-property httpd.service CPUShares=500
 
 ###依赖关系###
 # 列出一个 Unit 的所有依赖
-$ systemctl list-dependencies nginx.service
+$ systemctl list-dependencies nginx.service [--reverse] # `--reverse`会反向追踪是谁在使用这个 unit. output中green是活动的, red是非活动的.
 # 有些依赖是 Target 类型（详见下文），默认不会展开显示。如果要展开 Target，就需要使用`--all`参数
 $ systemctl list-dependencies --all nginx.service
-$ systemctl list-dependencies graphical.target
 
 ###开机启动###
 # 设置开机启动
@@ -444,6 +443,8 @@ $ sudo systemctl isolate multi-user.target
 Systemd 统一管理所有 Unit 的启动日志。日志的配置文件是`/etc/systemd/journald.conf`.
 
 systemd-journald 服务收集到的日志默认保存在 /run/log 目录中，重启系统会丢掉以前的日志信息, 修改配置文件 /etc/systemd/journald.conf，把 Storage=auto 改为 Storage=persistent，并取消注释，然后`systemctl restart systemd-journald.service`即可实现持久化日志(`/var/log/journal`).
+
+> [systemd loglevel](https://wiki.archlinux.org/title/Systemd/Journal)
 
 ```
 # 查看所有日志（默认情况下 ，只保存本次启动的日志）

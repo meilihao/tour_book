@@ -28,6 +28,11 @@
 - -uc : don't sign the changes file
 - -us : unsigned source package
 
+## deb debug package
+打deb包时, 通过将可执行文件的符号表通过剥离成独立的 dbg 包, 称为 debug package. 正常情况下 -dbg.deb 不会安装.
+
+新版本（debhelper/9.20151219 or newer in Debian）的 debhelper 已经把 -dbg.deb 改为 -dbgsym.deb，详情请见[DebugPackage](https://wiki.debian.org/DebugPackage).
+
 ## FAQ
 ### 通过deb-src构建deb
 ```bash
