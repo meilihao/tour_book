@@ -6,3 +6,6 @@
 
 ## diff
 - [怎么使用 Diff 和 Meld 工具发现两个目录间的不同之处](https://linux.cn/article-8573-1.html)
+
+## 进阶
+- [Git工作流中常见的三种分支策略：GitFlow、GitHubFlow和GitLabFlow](https://my.oschina.net/u/4526289/blog/5131618)
