@@ -26,6 +26,10 @@ journald是systemd独有的日志系统，替换了sysVinit中的syslog守护进
 1. 合并显示多个 Unit 的日志
        # journalctl -u nginx.service -u php-fpm.service --since today
 
+1. 按时间查询
+
+       # journalctl --since "2018-03-26 20:20:00" [--until "2021-08-26 03:00"]
+
 ## FAQ
 ### 内核崩溃 (Kernel panics) systemd log丢失
 参考:

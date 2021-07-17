@@ -232,7 +232,7 @@ zfs snapshot（快照）是 zfs 文件系统或卷的**只读**拷贝(即无法�
 
 ```sh
 $ sudo zfs snapshot -r mypool/projects@snap1 # 创建 mypool/projects 文件系统的快照. `-r`表示递归创建(即为所有后代文件系统创建快照)
-$ sudo zfs list -t snapshot # 查看所有的snapshots列表
+$ sudo zfs list -t snapshot # 查看所有的snapshots列表. USED, 快照占用空间, REFER, 快照引用的数据所站空间.
 $ sudo zfs list -t snapshot -d 1  mypool/p13 # 只显示指定dataset的snaps
 $ sudo zfs list -t snapshot -r  mypool/p13 # 只显示指定dataset的snaps
 $ sudo zfs rollback mypool/projects@snap1 # 回滚快照
