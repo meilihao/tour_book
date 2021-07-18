@@ -253,3 +253,15 @@ Runlevel 6 : 关闭并重启机器(runlevel6.target, reboot.target)
 ## 参考
 
 - [最简明扼要的 Systemd 教程，只需十分钟](https://linux.cn/article-6888-1.html)
+
+## FAQ
+### Failed at step USER spawning
+启动service失败: `Failed at step USER spawning /home/chen/opt/xxx/yyy: No such process`, 已确认可执行程序存在且有执行权限.
+
+解决方法:
+```conf
+[Service]
+User=root #nobody
+```
+
+将`User=root #nobody`替换为`User=root`, 建议systemd配置文件的注释占用新行.
