@@ -326,3 +326,22 @@ docker 服务启动的时候，docker服务会向iptables注册一个链，以�
 
 ### 如何在不启动容器的情况下将Docker映像导出到rootfs
 `docker export $(docker create <image id>) --output="latest.tar"`, 最后使用`docker rm ...`进行清理
+
+### cgroup change of group failed
+进程无法切换到指定的cgroup,一般都是配置的参数有问题.
+
+### 禁用cgroup v1
+```bash
+vim /etc/default/grub # 在GRUB_CMDLINE_LINUX中追加`cgroup_no_v1=all`
+grub2-mkconfig -o /boot/grub2/grub.cfg
+```
+
+或使用`systemd.unified_cgroup_hierarchy=1`, 它会启用cgroup的unified属性, unified的cgroup就是v2了
+
+### 查看cgroup版本
+参考:
+- [详解Cgroup V2](https://zorrozou.github.io/docs/%E8%AF%A6%E8%A7%A3Cgroup%20V2.html)
+
+`mount | grep cgroup`是否出现cgroup2, 有则使用了cgroup2; 出现cgroup则使用了cgroup v1
+
+> 在kernel 4.5中, cgroup v2声称已经可以用于生产环境了, 但它所支持的功能还很有限(v2是v1实现的子集).
