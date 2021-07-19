@@ -584,3 +584,13 @@ zfs get encryption,keystatus,keysource,pbkdf2iters mypool
 import pool时, keystatus可显示加密pool的状态.
 
 `zfs load-key -L file:///xxx.key -n <pool>`加载秘钥.
+
+
+### zfs create超慢
+检查pool avail的大小.
+
+### zfs删除离线pool
+> env: zfs 0.8.6
+
+- raid0 ： x64/arm64 zfs module均panic
+- raiz1 ： x64能强制删除; arm64, 第一次普通删除阻塞, 第二次强制删除报错, 之后无论普通/强制删除均报错.
