@@ -200,9 +200,13 @@ git show commitId fileName # 查看某次commit中具体某个文件的修改
 ### git拉取远程分支
 ```bash
 # git fetch origin # 刷新本地的远程分支列表, 避免`git branch -a`找不到远程分支
+## 可选择是否合并到local current branch
+## - 需要合并到local current branch, 假设local current branch是master
 # git pull <远程repo名> <远程分支名>:<本地分支名>
-# git pull origin master = git pull origin master:master # git pull **会合并到本地分支, 且本地分支必须存在**
-# git fetch orgin master # git fetch 不合并本地分支
+# git pull origin xxx = git pull origin xxx:master # git pull **会合并到本地分支, 且本地分支必须存在**
+## - 不需要合并到local current branch
+# git fetch origin xxx # git fetch 不合并本地分支
+# git checkout -b xxx orgin/xxx
 ```
 
 ### git log filter
