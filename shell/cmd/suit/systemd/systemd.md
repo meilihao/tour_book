@@ -530,4 +530,7 @@ $ sudo journalctl --vacuum-time=1years
 
 # 显示journalctl日志的字段名, 保存位置
 journalctl -f -o verbose
+
+# 设置`/etc/machine-id`
+systemd-machine-id-setup # = dbus-uuidgen --ensure=/etc/machine-id
 ```
