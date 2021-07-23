@@ -1,3 +1,7 @@
+# 设置ip
+# 参考:
+# - [CentOS 7中/etc/rc.local开机启动脚本不生效怎么办？](https://support.huaweicloud.com/trouble-ecs/ecs_trouble_0349.html)
+
 # 需登录后手动启动. 无法设置enable, 因为设置enable启动时, ip route命令运行时enp3s0还未`link up`. 求解???
 [Unit]
 After=network-online.target

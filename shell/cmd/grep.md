@@ -15,6 +15,7 @@ grep [OPTIONS] 关键词 [FILE...]
 
 ## 选项
 
+- -a, --text equivalent to --binary-files=text : 让二进制文件等价于文本
 - -A : 除了列出符合条件的行外, 同时列出每个符合条件行的**后NUM行**
 - -b : 将可执行文件（binary）当作文本文件（text）来搜索
 - -B : 与`-A`类似, 除了列出符合条件的行外, 同时列出每个符合条件行的**前NUM行**
@@ -39,4 +40,7 @@ $ grep -e "class" -e "vitural" file # 匹配多个模式
 $ cat LOG.* | tr a-z A-Z | grep "FROM " | grep "WHERE" > b # 查找日志中的所有带where条件的sql
 $ grep -r $'\r' * # 查找`^M`字符.($：锚定行尾，此字符前面的任意内容必须出现在行尾)
 $ lsmod | grep -E "drbd|xxx" # grep 或
+$ cat /var/log/syslog |grep zfs
+Binary file (standard input) matches
+$ grep -a zfs /var/log/syslog # 可解决`Binary file (standard input) matches`的问题
 ```
