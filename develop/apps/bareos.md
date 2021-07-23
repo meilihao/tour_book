@@ -68,8 +68,9 @@ sudo -u postgres psql # 进入psql
 > alter user postgres with password 'postgres'; # 为postgres创建密码
 psql -h localhost -p 5432 -U postgres -W # 测试密码登录
 
-systemctl restart postgres
+systemctl restart postgresql
 
+# -- [官方安装文档](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareos.html#section-installbareospackages)
 apt install bareos bareos-database-postgresql # 输入db密码. bareos-database-postgresql会利用dbconfig-common mechanism, 在apt install过程中配置db, db配置在`/etc/dbconfig-common/bareos-database-common.conf`. 可用`dpkg-reconfigure bareos-database-common`重新配置, 手动配置db见[这里](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareos.html#other-platforms)
 
 systemctl restart bareos-dir # db config in /etc/bareos/bareos-dir.d/catalog/MyCatalog.conf

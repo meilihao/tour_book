@@ -9,3 +9,6 @@
 
 ## ha
 - [MySQL高可用架构对比](https://juejin.cn/post/6844903812700831752)
+
+## 下载
+- [mariadb connectors](https://mariadb.com/downloads/#connectors)
