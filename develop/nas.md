@@ -51,7 +51,7 @@ autofs 自动挂载服务: 无论是 Samba 服务还是 NFS 服务，都要把�
 
 > **推荐使用以上命令通过 NFSv3 协议挂载，获得最佳性能. 如果应用依赖文件锁，也即需要使用多个client 同时编辑一个文件时使用 NFSv4 协议挂载**
 
-> [nfsv4不再需要rpcbind, rpc.statd, lockd, rpc.mountd服务](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html-single/deploying_different_types_of_servers/index#services-required-by-nfs_exporting-nfs-shares), 但其他rpc服务还是需要: `systemctl mask --now rpc-statd.service rpcbind.service rpcbind.socket`
+> [nfsv4不再需要rpcbind, rpc.statd服务](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html-single/deploying_different_types_of_servers/index#services-required-by-nfs_exporting-nfs-shares), 但其他rpc服务还是需要: `systemctl mask --now rpc-statd.service rpcbind.service rpcbind.socket`
 
 > mount.nfs不支持bind client ip, 见FAQ的"unmatch host"
 
@@ -105,7 +105,7 @@ file-system-id.region.nas.aliyuncs.com:/ /mnt nfs vers=4,minorversion=0,rsize=10
 file-system-id.region.nas.aliyuncs.com:/ /mnt nfs vers=3,nolock,proto=tcp,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev,noresvport 0 0
 ```
 
-NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nfs-common 里.
+NFS server 的配置选项在`/etc/default/nfs-kernel-server`和`/etc/default/nfs-common`里.
 `/etc/exports`是用来管理NFS共享目录的使用权限与安全设置的地方. 特别注意的是，NFS本身设置的是网络共享权限，整个共享目录的权限还和目录自身的系统权限有关.
 /var/lib/nfs/etab                      记录NFS共享出来的目录的完整权限设定值, from "man exportfs"
 /var/lib/nfs/xtab                      记录曾经登录过的客户端信息
@@ -152,7 +152,7 @@ NFS server 的配置选项在 /etc/default/nfs-kernel-server 和 /etc/default/nf
 　　# exportfs -au #  卸载所有共享目录
 		 # exportfs -ra # 刷新nfs export, **推荐**. 已挂载的fs被取消export时,mounted端操作会导致报`ls: 无法访问'xxx': 过旧的文件控柄`
 		 # exportfs -u 127.0.0.1:/scratch/test # 卸载单一目录
-　　# exportfs -rv 重新加载共享所有目录并输出详细信息
+　　# exportfs -rv # **重载导出目录**并输出详细信息. 参考`nfs-server.service`
 		 # exportfs -o rw,no_root_squash 127.0.0.1:/scratch/test # 将/scratch/test共享给127.0.0.1, 信息不会写入`/etc/exports`, 但可用`showmount -e  ${nfs server ip}`查到
 
 1. nfsstat
@@ -280,6 +280,7 @@ NFS服务虽然不具备用户身份验证的功能，但是NFS提供了一种�
 - [SMB on rhel 8](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html-single/deploying_different_types_of_servers/index#assembly_using-samba-as-a-server_Deploying-different-types-of-servers)
 - [使用POSIX ACL控制Samba文件系统的访问](https://help.aliyun.com/document_detail/143007.html)
 - [The Official Samba 3.5.x HOWTO and Reference Guide](https://www.samba.org/samba/docs/old/Samba3-HOWTO/index.html)
+- [将Samba设置为Active Directory域控制器](https://www.cnblogs.com/zyxnhr/p/10981108.html)
 
 > samba有include指令, 能实现类似于nginx的conf.d.
 > 在rhel上，内核的cifs.ko文件系统模块提供了对SMB协议的支持. samba支持windows, mac, linux, 但linux推荐使用nfs.
@@ -307,7 +308,7 @@ SMB 协议版本:
 - smbd : 提供了文件和打印服务, 基于tcp.
 
 	默认绑定所有ip
-- nmbd : 提供了NetBIOS名称服务和浏览支持，帮助SMB客户定位服务器，基于UDP. 它可以把linux系统共享的工作组名称和其ip对应起来, 否知就只能通过ip来访问共享文件.
+- nmbd : 提供了NetBIOS名称服务和浏览支持，帮助SMB客户定位服务器，基于UDP. 它可以把linux系统共享的工作组名称和其ip对应起来, 否则只能通过ip来访问共享文件.
 - smbstatus ：列出目前 **Samba 的联机状况**， 包括每一条 Samba 联机的 PID, 分享的资源，使用的用户名及来源等等
 - pdbedit : 管理用户数据
 
@@ -318,6 +319,7 @@ SMB 协议版本:
 - testparm : 检验配置文件 smb.conf 的语法正确与否
 - smbclient : 查看其他计算机所分享出来的目录或打印机
 - smbtree : 列出网络内其他计算机正在分享的内容, 类似于windows 网络邻居的显示效果.
+- samba-ad-dc.service : 从4.0开始，samba可以作为Active Directory（AD）域控制器（DC）
 
 > 在samba服务器端,权限由共享的目录的普通权限和smb.conf配置文件共同决定.
 > SAMBA 使用的 NetBIOS 通讯协议
@@ -429,9 +431,12 @@ SMB 协议版本:
 
 > samba log: `/var/log/samba`
 
+
+	`smbd -d <0~10>` : 指定日志级别, 优先于smb.conf的相关配置, 详见`man smbd`
 ### 使用
 ```sh
-$  testparm -s # 检查smb.conf是否正确
+$ smbd -b # 查看smbd的构建选项
+$ testparm -s # 检查smb.conf是否正确
 $ smbclient -L //127.0.0.1 [-U josh]# 列出正在分享的内容
 $ smbclient //192.168.0.141/{samba_share_name} # 默认以当前用户和字符界面模式交互式地访问samba_share_name
 $ smbclient --user=share //192.168.66.198/share # 访问共享
@@ -444,7 +449,7 @@ $ pdbedit -x username    #删除Samba账户
 $ pdbedit -v username    #显示账户详细信息
 $ sudo pdbedit -L -v # 查看smbpasswd创建的samba用户
 $ sudo systemctl restart smbd # 使**配置生效**
-# smbcontrol all reload-config # 重新加载Samba配置, 使授权生效, **推荐**
+# smbcontrol all reload-config # 重新加载Samba配置, 使授权生效, **即可实现重载导出目录**
 $ sudo mount -t cifs //127.0.0.1/{samba_share_name} /mnt [-o username=josh -o password=xxx -o vers=2.0  -o uid=$(id -u),gid=$(id -g) ] # 挂载samba分享的内容, client端支持的smb protocol 版本可通过`man mount.cifs#vers查看`. samba使用samba_share_name, 而不像nfs那样的export路径. 未登录用户(密码登录)映射为nobody:nogroup, 否则用指定的username:username. `vers`建议使用2.1或者3.0
 $ sudo mount | grep cifs # 挂载的详细参数, 可参考[通过云服务器ECS（Linux）访问SMB文件系统#挂载文件系统](https://www.alibabacloud.com/help/zh/doc-detail/128737.htm)
 $ sudo smbstatus # 查看连接到samba server的client及使用的protocol version + samba server version, 映射的用户及用户组. version显示`Unknown`: 客户端支持的smb协议比smbd新.
@@ -781,7 +786,7 @@ nfs restart后export rule使用新的句柄导致旧句柄失效, 需重新挂�
 **推荐使用zfs fs, 不推荐ext4,xfs + zvol, 特别是xfs**
 **不能使用zvol精简卷做nas, 见[zfs的`写满测试`](/shell/cmd/suit/zfs.md)***
 
-不推荐xfs原因: [xfs nas卷回滚/快照/克隆/复制等操作后挂载新/原卷会碰到错误"duplicate UUID xxx - can't mount"](zfs.md)
+不推荐xfs原因: [xfs nas卷回滚/快照/克隆/复制等操作后挂载新/原卷会碰到错误"duplicate UUID xxx - can't mount"](zfs.md), **如果能细致处理该错误, 那么xfs或许比ext4更适合做nas, 因为至少不会出现inode耗尽和jdb2无法退出的问题**.
 不推荐ext4: nas umount成功后ext4日志内核进程(jbd2)不退出(ubuntu 14.04 on x84_64), 模拟出一种情况是nas server中有终端进入了nas导出路径导致该zvol被占用而无法释放, umount前可用fuser检测并关闭占用进程. 注意这里必须是umount前检查, 之后就无法检查出来了.
 
 env: 5.3.0-26-generic/4.4
