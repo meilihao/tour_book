@@ -1,4 +1,7 @@
 # acl
+- [Access Control Lists in Linux](https://documentation.suse.com/sles/12-SP4/html/SLES-all/cha-security-acls.html)
+- [POSIX Access Control Lists on Linux](https://www.usenix.org/legacy/publications/library/proceedings/usenix03/tech/freenix03/full_papers/gruenbacher/gruenbacher_html/main.html)
+
 配置fs 的acl.
 
 ACL是由一系列的Access Entry所组成的，每一条Access Entry定义了特定的类别可以对文件拥有的操作权限.

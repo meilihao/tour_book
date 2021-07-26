@@ -436,7 +436,7 @@ SMB 协议版本:
 ### 使用
 ```sh
 $ smbd -b # 查看smbd的构建选项
-$ testparm -s # 检查smb.conf是否正确
+$ testparm -s # 检查smb.conf是否正确, 它会输出生效的配置, **推荐使用**
 $ smbclient -L //127.0.0.1 [-U josh]# 列出正在分享的内容
 $ smbclient //192.168.0.141/{samba_share_name} # 默认以当前用户和字符界面模式交互式地访问samba_share_name
 $ smbclient --user=share //192.168.66.198/share # 访问共享
@@ -780,7 +780,20 @@ nfs restart后export rule使用新的句柄导致旧句柄失效, 需重新挂�
 
 > client挂载成功后，它通过rpc.mountd会得到服务器文件系统的一个文件句柄(fh).
 
-> nfs export的fsid重置后再执行`exportfs -ra`, nfs client也会报该问题. 
+> nfs export的fsid重置后再执行`exportfs -ra`, nfs client也会报该问题.
+
+### smb.conf设置只读后仍可写
+> 登录用户是cz
+
+```conf
+[cz_test]
+path=/mnt/cz_test
+valid users = cz
+writeable = yes
+write list =
+```
+
+注释`writeable = yes`后变成不可写, 推测是`writeable = yes` + ``len(write list)`跳过了部分权限检查导致, 此时建议指明`read list`.
 
 ## zfs xfs nas
 **推荐使用zfs fs, 不推荐ext4,xfs + zvol, 特别是xfs**
