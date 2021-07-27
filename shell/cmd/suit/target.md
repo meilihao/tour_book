@@ -448,7 +448,7 @@ def list_eth_names(max_eth=1024):
 
 在target端进行同样的dd测试发现原盘同样很慢, 因此断定是原盘的问题.
 
-### 获取fc链路的client port_name
+### 获取fc链路的client port_name, 可检查fc链路是否连通
 1. 通过`/sys/class/fc_host/xxx`确认名称
 1. 读取`/sys/class/scsi_host/xxx/sns_table`, 其中包含就是与该host通信的client port_name
 
