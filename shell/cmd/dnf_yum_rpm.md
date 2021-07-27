@@ -8,6 +8,8 @@ DNF配置文件的位置:
 1. Repository: /etc/yum.repos.d/
 1. Cache Files: /var/cache/dnf
 
+> dnf 命令每次使用时都会更新元信息，所以 update 和 upgrade 子命令是可以互换的. apt保存了一个需要定期更新的缓存信息, 其由update命令更新, 而upgrade命令来更新packages.
+
 ## examples
 ```bash
 # dnf --version
@@ -59,12 +61,12 @@ DNF配置文件的位置:
 # dnf makecache # 用于下载和启用系统上当前启用的仓库的所有数据
 
 # dnf group summary # 显示了系统上已安装并可用的组数量
-# dnf grouplist # 列出安装组包（Group packages）
-# dnf groupinstall 'System Tools' # 安装特定的组包
+# dnf group list [-v] # 列出安装组包（Group packages）
+# dnf group install 'System Tools' # 安装特定的组包
 # dnf group install 'System Tools' # 同上
-# dnf groupupdate 'System Tools' # 更新组包
+# dnf group update 'System Tools' # 更新组包
 # dnf group update 'System Tools' # 同上
-# dnf groupremove ‘Educational Software’ # 删除一个软件包组
+# dnf group remove ‘Educational Software’ # 删除一个软件包组
 # dnf group remove 'Development Tools' # 同上
 # dnf group info 'Development Tools' # 查看指定的软件包组信息
 

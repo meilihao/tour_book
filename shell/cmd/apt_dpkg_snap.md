@@ -4,6 +4,8 @@
 
 debian,ubuntu等发行版的包管理.
 
+> apt删除一个包并不会删除**已修改的用户配置文件**, 以防用户意外删除了包. 如果想通过 apt 命令删除一个应用及其配置文件，请在之前删除过的应用程序上使用 purge 子命令.
+
 ## 格式
 
 ## 例
@@ -24,6 +26,8 @@ debian,ubuntu等发行版的包管理.
 # apt purge package_name # remove命令卸载指定软件包，但是留下一些包文件. 如果想彻底卸载软件包，包括它的文件，使用purge替换remove
 # apt build-dep xxx # 获取构建包xxx的依赖(包括源码), 前提是取消`/etc/apt/sources.list*`中相应deb-src源的注释
 ```
+
+> apt-file也可用于查找文件
 
 # dpkg
 
