@@ -205,7 +205,6 @@ git show commitId fileName # 查看某次commit中具体某个文件的修改
 # git pull <远程repo名> <远程分支名>:<本地分支名>
 # git pull origin xxx = git pull origin xxx:master # git pull **会合并到本地分支, 且本地分支必须存在**
 ## - 不需要合并到local current branch
-# git fetch origin xxx # git fetch 不合并本地分支
 # git checkout -b xxx orgin/xxx
 ```
 
@@ -372,3 +371,28 @@ hello_zstack.git是全新repo, 必须有git log(即有内容)才行.
 ## step 4 :  # 将origin 端，由第三步（文件 .git/info/sparse-checkout）设置的 目录下的文件 pull 到本地
 # git pull --depth 1 origin master
 ```
+
+### [git筛选commit制作patch](https://stackoverflow.com/questions/14591888/apply-patches-created-with-git-log-p?rq=1)
+`git log --reverse --author="John\|Mary" –since "Fri Jul 23 09:38:07 2021 +0800" --no-merges --pretty="%H" -- <path>`:
+- `--reverse` : git log本身输出是倒叙的
+- `-since` : 指定大于等于某个时刻
+- `--no-merges` : 不包含merge commit
+- `-- <path>` : 仅包含指定的路径
+- --pretty=<format> : 格式化commit信息: `%H`是提交对象（commit）的完整哈希字串
+
+
+因此完整命令是即`git format-patch $(git log --reverse --author="John Doe" --pretty="%H" -- the/needed/path | awk '{print -NR, " ", $0}') -o patches`:
+- awk用于生成patch的序号
+- `-o patches` : 所有生成的patch保存在patches文件夹中
+
+实际操作发现git log生成的结果有多条时, `git format-patch $(git log ...)`生成的patch不正确, 因此改为script形式:
+```bash
+#!/usr/bin/env bash
+COUNTER=1;
+for c in `git log --reverse --author="John Doe" --pretty="%H" -- the/needed/path`;do
+    git format-patch --start-number=$COUNTER "$c^1".."$c" -o patches
+    let COUNTER=COUNTER+1
+done
+```
+
+> 上述script使用`git log xxx | awk '{print -NR, " ", $0}'` + `git format-patch $c -o patches`时会因为`$c`的内的换行导致执行结果与实际不符.
