@@ -464,6 +464,11 @@ def list_eth_names(max_eth=1024):
 ### Could not create NetworkPortal in configFS
 3260端口被tgtd占用, 当前未知如何修改portal, 但可直接停止tgtd.
 
+### zfs zvol fc导出到client被fio读写时存在fc卡掉线的问题
+env: Ubuntu 16.04 arm64, zfs 0.8.6
+
+相同的操作, 但导出的设备换成物理磁盘时没问题, zvol就概率性出现fc卡掉线, 系统日志没有明显错误.
+
 # tgtadm
 参考:
 - [github.com/longhorn/go-iscsi-helper](https://github.com/longhorn/go-iscsi-helper/blob/master/iscsi/target.go)

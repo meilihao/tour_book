@@ -1,7 +1,7 @@
 # multipath
 设备映射器多路径（ DM-Multipath） 可让将服务器节点和存储阵列间的多个 I/O 路径（这些路径在服务器中的主机总线适配器和设备储存控制器之间）配置为一个单一设备. 通常是在光纤通道 (FC) 或 iSCSI SAN 环境中.
 
-> 本质: 同一时刻能通过多条路径访问到远端的同一个块设备, 因此multipath要求块设备的wwpn必须相同.
+> 本质: 同一时刻能通过多条路径访问到远端的同一个块设备, 因此multipath要求块设备的wwpn必须相同. 对于fc是存在多条光纤链路; 对于iscsi是target server存在多个ip, 且iscis target有多条portal或使用了通配符portal.
 
 ```sh
 # yum install device-mapper-multipath -y
@@ -43,6 +43,7 @@ multipaths {
 
 ## example
 ```bash
+$ multipath -l # 查看多路径设备, 设备在`/dev/mapper`
 $ multipath -F # 清除所有映射关系
 $ multipath -f <multipath_device_name> # 清除指定映射关系
 ```

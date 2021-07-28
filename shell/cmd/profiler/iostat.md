@@ -1,6 +1,24 @@
 # iostat
+参考:
+- [深入理解iostat](https://bean-li.github.io/dive-into-iostat/)
 
 用于块设备.
+
+iostat数据的来源是Linux操作系统的`/proc/diskstats`, 从第四个字段开始，介绍的是该设备的相关统计:
+- 主设备号
+- 从设备号
+- 设备名
+- (rd_ios) : 读操作的次数
+- (rd_merges):合并读操作的次数。如果两个读操作读取相邻的数据块，那么可以被合并成1个。
+- (rd_sectors): 读取的扇区数量
+- (rd_ticks):读操作消耗的时间（以毫秒为单位）。每个读操作从__make_request()开始计时，到end_that_request_last()为止，包括了在队列中等待的时间。
+- (wr_ios):写操作的次数
+- (wr_merges):合并写操作的次数
+- (wr_sectors): 写入的扇区数量
+- (wr_ticks): 写操作消耗的时间（以毫秒为单位）
+- (in_flight): 当前未完成的I/O数量。在I/O请求进入队列时该值加1，在I/O结束时该值减1。 注意：是I/O请求进入队列时，而不是提交给硬盘设备时
+- (io_ticks)该设备用于处理I/O的自然时间(wall-clock time)
+- (time_in_queue): 对字段#10(io_ticks)的加权值
 
 ## 描述
 
@@ -63,3 +81,4 @@ tps和吞吐量:
     # iostat
     # iostat 5 2 # 打算以 5 秒捕获的间隔捕获两个报告, iostat [Interval] [Number Of Reports], 使用特定的间隔输出
     # iostat -x -d -m 1 zd224 # 1, 刷新间隔(s)
+    # pidstat -d 1 # 展示I/O统计，每秒更新一次
