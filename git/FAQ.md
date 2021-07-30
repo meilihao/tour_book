@@ -390,7 +390,7 @@ hello_zstack.git是全新repo, 必须有git log(即有内容)才行.
 #!/usr/bin/env bash
 COUNTER=1;
 for c in `git log --reverse --author="John Doe" --pretty="%H" -- the/needed/path`;do
-    git format-patch --start-number=$COUNTER "$c^1".."$c" -o patches
+    git format-patch --start-number=$COUNTER "$c^1".."$c" -o patches # 使用`"$c^1"`因为不包含起点
     let COUNTER=COUNTER+1
 done
 ```
