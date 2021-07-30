@@ -199,6 +199,8 @@ Alternatively you can use the redoc format: http://127.0.0.1:8000/redoc
 
 原理: 用账户名和密码创建[bareos.bsock.DirectorConsoleJson](https://pypi.org/project/python-bareos/), 再将DirectorConsoleJson和用户名关联, 返回包含该用户名的JWT, 调用restful api with JWT即使用`DirectorConsoleJson.call(cmd)`执行拼接好的cmd.
 
+> 将`rest-api/bareos-restapi.py`中的print打印的注释去掉即可看到rest-api执行过程中向bareos-dir.d发送的cmd了.
+
 > 页面有cdn资源依赖. 该功能由fastapi提供, [离线资源加载看这里](https://fastapi.tiangolo.com/advanced/extending-openapi/#self-hosting-javascript-and-css-for-docs), 在自身项目上引入fastapi资源来解决. 注意不能忘记这两属性`FastAPI(docs_url=None, redoc_url=None)`, 否则应用还是使用fastapi默认的渲染函数.
 
 > 只需设置`http://127.0.0.1:8000/docs`页面的"Authorize"按钮里的username和password即可使用openapi的`try it out`
