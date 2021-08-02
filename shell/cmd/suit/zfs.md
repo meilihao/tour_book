@@ -224,6 +224,8 @@ RDBMS倾向于实现自己的缓存算法，通常类似于zfs自己的ARC. 因�
 > 创建的vol会对应到`/dev/{dataset_path}和/dev/zvol/{dataset_path}`文件, 推荐使用`/dev/zvol/{dataset_path}`. `/dev/zvol/{dataset_path}`仅是`/dev/zdXXX`的软连接, 由`udev rule(/lib/udev/rules.d/60-zvol.rules)`创建
 > [zvol创建volume时,kernel会先创建`/dev/zdXXX`,再通过udev rule异步创建`/dev/zvol/{dataset_path}`, zfs create时可用`udevadm monitor`监控到这些时序信息](https://github.com/openzfs/zfs/issues/7875), 因为linux udev是异步创建device, 因此`/dev/zvol/{dataset_path}`可能没立即出现, 应该轮询一下.
 
+> `zvol_id /dev/zd<N>`可获取该zvol的dataset
+
 ### zfs snapshot
 zfs snapshot（快照）是 zfs 文件系统或卷的**只读**拷贝(即无法修改属性). 可以用于保存 zfs 文件系统的特定时刻的状态，在以后可以用于恢复该快照，并回滚到备份时的状态.
 
