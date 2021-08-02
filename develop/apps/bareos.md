@@ -199,6 +199,8 @@ Alternatively you can use the redoc format: http://127.0.0.1:8000/redoc
 
 原理: 用账户名和密码创建[bareos.bsock.DirectorConsoleJson](https://pypi.org/project/python-bareos/), 再将DirectorConsoleJson和用户名关联, 返回包含该用户名的JWT, 调用restful api with JWT即使用`DirectorConsoleJson.call(cmd)`执行拼接好的cmd.
 
+**需要更新账号对应的profile**, 否则部分rest api接口会报错, 比如创建client, 具体见FAQ的`configure: is an invalid command.`.
+
 > 将`rest-api/bareos-restapi.py`中的print打印的注释去掉即可看到rest-api执行过程中向bareos-dir.d发送的cmd了.
 
 > 页面有cdn资源依赖. 该功能由fastapi提供, [离线资源加载看这里](https://fastapi.tiangolo.com/advanced/extending-openapi/#self-hosting-javascript-and-css-for-docs), 在自身项目上引入fastapi资源来解决. 注意不能忘记这两属性`FastAPI(docs_url=None, redoc_url=None)`, 否则应用还是使用fastapi默认的渲染函数.
@@ -992,3 +994,11 @@ Client {
 
 ### 使用自编译bareos 20.0.1 arm版本, linux备份还原正常, 官方对应版本的windows client无法备份
 dir, sd, fd均无报错.
+
+### `configure: is an invalid command.`
+通过bareos resp-api创建client报错, 通过修改`bareos-restapi.py`打开print来获取到具体调用的命令, 发现相同的命令在bconsole执行成功, 且监控`/var/log/bareos/bareos-audit.log`发现报`Audit acl failure for Command configure`.
+
+查看`bareos-dir.d/console/admin.conf`发现它使用了`bareos-dir.d/profile/web-admin.conf`, 而web-admin.conf的acl中禁用了configure.
+
+解决方法:
+更新web-admin.conf的acl, 取消禁用configure.

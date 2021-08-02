@@ -28,6 +28,7 @@ grep [OPTIONS] 关键词 [FILE...]
 - -n : 打印匹配的行号
 - -o : 只输出匹配的文本行
 - -r : 递归的检索目录下的所有文件(包括子目录)
+- -R : 类似`-r`, 但支持符号链接
 - -s : 不显示错误信息
 - -v : 只输出没有匹配的文本行
 - --exclude-dir : 排除目录
@@ -43,4 +44,5 @@ $ lsmod | grep -E "drbd|xxx" # grep 或
 $ cat /var/log/syslog |grep zfs
 Binary file (standard input) matches
 $ grep -a zfs /var/log/syslog # 可解决`Binary file (standard input) matches`的问题
+$ grep -r --include="*.lua"  "ToSearchString"  Path # 按扩展名搜索
 ```
