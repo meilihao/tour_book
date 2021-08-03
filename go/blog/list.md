@@ -40,6 +40,7 @@
 - [源码剖析Go语言的timer](https://mp.weixin.qq.com/s/GwY6650MNF07MOb79-A-jQ)
 - [一文教你搞懂 Go 中栈操作](https://mp.weixin.qq.com/s/hU6Xmp5zeh9vgUEV5otjWg)
 - [字节跳动 Go RPC 框架 KiteX 性能优化实践](https://mp.weixin.qq.com/s/Xoaoiotl7ZQoG2iXo9_DWg)
+- [字节跳动 Go RPC 框架 KiteX开源 : cloudwego/kitex](https://github.com/cloudwego/kitex)
 
 ## go src
 - [go-under-the-hood](https://github.com/changkun/go-under-the-hood)
