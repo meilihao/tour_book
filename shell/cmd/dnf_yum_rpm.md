@@ -35,6 +35,7 @@ DNF配置文件的位置:
 # dnf downgrade acpid # 回滚某个特定软件的版本
 # dnf autoremove # 去除不要的孤立(不再被其他包依赖)依赖包
 # dnf provides /bin/bash # 查找某一文件的提供者
+# dnf whatprovides "/usr/bin/qemu-kvm" # 查找某一文件的提供者
 # dnf install /path/to/file.rpm
 # dnf install https://xyz.com/file.rpm
 
@@ -113,6 +114,7 @@ DNF配置文件的位置:
 # rpm -qpR rpm包 # 查看软件包的依赖关系
 
 # --- 其他
+# rpm -q --whatprovides /etc/pki/CA # 查找文件的提供者
 # rpm -ivh filename.rpm # 安装软件
 # rpm -Uvh filename.rpm # 升级软件
 # rpm -e filename.rpm # 卸载软件

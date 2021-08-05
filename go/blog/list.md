@@ -14,6 +14,7 @@
 - [go中的并发可视化*](http://strucoder.com/2016/03/15/gozhong-de-bing-fa-ke-shi-hua/)
 - [拜拜了，GOPATH君！新版本Golang的包管理入门教程](https://studygolang.com/articles/19978)
 - [Golang解决TCP粘包拆包问题](https://juejin.im/post/5d220f7b6fb9a07ec7553da4)
+- [How To Code in Go by digitalocean](https://www.digitalocean.com/community/books/how-to-code-in-go-ebook)
 
 ## 进阶
 - [为什么 Go 的泛型一拖再拖？- go泛型为什么不用尖括号](https://gocn.vip/topics/11272)

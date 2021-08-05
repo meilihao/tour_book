@@ -1,4 +1,7 @@
 # qemu
+参考:
+- [Linux 虚拟化入门（一）Qemu，KVM，Virsh 概念指南](https://blog.frytea.com/archives/539/)
+
 Qemu是一个广泛使用的开源计算机仿真器和虚拟机.
 
 操作:
@@ -20,6 +23,8 @@ $ qemu-system-x86_64 -boot menu=on,splash-time=15000 # 查看seabios version
     aarch64_be-linux-user是大端arm
 
 编译:
+> qemu 6.x.x编译可参考[这里](https://github.com/archlinux/svntogit-packages/blob/packages/qemu/trunk/PKGBUILD)
+
 ```bash
 $ sudo apt install -y ninja-build meson pkg-config libglib2.0-dev libpixman-1-dev libjemalloc-dev libzstd-dev liburing-dev # qemue 5.2.0开始构建系统切换到ninja+meson. libzstd-dev最低要求1.4.0, 而deepin v20是1.3.8, 可到[这里](https://packages.debian.org/buster-backports/libzstd-dev)下载libzstd1和libzstd-dev. liburing-dev 未在apt repo里, 可在[这里](https://packages.debian.org/sid/liburing-dev)下载liburing-dev和liburing1来安装
 $ git ls-remote -t https://mirrors.tuna.tsinghua.edu.cn/git/qemu.git
@@ -39,8 +44,12 @@ $ ./configure --target-list="x86_64-softmmu,x86_64-linux-user,aarch64-softmmu,aa
             #   --enable-gtk
 $ make -j $(nproc) && sudo make install
 $ qemu-system-x86_64 --version
+# -- 避免某些旧应用(比如旧版libvirtd)使用到了旧命名qemu-kvm
+$ ln -sf /usr/bin/qemu-system-x86_64 /usr/bin/qemu-kvm
+$ ln -sf /usr/bin/qemu-system-x86_64 /usr/libexec/qemu-kvm
 ```
 
+> 最简编译选项: `./configure --target-list="x86_64-softmmu" --enable-kvm`
 > `--enable-sdl`是为了启用qemu gui, 便于查看early boot, 比如uefi/grub信息.
 > qemu 5.2.0构建切换到ninja+meson后, 构建速度贼快.
 > qemu 6.0.0需要libzstd>=1.4.0
@@ -89,7 +98,7 @@ $ qemu-system-x86_64 --version
 
 如何更便捷地创建虚拟机呢? 答案就是libvirt. 这次就不再一个个指定虚拟机启动的参数，而是用 libvirt. 它管理 qemu 虚拟机，是基于 XML 文件，这样容易维护. xml中定义了kvm中domain的配置信息，可以使用virt-install来生成. 首先，需要安装 libvirt
 ```bash
-# apt install libvirt-bin
+# apt install libvirt-bin # 高版本上是libvirt-clients
 # apt install virtinst
 ```
 
@@ -239,7 +248,7 @@ i440fx是1996年推出的架构, 已过时. q35是2009年推出的架构, 更现
 # LC_ALL=C lscpu | grep Virtualization
 ```
 
-硬件不支持, 检查bios/uefi是否关闭了虚拟化支持.
+硬件不支持, 检查bios/uefi是否关闭了虚拟化支持, 此时可用kvm-ok检查.
 
 ### Dmesg print "psmouse serio1: VMMouse at isa0060/serio1/input0 lost sync at byte 1" when using vmmouse
 一旦鼠标移动到qemu gui上, 就会提示该信息. qemu 4.2正常, 5.1.0有该问题.

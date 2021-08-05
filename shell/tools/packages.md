@@ -13,6 +13,7 @@
 - [How RPM packages are made: the source RPM](https://fedoramagazine.org/how-rpm-packages-are-made-the-source-rpm/)
 - [重建一个源代码 RPM](https://wiki.centos.org/zh/HowTos/RebuildSRPM)
 - [Easy way to create a Debian package and local package repository](https://linuxconfig.org/easy-way-to-create-a-debian-package-and-local-package-repository)
+- [apt source包打包](https://www.debian.org/doc/manuals/apt-howto/ch-sourcehandling.zh-cn.html)
 - [Debian 新维护者手册](https://www.debian.org/doc/manuals/maint-guide/)
 
 ###　构建源

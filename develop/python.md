@@ -24,6 +24,7 @@
 $ sudo apt-get install python3.8
 $ sudo apt install python3-pip
 $ sudo apt install python-pip # pip2 for python2.7
+$ sudo pip install robotframework==2.8.7 # 安装指定版本
 # --- ubuntu20.04开始默认不安装py2.7, 且没有python-pip, 因此要使用get-pip.py安装pip2, 或通过python2-xxx安装package
 $ curl https://bootstrap.pypa.io/get-pip.py --output get-pip.py
 $ sudo python2 get-pip.py

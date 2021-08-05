@@ -15,3 +15,4 @@
 - [eBPF技术应用云原生网络实践系列之kubernetes网络](https://mlog.club/article/5493341)
 - [docker 容器基础技术：linux cgroup 简介](https://cizixs.com/2017/08/25/linux-cgroup/)
 - [Nydus: Dragonfly 的容器镜像服务](https://kernel.taobao.org/2020/11/nydus/)
+- [为什么 Kubernetes 选择了 ETCD？](https://www.mgasch.com/2021/01/listwatch-part-1/)

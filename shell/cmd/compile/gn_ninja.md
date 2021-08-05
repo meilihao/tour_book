@@ -210,3 +210,13 @@ ninja相对于make增加了下面这些功能：
 - 每条规则的输出都是buffered的，也就是说并行编译，输入内容不会被搅和在一起
 
 在Linux上CMake 2.8.8版本可以生成Ninja文件. 较新版本的CMake支持在Windows和Mac OS X上生成Ninja文件.
+
+## ninja编译
+```
+apt install re2c
+tar -xf ninja-xxx.tar.gz
+cd ninja-xxx
+./configure.py --bootstrap
+./ninja --version
+cp ninja /usr/bin/ninja
+```
