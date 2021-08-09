@@ -597,3 +597,6 @@ couchdb 3.1.1支持partition, 新建database时选择`non-partition`即可.
     部分接口允许匿名访问, 比如创建doc, 查询doc等, 但`/_all_dbs`, 创建view仍需admin权限, 可参考[这里](https://docs.couchdb.org/en/3.1.1/intro/security.html#authentication).
 
     因此, **推荐带auth访问couchdb**.
+
+### 创建doc报`Invalid rev format`
+创建doc时, 请求应不包含rev或rev符号couchdb `doc._rev`(`\d+\-[\w]{32}`)格式
