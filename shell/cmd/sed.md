@@ -22,6 +22,7 @@ sed [OPTIONS] [FILE...]
 - -f ∶ 直接将 sed 的动作写在一个档案内， -f filename 则可以执行 filename 内的sed 动作；
 - -i ∶ 直接修改原文件，而不在屏幕输出
 - -n ∶ 使用安静(silent)模式。在一般 sed 的用法中，所有来自 STDIN的资料一般都会被列出到萤幕上。但如果加上 -n 参数后，则只有经过sed 特殊处理的那一行(或者动作)才会被列出来。
+- -p : 打印指定的数据
 - -r ∶ sed 的动作支援的是延伸型正规表示法的语法.(预设是基础正规表示法语法)
 - -= : 打印当前行号码
 
@@ -42,6 +43,8 @@ sed内置命令N的作用: 不会清空模式空间(pattern space)内容, 并且
 
 ## 例
 ```
+$ sed -n '3,7 p' data # 打印3~7行
+$ sed -n '/linux/I p' data # 查找指定字符串
 $ sed -i "s:/static:/blog/static:" `grep /static -rl ./` # 检索当前目录下的文件,将其包含的字符串"/static"替换为"/blog/static".
 $ sed -i  "s:"action='"'":"action='"'/blog":" `grep action= -rl ./` 将`action="/comment/{{.Content.Id}}/"`替换为`action="/blog/comment/{{.Content.Id}}/"`
 $ sed -i '1,nd' 2016.txt # 删除前n行
