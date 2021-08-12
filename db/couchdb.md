@@ -381,6 +381,8 @@ couchdb内置reduce函数:
 - key : 限定结果中只包含键为该参数值的记录
 - startkey : 限定结果中只包含键大于或等于该参数值的记录
 - endkey : 限定结果中只包含键小于或等于该参数值的记录
+
+    比如获取all docs except design可使用`/xxx/_all_docs?include_docs=true&endkey="_design"`
 - limit : 限定结果中包含的记录的数目
 - descending : 指定结果中记录是否按照降序排列
 
