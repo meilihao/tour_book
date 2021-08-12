@@ -188,7 +188,7 @@ linstor ha是通过drbd复制实现(h2数据库)的, 见[LINSTOR high availabili
 
 > 默认重启linstor-satellite会清除drbd resource, 需添加env LS_KEEP_RES=linstor避免.
 
-ha部署(base drbdd):
+ha部署(base drbd-reactor(原名: drbdd)):
 1. 将所有satellites注册到某个controller作为primary node
 1. 准备linstor_db
 ```bash
