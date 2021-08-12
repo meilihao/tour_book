@@ -600,3 +600,9 @@ couchdb 3.1.1支持partition, 新建database时选择`non-partition`即可.
 
 ### 创建doc报`Invalid rev format`
 创建doc时, 请求应不包含rev或rev符号couchdb `doc._rev`(`\d+\-[\w]{32}`)格式
+
+### Document update conflict
+doc已删除, 更新其views时报错.
+
+原因: doc仍在couchdb中, 只是rev未知, 此时更新才报该错.
+解决方法: 重新创建同_id的doc(**此时PUT的json body中不能有`_rev`属性否则变成了更新, 还报该错**), 获取其rev后再次更新即可.
