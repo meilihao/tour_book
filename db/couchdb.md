@@ -608,3 +608,18 @@ doc已删除, 更新其views时报错.
 
 原因: doc仍在couchdb中, 只是rev未知, 此时更新才报该错.
 解决方法: 重新创建同_id的doc(**此时PUT的json body中不能有`_rev`属性否则变成了更新, 还报该错**), 获取其rev后再次更新即可.
+
+## 驱动
+### [go-kivik/kivik](https://github.com/go-kivik/kivik)
+1. `rows.TotalRows()`需要在`rows.Next()`后调用才能获取到值
+```go
+// curl xxx get `{"total_rows":2, ...}`
+rows,err:=db.AllDocs()
+defer rows.Close()
+
+fmt.Println(rows.TotalRows()) // 0
+for rows.Next{
+    rows.ScanDoc()
+}
+fmt.Println(rows.TotalRows()) // 2
+```
