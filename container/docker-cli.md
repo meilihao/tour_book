@@ -68,3 +68,9 @@ docker  image   rm   $(docker  image  ls   -a  -q)
 docker container   stop   $(docker  container  ls   -a  -q)
 docker   container   rm  $(docker  container  ls   -a  -q)
 docker container prune # 清理已停止的容器, from [Prune unused Docker objects](https://docs.docker.com/config/pruning/)
+
+docker image prune -a # [清空image](https://docs.docker.com/config/pruning/)
+docker container prune
+docker volume prune
+docker network prune
+docker system prune # Prune everything

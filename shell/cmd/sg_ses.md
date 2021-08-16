@@ -111,3 +111,8 @@ $ sg_ses -x 5 -C ident /dev/sg3
 ## FAQ
 ### 主机柜`/sys/class/enclosure/xxx/Slot<N>/device/block`下没有盘符
 系统驱动与scsi阵列卡不匹配.
+
+### 主机柜中的磁盘没有`/sys/class/scsi_device/sdd/device/sas_address`属性
+> `sg_ses -p 0xa /dev/sg0`, sg0是主机柜, 此时能看到sdd sas_address信息.
+
+解决方法: 更换SAS卡

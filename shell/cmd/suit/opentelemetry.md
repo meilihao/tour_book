@@ -262,3 +262,25 @@ otelcol端口:
 - 55681 : http, 接收OpenTelemetry client的上传
 
 > opentelemetry collector 支持级联by [otlpexporter](https://github.com/open-telemetry/opentelemetry-collector/tree/master/exporter/otlpexporter)/[otlphttpexporter](https://github.com/open-telemetry/opentelemetry-collector/tree/master/exporter/otlphttpexporter), 此时前一级的opentelemetry-collector也被成为opentelemetry agent.
+
+## FAQ
+### jaeger-ui `http://xxx:16686/search`刷新报`all shards failed [type=search_phase_execution_exception]`
+具体报错接口是`curl http://openhello.net:16686/api/services`, 新旧版jaeger数据导致, 删除旧数据重新刷新即可.
+
+删除elasticsearch所有数据:
+```
+curl -X DELETE 'http://localhost:9200/_all'
+```
+
+### 清空elasticsearch数据后, opentelemetry发送的数据未进入es
+步骤:
+```bash
+# -- jaeger-collector和jaeger-query运行中
+systemctl stop elasticsearch
+rm -rf /var/lib/elasticsearch
+systemctl start elasticsearch
+# -- 发送opentelemetry数据给otel-collector
+# -- 访问jaeger ui: http://xxx:16686/search, 没有数据
+```
+
+解决方法: 重启jaeger-collector和jaeger-query后解决.
