@@ -214,3 +214,9 @@ go-mod-upgrade
 因为使用了GOPROXY, 其存在缓存的原因. 解决方法:
 1. 先删除go.mod对应的rule
 1. 执行`GOPROXY="direct" GOSUMDB="off" go get -u github.com/xxx/xxx`
+
+### go install `xxx@latest`
+参考:
+- [Deprecation of 'go get' for installing executables](https://golang.google.cn/doc/go-get-install-deprecation)
+
+`latest`是指主分支的lastest commit.

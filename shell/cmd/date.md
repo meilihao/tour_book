@@ -56,4 +56,19 @@ ss 秒(选择性)
     # clock -w # 把系统时间写入CMOS
 
 ## timedatectl
+参考:
+- [如何设置时间，时区和同步系统时钟使用timedatectl命令](https://www.howtoing.com/set-time-timezone-and-synchronize-time-using-timedatectl-command/)
+
 systemd的时间工具.
+
+### example
+```bash
+timedatectl list-timezones
+timedatectl set-timezone "Asia/Kolkata"
+timedatectl set-timezone UTC
+timedatectl set-time '16:10:40 2015-11-20'
+timedatectl set-time 20151120
+timedatectl set-time 15:58:30
+timedatectl set-local-rtc 1 # 将硬件时钟设置为本地时区
+timedatectl set-ntp true # 启用远程NTP服务自动时间同步, 前提是安装NTP
+```

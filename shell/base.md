@@ -127,6 +127,12 @@ __EOF__
 abc
 ```
 
+```bash
+cat << EOF > abcd.txt
+hello world
+EOF
+```
+
 > cat+delimiter时内容中的tab会被解析成bash中的按tab键操作, 需要用空格替代tab.
 
 delimiter包含变量:

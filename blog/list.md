@@ -55,6 +55,7 @@
 
 ## 测试
 - [持续集成是什么？](http://www.ruanyifeng.com/blog/2015/09/continuous-integration.html)
+- [搭建基于 Ubuntu Server 的 PXE 自动安装环境的实用指南 by Subiquity](https://linux.cn/article-13693-1.html)
 
 # linux
 ## 性能优化和故障排除

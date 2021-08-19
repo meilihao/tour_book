@@ -88,6 +88,11 @@ Decodes standard and some vendor Vital Product Data (VPD) pages.
 # sg_vpd -p 0x83 /dev/sg15
 ```
 
+## sg_turs
+```
+sg_turs /dev/sdc # 检查磁盘是否ready
+```
+
 ## 扩展
 ### Control LED
 参考:

@@ -57,6 +57,8 @@
 - [如何创建ECC证书 for nginx](https://www.digitalocean.com/community/tutorials/how-to-create-an-ecc-certificate-on-nginx-for-debian-8)
 - [*网络安全的基础 - 数字证书及签名](http://blog.kamidox.com/security-basic-cert-sign.html)
 - [证书透明度是什么？它是怎么工作的?](https://razeen.me/post/what-ct-is-and-how-it-works.html)
+- [Introducing CFSSL - CloudFlare's PKI toolkit](https://blog.cloudflare.com/introducing-cfssl/)
+- [用CloudFlare的PKI工具CFSSL生成Certificate Bundle](https://www.lijiaocn.com/%E6%8A%80%E5%B7%A7/2018/10/13/cfssl-cloudflare-pki-toolkit.html)
 
 ## 校验
 - [扫盲文件完整性校验——关于散列值和数字签名](2015_05_23_006.md)
