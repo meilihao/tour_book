@@ -224,3 +224,10 @@ go-mod-upgrade
 ### `go get github.com/meilihao/golib/v1`报`go get: github.com/meilihao/golib@v1.0.0: invalid version: go.mod has malformed module path "github.com/meilihao/golib/v1" at revision v1.0.0`
 > env: go1.17
 此时glib的go.mod使用`github.com/meilihao/golib/v1`, 将其替换为`github.com/meilihao/golib/v2`即可解决问题, 原因未知, 诡异.
+
+### mod=`github.com/meilihao/golib/v2` file=`github.com/meilihao/golib/version.go` 无法使用ldflags传参
+使用方法: `LDFLAGS="-X github.com/meilihao/golib/v2/golib.appName='xxx'`.
+
+> 传参格式: `-X '{go mod名称}/包名.{变量名}'`
+
+解决方法: 将version.go挪到version/version.go下, 使用`LDFLAGS="-X github.com/meilihao/golib/v2/version.appName='xxx'`即可.
