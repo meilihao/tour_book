@@ -220,3 +220,5 @@ go-mod-upgrade
 - [Deprecation of 'go get' for installing executables](https://golang.google.cn/doc/go-get-install-deprecation)
 
 `latest`是指主分支的lastest commit.
+
+`go install github.com/meilihao/goi18n/v2@yaml`
