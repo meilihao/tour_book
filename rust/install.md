@@ -4,13 +4,14 @@
 
 通过官方的安装脚本安装.
 
-[安装过程]():
+[安装过程](https://www.rust-lang.org/zh-CN/tools/install):
 ```bash
 $ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rust.sh
 $ export RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static # 用于更新 toolchain
 $ export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup # 用于更新 rustup
 $ bash rust.sh
 $ echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc # from $HOME/.cargo/env
+$ rustc --version
 ```
 
 > [rust 使用国内镜像，快速安装方法](https://www.cnblogs.com/hustcpp/p/12341098.html)
