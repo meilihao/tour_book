@@ -367,7 +367,7 @@ sudo cat /etc/iscsi/nodes/iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664\:sn.0d6
 
 此时target端是报: `kernel: Initiator is requesting CSG: 1, has not been successfully authenticated, and the Target is enforcing iSCSI Authentication, login failed.`
 
-ps: `/iscsi`设置`set discovery_auth enable=0`, 但tpgX设置`set attribute authentication=1`时, tpgX还是开启了chap认证.
+ps: `/iscsi`设置`set discovery_auth enable=0`(发现验证), 但tpgX设置`set attribute authentication=1`时, tpgX还是开启了chap认证.
 
 ### 获取光纤信息
 和以太网卡的MAC地址一样，HBA上也有独一无二的标识：WWN（World Wide Name）, FC HBA上的WWN有两种：
