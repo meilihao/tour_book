@@ -129,7 +129,7 @@ rust语言组成:
 
         如std::mem,std::ptr, std::intrinsic等, 操作内存,指针, 调用编译器固有函数.
 
-    1. 可选和错误处理类型Option和Result, 以及各种迭代器.
+    1. 可选和错误处理类型Option(表示一个值要么有值要么没值)和Result, 以及各种迭代器.
 
     Rust 并没有空值，不过它确实拥有一个可以编码存在或不存在概念的枚举, 这个枚举是 Option<T>，而且它定义于标准库中.
 
@@ -260,7 +260,7 @@ pub fn two_times_impl() -> impl Fn(i32) -> i32 {
 - eprintln!：与 eprint! 类似，但输出结果追加一个换行符
 
 [println! format](https://doc.rust-lang.org/std/fmt/#formatting-traits):
-- nothing ⇒ Display : `println!("{}",2)`
+- nothing(即默认)⇒ Display : `println!("{}",2)`
 - ? ⇒ Debug : `println!("{:?}",2)`
 - x? ⇒ Debug with lower-case hexadecimal integers
 - X? ⇒ Debug with upper-case hexadecimal integers
@@ -283,12 +283,14 @@ rust循环支持while, loop, for...in, break/continue. 无限循环需使用loop
 
 Range是标准库提供的类型，用来生成从一个数字开始到另一个数字之前结束的所有数字的序列, 例如`1..4`.
 
-rust支持match, 其使用了模式匹配(pattern matching)技术, 支持绑定模式(bingding mode, 即使用操作符@将模式中的值绑定给一个变量, 供分支右侧的代码使用). match使用`_`来兜底.
+rust支持match, 其使用了模式匹配(pattern matching)技术, 支持绑定模式(bingding mode, 即使用操作符@将模式中的值绑定给一个变量, 供分支右侧的代码使用). Rust 中的匹配是 穷尽的（exhaustive）：必须穷举到最后的可能性来使代码有效. 通常match使用`_`来兜底.
 
 一个 match 表达式由 分支（arms） 构成. 一个分支包含一个 模式（pattern）和表达式开头的值与分支模式相匹配时应该执行的代码. Rust 获取提供给 match 的值并挨个检查每个分支的模式. match 结构和模式是 Rust 中强大的功能，它体现了代码可能遇到的多种情形，并**确保没有遗漏处理, 否则无法通过编译**.
 
 match表达式要求所有的分支都必须返回相同的类型,且如果是一个单独的match表达式而不是赋值给变量时，每个分支必须返回()类型.
 rust提供if let和while let表达式, 分别在某些场合代替match表达式.
+
+> if let 是 match 的一个语法糖，它当值匹配某一模式时执行代码而忽略所有其他值. 在 if let 中可包含一个 else, else 块中的代码与 match 表达式中的 `_` 分支块中的代码相同.
 
 > 因为 if 是一个表达式，我们可以在 let 语句的右侧使用它.
 
@@ -676,7 +678,33 @@ rust提供5种复合类型:
     > 当想要在栈（stack）而不是在堆（heap）上为数据分配空间, 或者是想要确保总是有固定数量的元素时，数组非常有用. 但是数组并不如 vector 类型灵活.
 1. 结构体(Struct)
 
-    Rust 允许 struct 类型的初始化使用一种简化的的写法: 如果有局部变量名字与成员变量名字恰好一致, 那么可以省略掉重复的冒号初始化`：`.
+    Rust 允许 struct 类型的初始化使用一种简化的的写法: 如果有局部变量名字与成员变量名字恰好一致, 那么可以省略掉重复的冒号初始化`: `, 比如:
+    ```rust
+    fn build_user(email: String, username: String) -> User {
+        User {
+            email,
+            username,
+            active: true,
+            sign_in_count: 1,
+        }
+    }
+    ```
+
+    结构体更新语法（struct update syntax）: 使用旧实例的大部分值但改变其部分值来创建一个新的结构体实例, 比如:
+    ```rust
+    let user2 = User {
+        email: String::from("another@example.com"),
+        username: String::from("anotherusername567"),
+        active: user1.active,
+        sign_in_count: user1.sign_in_count,
+    };
+    // 使用结构体更新语法为一个 User 实例设置新的 email 和 username 值，不过其余值来自 user1 变量中实例的字段
+    let user2 = User {
+        email: String::from("another@example.com"),
+        username: String::from("anotherusername567"),
+        ..user1
+    };
+    ```
 
     结构体名称需遵从驼峰式命名规则.
     结构体上方的`#[derive(Debug, PartialEq)]`是[属性(类似于代码生成)](https://doc.rust-lang.org/reference/attributes/derive.html), 可让结构体自行实现Debug trait 和 PartialEq trait, 即允许对struct实例进行打印(通过`{:?}或{:#?}`)和比较.
@@ -696,7 +724,11 @@ rust提供5种复合类型:
 
         在Release编译模式下, 单元结构体实例会被优化为同一个对象; 而在Debug模式下, 则不会进行这样的优化.
 
+        类单元结构体常常在想要在某个类型上实现 trait 但不需要在类型中存储数据的时候发挥作用.
+
     在rust中函数和方法是有区别的, 不在impl块中定义的函数是自由函数, 而在impl块中定义的函数是方法, 第一个参数通常是`&self/&mut self`, 表示对结构体实例自身的引用.
+
+    > 生命周期可确保结构体引用的数据有效性跟结构体本身保持一致, 如果尝试在结构体中存储一个引用而不指定生命周期将是无效的即会报错.
 1. 枚举体(Enum)
 
     分三类:
@@ -801,6 +833,16 @@ std::collections提供了4种通用集合类型:
 无论是Vec还是HashMap，使用这些集合容器类型，最重要的是理解容量（Capacity）和大小（Size/Len）:
 - 容量是指为集合容器分配的内存容量
 - 大小是指集合中包含的元素数量
+
+### 方法
+不过方法与函数是不同的, 因为它们在结构体的上下文中被定义(或者是枚举或 trait 对象的上下文).
+
+impl 块的另一个有用的功能是: 允许在 impl 块中定义不以 self 作为参数的函数, 这被称为 关联函数（associated functions）, 因为它们与结构体相关联. 它们仍是函数而不是方法, 因为它们并不作用于一个结构体的实例. 比如`String::from`关联函数.
+
+> 结构体允许拥有多个 impl 块.
+
+### enumerations、enums枚举
+> Rust 的枚举与 F#、OCaml 和 Haskell 这样的函数式编程语言中的 代数数据类型（algebraic data types）最为相似
 
 ### 泛型
 泛型就是把一个泛化的类型作为参数.
@@ -974,7 +1016,8 @@ Rust 有一个叫做 Copy trait(类似深拷贝)的特殊注解，可以用在�
 变量的所有权总是遵循相同的模式：将值赋给另一个变量时**移动**它 . 当持有堆中数据值的变量离开作用域时，其值将通过 drop 被清理掉，除非数据被移动为另一个变量所有.
 
 引用(`&`)语法可创建一个 指向 值 的引用，但是**并不拥有它**, **因为并不拥有这个值，当引用离开作用域时其指向的值也不会被丢弃**.
-**获取引用作为函数参数称为`借用(borrowing)`**. 
+
+**获取引用作为函数参数称为`借用(borrowing)`**.
 
 引用默认不允许修改引用的值, 允许可变引用(`&mut`), 但可变引用有一个很大的限制：**在特定作用域中的特定数据有且只有一个可变引用. 这个限制的好处是 Rust 可以在编译时就避免数据竞争.数据竞争（data race）类似于竞态条件**，它可由这三个行为造成：
 - 两个或更多指针同时访问同一数据
@@ -1005,6 +1048,8 @@ Rust 有一个叫做 Copy trait(类似深拷贝)的特殊注解，可以用在�
 核心原则：**共享不可变，可变不共享**
 
 因为解引用操作会获得所有权，所以在需要对移动语义类型（如&String）进行解引用时需要特别注意.
+
+> rust 有一个叫 自动引用和解引用（automatic referencing and dereferencing）的功能, 这与golang相同.
 
 #### 词法作用域（生命周期）
 match、for、loop、while、if let、while let、花括号、函数、闭包都会创建新的作用域，相应绑定的所有权会被转移.

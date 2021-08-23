@@ -469,6 +469,9 @@ env: Ubuntu 16.04 arm64, zfs 0.8.6
 
 相同的操作, 但导出的设备换成物理磁盘时没问题, zvol就概率性出现fc卡掉线, 系统日志没有明显错误.
 
+### iscsi client block的model属性
+iscsi盘的`lsblk --scsi`的model属性是其target使用的storage object的name.
+
 # tgtadm
 参考:
 - [github.com/longhorn/go-iscsi-helper](https://github.com/longhorn/go-iscsi-helper/blob/master/iscsi/target.go)

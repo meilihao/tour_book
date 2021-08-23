@@ -11,4 +11,4 @@
 
 ## example
 
-    # fallocate -l 1G # 创建1G大小的稀疏文件
+    # fallocate -l 1G /block.file # 创建1G大小的稀疏文件
