@@ -188,7 +188,7 @@ $ sudo zfs destroy filesystem|volume # 销毁文件系统/volume, 此时dataset�
 $ sudo zfs rename <old-path> <new-path> # 重命名fs
 $ sudo mount -o <pool>/.../<filesystem> # 挂载fs
 $ sudo unmount <pool>/.../<filesystem> # 取消挂载fs, 此时fs必须是不活动的. `-f`强制取消挂载
-$ sudo zfs create [-s] -V 5gb system1/vol # 创建5g大小的卷(创建卷时，会自动将预留空间设置为卷的初始大小，以确保数据完整性), `-s`创建精简卷, 有点类似EMC存储的thin provisioning卷, 使用时(延迟)分配空间, 因此分配的大小可超过实际存储的大小
+$ sudo zfs create [-s] -V 5gb system1/vol # 创建5g大小的卷(创建卷时，会自动将预留空间设置为卷的初始大小，以确保数据完整性), `-s`创建精简卷, 有点类似EMC存储的thin provisioning卷, 使用时(延迟)分配空间, 因此分配的大小可超过实际存储的大小. [blocksize支持: The default blocksize for volumes is 8 Kbytes. Any power of 2 from 512 bytes to 128 Kbytes is valid](https://linux.die.net/man/8/zfs)
 $ sudo zfs get mountpoint mypool
 ```
 

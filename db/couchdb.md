@@ -623,3 +623,15 @@ for rows.Next{
 }
 fmt.Println(rows.TotalRows()) // 2
 ```
+
+### go-kivik/kivik view query
+```go
+// get only key=`[false,"abc"]`
+opts = map[string]interface(){
+    "reduce": false,
+    "startkey": json.RawMessage(`[false,"abc"]`),
+    "endkey": json.RawMessage(`[false,"abc"]`),
+}
+db:=conn.DB(dbName)
+db.Query(ctx, dbName, viewName, opts...)
+```

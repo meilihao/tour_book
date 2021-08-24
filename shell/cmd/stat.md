@@ -16,4 +16,7 @@
 ## 选项
 
 ## 例
-
+```bash
+# stat -c "%U:%G" /etc
+root:root
+```
