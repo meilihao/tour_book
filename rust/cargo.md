@@ -40,6 +40,28 @@ cargo uninstall first_pro_create
 ```
 
 ## 代码组织
+Rust 有许多功能可用于组织和管理代码, 包括哪些内容可以被公开, 哪些内容作为私有部分, 以及程序每个作用域中的名字. 这些功能有时被称为`模块系统(the module system)`包括:
+- 包（Packages） : Cargo 的一个功能，它允许构建、测试和分享 crate
+
+    一个包会包含有一个 Cargo.toml 文件，阐述如何去构建这些 crate.
+
+    包中所包含的内容由几条规则来确立:
+    1. 一个包中至多只能包含一个库 crate(library crate)
+    1. 包中可以包含任意多个二进制 crate(binary crate)
+    1. 包中至少包含一个 crate，无论是库的还是二进制的
+
+    执行`cargo new my-project`, 查看 Cargo.toml 的内容，会发现并没有提到 src/main.rs, 因为 Cargo 遵循的一个约定: src/main.rs 就是一个与包同名(这里就是my-project)的二进制 crate 的 crate 根. 同样的, Cargo 知道如果包目录中包含 src/lib.rs, 则 src/lib.rs 就是一个与包同名的 lib crate的 crate 根. crate 根文件将由 Cargo 传递给 rustc 来实际构建库或者二进制项目.
+
+    如果一个包同时含有 src/main.rs 和 src/lib.rs，则它有两个 crate：一个库和一个二进制项，且名字都与包相同. 通过将文件放在 src/bin 目录下，一个包可以拥有多个二进制 crate：每个 src/bin 下的文件都会被编译成一个独立的二进制 crate.
+
+- Crates : 一个模块的树形结构，它形成了库或二进制项目
+
+    crate root 是一个源文件, Rust 编译器以它为起始点, 同时也是 crate 的根模块.
+- 模块（Modules）和 use : 允许控制作用域和路径的私有性
+- 路径（path）: 一个命名例如结构体、函数或模块等项的方式
+
+对于一个由一系列相互关联的包组合而成的超大型项目, Cargo 提供了`工作空间`这一解决方案.
+
 > crate是rust最小的编译单元, package是若干crate的集合, 它们都可被称为包. 只在两者同时出现且需要区别对
 待时，将crate译为单元包，将package译为包.
 
