@@ -343,6 +343,8 @@
 - views 包含永久的视图定义
 
     CouchDB中一般将视图称为MapReduce视图，一个MapReduce视图由两个JavaScript函数组成，一个是Map函数，这个函数必须定义；另一个是Reduce函数，这个是可选的，根据程序的需要可以进行选择性定义.
+
+    view第一次运行时需要遍历所有文档, 结果保持在b-tree中, 之后只有doc有变动才调用该view更新b-tree.
 - shows 包含把文档转换成任意格式(比如非JSON)进行输出的方法
 - lists 包含把视图运行结果转换成非JSON格式的方法
 - validate_doc_update 包含验证文档更新是否有效的方法, 通过函数抛出异常`throw({...})`来取消更新
@@ -419,7 +421,9 @@ Couchbase Server 支持诸多筛选方式. Key筛选是在view结果产生之后
 **curl参数key匹配的是emit()返回的key, 且两者的格式必须一致**.
 
 #### map
-Map方法的参数只有一个，就是当前的文档对象. Map方法的实现需要根据文档对象的内容，确定是否要输出结果. 如果需要输出的话，可以通过emit来完成。 emit方法有两个参数，分别是key和value，分别表示输出结果的键和值.
+Map方法的参数只有一个，就是当前的文档对象. Map方法的实现需要根据文档对象的内容，确定是否要输出结果. 如果需要输出的话，可以通过emit来完成.
+
+emit方法有两个参数, 分别是key和value, 分别表示输出结果的键和值, 且emit可多次调用.
 
 #### reduce
 Reduce方法的参数有三个：key、values和rereduce，分别表示键、值和是否是rereduce. 由于rereduce情况的存在，Reduce 方法一般需要处理两种情况：

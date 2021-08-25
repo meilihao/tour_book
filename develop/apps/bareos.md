@@ -1,4 +1,7 @@
 # bareos
+参考:
+- [备份/恢复系统BAREOS的安装、设置和使用（二）](https://blog.csdn.net/laotou1963/article/details/82711776)
+
 Bareos 由 bacula fork而來.
 
 [Bareos组成](https://docs.bareos.org/IntroductionAndTutorial/WhatIsBareos.html#bareos-components-or-services):
@@ -305,6 +308,60 @@ fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
 
     - bareos-dir.conf : bareos-dir配置
 - fileset : 备份文件组(定义如何备份一组文件)配置
+
+    example:
+    ```conf
+    FileSet {                                     # fileset 开始标志
+      Name = "LinuxAll"                           # 该 fileset 的名字，这个名字会在备份任务中使用
+      Description = "备份所有系统，除了不需要备份的。"
+      Include {                                   # 备份中需要包含的文件
+        Options {                                 # 选项
+          Signature = MD5                         # 每个文件产生MD5校验文件
+          One FS = No                             # 所有指定的文件（含子目录是mountpoint）都会被备份
+          # One FS = Yes                          # 指定的文件（含子目录）如不在同一文件系统下不会被备份
+          #
+          # 需要备份的文件系统类型列表
+          FS Type = btrfs                         # btrfs 文件系统需要备份
+          FS Type = ext2                          # ext2 文件系统需要备份
+          FS Type = ext3                          # ext3 文件系统需要备份
+          FS Type = ext4                          # ext4 文件系统需要备份
+          FS Type = reiserfs                      # reiserfs 文件系统需要备份
+          FS Type = jfs                           # jfs 文件系统需要备份
+          FS Type = xfs                           # xfs 文件系统需要备份
+          FS Type = zfs                           # zfs 文件系统需要备份
+        }
+        File = /                                  # 所有目录和文件
+      }
+      # 定义不需要备份的文件和目录
+      Exclude {                                   # 备份中不应该包含的文件
+        # 无需备份文件/目录列表
+        File = /var/lib/bareos                    # /var/lib/bareos 下放的是bareos的临时文件
+        File = /var/lib/bareos/storage            # /var/lib/bareos/storage 下放的是备份文件
+        File = /proc                              # /proc 无需备份
+        File = /tmp                               # /tmp无需备份
+        File = /var/tmp                           # /var/tmp无需备份
+        File = /.journal                          # /.journal 无需备份
+        File = /.fsck                             # /.fsck无需备份
+      }
+    }
+
+    FileSet {
+      Name = "Windows电脑备份[A-Z]:/QMDownload"
+      Enable VSS = yes                                  # 当YES时，当文件正在被写时也能被备份；如NO，被写文件不会被备份
+      Include {
+        Options {
+          Signature = MD5
+          Drive Type = fixed                            # 只备份固定磁盘, only for windows
+          IgnoreCase = yes                              # 忽略字母的大小写, only for windows
+          WildFile = "[A-Z]:/pagefile.sys"              # 指定文件：从磁盘A到Z下的/pagefile.sys. Wild是通配符的简写
+          WildDir = "[A-Z]:/RECYCLER"                   # 指定文件：从磁盘A到Z下的
+          WildDir = "[A-Z]:/$RECYCLE.BIN"               # 指定文件：从磁盘A到Z下的
+          WildDir = "[A-Z]:/System Volume Information"  # 指定文件：从磁盘A到Z下的
+          Exclude = yes                                 # 另一种方式指定不备份上述指定文件
+        }
+        File ="C: / QMDownload "                    # 备份目录C:/QMDownload
+      }
+    ```
 
     - win.conf
 
