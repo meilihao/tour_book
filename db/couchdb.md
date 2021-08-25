@@ -639,3 +639,15 @@ opts = map[string]interface(){
 db:=conn.DB(dbName)
 db.Query(ctx, dbName, viewName, opts...)
 ```
+
+### 仅获取未软删除的doc
+query: `key=[false]`
+
+view:
+```js
+var deleted = false;
+if ('deleted' in doc) {
+    deleted = doc['deleted']
+}
+emit([deleted],doc);
+```
