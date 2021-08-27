@@ -9,19 +9,22 @@
 - [使用 systemd 来管理启动项](https://linux.cn/article-13402-1.html)
 - [Rethinking PID 1](http://0pointer.de/blog/projects/systemd.html)
 - [systemd for Administrators Part I ~ XI](http://0pointer.de/blog/projects/systemd-for-admins-1.html)
+- [SysVinit vs Systemd Cheatsheet](https://fedoraproject.org/wiki/SysVinit_to_Systemd_Cheatsheet)
+- [Understanding and administering systemd](https://docs.fedoraproject.org/en-US/quick-docs/understanding-and-administering-systemd/index.html)
 
 ### systemd 与 System V init 的区别以及作用
 |System V init 运行级别|systemd 目标名称|作用|
 |0| runlevel0.target, poweroff.target |关机|
-|1| runlevel1.target, rescue.target |单用户模式|
-|2| runlevel2.target, multi-user.target |等同于级别 3 |
-|3| runlevel3.target, multi-user.target |多用户的文本界面|
-|4| runlevel4.target, multi-user.target |等同于级别 3 |
-|5| runlevel5.target, graphical.target |多用户的图形界面|
+|1| runlevel1.target, rescue.target |一个基本的系统，包括挂载文件系统，但是只运行最基础的服务，以及一个主控制台上的用于救援的命令行解释器|
+|2| runlevel2.target, multi-user.target |多用户，没有 NFS，但是运行其他所有的非 GUI 服务 |
+|3| runlevel3.target, multi-user.target |多用户的文本界面: 运行所有的服务，但是只有命令行界面（CLI）|
+|4| runlevel4.target, multi-user.target |未使用, 等同于级别 3 |
+|5| runlevel5.target, graphical.target |带gui的multi-user.target|
 |6| runlevel6.target, reboot.target |重启|
-|emergency |emergency.target |紧急 Shell |
+|S|emergency |emergency.target |单用户模式 —— 没有服务运行；文件系统没有挂载. 这是最基础级的操作模式, 只有一个运行在主控制台的用于紧急情况的命令行解释器，供用户和系统交互 |
+|||halt.target|关机|
 
-修改默认运行级别: ` ln -sf /lib/systemd/system/multi-user.target /etc/systemd/system/default.target`
+修改默认运行级别: ` ln -sf /lib/systemd/system/multi-user.target /etc/systemd/system/default.target`, default.target 文件是指向真实的目标文件的符号链接.
 
 
 # 配置
@@ -30,6 +33,8 @@
 systemd配置文件被称为unit单元，根据类型不同，以不同的扩展名结尾:
 - `.service` 系统服务；
 - `.target` 一组系统服务(多个 Unit 构成的一个组)；
+
+	每个目标在配置文件中都描述了一组依赖关系. systemd 启动需要的依赖，即 Linux 主机运行在特定功能级别所需的服务.
 - `.automount` 自动挂载点；
 - `.device` 能被内核识别的硬件设备；
 - `.mount` 文件系统的挂载点；

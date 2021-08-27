@@ -110,6 +110,16 @@ rust语言组成:
     1. 基础trait, 如Copy, Debug, Display,Option等
     1. 基本原始类型, 如 bool, char,i8/u8,..i64/u64, isize/usize, f32/f64, str, array, slic, tuple, pointer等
     1. 常用功能型数据类型, 比如String, Vec, HashMap, Rc, Arc,Box等
+
+        String 的类型是由标准库提供的，而没有写进核心语言部分，它是可增长的、可变的、有所有权的、UTF-8 编码的字符串类型.
+
+        Rust 标准库中还包含一系列其他字符串类型，比如 OsString、OsStr、CString 和 CStr, 前缀(非String/非Str)对应着它们提供的所有权和可借用的字符串变体.
+
+        使用 to_string 方法从字符串字面值创建 String: `"...".to_string()` <=> `String::from("...")`.
+
+        **Rust 的字符串不支持索引**.
+
+        遍历: `for c in "नमस्ते".chars()`或`for b in "नमस्ते".bytes()`.
     1. 常用的宏定义, 如println()!, assert!, panic!, vec!
 
         Rust 中的宏(`!`)与C/C＋＋ 中的宏是完全不一样的东西. 简单点说，可以把它理解为一种安全版的编译期语法扩展, 这里之所以使用宏，而不是函数，是因为标准输出宏可以完成编译期格式检查. 更加安全. 这个宏最终还是调用了`std::io`模块内提供的一些函数来完成的. 如果需要更精细地控制标准输出操作, 也可以直接调用标准库来完成.
@@ -417,7 +427,7 @@ rust没有gc, 内存首先由编译器分配, rust代码被编译成llvm ir, 其
 
 rust多大部分是在编译期可确定内存大小的类型(sized type), 但也支持少量的动态大小类型(Dynamic sized type, DST), 比如str类型的字符串字面量; 以及零大小类型(zero sized type, zst), 比如单元类型和单元结构体, 同时由该类型组成的数组大小也为零. ZST类型的特点是, 它们的值就是其本身, 运行时并不占用内存空间.
 
-> `&str`是引用类型(包含指针和长度信息), 存储在栈上, str字符串是存储在堆上.
+> Rust 的核心语言中只有一种字符串类型：`str`, 字符串 slice(是一些储存在别处的 UTF-8 编码字符串数据的引用)，它通常以被借用的形式出现即`&str`. `&str`是引用类型(包含指针和长度信息), 存储在栈上, str字符串是存储在堆上.
 
 胖指针(fat pointer): 比正常指针携带更多信息的指针, 比如包含了动态大小类型地址信息和携带了长度信息的指针, 比如`&str`, `数组[T]`.
 
@@ -842,6 +852,8 @@ rust提供5种复合类型:
 > tuple, struct, tuple struct 这几种类型，实质上是同样的内存布局，区别仅仅在于是否给类型及成员起了名字.
 
 ### 常用集合类型
+Rust 标准库中包含一系列被称为 集合（collections）的非常有用的数据结构. 大部分其他数据类型都代表一个特定的值，不过集合可以包含多个值. 不同于内建的数组和元组类型，这些集合指向的数据是储存在堆上的，这意味着数据的数量不必在编译时就已知，并且还可以随着程序的运行增长或缩小.
+
 std::collections提供了4种通用集合类型:
 1. 线性序列: 向量(Vec), 双端队列(VecDeque), 链表(LinkedList)
 
@@ -853,10 +865,54 @@ std::collections提供了4种通用集合类型:
     > 双端队列（Double-ended Queue，缩写Deque）是一种同时具有队列（先进先出）和栈（后进先出）性质的数据结构. 双端队列中的元素可以从两端弹出，插入和删除操作被限定在队列的两端进行.
 
     > Rust提供的链表是双向链表，允许在任意一端插入或弹出元素.
+
+    ```rust
+    let v: Vec<i32> = Vec::new();
+    // let v = vec![1, 2, 3]; // 使用vec!宏, 让rust自动推导类型
+    v.push(5); // 在 vector 的结尾增加新元素时，在没有足够空间将所有所有元素依次相邻存放的情况下，可能会要求分配新内存并将老的元素拷贝到新的空间中
+
+    let third: &i32 = &v[2]; // 当引用一个不存在的元素时 Rust 会造成 panic
+    println!("The third element is {}", third);
+
+    match v.get(2) { // 2 is index. 当 get 方法被传递了一个数组外的索引时，它不会 panic 而是返回 None
+        Some(third) => println!("The third element is {}", third),
+        None => println!("There is no third element."),
+    }
+
+    for i in &v {
+        println!("{}", i);
+    }
+    ```
 1. Key-Value映射: 无序哈希表(HashMap), 有序哈希表(BTreeMap)
 
     HashMap要求key是必须可哈希的类型，BTreeMap的key必须是可排序的
     value必须是在编译期已知大小的类型
+
+    ```rust
+    use std::collections::HashMap;
+    let mut scores = HashMap::new();
+
+    let teams  = vec![String::from("Blue"), String::from("Yellow")];
+    let initial_scores = vec![10, 50];
+
+    let scores: HashMap<_, _> = teams.iter().zip(initial_scores.iter()).collect(); // 使用下划线占位是因为 Rust 能够根据 vector 中数据的类型推断出 HashMap 所包含的类型
+
+    let team_name = String::from("Blue");
+    let score = scores.get(&team_name);
+
+    for (key, value) in &scores {
+        println!("{}: {}", key, value);
+    }
+
+    scores.insert(String::from("Blue"), 11); // 覆盖value
+    scores.entry(String::from("Yellow")).or_insert(50); // entry 函数的返回值是一个枚举，Entry，它代表了可能存在也可能不存在的值. Entry 的 or_insert 方法在键对应的值存在时就返回这个值的可变引用，如果不存在则将参数作为新值插入并返回新值的可变引用.
+    ```
+
+    > 对于像 i32 这样的实现了 Copy trait 的类型，其值可以拷贝进哈希 map。对于像 String 这样拥有所有权的值，其值将被移动而哈希 map 会成为这些值的所有者
+
+    > 如果将值的引用插入哈希 map，这些值本身将不会被移动进哈希 map。但是这些引用指向的值必须至少在哈希 map 有效时也是有效的.
+
+    HashMap 默认使用一种 “密码学安全的”（“cryptographically strong” ）哈希函数，它可以抵抗拒绝服务（Denial of Service, DoS）攻击. 然而这并不是可用的最快的算法，不过为了更高的安全性值得付出一些性能的代价. 如果性能监测显示此哈希函数非常慢，以致于无法接受，可以指定一个不同的 hasher 来切换为其它函数. hasher 是一个实现了 BuildHasher trait 的类型.
 1. 集合类型: 无序集合(HashSet), 有序集合(BTreeMap)
 
     集合类型实际就是把Key-Value映射的Value设置成空元组.

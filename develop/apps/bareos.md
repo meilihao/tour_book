@@ -641,7 +641,7 @@ fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
     Storage {
       Name = File
       Address = bareos                # director-sd名字, 使用FQDN (不要使用 "localhost" ).
-      Password = "JgwtSYloo93DlXnt/cjUfPJIAD9zocr920FEXEV0Pn+S"
+      Password = "JgwtSYloo93DlXnt/cjUfPJIAD9zocr920FEXEV0Pn+S" # 来自sd daemon的director/bareos-dir.conf#Password
       Device = FileStorage            # 在bareos-sd中定义
       Media Type = File
     }
@@ -1021,6 +1021,8 @@ BVFS（Bareos虚拟文件系统）提供了一个API来浏览目录中的备份�
 执行`grep -r getJobs`, 在`src/Job/Model/JobModel.php`中找到它, 看其实现基本可推断是基于bsock, 通过`$bsock->send_command()`逆推, 在`src/Job/Controller/JobController.php`中找到`$this->bsock=$this->getServiceLocator()->get('director')`.
 
 在`/usr/share/bareos-webui`执行`grep -r "send_command" |grep -v "bsock"`, 在`vender/Bareos/library/Bareos/BSock/BareosBSock.php`找到其实现(需考虑send_command有参数列表). 在找到它的上层函数send(), 发现它是操作`fwrite($this->socket,...)`, 找到socket定义: [`stream_socket_client()`](https://php.golaravel.com/function.stream-socket-client.html).
+
+截获bareos cmd: 在BareosBSock.php的send_command()开头添加打印语句:`error_log("[". date("Y-m-d H:i:s", time()) ."] : $cmd \n", 3, "/tmp/bareos_cmd.log");`.
 
 ### log
 使用`-d 500`参数, 可打印详细日志
