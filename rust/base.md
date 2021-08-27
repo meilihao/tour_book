@@ -358,6 +358,16 @@ rust没有传统面向对象编程语言中的继承概念. 它通过trait将类
 rust的trait符合c++之父提出的零开销原则: 如果不使用某个抽象, 就不用为它付出开销(静态分发); 如果确实需要使用该抽象, 可以保证这是开销最小的使用方式(动态分发).
 
 ### 错误处理
+Rust 将错误组合成两个主要类别：可恢复错误（recoverable）和 不可恢复错误（unrecoverable）. 可恢复错误通常代表向用户报告错误和重试操作是合理的情况，比如未找到文件. 不可恢复错误通常是 bug 的同义词, 比如尝试访问超过数组结尾的位置.
+
+Rust 并没有异常, 但是有可恢复错误 Result<T, E> 和不可恢复(遇到错误时停止程序执行)错误 panic!.
+
+> 当出现 panic 时，程序默认会开始 展开（unwinding），这意味着 Rust 会回溯栈并清理它遇到的每一个函数的数据，不过这个回溯并清理的过程有很多工作. 另一种选择是直接 终止（abort），这会不清理数据就退出程序。那么程序所使用的内存需要由操作系统来清理. 如果需要项目的最终二进制文件越小越好, panic 时通过在 Cargo.toml 的 [profile] 部分增加 panic = 'abort'，可以由展开切换为终止.
+
+> 设置 RUST_BACKTRACE 环境变量来得到一个 backtrace. backtrace 是一个执行到目前位置所有被调用的函数的列表. Rust 的 backtrace 跟其他语言中的一样：阅读 backtrace 的关键是从头开始读直到发现你编写的文件, 这就是问题的发源地. 这一行往上是代码所调用的代码；往下则是调用该代码的代码.
+
+> 为了获取backtrace信息, 必须启用 debug 标识. 当不使用 --release 参数运行 cargo build 或 cargo run 时 debug 标识会默认启用.
+
 rust中的错误处理是通过返回Result<T, E>类型的方式进行的. Result<T, E>类型是Option<T>类型的升级版本.
 
 ```rust
@@ -365,6 +375,10 @@ fn main() -> Result<(), std::io::Error> {
     let f = File::open("bar.txt")?; // ?是一个错误处理的语法糖, 它会自动在出现错误的情况下返回std::io::Error.
 }
 ```
+
+Result<T, E> 类型定义了很多辅助方法来处理各种情况:
+- unwrap : 如果 Result 值是成员 Ok，unwrap 会返回 Ok 中的值; 如果 Result 是成员 Err，unwrap 会调用 panic!
+- expect : expect 与 unwrap 的使用方式一样. 但expect 在调用 panic! 时使用的错误信息将是传递给 expect 的参数，而不像 unwrap 那样使用默认的 panic! 信息
 
 ## 类型系统
 在类型系统中, 一切皆类型. 基于类型定义的一系列组合,运算和转换等方法, 可以看做类型的行为.

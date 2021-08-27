@@ -316,6 +316,7 @@ fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
       Description = "备份所有系统，除了不需要备份的。"
       Include {                                   # 备份中需要包含的文件
         Options {                                 # 选项
+          Compression = LZ4                       # 压缩
           Signature = MD5                         # 每个文件产生MD5校验文件
           One FS = No                             # 所有指定的文件（含子目录是mountpoint）都会被备份
           # One FS = Yes                          # 指定的文件（含子目录）如不在同一文件系统下不会被备份
@@ -701,6 +702,8 @@ fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
       Run = Full 1st sat at 21:00                   # 每月第一个周六/晚九点, 完整备份
       Run = Differential 2nd-5th sat at 21:00       # 其余周六/晚九点, 差异备份
       Run = Incremental mon-fri at 21:00            # 周一至周五, 递增备份
+      Run = daily at 21:10 # 每天21:10备份
+      Run = Incremental hourly at 0:22 # 每小时0:22备份
     }
     ```
 - message : 提示信息(job完成后如何发送提示信息)的配置
