@@ -10,3 +10,8 @@ gpt分区工具. 与fdisk类似, 也分为两种模式: 命令模式(直接进�
 ## 判断是否系统盘
 - `parted /dev/sda print`输出的"Number"后是否存在`boot`/`swap`/`esp`
 - 通过`/dev/disk/by-lable`
+
+## example
+```bash
+# parted -l /dev/nvme0n1 | grep "Partition Table" # 查看磁盘分区方案(是否是gpt)
+```
