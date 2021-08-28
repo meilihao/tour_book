@@ -190,6 +190,8 @@ $ sudo mount -o <pool>/.../<filesystem> # 挂载fs
 $ sudo unmount <pool>/.../<filesystem> # 取消挂载fs, 此时fs必须是不活动的. `-f`强制取消挂载
 $ sudo zfs create [-s] -V 5gb system1/vol # 创建5g大小的卷(创建卷时，会自动将预留空间设置为卷的初始大小，以确保数据完整性), `-s`创建精简卷, 有点类似EMC存储的thin provisioning卷, 使用时(延迟)分配空间, 因此分配的大小可超过实际存储的大小. [blocksize支持: The default blocksize for volumes is 8 Kbytes. Any power of 2 from 512 bytes to 128 Kbytes is valid](https://linux.die.net/man/8/zfs)
 $ sudo zfs get mountpoint mypool
+$ zfs list -o space # 显示used属性
+$ zfs get checksum tank/ws
 ```
 
 zfs list的属性可参考[freebsd zfs#Native Properties](https://www.freebsd.org/cgi/man.cgi?zfs(8)), `man zfs`与实际zfs包含的功能不一致, 有缺失, 比如`createtxg`, 部分属性说明:
@@ -334,7 +336,7 @@ $ sudo zfs set dedup=on mypool/projects # 启用去重
 
 **dedup**只对开启后的新数据块有效.
 
-## 属性
+## [属性](https://openzfs.github.io/openzfs-docs/man/7/zfsprops.7.html)
 - used : 只读属性，表明此数据集及其所有后代占用的磁盘空间量.
 	
 	可根据此数据集的配额和预留空间来检查该值. 使用的磁盘空间不包括数据集的预留空间，但会考虑任何后代数据集的预留空间. 数据集占用其父级的磁盘空间量以及以递归方式销毁该数据集时所释放的磁盘空间量应为其使用空间和预留空间的较大者.
@@ -342,10 +344,11 @@ $ sudo zfs set dedup=on mypool/projects # 启用去重
 	在父数据集的已用磁盘空间计算中会考虑预留空间，并会针对其配额、预留空间或同时针对两者进行计数.
 
 	used = usedbychildren + usedbydataset + usedbyrefreservation + usedbysnapshots
-- usedbychildren : 只读属性，用于标识此数据集的后代占用的磁盘空间量；如果所有数据集后代都被销毁，将释放该空间
-- usedbydataset : 只读属性(已用空间)，用于标识数据集本身占用的磁盘空间量；如果在先销毁所有快照并删除所有 refreservation 预留空间后销毁数据集，将释放该空间.
-- usedbyrefreservation : 只读属性，用于标识针对数据集设置的 refreservation 占用的磁盘空间量；如果删除 refreservation，将释放该空间
-- usedbysnapshots : 只读属性，用于标识数据集的快照占用的磁盘空间量. 特别是，如果此数据集的所有快照都被销毁，将释放该磁盘空间. 请注意，此值不是简单的快照 used 属性总和，因为多个快照可以共享空间
+
+	- usedbychildren(usedchild) : 只读属性，用于标识此数据集的后代占用的磁盘空间量；如果所有数据集后代都被销毁，将释放该空间
+	- usedbydataset(usedds) : 只读属性(已用空间)，用于标识数据集本身占用的磁盘空间量；如果在先销毁所有快照并删除所有 refreservation 预留空间后销毁数据集，将释放该空间.
+	- usedbyrefreservation(refreserv) : 只读属性，用于标识针对数据集设置的 refreservation 占用的磁盘空间量；如果删除 refreservation，将释放该空间
+	- usedbysnapshots(usedsnap) : 只读属性，用于标识数据集的快照占用的磁盘空间量. 特别是，如果此数据集的所有快照都被销毁，将释放该磁盘空间. 请注意，此值不是简单的快照 used 属性总和，因为多个快照可以共享空间
 - quota : 限制**数据集及其后代**可占用的磁盘空间量. 一旦达到该容量后，不管存储池的可用空间有多大，都无法再将数据写入该数据集.
 
 	该属性可对已使用的磁盘空间量强制实施硬限制，包括后代（含文件系统和快照）占用的所有空间. 对已有配额的数据集的后代设置配额不会覆盖祖先的配额，但会施加额外的限制. **不能对卷设置配额**，因为 volsize 属性可用作隐式配额.

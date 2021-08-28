@@ -124,6 +124,8 @@ rust语言组成:
 
         Rust 中的宏(`!`)与C/C＋＋ 中的宏是完全不一样的东西. 简单点说，可以把它理解为一种安全版的编译期语法扩展, 这里之所以使用宏，而不是函数，是因为标准输出宏可以完成编译期格式检查. 更加安全. 这个宏最终还是调用了`std::io`模块内提供的一些函数来完成的. 如果需要更精细地控制标准输出操作, 也可以直接调用标准库来完成.
 
+        Rust 支持声明宏（declarative macro）和过程宏（procedure macro），其中过程宏又包含三种方式：函数宏（function macro），派生宏（derive macro）和属性宏（attribute macro）. println! 是函数宏，是因为 Rust 是强类型语言，函数的类型需要在编译期敲定，而 println! 接受任意个数的参数，所以只能用宏来表达.
+
     做嵌入式应用开发时, 核心库是必需的.
 - 标准库
 
@@ -292,10 +294,62 @@ pub fn two_times_impl() -> impl Fn(i32) -> i32 {
 变量绑定支持if表达式. `if ... else if ... else`: `if n <  30 {} else if n > 50 else {}`, `let x = if condition {} else {}`
 
 rust循环支持while, loop, for...in, break/continue. 无限循环需使用loop; for常用于循环遍历集合, for 循环的安全性和简洁性使得它成为 Rust 中使用最多的循环结构.
+```rust
+
+fn fib_loop(n: u8) {
+    let mut a = 1;
+    let mut b = 1;
+    let mut i = 2u8;
+    
+    loop {
+        let c = a + b;
+        a = b;
+        b = c;
+        i += 1;
+        
+        println!("next val is {}", b);
+        
+        if i >= n {
+            break;
+        }
+    }
+}
+
+fn fib_while(n: u8) {
+    let (mut a, mut b, mut i) = (1, 1, 2);
+    
+    while i < n {
+        let c = a + b;
+        a = b;
+        b = c;
+        i += 1;
+        
+        println!("next val is {}", b);
+    }
+}
+
+fn fib_for(n: u8) {
+    let (mut a, mut b) = (1, 1);
+    
+    for _i in 2..n {
+        let c = a + b;
+        a = b;
+        b = c;
+        println!("next val is {}", b);
+    }
+}
+
+fn main() {
+    let n = 10;
+    fib_loop(n);
+    fib_while(n);
+    fib_for(n);
+}
+```
 
 Range是标准库提供的类型，用来生成从一个数字开始到另一个数字之前结束的所有数字的序列, 例如`1..4`.
 
-rust支持match, 其使用了模式匹配(pattern matching)技术, 支持绑定模式(bingding mode, 即使用操作符@将模式中的值绑定给一个变量, 供分支右侧的代码使用). Rust 中的匹配是 穷尽的（exhaustive）：必须穷举到最后的可能性来使代码有效. 通常match使用`_`来兜底.
+rust支持match, 其使用了模式匹配(pattern matching)技术, 支持绑定模式(bingding mode, 即使用操作符@将模式中的值绑定给一个变量, 供分支右侧的代码使用). Rust 中的匹配是 穷尽的（exhaustive）：必须穷举到最后的可能性来使代码有效. 通常match使用`_`来兜底. Rust 的模式匹配被广泛应用在状态机处理、消息处理和错误处理中.
 
 一个 match 表达式由 分支（arms） 构成. 一个分支包含一个 模式（pattern）和表达式开头的值与分支模式相匹配时应该执行的代码. Rust 获取提供给 match 的值并挨个检查每个分支的模式. match 结构和模式是 Rust 中强大的功能，它体现了代码可能遇到的多种情形，并**确保没有遗漏处理, 否则无法通过编译**.
 
@@ -315,11 +369,18 @@ slice是对一个数组(包括固定大小数组和动态数组)的**引用**片
 unsafe块: rust编译器将内存安全交由开发者自行负责.
 
 ### 泛型和trait
-泛型允许开发者编写一些在使用时才制定类型的代码. rust编译器会在编译期间自动为具体类型生成实现代码.
+每一个编程语言都有高效处理重复概念的工具. 在 Rust 中其工具之一就是 泛型（generics）. 泛型是具体类型或其他属性的抽象替代.
+
+泛型允许开发者编写一些在使用时才制定类型的代码. rust编译器会在编译期间自动为具体类型生成实现代码, 即采用单态化（monomorphization）实现.
+
+trait 告诉 Rust 编译器某个特定类型拥有可能与其他类型共享的功能. 可以通过 trait 以一种抽象的方式定义共享的行为. 可以使用 trait bounds 指定泛型是任何拥有特定行为的类型.
+
 trait借鉴了Haskell的Typeclass, 是rust实现零成本抽象的基石, 其机制如下:
 - trait是rust唯一的接口抽象方法
 - 可以静态生成 也可以动态调用
 - 可以当做标记类型拥有某些特定行为的"标签"来使用
+
+rust支持trait的默认实现: 有时为 trait 中的某些或全部方法提供默认的行为，而不是在每个类型的每个实现中都定义自己的行为是很有用的, 但明确定义该方法可覆盖其默认实现.
 
 ```rust
 // `<T: Debug>`表示有trait限定(trait bound)的泛型, 即只有实现了Debug trait的类型才适用. 只有实现了Debug trait的类型才拥有使用`{:?}`格式化打印的行为
@@ -357,6 +418,64 @@ rust没有传统面向对象编程语言中的继承概念. 它通过trait将类
 
 rust的trait符合c++之父提出的零开销原则: 如果不使用某个抽象, 就不用为它付出开销(静态分发); 如果确实需要使用该抽象, 可以保证这是开销最小的使用方式(动态分发).
 
+trait 和 trait bound 让开发者使用泛型类型参数来减少重复，并仍然能够向编译器明确指定泛型类型需要拥有哪些行为. 因为向编译器提供了 trait bound 信息，它就可以检查代码中所用到的具体类型是否提供了正确的行为. 在动态类型语言中，如果尝试调用一个类型并没有实现的方法，会在运行时出现错误. Rust 将这些错误移动到了编译时，甚至在代码能够运行之前就强迫我们修复错误. 另外，开发者也无需编写运行时检查行为的代码，因为在编译时就已经检查过了，这样相比其他那些不愿放弃泛型灵活性的语言有更好的性能.
+
+#### trait 作为参数
+impl Trait 语法适用于直观的例子，它实际上是一种较长形式语法的`trait bound`语法糖.
+
+```rust
+pub fn notify(item: impl Summary) {
+    println!("Breaking news! {}", item.summarize());
+}
+
+// trait bound形式
+pub fn notify<T: Summary>(item: T) { // 同上
+    println!("Breaking news! {}", item.summarize());
+}
+
+pub fn notify(item: impl Summary + Display) {}
+pub fn notify<T: Summary + Display>(item: T) {} // 同上
+
+fn some_function<T: Display + Clone, U: Clone + Debug>(t: T, u: U) -> i32 {}
+fn some_function<T, U>(t: T, u: U) -> i32
+    where T: Display + Clone,
+          U: Clone + Debug
+{} // 同上
+```
+
+#### 使用 trait bound 有条件地实现方法
+- 通过使用带有 trait bound 的泛型参数的 impl 块，可以有条件地只为那些实现了特定 trait 的类型实现方法
+
+    ```rust
+    use std::fmt::Display;
+
+    struct Pair<T> {
+        x: T,
+        y: T,
+    }
+
+    impl<T> Pair<T> {
+        fn new(x: T, y: T) -> Self {
+            Self {
+                x,
+                y,
+            }
+        }
+    }
+
+    impl<T: Display + PartialOrd> Pair<T> {
+        fn cmp_display(&self) {
+            if self.x >= self.y {
+                println!("The largest member is x = {}", self.x);
+            } else {
+                println!("The largest member is y = {}", self.y);
+            }
+        }
+    }
+    ```
+- 对任何实现了特定 trait 的类型有条件地实现 trait. 对任何满足特定 trait bound 的类型实现 trait 被称为 blanket implementations, 它们被广泛的用于 Rust 标准库中. 例如，标准库为任何实现了 Display trait 的类型实现了 ToString trait: `impl<T: Display> ToString for T {}`.
+
+
 ### 错误处理
 Rust 将错误组合成两个主要类别：可恢复错误（recoverable）和 不可恢复错误（unrecoverable）. 可恢复错误通常代表向用户报告错误和重试操作是合理的情况，比如未找到文件. 不可恢复错误通常是 bug 的同义词, 比如尝试访问超过数组结尾的位置.
 
@@ -379,6 +498,20 @@ fn main() -> Result<(), std::io::Error> {
 Result<T, E> 类型定义了很多辅助方法来处理各种情况:
 - unwrap : 如果 Result 值是成员 Ok，unwrap 会返回 Ok 中的值; 如果 Result 是成员 Err，unwrap 会调用 panic!
 - expect : expect 与 unwrap 的使用方式一样. 但expect 在调用 panic! 时使用的错误信息将是传递给 expect 的参数，而不像 unwrap 那样使用默认的 panic! 信息
+
+当编写一个其实现会调用一些可能会失败的操作的函数时，除了在这个函数中处理错误外，还可以选择让调用者知道这个错误并决定该如何处理, 这被称为 传播（propagating）错误，这样能更好的控制代码调用，因为比起你代码所拥有的上下文，调用者可能拥有更多信息或逻辑来决定应该如何处理错误.
+
+这种传播错误的模式在 Rust 中很常见，以至于 Rust 提供了 ? 问号运算符来使其更易于处理. ? 运算符可被用于返回值类型为 Result 的函数.
+
+match 表达式与`?`运算符所做的有一点不同：? 运算符所收到的错误值被隐式传递给了 from 函数，它定义于标准库的 From trait 中，其用来将错误从一种类型转换为另一种类型. 当 ? 运算符调用 from 函数时，收到的错误类型被转换为由当前函数返回类型所指定的错误类型. 这在当函数返回单个错误类型来代表所有可能失败的方式时很有用，即使其可能会因很多种原因失败. 只要每一个错误类型都实现了 from 函数来定义如何将自身转换为返回的错误类型，? 运算符会自动处理这些转换.
+
+?运算符消除了大量样板代码并使得函数的实现更简单, 甚至可以在 ? 之后直接使用链式方法调用来进一步缩短代码.
+
+panic场景选择:
+- 示例、代码原型和测试都非常适合 panic
+- 当开发者比编译器知道更多的情况
+
+    `let home: IpAddr = "127.0.0.1".parse().unwrap();`, 确定`127.0.0.1`是一个有效的 IP 地址, 无需处理`Result`
 
 ## 类型系统
 在类型系统中, 一切皆类型. 基于类型定义的一系列组合,运算和转换等方法, 可以看做类型的行为.
@@ -407,9 +540,9 @@ Result<T, E> 类型定义了很多辅助方法来处理各种情况:
 
     很多时候函数或数据类型都需要适用多种类型, 以避免大量的重复性工作. 泛型使得语言极具表达力, 同时也能保证静态类型安全.
 
-    在编译期, 都会被单态化(monomorshization, 编译器进行静态分发的一种测量, 即将为泛型生成具体对应类型的内容).
+    在编译期, 都会被单态化(monomorshization, 编译器进行静态分发的一种测量, 即通过填充编译时使用的具体类型，将通用代码转换为特定代码的过程).
 
-    单态化静态分发的好处是性能好, 没有运行时开销, 缺点是容易造成编译后生成的二进制文件膨胀.
+    单态化静态分发的好处是性能好, 没有运行时开销, 缺点是容易造成编译后生成的二进制文件膨胀. rust采用该
 1. Ad-hoc(ad-hoc polymorphism), 也叫特定多态, 指同一种行为定义在不同的上下文中会响应不同的行为实现.
 
     haskell使用Typeclass来支持ad-hoc, **rust使用trait来支持ad-hoc多态**.
@@ -1157,6 +1290,9 @@ Rust 有一个叫做 Copy trait(类似深拷贝)的特殊注解，可以用在�
 
 > rust 有一个叫 自动引用和解引用（automatic referencing and dereferencing）的功能, 这与golang相同.
 
+## 生命周期
+它是一类允许开发者向编译器提供引用如何相互关联的泛型. Rust 的生命周期功能允许在很多场景下借用值的同时仍然使编译器能够检查这些引用的有效性.
+
 #### 词法作用域（生命周期）
 match、for、loop、while、if let、while let、花括号、函数、闭包都会创建新的作用域，相应绑定的所有权会被转移.
 
@@ -1345,7 +1481,11 @@ Rust使用move关键字来强制让闭包所定义环境中的自由变量转移
 - FnMut的闭包在使用move关键字时，如果捕获变量是复制语义类型的，则闭包会自动实现Copy/Clone。如果捕获变量是移动语义类型的，则闭包不会自动实现Copy/Clone
 
 ## 迭代器
-Rust使用的是外部迭代器，也就是for循环. 外部迭代器：外部可以控制整个遍历进程.
+Rust 的 for 循环可以用于任何实现了  IntoIterator trait 的数据结构.
+
+在执行过程中，IntoIterator 会生成一个迭代器，for 循环不断从迭代器中取值，直到迭代器返回 None 为止。因而，for 循环实际上只是一个语法糖，编译器会将其展开使用 loop 循环对迭代器进行循环访问，直至返回 None.
+
+Rust使用的是外部迭代器，也就是for循环. 外部迭代器：外部可以控制整个遍历过程.
 
 Rust中使用了trait来抽象迭代器模式. Iterator trait是Rust中对迭代器模式的抽象接口.
 
@@ -1425,6 +1565,11 @@ drop-flag：在函数调用栈中为离开作用域的变量自动插入布尔�
 - 结束状态, Promise 成功解析出一个值，或者执行失败
 
 一般而言, async 定义了一个可以并发执行的任务，而 await 则触发这个任务并发执行. 大多数语言中, async/await 是一个语法糖（syntactic sugar）, 它使用状态机将 Promise 包装起来, 让异步调用的使用感觉和同步调用非常类似, 也让代码更容易阅读.
+
+## test
+Rust 的单元测试一般放在和被测代码相同的文件中，使用条件编译  #[cfg(test)] 来确保测试代码只在测试环境下编译.
+
+集成测试一般放在 tests 目录下，和 src 平行. 和单元测试不同, 集成测试只能测试 crate 下的公开接口，编译时编译成单独的可执行文件.
 
 ## FAQ
 ### 各编程语言中的类型系统
