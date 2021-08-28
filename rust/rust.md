@@ -1631,6 +1631,91 @@ Rust 的单元测试一般放在和被测代码相同的文件中，使用条件
 
 集成测试一般放在 tests 目录下，和 src 平行. 和单元测试不同, 集成测试只能测试 crate 下的公开接口，编译时编译成单独的可执行文件.
 
+Rust 中的测试函数是用来验证非测试代码是否按照期望的方式运行的. 测试函数体通常执行如下三种操作：
+1. 设置任何所需的数据或状态
+1. 运行需要测试的代码
+1. 断言其结果是我们所期望的
+
+### 测试函数
+作为最简单例子，Rust 中的测试就是一个带有 test 属性注解的函数. 属性（attribute）是关于 Rust 代码片段的元数据.
+
+为了将一个函数变成测试函数，需要在 fn 行之前加上`#[test]`.
+
+assert! 宏由标准库提供，在希望确保测试中一些条件为 true 时非常有用. 因此需要向 assert! 宏提供一个求值为布尔值的参数.
+
+测试功能的一个常用方法是将需要测试代码的值与期望值做比较，并检查是否相等. 可以通过向 assert! 宏传递一个使用 == 运算符的表达式来做到。不过这个操作实在是太常见了，以至于标准库提供了一对宏来更方便的处理这些操作 —— assert_eq! 和 assert_ne!, 这两个宏分别比较两个值是相等还是不相等.
+
+> assert_eq! 和 assert_ne! 宏在底层分别使用了 == 和 !=。当断言失败时，这些宏会使用调试格式打印出其参数，这意味着被比较的值必需实现了 PartialEq 和 Debug trait.
+
+还可以向 assert!、assert_eq! 和 assert_ne! 宏传递一个可选的失败信息参数， 以便在测试失败时将自定义失败信息一同打印出来.
+
+```rust
+pub fn greeting(name: &str) -> String {
+    format!("Hello {}!", name)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn greeting_contains_name() {
+        let result = greeting("Carol");
+        assert!(
+            result.contains("Carol"),
+            "Greeting did not contain name, value was `{}`", result
+        );
+    }
+}
+```
+
+属性`#[should_panic]`在函数中的代码 panic 时会通过，而在其中的代码没有 panic 时失败. 还,可给 should_panic 属性增加一个可选的 expected 参数, 测试工具会确保错误信息中包含其提供的文本.
+
+```rust
+impl Guess {
+    pub fn new(value: i32) -> Guess {
+        if value < 1 {
+            panic!("Guess value must be greater than or equal to 1, got {}.",
+                   value);
+        } else if value > 100 {
+            panic!("Guess value must be less than or equal to 100, got {}.",
+                   value);
+        }
+
+        Guess {
+            value
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    #[should_panic(expected = "Guess value must be less than or equal to 100")]
+    fn greater_than_100() {
+        Guess::new(200);
+    }
+}
+```
+
+可以使用 Result<T, E> 编写测试. 但不能对这些使用 Result<T, E> 的测试使用 #[should_panic] 注解, 相反应该在测试失败时直接返回 Err 值.
+
+```rust
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() -> Result<(), String> {
+        if 2 + 2 == 4 {
+            Ok(())
+        } else {
+            Err(String::from("two plus two does not equal four"))
+        }
+    }
+}
+```
+
 ## FAQ
 ### 各编程语言中的类型系统
 静态类型语言：在编译阶段确定所有变量的类型.
