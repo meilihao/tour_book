@@ -1,4 +1,7 @@
 # locale
+参考:
+- [glibc locale使用简析](https://openeuler.org/zh/blog/wangshuo/glibc%20locale%E4%BD%BF%E7%94%A8%E7%AE%80%E6%9E%90/glibc+locale%E4%BD%BF%E7%94%A8%E7%AE%80%E6%9E%90.html)
+
 软件在运行时的语言环境.
 
 > localedef : 转化语言环境和字符集源文件以生成语言环境数据库, 由它创建的语言环境对象代码可被`setlocale()`使用. `setlocale()`由glibc实现, 具体会加载哪些locale要看其实现.
@@ -28,6 +31,8 @@ locale 定义文件一般位于 /usr/share/i18n/locales 目录中, 不用担心,
 
 相关系统命令：
 - locale 列出当前采用的各项本地策略，这些由LC_*环境变量定义
+
+    **en_US.utf8可显示中文(因为它也是utf8, 语言显示策略是en_US)**
 - locale charmap 列出系统当前使用的字符集
 - locale -a 列出系统中已经安装的所有locale
 - locale -m 列出系统中已经安装的所有charmap
@@ -37,13 +42,29 @@ locale 定义文件一般位于 /usr/share/i18n/locales 目录中, 不用担心,
 ## example
 ```bash
 $ locale # 查看当前系统的语言环境
+LANG=zh_CN.UTF-8
+LANGUAGE=zh_CN
+LC_CTYPE=zh_CN.UTF-8
+LC_NUMERIC="zh_CN.UTF-8"
+LC_TIME="zh_CN.UTF-8"
+LC_COLLATE="zh_CN.UTF-8"
+LC_MONETARY="zh_CN.UTF-8"
+LC_MESSAGES="zh_CN.UTF-8"
+LC_PAPER="zh_CN.UTF-8"
+LC_NAME="zh_CN.UTF-8"
+LC_ADDRESS="zh_CN.UTF-8"
+LC_TELEPHONE="zh_CN.UTF-8"
+LC_MEASUREMENT="zh_CN.UTF-8"
+LC_IDENTIFICATION="zh_CN.UTF-8"
+LC_ALL=
 $ locale -m  # 查看系统支持的所有可用的字符集编码, 所有的字符集都放在 /usr/share/i18n/charmaps
 $ locale -a  # 查看系统中所有已配置的区域格式(= `localedef --list-archive` + `C,C.UTF-8,POSIX`), 在`/usr/share/locale`下， 以 zh_CN.UTF-8 locale(`/usr/share/locale/zh_CN.UTF-8`) 为例，该目录中就包含了 LC_MESSAGES
 $ sudo localedef -f UTF-8 -i zh_CN zh_XX.UTF-8 # 默认保存在/usr/lib/locale/locale-archive. 当locale_name未以`.UTF-8`作为结尾时`locale -a`会显示`zh_XX`和`zh_XX.utf8`两个locale???.
 $ sudo localedef -v -f UTF-8 -i zh_CN /usr/lib/locale/<locale_name> # 根据模板创建locale并放入/usr/lib/locale/<locale_name>, 比如locale_name=zh_XX.UTF-8, locale_name同时会出现在`locale -a`中. 当locale_name未以`.UTF-8`作为结尾时仅创建`zh_XX`.
 $ locale -a|grep <name> # 查看已创建的locale
 $ env LC_ALL=zh_XX.UTF-8,LANGUAGE=  strace ls # 查看效果
-$ sudo localedef --delete-from-archive <name> <name>.utf8 # 清理/usr/lib/locale/locale-archive
+$ sudo localedef --delete-from-archive <name> <name>.utf8 # 清理/usr/lib/locale/locale-archive, name可从`localedef --list-archive`获取
+$ sudo rm -rf /usr/lib/locale/xxx.UTF-8 # 清理后`locale -a`不再展示xxx.UTF-8
 $  env LANG=C sudo localedef -v --delete-from-archive zh_BB # zh_BB被自定义放在了/usr/lib/locale下, 直接删除/usr/lib/locale/zh_BB即可
 locale "zh_BB" not in archive
 $ convmv -f iso-8859-1 -t utf-8 <filename> # 转换文件名的编码
@@ -79,16 +100,16 @@ locale：为期望设定的locale名称字符串，在Linux/Unix环境下，通�
 
 locale 是一组 C 程式语言处理自然语言(文字)的显示方式， 也可以简单的说，locale 就是一组地区性语言的显示格式. 由国家语言和各地习俗影响所决定的惯例，或代表一个地理区域的定义所组成，这些惯例包含文字、日期、数字、货币格式和排序等等. 这代表着 locale 可让程式的输出可以直接反应地方区域性的文化.
 
-C 语言的 locale 定义，分为下列各大类：
+C 语言的 locale按照将文化传统的各个方面分成12个大类, 这12个大类分别是分为下列各大类:
 - [LANGUAGE](https://www.gnu.org/software/gettext/manual/gettext.html#The-LANGUAGE-variable) : 指定个人对语言环境值的主次偏好，比如`zh_CN:en_GB:en`, 作用是如果前面的 locale 缺少翻译，会自动使用后面的 locale 显示界面, 因此它会先使用简体中文,没有翻译时再使用英文.
 - LC_ALL : 指定所有的 Locale
-- LC_CTYPE : 字元定义 (包含字元分类与转换规则, 比如大写字母，小 写字母，大小写转换，标点符号、可打印字符和其他的字符属性等方面)
-- LC_MESSAGES : 信息显示, 包括提示信息,错误信息, 状态信息, 标题, 标签, 按钮和菜单等
-- LC_TIME : 时间格式
+- LC_CTYPE : 字元定义即语言符号及其分类 (包含字元分类与转换规则, 比如大写字母，小 写字母，大小写转换，标点符号、可打印字符和其他的字符属性等方面)
+- LC_MESSAGES : 信息显示, 包括提示信息, 错误信息, 状态信息, 标题, 标签, 按钮和菜单等
+- LC_TIME : 时间显示格式
 - LC_NUMERIC : 数字格式
-- LC_MONETARY : 货币格式
-- LC_COLLATE : 字母顺序与特殊字元比较. 比如, mysql会在`order by`中利用其排序规则.
-- LC_NAME : 姓名 书写方式
+- LC_MONETARY : 货币单位
+- LC_COLLATE : 字母顺序与特殊字元比较即**比较和排序习惯**. 比如, mysql会在`order by`中利用其排序规则.
+- LC_NAME : 姓名书写方式
 - LC_ADDRESS : 地址书写方式
 - LC_TELEPHONE : 电话号码书写方式
 - LC_MEASUREMENT : 度量衡表达方式
@@ -101,3 +122,22 @@ C 语言的 locale 定义，分为下列各大类：
 其中与一般使用者息息相关的，是字元定义 (LC_CTYPE) 与语言显示 (LANG). LC_CTYPE 直接关系到某些字元或内码(code point)在目前的 locale 下是否可列印？要如何转换字码？对应到哪一个字？.... 等等.LANG 则关系到软体的信息输出的地域格式.当 LC_MESSAGES、LC_TIME、LC_NUMERIC、 LC_MONETARY 等没有设定的时候，会直接取用 LANG 的环境设定值.
 
 当一个程式启动时，系统会预设给它一个初始 locale，称为 POSIX 或 C locale. 在此 locale 下，程式的表现会与传统的 C 语言中一样， 使用英文做信息输出，只能处理英文等 ASCII 码等等. 如果该程序需要I18N，则它在启动后就会马上调用系统函式来改变它的 locale， 如此它就摇身一变，变成可以处理该 locale 所代表的地区语言了.
+
+## FAQ
+### `localedef -v -f UTF-8 -i zh_CN /usr/lib/locale/zh_CN.UTF-8`报`non-symbolic character value should not be used`
+与操作系统的glibc有关, 没有其相应的语言包, 比如`/usr/share/locale/zh_CN/LC_MESSAGES/libc.mo`.
+
+```bash
+apt-file search libc.mo
+libc-l10n: /usr/share/locale/zh_CN/LC_MESSAGES/libc.mo
+```
+
+> ubuntu 14.04返回的是`language-pack-zh-hans-base: /usr/share/locale-langpack/zh_CN/LC_MESSAGES/libc.mo`
+
+也可从其他机器的拷贝/usr/share/locale/zh_CN, 再将其LC_MESSAGES清空并替换为libc-l10n包里的LC_MESSAGES即可.
+
+### `locale`输出
+：
+
+1、(LC_CTYPE)
+6、信息主要是提示信息,错误信息,状态信息,标题,标签,按钮和菜单等(LC_MESSAGES)

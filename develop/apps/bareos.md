@@ -154,6 +154,8 @@ exit
 * run [job=Client1 yes]# 手动开始job, 未指定job时需要选择job
 * status [Director]
 * restore # 选择文件的命令在[restore-command](https://docs.bareos.org/TasksAndConcepts/TheRestoreCommand.html#restore-command), 被选中的文件名前带`*`
+* cancle all # 取消所有job
+* llist backups client="xxx" filset="any" order=desc # 显示该客户端的所有(不限制fileset)备份任务
 ```
 
 ## webui
@@ -180,7 +182,7 @@ exit
 [job执行的流程图](https://docs.bareos.org/DeveloperGuide/jobexec.html)
 
 ## api
-bareos console支持非交互式的[点命令](https://docs.bareos.org/DeveloperGuide/api.html#dot-commands), 同时支持json输出(执行`.api json`即可).
+bareos console支持非交互式的[点命令](https://docs.bareos.org/DeveloperGuide/api.html#dot-commands), 同时支持json输出(执行`.api json compact=yes`即可, compact=yes表示压缩空格).
 
 ### python-bareos
 [python-bareos](https://github.com/bareos/bareos/tree/master/python-bareos/)是bareos官方的python sdk, 用于与bareos-dir通信.
@@ -280,6 +282,8 @@ fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
 - director
 
     - bareos-dir.conf : 管理storage对director的授权
+
+        - Password : 授权director访问sd的密码. 在director创建storage时会用到.
     - bareos-mon.conf : 管理storage对bareos traymonitor的授权
 - message : storage message管理
     
@@ -1064,3 +1068,11 @@ dir, sd, fd均无报错.
 
 解决方法:
 更新web-admin.conf的acl, 取消禁用configure.
+
+### job‘s jobstatus
+定义在`/usr/share/bareos-webui/public/js/bootstrap-table-formatter.js`, 对应的翻译在`/usr/share/bareos-webui/module/Application/language/cn_CN.po`.
+
+### bareos client
+- golang
+
+    - [barethoven](https://github.com/myENA/barethoven)
