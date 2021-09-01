@@ -151,11 +151,77 @@ exit
 * configure add client name=client2-fd address=192.168.0.2 password=secret # 注册client, 需要重启bareos-dir
 * setdebug client=bareos-fd level=200 # [测试client](https://docs.bareos.org/TasksAndConcepts/TheWindowsVersionOfBareos.html#enable-debuggging)
 * configure add job name=client2-job client=client2-fd jobdefs=DefaultJob # 添加job
-* run [job=Client1 yes]# 手动开始job, 未指定job时需要选择job
-* status [Director]
 * restore # 选择文件的命令在[restore-command](https://docs.bareos.org/TasksAndConcepts/TheRestoreCommand.html#restore-command), 被选中的文件名前带`*`
+
+# --- cancel
 * cancle all # 取消所有job
-* llist backups client="xxx" filset="any" order=desc # 显示该客户端的所有(不限制fileset)备份任务
+* cancel 20 #  取消任务ID=20 的任务
+
+# --- list命令列出各种备份状态信息
+list Jobs     #列出所有备份记录状态
+list jobid=2  #列出jobid等于2有状态信息
+ 
+list Job=t3_full       #列出Job名称等于t3_full的任务信息
+list jobname=t3_full   #列出Job名称等于t3_full的任务信息
+list joblog jobid=78   #列出jobid=78的详细备份日志信息
+list jobmedia jobid=78 #列出jobid=78的状态信息与所在Volume信息
+list files jobid=78    #列出jobid=78的状态信息与所备份的数据信息
+ 
+list clients           #列出备份的客户端
+list jobtotals         #列出所有作业任务使用的空间大小
+ 
+list media pool=dbpool   #查看dbpool属性的media
+list Volume Pool=dbpool  #查看dbpool属性的Volume
+ 
+list pool    #查看定义的dbpool属性
+llist pool   #查看定义的dbpool属性(更详细)
+
+* llist backups client="xxx" filset="any" order=desc # 显示该客户端的所有(不限制fileset)备份任务. v20.2 order参数不生效
+
+# --- show查看配置信息
+show Job=t3_full   #查看Job名称等于t3_full的配置信息
+show pools         #查看池的信息
+show pools=dbpool  #查看dbpool池的信息
+show filesets
+show clients
+show storages
+show schedule
+show jobs
+show message
+
+# --- status当着状态信息
+status #查看状态信息
+status client=t3-fd  #客户端名称t3-fd的状态信息
+status client   # 查看 client  的状态
+status dir      # 查看director 的状态
+status storage  # 查看 storage 的状态 
+
+# --- run执行job任务
+run  # 未指定job时需要选择job, 即进入交互模式操作
+run job=t3_full yes   #手动执行job为t3_full任务作业
+
+# --- estimate : 对某次任务进行评估. 它会连接到客户端，并输出这次任务的fileset 中 文件数,和这次备份任务所占的空间
+estimate job=t3_full listing client=t3-fd  #估算下这个备份有多少文件,需要多大容量. 作业任务t3_full,客户端t3-fd
+# --- delete删除备份
+delete JobId=79  #删除jobid等于79的备份
+list JobId=79    #查看就没有这个备份包了,但在status中还是会出这个,实际存储中空间并没有减小.
+
+# --- 特殊的几个命令
+.jobs     #查看定义的job作业任务名称
+.clients  #查看定义的客户端名称
+.filesets #查看定义的备份资源FS的名称
+.msgs     #查看定义的日志消息记录的名称
+.pools    #查看定义的pool池属性名称
+.storage  #查看定义的storage数据的存储方式的名称
+
+# --- 清理
+purge # 是一个危险命令, 能清除一个客户端的所有备份任务，文件，和卷
+prune # 这个命令和 purge 相似，但安全很多，它只会清除过期的文件，任务，和卷 
+```
+
+```bash
+printf "list clients\nquit" | bconsole
+printf ".api json\nlist clients" | bconsole
 ```
 
 ## webui

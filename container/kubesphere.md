@@ -1,14 +1,17 @@
 # kubesphere
+参考:
+- [KubeSphere 在华为云 ECS 高可用实例](https://kubesphere.io/zh/docs/installing-on-linux/public-cloud/install-kubesphere-on-huaweicloud-ecs/)
+- [使用 Cilium 作为网络插件部署 Kubernetes + KubeSphere](https://kubesphere.io/zh/blogs/cilium-kubesphere-kubernetes/)
 
 ## 部署
 ```bash
-# all-in-one部署, kk v1.0.1
-$ sudo KKZONE=cn kk create cluster --with-kubernetes v1.18.6 --with-kubesphere v3.0.0
+# all-in-one部署, kk v1.1.1, [k8s支持版本](https://github.com/kubesphere/kubekey/blob/release-1.1/docs/kubernetes-versions.md)
+$ sudo KKZONE=cn kk create config --with-kubernetes v1.20.6 --with-kubesphere v3.1.1 -f my.yaml
 $ cat my.yaml # 使用`kk create cluster -f`部署时的配置文件
 apiVersion: kubekey.kubesphere.io/v1alpha1
 kind: Cluster
 metadata:
-  name: mytest
+  name: sample
 spec:
   hosts:
   - {name: chen-aliyun, address: 192.168.0.43, internalAddress: 192.168.0.43, user: root, password: xxx}
@@ -24,9 +27,10 @@ spec:
     address: ""
     port: 6443
   kubernetes:
-    version: v1.18.6
+    version: v1.20.6
     imageRepo: kubesphere
     clusterName: cluster.local
+    containerManager: containerd
   network:
     plugin: cilium
     kubePodsCIDR: 10.233.64.0/18
@@ -36,6 +40,7 @@ spec:
     insecureRegistries: []
   addons: []
 
+
 ---
 apiVersion: installer.kubesphere.io/v1alpha1
 kind: ClusterConfiguration
@@ -43,67 +48,115 @@ metadata:
   name: ks-installer
   namespace: kubesphere-system
   labels:
-    version: v3.0.0
+    version: v3.1.1
 spec:
-  local_registry: ""
   persistence:
-    storageClass: ""
+    storageClass: ""       
   authentication:
     jwtSecret: ""
+  zone: ""
+  local_registry: ""        
   etcd:
-    monitoring: true
-    endpointIps: localhost
-    port: 2379
+    monitoring: false      
+    endpointIps: localhost  
+    port: 2379             
     tlsEnable: true
   common:
-    es:
-      elasticsearchDataVolumeSize: 20Gi
-      elasticsearchMasterVolumeSize: 4Gi
-      elkPrefix: logstash
-      logMaxAge: 7
-    mysqlVolumeSize: 20Gi
+    redis:
+      enabled: false
+    redisVolumSize: 2Gi 
+    openldap:
+      enabled: false
+    openldapVolumeSize: 2Gi  
     minioVolumeSize: 20Gi
-    etcdVolumeSize: 20Gi
-    openldapVolumeSize: 2Gi
-    redisVolumSize: 2Gi
+    monitoring:
+      endpoint: http://prometheus-operated.kubesphere-monitoring-system.svc:9090
+    es:  
+      elasticsearchMasterVolumeSize: 4Gi   
+      elasticsearchDataVolumeSize: 20Gi   
+      logMaxAge: 7          
+      elkPrefix: logstash
+      basicAuth:
+        enabled: false
+        username: ""
+        password: ""
+      externalElasticsearchUrl: ""
+      externalElasticsearchPort: ""  
   console:
-    enableMultiLogin: false  # enable/disable multi login
+    enableMultiLogin: true 
     port: 30880
-  alerting:
+  alerting:       
     enabled: false
-  auditing:
+    # thanosruler:
+    #   replicas: 1
+    #   resources: {}
+  auditing:    
     enabled: false
-  devops:
+  devops:           
     enabled: false
-    jenkinsMemoryLim: 2Gi
-    jenkinsMemoryReq: 1500Mi
-    jenkinsVolumeSize: 8Gi
-    jenkinsJavaOpts_Xms: 512m
+    jenkinsMemoryLim: 2Gi     
+    jenkinsMemoryReq: 1500Mi 
+    jenkinsVolumeSize: 8Gi   
+    jenkinsJavaOpts_Xms: 512m  
     jenkinsJavaOpts_Xmx: 512m
     jenkinsJavaOpts_MaxRAM: 2g
-  events:
+  events:          
     enabled: false
     ruler:
       enabled: true
       replicas: 2
-  logging:
+  logging:         
     enabled: false
-    logsidecarReplicas: 2
-  metrics_server:
-    enabled: true
+    logsidecar:
+      enabled: true
+      replicas: 2
+  metrics_server:             
+    enabled: false
   monitoring:
-    prometheusMemoryRequest: 400Mi
-    prometheusVolumeSize: 20Gi
+    storageClass: ""
+    prometheusMemoryRequest: 400Mi  
+    prometheusVolumeSize: 20Gi  
   multicluster:
-    clusterRole: none  # host | member | none
-  networkpolicy:
-    enabled: false
-  notification:
-    enabled: false
+    clusterRole: none 
+  network:
+    networkpolicy:
+      enabled: false
+    ippool:
+      type: none
+    topology:
+      type: none
   openpitrix:
+    store:
+      enabled: false
+  servicemesh:    
+    enabled: false  
+  kubeedge:
     enabled: false
-  servicemesh:
-    enabled: false
+    cloudCore:
+      nodeSelector: {"node-role.kubernetes.io/worker": ""}
+      tolerations: []
+      cloudhubPort: "10000"
+      cloudhubQuicPort: "10001"
+      cloudhubHttpsPort: "10002"
+      cloudstreamPort: "10003"
+      tunnelPort: "10004"
+      cloudHub:
+        advertiseAddress: 
+          - ""           
+        nodeLimit: "100"
+      service:
+        cloudhubNodePort: "30000"
+        cloudhubQuicNodePort: "30001"
+        cloudhubHttpsNodePort: "30002"
+        cloudstreamNodePort: "30003"
+        tunnelNodePort: "30004"
+    edgeWatcher:
+      nodeSelector: {"node-role.kubernetes.io/worker": ""}
+      tolerations: []
+      edgeWatcherAgent:
+        nodeSelector: {"node-role.kubernetes.io/worker": ""}
+        tolerations: []
+$ sudo kk create cluster -f config.yaml
 ```
 
 根据[network plugin性能测试的结果](https://itnext.io/benchmark-results-of-kubernetes-network-plugins-cni-over-10gbit-s-network-updated-august-2020-6e1b757b9e49), 目前calico是最佳选择, 修改`plugin: calico`即可.
@@ -112,7 +165,9 @@ spec:
 
 ## kk
 ```bash
+$ export KKZONE=cn # 因为无法访问 https://storage.googleapis.com
 $ kk create config --with-kubernetes v1.18.6 --with-kubesphere v3.0.0 -f mycluster.yaml # 创建cluster配置kubesphere
+$ vim mycluster.yaml # 自定义配置
 $ kk create cluster -f mycluster.yaml # 根据yaml配置部署kubesphere
 $ kk create config --from-cluster -f my.yaml --kubeconfig=/etc/kubernetes/admin.conf # 根据已有的k8s/kubesphere集群创建配置(该配置不含安装kubesphere的信息), 因此需要结合`kk create config`输出的配置merge `installer.kubesphere.io/v1alpha`(安装kubesphere的配置)才可用
 ```
@@ -139,3 +194,18 @@ $ source ~/.bash_profile
 可通过`kubectl get events --namespace=kubesphere-monitoring-system  |grep "prometheus-k8s-0"`或`kubectl describe pod prometheus-k8s-0 -n kubesphere-monitoring-system`查看对应的event.
 
 原因: cpu不足无法调度, 可通过`kubectl describe nodes`查看该node的资源限制. 目前除了添加资源外无解(除非手动修改deployment/pod配置的resources.requests).
+
+### `crictl pull kubesphere/pause:3.2`报`Unimplemented desc = unknown service runtime.v1alpha2.ImageService`
+参考:
+- [容器运行时笔记](https://gobomb.github.io/post/container-runtime-note/)
+- [unknown service runtime.v1alpha2.ImageService](https://github.com/kubernetes-sigs/cri-tools/issues/710)
+
+因为 contianerd 没有 启用 CRI 插件，所以无法使用 crictl 连接.
+
+解决方法: 注释`/etc/containerd/config.toml`里的`disabled_plugins = ["cri"]`并`systemctl restart containerd`.
+
+### `kk create cluster`报`Unable to fetch the kubeadm-config ConfigMap from cluster: failed to get config map: Get "https://lb.kubesphere.local:6443/api/v1/namespaces/kube-system/configmaps/kubeadm-config?timeout=10s": dial tcp 192.168.0.43:6443: connect: connection refused`
+其实是调用的`kubeadm reset`报的, 不是错误. `sudo rm -rf /etc/kubernetes*`后重新执行`kk create cluster`就不报该提示了.
+
+### `kk create cluster`报`No kubeadm config, using etcd pod spec to get data directory`
+其实是调用的`kubeadm reset`报的, 不是错误.

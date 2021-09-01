@@ -2,6 +2,7 @@
 - [PostgreSQL黑科技大集会](https://yq.aliyun.com/articles/2727)
 - [PostgreSQL on Linux 最佳部署手册](http://mp.weixin.qq.com/s/FR65pyRmpEFFVvoJ28uBUg)
 - [Postgres 索引类型探索之旅](https://linux.cn/article-9035-1.html)
+- [PostgreSQL数据目录深度揭秘](https://www.tuicool.com/articles/aiYZny6)
 
 ### 相关主页
 
