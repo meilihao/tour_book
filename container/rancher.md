@@ -10,6 +10,15 @@
 - [清理节点](https://docs.rancher.cn/docs/rancher2/cluster-admin/cleaning-cluster-nodes/_index)
 - [Removing Kubernetes Components from Nodes](https://rancher.com/docs/rancher/v2.x/en/cluster-admin/cleaning-cluster-nodes/)
 
+    ```bash
+    # systemctl stop kubelet.service
+    # systemctl disable kubelet.service
+    # rm /etc/systemd/system/kubelet.service
+    # rm -rf /var/lib/etcd*
+    # rm -rf /var/backups/kube_etcd
+    # rm -rf /root/.kube
+    ```
+
 ## FAQ
 ### 重置密码
 ```bash
