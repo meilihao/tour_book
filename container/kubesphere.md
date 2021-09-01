@@ -139,3 +139,6 @@ $ source ~/.bash_profile
 可通过`kubectl get events --namespace=kubesphere-monitoring-system  |grep "prometheus-k8s-0"`或`kubectl describe pod prometheus-k8s-0 -n kubesphere-monitoring-system`查看对应的event.
 
 原因: cpu不足无法调度, 可通过`kubectl describe nodes`查看该node的资源限制. 目前除了添加资源外无解(除非手动修改deployment/pod配置的resources.requests).
+
+### `"Container runtime network not ready" networkReady="NetworkReady=false reason:NetworkPluginNotReady message:Network plugin returns error: cni plugin not initialized"`
+其实这段输出并没有什么问题，等会安装flannel网络插件后，Network就会初始化了.
