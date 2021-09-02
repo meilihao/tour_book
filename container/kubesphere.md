@@ -195,6 +195,7 @@ $ source ~/.bash_profile
 
 原因: cpu不足无法调度, 可通过`kubectl describe nodes`查看该node的资源限制. 目前除了添加资源外无解(除非手动修改deployment/pod配置的resources.requests).
 
+<<<<<<< HEAD
 ### `crictl pull kubesphere/pause:3.2`报`Unimplemented desc = unknown service runtime.v1alpha2.ImageService`
 参考:
 - [容器运行时笔记](https://gobomb.github.io/post/container-runtime-note/)
@@ -209,3 +210,7 @@ $ source ~/.bash_profile
 
 ### `kk create cluster`报`No kubeadm config, using etcd pod spec to get data directory`
 其实是调用的`kubeadm reset`报的, 不是错误.
+
+### `"Container runtime network not ready" networkReady="NetworkReady=false reason:NetworkPluginNotReady message:Network plugin returns error: cni plugin not initialized"`
+其实这段输出并没有什么问题，等会安装flannel网络插件后，Network就会初始化了.
+

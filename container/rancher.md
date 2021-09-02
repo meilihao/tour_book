@@ -21,7 +21,14 @@
     # rm /usr/local/bin/rancher*
     # rm -rf /var/lib/rancher*
     # rm -rf /etc/rancher/*
+    # systemctl stop kubelet.service
+    # systemctl disable kubelet.service
+    # rm /etc/systemd/system/kubelet.service
+    # rm -rf /var/lib/etcd*
+    # rm -rf /var/backups/kube_etcd
+    # rm -rf /root/.kube
     ```
+
 ## FAQ
 ### 重置密码
 ```bash
