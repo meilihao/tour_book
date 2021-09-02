@@ -176,7 +176,10 @@ list Volume Pool=dbpool  #查看dbpool属性的Volume
 list pool    #查看定义的dbpool属性
 llist pool   #查看定义的dbpool属性(更详细)
 
-* llist backups client="xxx" filset="any" order=desc # 显示该客户端的所有(不限制fileset)备份任务. v20.2 order参数不生效
+llist backups client="xxx" filset="any" order=desc limit=200 # 显示该客户端的所有(不限制fileset)备份任务的前200条. v20.2 order参数不生效
+llist jobs job="xxx" order=desc limit=200 # **llist jobs不支持order**
+
+> llist = long list, 即使用与list相同的参数, 但会列出所选记录的完整内容(from db)
 
 # --- show查看配置信息
 show Job=t3_full   #查看Job名称等于t3_full的配置信息
@@ -277,6 +280,12 @@ Alternatively you can use the redoc format: http://127.0.0.1:8000/redoc
 > 页面有cdn资源依赖. 该功能由fastapi提供, [离线资源加载看这里](https://fastapi.tiangolo.com/advanced/extending-openapi/#self-hosting-javascript-and-css-for-docs), 在自身项目上引入fastapi资源来解决. 注意不能忘记这两属性`FastAPI(docs_url=None, redoc_url=None)`, 否则应用还是使用fastapi默认的渲染函数.
 
 > 只需设置`http://127.0.0.1:8000/docs`页面的"Authorize"按钮里的username和password即可使用openapi的`try it out`
+
+#### url map
+- `/restore/filebrowser` : bareos-webui/module/Restore/src/Restore/Controller/RestoreController.php#filebrowserAction
+
+### 要点
+建议在`.bvfs_lsfiles`和`bvfs_lsdirs`查询中使用 pathid 而不是 path, 查询`/`除外.
 
 ## plugin
 > [官方plugins](https://github.com/bareos/bareos/tree/master/contrib)
