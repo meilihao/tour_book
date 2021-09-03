@@ -282,6 +282,8 @@ Alternatively you can use the redoc format: http://127.0.0.1:8000/redoc
 > 只需设置`http://127.0.0.1:8000/docs`页面的"Authorize"按钮里的username和password即可使用openapi的`try it out`
 
 #### url map
+根据`/<module>/<action>` -> ``bareos-webui/module/<module>/src/<module>/Controller/<module>Controller.php#<action>Action`映射的, 比如
+- `/restore/` : bareos-webui/module/Restore/src/Restore/Controller/RestoreController.php#indexAction
 - `/restore/filebrowser` : bareos-webui/module/Restore/src/Restore/Controller/RestoreController.php#filebrowserAction
 
 ### 要点
@@ -1100,11 +1102,11 @@ BVFS（Bareos虚拟文件系统）提供了一个API来浏览目录中的备份�
 
 在bareos webui root(`/usr/share/bareos-webui/module/Job`)下执行`grep -r getData`, 在`src/Job/Controller/JobController.php`中找到`getDataAction()`, 再在其中找到关键函数`getJobs`.
 
-执行`grep -r getJobs`, 在`src/Job/Model/JobModel.php`中找到它, 看其实现基本可推断是基于bsock, 通过`$bsock->send_command()`逆推, 在`src/Job/Controller/JobController.php`中找到`$this->bsock=$this->getServiceLocator()->get('director')`.
+执行`grep -r getJobs`, 在`src/Job/Model/JobModel.php`中找到它, 看其实现基本可推断是基于bsock, 通过`$bsock->send_command()->send()`逆推, 在`src/Job/Controller/JobController.php`中找到`$this->bsock=$this->getServiceLocator()->get('director')`.
 
 在`/usr/share/bareos-webui`执行`grep -r "send_command" |grep -v "bsock"`, 在`vender/Bareos/library/Bareos/BSock/BareosBSock.php`找到其实现(需考虑send_command有参数列表). 在找到它的上层函数send(), 发现它是操作`fwrite($this->socket,...)`, 找到socket定义: [`stream_socket_client()`](https://php.golaravel.com/function.stream-socket-client.html).
 
-截获bareos cmd: 在BareosBSock.php的send_command()开头添加打印语句:`error_log("[". date("Y-m-d H:i:s", time()) ."] : $cmd \n", 3, "/tmp/bareos_cmd.log");`.
+截获bareos cmd: 在BareosBSock.php的send()开头添加打印语句:`error_log("[". date("Y-m-d H:i:s", time()) ."] : $cmd \n", 3, "/tmp/bareos_cmd.log");`.
 
 ### log
 使用`-d 500`参数, 可打印详细日志

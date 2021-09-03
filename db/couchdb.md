@@ -651,3 +651,7 @@ if ('deleted' in doc) {
 }
 emit([deleted],doc);
 ```
+
+### db清理
+参考:
+- [`POST /{db}/_compact`](https://docs.couchdb.org/en/main/api/database/compact.html)
