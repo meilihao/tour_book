@@ -52,7 +52,14 @@ ulimit [OPTIONS] [LIMIT]
 
 1. 对多个用户或用户组进行限制
 
-    在/etc/security/limits.conf中输入<domain> <type> <item> <value>, 每一行一个限制.
+    在/etc/security/limits.conf中输入<domain> <type> <item> <value>, 每一行一个限制. 比如:
+    ```bash
+    #<domain>    <type>    <item>    <value>
+    couchdb      hard      nofile    65536
+    couchdb      soft      nofile    65536
+    ```
+
+    > 也可在/etc/security/limits.d中添加.
 
     domain 表示用户或者组的名字，还可以使用 * 作为通配符. Type 可以有两个值，soft 和 hard. Item 则表示需要限定的资源，可以有很多候选值，如 stack，cpu等. 通过添加对应的一行描述，则可以产生相应的限制.
 
@@ -82,3 +89,7 @@ ulimit, limits.conf 和 pam_limits 的关系，大致是这样的：
 ### 硬资源限制和软资源限制
 硬资源限制: 对资源的绝对限制, 在任何情况下都不允许用户超过这个限制, 除非进程有root权限
 软资源限制: 指用户可以在一定时间范围内(默认时为一周,在/usr/include/sys/fs/ufs_quota.h文件中设置)超过软限制的额度,在硬限制的范围内继续申请资源,同时系统会在用户登录时给出警告信息和仍可继续申请资源剩余时间.
+
+## FAQ
+### 查看进行的limits
+`cat /proc/<pid>/limits`
