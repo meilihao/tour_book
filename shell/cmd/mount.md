@@ -57,7 +57,7 @@ mount: /srv/dev-disk-by-path-pci-0000-00-10.0-scsi-0-0-2-0-part1/test/ bound on 
 # mountpoint
 `mountpoint /mnt/smb` : 检查`/mnt/smb`是否为挂载点
 
-# findmnt
+# findmnt(**查看mount时推荐**)
 查看mountpoint和分区的关系, 及其挂载参数
 ```bash
 $ findmnt /boot/efi

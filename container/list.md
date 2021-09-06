@@ -1,6 +1,5 @@
 ## base
 - [安装Docker](https://help.aliyun.com/knowledge_detail/42851.html)
-- [下一代容器运行时 iSula、Containerd 和 CRI-O(含安装)](https://mp.weixin.qq.com/s/W6ZT36u0mU9VXMmqyVdmCg)
 - [Docker 出局？你还有 iSula、Containerd、CRI-O](https://kubesphere.io/zh/blogs/dockershim-out-of-kubernetes/)
 
 ## 入门

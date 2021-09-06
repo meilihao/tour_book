@@ -1336,3 +1336,12 @@ kubeadm init 的最后一步是安装默认插件。Kubernetes 默认 kube-proxy
 ```sh
 $ kubeadm init --config kubeadm.yaml  // 为kubeadm 提供一个 YAML 文件（比如kubeadm.yaml），通过它配置参数
 ```
+
+## FAQ
+### 修改kubelet参数
+`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf`或`/var/lib/kubelet/kubeadm-flags.env`
+
+> 其实`/var/lib/kubelet/kubeadm-flags.env`是被included在`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf`里.
+
+### 修改kubelet的保留计算资源
+`vim /var/lib/kubelet/config.yaml`, 比如`systemReserved/kubeReserved`项, 需重启kubelet. 通过`kubectl describe node`的`Allocatable`项查看(有延迟).
