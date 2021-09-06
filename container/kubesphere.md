@@ -2,6 +2,8 @@
 参考:
 - [KubeSphere 在华为云 ECS 高可用实例](https://kubesphere.io/zh/docs/installing-on-linux/public-cloud/install-kubesphere-on-huaweicloud-ecs/)
 - [使用 Cilium 作为网络插件部署 Kubernetes + KubeSphere](https://kubesphere.io/zh/blogs/cilium-kubesphere-kubernetes/)
+- [查询kubekey支持的k8s版本](https://hub.docker.com/r/kubesphere/kube-apiserver/tags?page=1&ordering=last_updated)
+- [使用 KubeKey 升级](https://kubesphere.io/zh/docs/upgrade/upgrade-with-kubekey/)
 
 ## 部署
 ```bash
@@ -206,7 +208,40 @@ $ source ~/.bash_profile
 解决方法: 注释`/etc/containerd/config.toml`里的`disabled_plugins = ["cri"]`并`systemctl restart containerd`.
 
 ### `kk create cluster`报`Unable to fetch the kubeadm-config ConfigMap from cluster: failed to get config map: Get "https://lb.kubesphere.local:6443/api/v1/namespaces/kube-system/configmaps/kubeadm-config?timeout=10s": dial tcp 192.168.0.43:6443: connect: connection refused`
-其实是调用的`kubeadm reset`报的, 不是错误. `sudo rm -rf /etc/kubernetes*`后重新执行`kk create cluster`就不报该提示了.
+其实就是kube-apiserver未启动导致.
+
+查看container debug log发现错误:
+```log
+Sep 04 10:28:04 chen-aliyun containerd[58865]: time="2021-09-04T10:28:04.520051030+08:00" level=error msg="RunPodSandbox for &PodSandboxMetadata{Name:kube-apiserver-chen-aliyun,Uid:a80ce4480dd54dda09001653c9dce4df,Namespace:kube-system,Attempt:0,} failed, error" error="failed to get sandbox image \"k8s.gcr.io/pause:3.2\": failed to pull image \"k8s.gcr.io/pause:3.2\": failed to pull and unpack image \"k8s.gcr.io/pause:3.2\": failed to resolve reference \"k8s.gcr.io/pause:3.2\": failed to do request: Head \"https://k8s.gcr.io/v2/pause/manifests/3.2\": dial tcp 108.177.97.82:443: i/o timeout"
+```
+
+检查containerd:
+```bash
+# containerd --version
+containerd containerd.io 1.4.9 e25210fe30a0a703442421b0f60afac609f950a3
+# cat /etc/containerd/config.toml |grep san
+    sandbox_image = "kubesphere/pause:3.2"
+# systemctl restart containerd.service
+# containerd config dump |grep san
+    sandbox_image = "k8s.gcr.io/pause:3.2"
+# crictl images |grep pause
+docker.io/kubesphere/pause                     3.2                 80d28bedfe5de       299kB
+docker.io/kubesphere/pause                     3.5                 ed210e3e4a5ba       301kB
+```
+
+将containerd 升级到1.5.5, sandbox_image还是未生效, 但得到一个warning:
+```bash
+# containerd config dump |grep san
+WARN[0000] deprecated version : `1`, please switch to version `2`
+    sandbox_image = "k8s.gcr.io/pause:3.5"
+```
+
+将`version = 2`加到`/etc/containerd/config.toml`的开头, 看到配置生效, 再重启containerd即可.
+```bash
+# containerd config dump |grep san
+    sandbox_image = "kubesphere/pause:3.5"
+# systemctl restart containerd.service
+```
 
 ### `kk create cluster`报`No kubeadm config, using etcd pod spec to get data directory`
 其实是调用的`kubeadm reset`报的, 不是错误.
@@ -214,3 +249,24 @@ $ source ~/.bash_profile
 ### `"Container runtime network not ready" networkReady="NetworkReady=false reason:NetworkPluginNotReady message:Network plugin returns error: cni plugin not initialized"`
 其实这段输出并没有什么问题，等会安装flannel网络插件后，Network就会初始化了.
 
+### [kubekey v1.2.0-alpha.3部署k8s v1.22.1失败](https://github.com/kubesphere/kubekey/issues/640)
+```log
+Warning: spec.template.metadata.annotations[scheduler.alpha.kubernetes.io/critical-pod]: non-functional in v1.16+; use the "priorityClassName" field instead
+daemonset.apps/cilium created
+deployment.apps/cilium-operator created
+ERRO[11:44:41 CST] Failed to deploy local-volume.yaml: Failed to exec command: sudo -E /bin/sh -c "/usr/local/bin/kubectl apply -f /etc/kubernetes/addons/local-volume.yaml" storageclass.storage.k8s.io/local unchanged
+serviceaccount/openebs-maya-operator unchanged
+deployment.apps/openebs-localpv-provisioner unchanged
+unable to recognize "/etc/kubernetes/addons/local-volume.yaml": no matches for kind "ClusterRole" in version "rbac.authorization.k8s.io/v1beta1"
+unable to recognize "/etc/kubernetes/addons/local-volume.yaml": no matches for kind "ClusterRoleBinding" in version "rbac.authorization.k8s.io/v1beta1": Process exited with status 1  node=192.168.0.43
+```
+
+应该是`rbac.authorization.k8s.io/v1beta1 ClusterRole/ClusterRoleBinding`已在v1.22.1删除导致.
+
+切换到kk 1.1.1部署k8s v1.20.6
+```log
+Warning: rbac.authorization.k8s.io/v1beta1 ClusterRole is deprecated in v1.17+, unavailable in v1.22+; use rbac.authorization.k8s.io/v1 ClusterRole
+clusterrole.rbac.authorization.k8s.io/openebs-maya-operator created
+Warning: rbac.authorization.k8s.io/v1beta1 ClusterRoleBinding is deprecated in v1.17+, unavailable in v1.22+; use rbac.authorization.k8s.io/v1 ClusterRoleBinding
+clusterrolebinding.rbac.authorization.k8s.io/openebs-maya-operator created
+```

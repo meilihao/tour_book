@@ -1,5 +1,6 @@
 # journalctl
 
+> 一些发行版已经配置了日志，以便将日志写入磁盘（/var/log/journal），而其他发行版将日志保存在内存中（/run/log/journal）.
 ## 描述
 
 journald是systemd独有的日志系统，替换了sysVinit中的syslog守护进程,使用journalctl用来读取日志.
@@ -47,7 +48,7 @@ $ sudo journalctl -k
 # 查看日志占据的磁盘空间
 $ sudo journalctl --disk-usage
 
-# 查看系统本次启动的日志
+# 查看系统本次启动开始的日志
 $ sudo journalctl -b
 $ sudo journalctl -b -0
 
@@ -124,6 +125,10 @@ journalctl -f -o verbose
 
 # 设置`/etc/machine-id`
 systemd-machine-id-setup # = dbus-uuidgen --ensure=/etc/machine-id
+
+# 清空systemd log
+journalctl --rotate # 要求日志守护进程轮换日志文件. 日志文件轮换的效果是所有当前**活动的日志文件**都被标记为已归档并重命名，以便将来永远不会写入它们, 然后在它们的位置创建新的（空的）日志文件. **注意: 活动日志文件不会被`--vacuum*=`命令删除.
+journalctl --vacuum-time=1s # 使所有日志文件不包含早于 1s 的数据
 ```
 
 ## FAQ

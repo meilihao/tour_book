@@ -16,12 +16,14 @@ exclude=kernel* centos-release*
 > [如何避免升级 Linux 实例内核后无法启动](https://help.aliyun.com/knowledge_detail/59360.html)
 
 1. 新建用户
+> 因为当前只有root
+
 ```
 // 新建用户
 # useradd username
 // 添加sudo权限
 # vim /etc/sudoers
-// username  ALL=(ALL)   ALL
+// username  ALL=(ALL)  NOPASSWD:ALL
 // 修改密码
 # passwd username
 ```

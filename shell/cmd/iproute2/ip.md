@@ -46,6 +46,10 @@ ip link set eth0 mtu 1400        # 设置网卡最大传输单元
 ip addr show     # 显示网卡IP信息
 ip addr add 192.168.0.1/24 dev eth0 # 设置eth0网卡IP地址192.168.0.1, 需要ip link set eth0 down/up重启网卡
 ip addr del 192.168.0.1/24 dev eth0 # 删除eth0网卡IP地址
+ip link delete cilium_vxlan # 删除网络接口
+# ip link delete cilium_net@cilium_host # cilium_net@cilium_host： cilium_host可能是cilium_net的secondary ip
+Cannot find device "cilium_net@cilium_host"
+# ip link delete cilium_net
 ```
 
 # ip rule

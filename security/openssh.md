@@ -216,8 +216,23 @@ ssh-keyscan -t ed25519 -p 22 xxx.com
 ssh commands need to know how to talk to the ssh-agent, they know that from the SSH_AUTH_SOCK environment variable.
 
 ```bash
-$ eval "$(ssh-agent -s)"
+$ eval "$(ssh-agent -s)" # 直接开启一个ssh-agent进程, 因为它是独立进程，所以即使用户退出当前shell连接，它依然存在.
 ```
-或者`ssh-agent ssh`
+或者`ssh-agent $SHELL`, 它会在当前的shell中启动一个子shell，ssh-agent程序运行在这个子shell中，退出当前的子shell，ssh-agent会随之消失， 可用pstree验证.
 
 上述两种方法仅对当前执行该命令的terminal有效.
+
+获取SSH_AUTH_SOCK:
+```bash
+# ssh-agent 
+SSH_AUTH_SOCK=/tmp/ssh-iHWAYGzwmxGH/agent.6571; export SSH_AUTH_SOCK;
+SSH_AGENT_PID=6572; export SSH_AGENT_PID;
+echo Agent pid 6572;
+```
+
+这个每次terminal都要运行一遍启动ssh-agent的命令好像有点麻烦，值得高兴的是大多数的linux发行版都在登录图形界面时都会启动一个ssh-agent进程， 用户不需要任何操作，可以使用ps -ef | grep ssh-agent查看. 如果系统没有这个功能，请在~/.xsession文件中加入:
+```conf
+ssh-agent gnome-session # 请使用当前系统的窗口管理器取代gnome-session
+```
+
+或在`~/.bashrc`添加`export $(gnome-keyring-daemon --start --components=secrets,ssh)`来启用ssh-agent.

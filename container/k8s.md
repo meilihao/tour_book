@@ -9,6 +9,7 @@ env: k8s 1.14.1 / Rancher v2.2.3
 - [生产级 Kubernetes 集群管理 kops](https://www.oschina.net/p/kops)
 - [kubernetes-handbook](https://github.com/rootsongjc/kubernetes-handbook)
 - [ Kubernetes Handbook （Kubernetes指南）](https://github.com/feiskyer/kubernetes-handbook)
+- [Pod 一直处于 Pending 状态](https://cloud.tencent.com/document/product/457/42948)
 
 Kubernetes 最主要的设计思想是从更宏观的角度，以统一的方式来定义任务之间的各种关系，并且为将来支持更多种类的关系留有余地.
 
@@ -1126,7 +1127,7 @@ targetPort 是Pod上的端口.
 - `kubectl edit deployment ${deployment-name}` # 查看deployment配置和运行状态
 - `kubectl exec -it POD-NAME sh` # 进入pod的容器
 - `kubectl describe node Node-NAME` # 获取node的描述信息
-- `kubectl describe pod POD-NAME` # 获取pod的描述信息(简单), 生命周期事件
+- `kubectl describe pod POD-NAME [-n kube-system]` # 获取pod的描述信息(简单), 生命周期事件,  `-n`表示namespace
 - `kubectl describe deployment DeploymentName` # 获取deployment的描述信息(简单), 生命周期事件
 - `kubectl describe replicaset ReplicasetName` # 获取replicaset的描述信息(简单), 生命周期事件
 - `kubectl describe pod nginx-ingress-controller-hv2n6 --namespace=ingress-nginx` # 查看指定namespace的指定pod的状态
@@ -1134,7 +1135,7 @@ targetPort 是Pod上的端口.
 - `kubectl get pods --all-namespaces [-o wide]` # 获取所有pod的状态,加`-o wide`时还会输出更多信息, 比如ip和node host
 - `kkubectl get pod -l app=nginx` # 获取所有lable是`app=nginx`的pods
 - `kubectl get events` # 查询所有事件
-- `kubectl get pods [--show-all]` # 查询所有pod
+- `kubectl get pods [-A]` # 查询所有pod, `-A`表示all namespace
 - `kubectl get deployments` # 获取所有deployment
 - `kubectl get nodes [--show-labels]` # 获取所有node
 - `kubectl get replicaset` # 获取所有replicaset
@@ -1336,3 +1337,15 @@ kubeadm init 的最后一步是安装默认插件。Kubernetes 默认 kube-proxy
 ```sh
 $ kubeadm init --config kubeadm.yaml  // 为kubeadm 提供一个 YAML 文件（比如kubeadm.yaml），通过它配置参数
 ```
+
+## FAQ
+### `kubectl get node` STATUS列来源
+[`kubectl describe node`的Conditions](https://kubernetes.io/zh/docs/concepts/architecture/nodes/#condition).
+
+### [为系统守护进程预留计算资源(https://kubernetes.io/zh/docs/tasks/administer-cluster/reserve-compute-resources/#node-allocatable)
+
+### [安装hubble UI](https://www.kubernetes.org.cn/9404.html)
+参考:
+- [最Cool Kubernetes网络方案Cilium入门](https://cilium.io/blog/2020/05/04/guest-blog-kubernetes-cilium)
+
+Hubble 是专门为网络可视化设计的，能够利用 Cilium 提供的 eBPF 数据路径，获得对 Kubernetes 应用和服务的网络流量的深度可见性。这些网络流量信息可以对接 Hubble CLI、UI 工具，可以通过交互式的方式快速诊断如与 DNS 相关的问题.
