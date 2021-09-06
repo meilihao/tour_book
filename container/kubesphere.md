@@ -8,6 +8,7 @@
 ## 部署
 ```bash
 # all-in-one部署, kk v1.1.1, [k8s支持版本](https://github.com/kubesphere/kubekey/blob/release-1.1/docs/kubernetes-versions.md)
+$ sudo apt install socat ipset conntrack ipvsadm
 $ sudo KKZONE=cn kk create config --with-kubernetes v1.20.6 --with-kubesphere v3.1.1 -f my.yaml
 $ cat my.yaml # 使用`kk create cluster -f`部署时的配置文件
 apiVersion: kubekey.kubesphere.io/v1alpha1
@@ -270,3 +271,38 @@ clusterrole.rbac.authorization.k8s.io/openebs-maya-operator created
 Warning: rbac.authorization.k8s.io/v1beta1 ClusterRoleBinding is deprecated in v1.17+, unavailable in v1.22+; use rbac.authorization.k8s.io/v1 ClusterRoleBinding
 clusterrolebinding.rbac.authorization.k8s.io/openebs-maya-operator created
 ```
+
+### `Failed to initialize CSINode: error updating CSINode annotation: timed out waiting for the condition; caused by: nodes "chen-aliyun" not found`
+因为node "chen-aliyun"还没由注册, 后续会存在注册操作的日志比如`Successfully registered node chen-aliyun`.
+
+### KubeSphere安装报`KubeSphere startup timeout`, systemd日志里由很多`Container runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:Network plugin returns error: cni plugin not initialized`
+参考:
+- [KubeSphere startup timeout](https://github.com/kubesphere/kubekey/issues/654)
+
+报`cni plugin not initialized`的原因是`etc/cni/net.d` 中没有定义 CNI 网络, 必须将配置文件写入该目录以告诉 CNI 驱动程序如何配置网络. 通过`kubectl describe node`查看是k8s
+网络插件没安装成功导致node not ready.
+
+```bash
+# kubectl get pod -A
+NAMESPACE     NAME                                  READY   STATUS    RESTARTS   AGE
+kube-system   cilium-htv9g                          1/1     Running   1          5h30m
+kube-system   cilium-operator-75f898cccc-64fpl      1/1     Running   1          5h30m
+kube-system   cilium-operator-75f898cccc-cpkpp      1/1     Running   1          5h30m
+...
+```
+查看cilium的pod, 显然已运行.
+
+问题复现(删除并再创建cluster):
+```bash
+# kk create cluster -f config.k8s.yaml # onyly install k8s, 且部署成功
+# kk delete cluster -f config.k8s.yaml
+# kk create cluster -f config.k8s.yaml
+```
+
+解决方法: `kk delete cluster -f config.k8s.yaml`并**reboot**, 再执行`kk create cluster -f config.k8s.yaml`.
+
+### kubesphere部署完成第一次登录修改初始密码或稍后修改都报错:`Internal error occurred: failed calling webhook "users.iam.kubesphere.io": Post "https://ks-controller-manager.kubesphere-system.svc:443/validate-email-iam-kubesphere-io-v1alpha2?timeout=30s": dial tcp 10.233.29.13:443: connect: connection refused`
+参考:
+- [帐户无法登录](https://kubesphere.io/zh/docs/faq/access-control/cannot-login/)
+
+经排查是pod ks-controller-manager-f457f6957-2ps85 Pending导致, 通过修改kubelet的保留计算资源启动它.

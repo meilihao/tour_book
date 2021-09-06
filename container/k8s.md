@@ -1349,3 +1349,10 @@ $ kubeadm init --config kubeadm.yaml  // 为kubeadm 提供一个 YAML 文件（�
 - [最Cool Kubernetes网络方案Cilium入门](https://cilium.io/blog/2020/05/04/guest-blog-kubernetes-cilium)
 
 Hubble 是专门为网络可视化设计的，能够利用 Cilium 提供的 eBPF 数据路径，获得对 Kubernetes 应用和服务的网络流量的深度可见性。这些网络流量信息可以对接 Hubble CLI、UI 工具，可以通过交互式的方式快速诊断如与 DNS 相关的问题.
+### 修改kubelet参数
+`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf`或`/var/lib/kubelet/kubeadm-flags.env`
+
+> 其实`/var/lib/kubelet/kubeadm-flags.env`是被included在`/etc/systemd/system/kubelet.service.d/10-kubeadm.conf`里.
+
+### 修改kubelet的保留计算资源
+`vim /var/lib/kubelet/config.yaml`, 比如`systemReserved/kubeReserved`项, 需重启kubelet. 通过`kubectl describe node`的`Allocatable`项查看(有延迟).

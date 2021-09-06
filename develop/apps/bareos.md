@@ -289,6 +289,10 @@ Alternatively you can use the redoc format: http://127.0.0.1:8000/redoc
 ### 要点
 建议在`.bvfs_lsfiles`和`bvfs_lsdirs`查询中使用 pathid 而不是 path, 查询`/`除外.
 
+文件还原时checked_files和checked_directories传参:
+- 半选中状态目录不传(即目录内容没有被全选)
+- 选中状态全传(可以剪枝:目录内容全选时可只传该目录id)
+
 ## plugin
 > [官方plugins](https://github.com/bareos/bareos/tree/master/contrib)
 

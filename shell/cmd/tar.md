@@ -87,6 +87,7 @@ tar -tvf myarchive.tar.gz  | more //列出 .tar.gz 文件中的内容
 tar -tvf /lfs/sources/mpfr-*.tar.xz // 列出.tar.xz内容
 tar czf xx.tgz -C /xxx/xxx A //使用-C指定相对路径
 tar -xf binutils-2.35.tar.xz -C a --strip-components 1 # 解压时生成的路径不包括父目录`binutils-2.35`
+tar -xf xxx.tar.gz -C / # 直接解压使用
 ```
 
 ### 其他
