@@ -210,6 +210,8 @@ $ source ~/.bash_profile
 
 ### `kk create cluster`报`Unable to fetch the kubeadm-config ConfigMap from cluster: failed to get config map: Get "https://lb.kubesphere.local:6443/api/v1/namespaces/kube-system/configmaps/kubeadm-config?timeout=10s": dial tcp 192.168.0.43:6443: connect: connection refused`
 其实就是kube-apiserver未启动导致.
+参考:
+- [fix containerd still uses "k8s.gcr.io/pause"](https://github.com/kubesphere/website/pull/1924)
 
 查看container debug log发现错误:
 ```log
@@ -305,4 +307,4 @@ kube-system   cilium-operator-75f898cccc-cpkpp      1/1     Running   1         
 参考:
 - [帐户无法登录](https://kubesphere.io/zh/docs/faq/access-control/cannot-login/)
 
-经排查是pod ks-controller-manager-f457f6957-2ps85 Pending导致, 通过修改kubelet的保留计算资源启动它.
+经排查是pod ks-controller-manager-f457f6957-2ps85 Pending导致, [通过修改kubelet的配置减少它的部分保留计算资源来启动该pod](k8s.md).
