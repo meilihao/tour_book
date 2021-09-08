@@ -13,6 +13,11 @@ env: k8s 1.14.1 / Rancher v2.2.3
 
 Kubernetes 最主要的设计思想是从更宏观的角度，以统一的方式来定义任务之间的各种关系，并且为将来支持更多种类的关系留有余地.
 
+k8s是一个完备的分布式系统开发和支持平台. 它具备完整的集群管理能力, 包括多层次的安全防护和准入机制, 多租户应用支持能力, 透明的服务注册和服务发现机制, 内建的智能负载均衡器, 强大的故障发现和自我修复能力, 服务滚动升级和在线扩容能力, 可扩展的资源自动调度机制以及多颗粒度的资源配额管理能了. 它也提供了完善的管理工具, 涵盖了开发, 部署测试, 运维监控在内的各个环节. 因此, k8s是一个全新的基于容器技术的分布式架构解决方案.
+
+## 案例
+- vSphere 7基于k8s
+
 ## 概念
 ### 基于k8s的开发模式
 而当应用本身发生变化时，开发人员和运维人员可以依靠容器镜像来进行同步；当应用部署参数发生变化时，YAML 配置文件就是他们相互沟通和信任的媒介.
@@ -94,7 +99,7 @@ kube-scheduler、kube-controller-manager, cloud-controller-manager、etcd:
 
   kube-scheduler具备高可用性（即多实例同时运行）, 原理与kube-controller-manager相同.
 
-- kube-controller-manager 就是负责的“后台”。每个资源一般都对应有一个控制器，而kube-controller-manager就是负责管理这些控制器的。比如通过API Server创建一个Pod，当Pod创建成功后，API Server 的任务就算完成了，而后面保证 Pod 的状态始终和预期一样的重任就由Controller去完成.
+- kube-controller-manager 就是负责的“后台”。每个资源一般都对应有一个控制器，而kube-controller-manager就是负责管理这些控制器的即所有资源对象的自动化控制中心。比如通过API Server创建一个Pod，当Pod创建成功后，API Server 的任务就算完成了，而后面保证 Pod 的状态始终和预期一样的重任就由Controller去完成.
 
   从逻辑上讲，每个控制器 都是一个单独的进程，但是为了降低复杂性，它们都被编译到同一个可执行文件，并在一个进程中运行.
 
@@ -146,7 +151,7 @@ Node由Master来进行管理。每个Node上可以运行多个Pod,Master会根�
   - 在服务发现方面，kube-proxy使用etcd的watch机制，监控集群中Service和Endpoint对象数据的动态变化，并且维护一个Service到Endpoint的映射关系，从而保证了后端Pod的IP变化不会对访问者造成影响.
   - 另外，kube-proxy还支持session affinity
 
-- container：负责容器的基础管理服务, 接收kubelet组件的指令
+- container runtime：负责容器的基础管理服务 by 接收kubelet组件的指令. 常见的由docker, containerd.
 
 ## 其他组成
 ### DNS
@@ -177,13 +182,13 @@ controller分类:
 > 一个 ReplicaSet 对象，其实就是由副本数目的定义和一个 Pod 模板组成的; Deployment 控制器实际操纵的，正是 ReplicaSet 对象，而不是 Pod 对象
 
 #### deployment
-部署pod并分布到各个node上, 每个node允许存在多个副本.
+部署pod并分布到各个node上, 每个node允许存在多个副本. 它用于保证service的服务能力和服务质量始终符合预期.
 
 `kubectl get deployment ${deployment_name}`输出:
 - DESIRED : 期望状态是READY的副本数(spec.replicas 的值)
-- CURRENT : 当前处于Running状态的副本总数
+- CURRENT : 当前处于Running状态的副本总数(即Deployment创建的ReplicaSet对象里的replicas值)
 - UP-TO-DATE : 当前已完成更新的副本数(即当前处于最新版本的 Pod 的个数)
-- AVAILABLE : 当前处于READY的副本数(Running状态+最新版本+处于Ready（健康检查正确）状态), 是用户所期望的最终状态
+- AVAILABLE : 当前处于READY的副本数(Running状态+最新版本+处于Ready（健康检查正确）状态), 即cluster中当前存活的pod数量
 
 滚动更新的控制参数:
 - maxSurge : 控制滚动更新中副本总数超过DESIRED的上限, 默认是`25%`, 取值方法是roundUp. 值越大, 滚动更新中创建的新副本就越多
@@ -245,13 +250,27 @@ Cron 表达式中的五个部分分别代表：分钟、小时、日、月、星
 如果某一次 Job 创建失败，这次创建就会被标记为“miss”。当在指定的时间窗口(spec.startingDeadlineSeconds)内，miss 的数目达到 100 时，那么 CronJob 会停止再创建这个 Job
 
 ### pod
-pod是k8s最小的工作(调度,扩展,共享资源,管理生命周期)单位. 它是一个或多个相关容器的集合, 其原因是:
-1. 可管理性: 某些容器的应用间存在紧密联系
-1. 共享通信和存储
+pod是k8s最小的工作(调度,扩展,共享资源,管理生命周期)单位, 其包含一个特殊的Pause容器(即根容器)和一个或多个紧密相关的用户业务容器.
+
+设计pod的原因:
+1. 可管理性: 某些容器的应用间存在紧密联系, 并引入业务无关且不易死亡的Pause容器来代表整个pod的状态
+
+  为多进程间协作提供了一个抽象模型.
+1. 共享通信和存储: pod里的多个业务容器共享Pause容器的IP和其挂载的volume,简化了密切相关的业务容器间的通信及文件共享问题
 
   - pod中的容器使用同一个网络namespace
+
+    解决业务容器间的通信问题
   - 共享存储，如卷（Volume）
-  - 运行这些容器所需的相关信息，如容器镜像版本、使用的特定端口等
+
+
+pod有两类:
+- 普通pod
+
+  一旦创建就记入etcd, 并被k8s调度到某个node上运行.
+- 静态(static) pod
+
+  不记入etcd, 被存放在某个具体node的一个特定文件上, 且只能在该node上启动运行.
 
 围绕着容器和 Pod 不断向真实的技术场景扩展，我们就能够摸索出一幅如下所示的 Kubernetes 项目核心功能的“全景图”:
 ![Kubernetes 项目核心功能的“全景图](https://static001.geekbang.org/resource/image/16/06/16c095d6efb8d8c226ad9b098689f306.png)
@@ -396,7 +415,11 @@ containers:
 PodPreset（Pod 预设置 form v1.11): PodPreset 里定义的内容，只会在 Pod 被创建之前追加在这个对象本身上, 不推荐, 使用yaml模板更直观.
 
 ### service
-定义了外界访问一组特定pod的方法. 它提供了一套简化的服务代理和发现机制，天然适应微服务架构.
+定义了外界访问一组特定pod的方法. 它提供了一套简化的服务代理和发现机制，天然适应微服务架构. 其特征有:
+1. 拥有唯一名称
+1. 拥有一个虚拟ip(cluster ip)和端口号
+1. 提供某种服务
+1. 将外界访问转发到一组容器上
 
 在Kubernetes中，在受到RC调控的时候，Pod副本是变化的，对应的虚拟IP也是变化的，比如发生迁移或者伸缩的时候。这对于Pod的访问者来说是不可接受的. Kubernetes中的Service是一种抽象概念，它定义了一个Pod逻辑集合以及访问它们的策略，**Service同Pod的关联同样是居于Label来完成的**. Service的目标是提供一种桥梁， 它会为访问者提供一个固定访问地址，用于在访问时重定向到相应的后端，这使得非 Kubernetes原生应用程序，在无须为Kubemces编写特定代码的前提下，轻松访问后端.
 
@@ -483,6 +506,25 @@ Kubernetes使用iptables和kube-proxy解析Service的入口地址，在中小规
 
 ### Deployment
 Kubernetes提供的一种更加简单的维护RC和Pod的机制. 通过在Deployment中描述所期望的集群状态，Deployment Controller会将现在的集群状态在一个可控的速度下逐步更新到所期望的集群状态, 即更加方便地管理Pod和Replica Set.
+
+一个deployment定义文件包括3个关键信息:
+1. 目标pod的定义(template)
+1. 目标pod需要运行的副本数(replicas)
+1. 要监控的目录pod的标签(selector)
+
+  标签用于表明资源对象的特征, 类别, 以及通过标签筛选不同的资源对象并实现对象间的关联, 控制和协助等能力.
+
+    当前label selector表达式支持:
+    - 基于等式(equality-based)
+
+      `name=redis-slave`, `env!=prod`
+    - 基于集合(set-based)
+
+      `name in (reidis-master, redis-slave)`, `name not in (reidis-master, redis-slave)`
+
+    表达式组合:
+    - `,` = `and`
+  注解是一种特殊的标签, 多与程序挂钩, 通常用于实现资源对象属性的自定义扩展.
 
 Deployment 的主要职责同样是为了保证Pod的数量和健康，继承了Replication Controller的全部功能，可以看做新一代的Replication Controller. 但是，它又具备了Replication Controller之外的新特性：
 - Replication Controller全部功能
@@ -766,7 +808,7 @@ $ kubectl rolling-update my-rcName-v1 -f my-rcName-v2-rc.yaml --update-period=10
 #### 新一代副本控制器Replica set
 这里所说的Replica set，可以被认为 是“升级版”的Replication Controller. 也就是说, Replica set也是用于保证与Label Selector匹配的Pod数量维持在期望状态. 区别在于，Replica set引入了对基于子集的selector查询条件，而Replication Controller仅支持基于值相等的selecto条件查询, 这是目前从用户角度肴，两者唯一的显著差异.
 
-社区引入这一API的初衷是用于取代vl中的Replication Controller，也就是说．**当v1版本被废弃时，Replication Controller就完成了它的历史使命**，而由Replica set来接管其工作. 虽然Replica set可以被单独使用，但是目前它多被Deployment用于进行pod的创建、更新与删除. Deployment在滚动更新等方面提供了很多非常有用的功能.
+社区引入这一API的初衷是用于取代vl中的Replication Controller(RC)，也就是说．**当v1版本被废弃时，Replication Controller就完成了它的历史使命**，而由Replica set来接管其工作. 虽然Replica set可以被单独使用，但是目前它多被Deployment用于进行pod的创建、更新与删除. Deployment在滚动更新等方面提供了很多非常有用的功能.
 
 ### RBAC
 在 Kubernetes 项目中，负责完成授权（Authorization）工作的机制，就是 RBAC.
@@ -995,12 +1037,6 @@ imagePullPolicy:
     1. 可以像管理代码一样进行管理
 
 ## 术语
-### pod
-pod是k8s的基本处理单元, 其包含一个特殊的Pause容器(即根容器)和一个或多个紧密相关的用户业务容器.
-
-设计pod的原因:
-1. 引入业务无关且不易死亡的Pause容器来代表整个pod的状态
-1. pod里的多个业务容器共享Pause容器的IP和其挂载的volume,简化了密切相关的业务容器间的通信及文件共享问题
 
 ### service
 参考:
@@ -1011,7 +1047,7 @@ pod是k8s的基本处理单元, 其包含一个特殊的Pause容器(即根容器
 
 为一组具有相同功能的容器应用提供一个统一的入口, 并将请求进行负载均衡地分发到pod上, 其屏蔽了pod ip的变化, 并通过Label来关联pod.
 
-Endpoint: service通过selector和pod建立关联, k8s会根据service关联到pod的podIP信息组合成一个endpoint.  可通过`kubectl describe service ${service_name}`查看Endpoints.
+Endpoint: service通过selector和pod建立关联, k8s会根据service关联到pod的podIP信息组合成一个endpoint.  可通过`kubectl describe service ${service_name}`查看Endpoints. service支持多个endpoint, 此时需要为每个endpoint定义一个`name`来区分.
 
 Service类型:
 - ClusterIP(默认) : 只有Cluster内的节点和Pod可以访问, 是一个虚拟ip
@@ -1039,8 +1075,10 @@ kube-proxy 有三种实现 service 的方案, userspace, iptables 和 ipvs:
 
 Kubernetes还通过Service实现了负载均衡、服务发现和DNS等功能.
 
+Headless Service是一种特殊service, 其在定义中设置了`clusterIP:None`, 与普通service的区别是没有ClusterIP, 如果解析其DNS域名会返回该service对应的全部pod的endpoint, 即没有通过虚拟ClusterIP进行转发, 因此网络性能最高等同于原生网络通信.
+
 #### ClusterIP
-它是一个虚拟ip, 由k8s 节点上的iptables管理.
+它是一个虚拟ip, 无法ping通, 其由k8s 节点上的iptables/ipvs管理.
 
 ```sh
 $ sudo iptables-save |grep "httpd-svc"
@@ -1095,7 +1133,14 @@ Headless Service的DNS 记录格式:`<pod-name>.<svc-name>.<namespace>.svc.clust
 
 
 #### 外网访问Service
+k8s的三种ip:
+- node ip: node的网卡上的ip
 
+  k8s外的节点访问k8s cluster的某个节点和服务必须通过node ip通信.
+- pod ip： pod的ip
+  
+  由container runtime根据其网桥的ip地址段进行分配的, 通常是一个虚拟的二层网络, 真实流量通过node ip的网卡进行.
+- service ip: 即service ClusterIP
 
 ### 如何访问
 参考:
@@ -1105,7 +1150,11 @@ Headless Service的DNS 记录格式:`<pod-name>.<svc-name>.<namespace>.svc.clust
 Kubernetes 暴露服务的方式目前只有三种：LoadBlancer Service、NodePort Service、Ingress.
 
 - NodePort
-NodePort 服务通过外部访问服务的最基本的方式. 在集群的每个node上暴露一个端口，然后将这个端口映射到某个具体的service来实现的，虽然每个node的端口有很多(默认的取值范围是 30000-32767)，但是由于安全性和易用性(服务多了就乱了，还有端口冲突问题)实际使用可能并不多.
+
+  NodePort 服务通过外部访问服务的最基本的方式. 在集群的每个node上独占一个端口，然后将这个端口映射到某个具体的service来实现的，虽然每个node的端口有很多(默认的取值范围是 30000-32767)，但是由于安全性和易用性(服务多了就乱了，还有端口冲突问题)实际使用可能并不多.
+
+  比如通过`ss -anltp|grep <NodePort>`查看发现, 流量通常是通过kube-proxy代理的.
+
 - HostPort
 它直接将容器的端口与所调度的node上的端口路由，这样用户就可以通过宿主机的IP加上来访问Pod了. 这样做有个缺点，因为Pod重新调度的时候该Pod被调度到的宿主机可能会变动，这样就变化了，用户必须自己维护一个Pod与所在宿主机的对应关系
 - ClusterIP
@@ -1113,15 +1162,20 @@ ClusterIP 服务是 Kubernetes **默认**的服务类型. 如果你在集群内�
 clusterIP 是一个虚拟的IP， cluster ip 仅作用于kubernetes service 这个对象.
 在k8s上是由kubernetes proxy负责实现cluster ip路由和转发.
 - Load Balancer
-LoadBalancer 服务是暴露服务至互联网最标准的方式, 其只能在service上定义, 而且所有通往指定端口的流量都会被转发到对应的服务. 它没有过滤条件，没有路由, 这意味着你几乎可以发送任何种类的流量到该服务，像 HTTP，TCP，UDP，Websocket，gRPC 或其它任意种类.
+
+  LoadBalancer 服务是暴露服务至互联网最标准的方式, 其只能在service上定义, 而且所有通往指定端口的流量都会被转发到对应的服务. 它没有过滤条件，没有路由, 这意味着你几乎可以发送任何种类的流量到该服务，像 HTTP，TCP，UDP，Websocket，gRPC 或其它任意种类.
 - Ingress
-使用nginx等开源的反向代理负载均衡器实现对外暴露服务，可以理解Ingress就是用于配置域名转发，在nginx中就类似upstream，它与ingress-controller结合使用，通过ingress-controller监控到pod及service的变化，动态地将ingress中的转发信息写到诸如nginx、apache、haproxy等组件中实现方向代理和负载均衡.
+
+  使用nginx等开源的反向代理负载均衡器实现对外暴露服务，可以理解Ingress就是用于配置域名转发，在nginx中就类似upstream，它与ingress-controller结合使用，通过ingress-controller监控到pod及service的变化，动态地将ingress中的转发信息写到诸如nginx、apache、haproxy等组件中实现方向代理和负载均衡.
+
+  > 此时可多个service共用一个对外端口.
 
 Kubernetes Ingress提供了负载平衡器的典型特性：HTTP路由，粘性会话，SSL终止，SSL直通，TCP和UDP负载平衡等。目前并不是所有的Ingress controller都实现了这些功能，需要查看具体的Ingress controller文档, 而且Ingress controller直接将流量转发给后端Pod，不需再经过kube-proxy的转发，比LoadBalancer方式更高效.
 - targetPort
 targetPort 是Pod上的端口.
 
 ## cmd
+- `kubectl get svc tomcat-service -o yaml` # yaml格式输出
 - `kubectl run alpine --rm -ti --image=alpine /bin/sh` # 创建调试pod
 - `kubectl logs -f POD-NAME` # 获取pod日志
 - `kubectl edit deployment ${deployment-name}` # 查看deployment配置和运行状态
