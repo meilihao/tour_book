@@ -28,6 +28,8 @@ default via 192.168.0.1 dev bond0
 # ip neigh show 192.168.0.167 # 查看对应ip的mac, 前提是内核的ARP表有该记录, 没有则先ping一下
 # arp 192.168.0.167 # 查看ip对应的mac, 但arp已淘汰
 # arping -I ens160 192.168.16.38 # 反查mac, by `apt install arping`
+# ip link set dev ens33 multicast on # 启用多播
+# ip maddr # 显示多播地址
 ```
 
 网关是路由出口的位置, 不一定和本机网段相同.

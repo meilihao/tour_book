@@ -1410,3 +1410,16 @@ Hubble 是专门为网络可视化设计的，能够利用 Cilium 提供的 eBPF
 
 ### 修改kubelet的保留计算资源
 `vim /var/lib/kubelet/config.yaml`, 比如`systemReserved/kubeReserved`项, 需重启kubelet. 通过`kubectl describe node`的`Allocatable`项查看(有延迟).
+
+### 通过coredns解决dns
+```bash
+# kubectl -n kube-system get svc -l k8s-app=kube-dns
+NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE
+kube-dns             ClusterIP   10.186.0.2       <none>        53/UDP,53/TCP,9153/TCP       87m
+# dig @10.186.0.2 kubernetes.default.svc.cluster1.local +tcp
+# curl -I 10.186.0.2:9153/metrics #查看coredns的metrics
+# kubectl -n kube-system get po -o wide -l k8s-app=kube-dns # 查看coredns 的 pod ip
+NAME                                  READY   STATUS    RESTARTS   AGE   IP              NODE            NOMINATED NODE   READINESS GATES
+coredns-677d9c57f-tdnd4               1/1     Running   0          10m   10.187.1.24     172.31.159.21   <none>           <none>
+coredns-677d9c57f-x274j               1/1     Running   0          10m   10.187.4.24     172.31.159.22   <none>           <none>
+```
