@@ -66,16 +66,17 @@ keepalived只有一个配置文件keepalived.conf，配置文件里面主要包�
             }
             # vip
             virtual_ipaddress {
+                # 172.16.60.129/24         # 指定VIP，不指定网卡，默认为eth0,注意：不指定/prefix,默认为/32
                 172.16.60.129/24 dev  eth0 # VIP地址
                 # 192.168.1.33/24 brd 192.168.1.255 dev eno1 label eno1:1 # IP/掩码 dev 配置在哪个网卡的哪个别名上
             }
-            notify_master /etc/keepalived/ICS2.sh # 当前节点成为主节点时触发的脚本
-            notify_backup /etc/keepalived/ICS.sh # 当前节点转为备节点时触发的脚本
-            notify_fault xxx # 当前节点转为“失败”状态时触发的脚本
-            notify xxx # 通用格式的通知触发机制，一个脚本可完成以上三种状态的转换时的通知
-            # 追踪脚本，通常用于去执行上面的vrrp_script定义的脚本内容
+            notify_master "/etc/keepalived/keepalived.sh master" # 当前节点成为主节点时触发的脚本
+            notify_backup "/etc/keepalived/keepalived.sh backup" # 当前节点转为备节点时触发的脚本
+            notify_fault "/etc/keepalived/keepalived.sh fault" # 当前节点出现故障转为"FAULT"状态时触发的脚本
+            notify xxx # 表示只要状态切换都会调用的脚本，并且该脚本是在以上三个脚本执行之后再调用的
+            # 追踪脚本，通常用于去执行vrrp_script中定义的脚本内容
             track_script {
-
+                check_running
             }
             track_interface {  # 设置额外的监控，里面那个网卡出现问题都会切换. 通常不使用
                 eth0
@@ -98,7 +99,71 @@ keepalived只有一个配置文件keepalived.conf，配置文件里面主要包�
         }
         ```
 
+        ```bash
+        vim /etc/keepalived/keepalived.sh
+        #!/bin/bash
+        # http://blog.mykernel.cn/2020/10/22/keepalived%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BC%98%E5%8C%96/
+        #author :Magedu
+        #Description : an example of notify script
+        contact='root@localhost'
+
+        notify() {
+            local mailsubject="$(hostname) to be $1, vip floating"
+            local mailbody="$(date +'%F %T'): vrrp transition, $(hostname) changed to be $1"  #时间状态改变
+            # 此步骤可以修改为调用python脚本完成微信报警
+            echo "$mailbody" | mail -s "$mailsubject" $contact
+        }
+
+
+        case $1 in
+        master)
+            notify master
+            systemctl start nginx.service
+            exit 0
+            ;;
+        backup)
+            notify backup
+            systemctl restart nginx.service
+            exit 0
+            ;;
+        fault)
+            notify fault
+            systemctl stop nginx.service
+            exit 0
+            ;;
+        *)
+            echo "Usage: $(basename $0) {master|backup|fault}"
+            exit 1
+            ;;
+        esac
+        ```
+
     1. VRRP脚本
+
+        通过脚本来检测服务是否正常.
+
+        ```conf
+        vrrp_script <SCRIPT_NAME> {
+           script <STRING>|<QUOTED-STRING> # path of the script to execute，需要运行的脚本，返回值为0表示正常; 其它值都会当成检测失败.
+           interval <INTEGER>  # seconds between script invocations, default 1 second ，脚本运行时间，即隔多少秒去检测
+           timeout <INTEGER>   # seconds after which script is considered to have failed，脚本运行的超时时间
+           weight <INTEGER:-254..254>  # adjust priority by this weight, default 0
+           rise <INTEGER>              # required number of successes for OK transition，配置几次检测成功才认为服务正常
+           fall <INTEGER>              # required number of successes for KO transition，配置几次检测失败才认为服务异常
+           user USERNAME [GROUPNAME]   # user/group names to run script under
+                                       #   group default to group of user
+           init_fail                   # assume script initially is in failed state，配置初始时失败状态
+        }
+        ```
+
+        example:
+        ```conf
+        vrrp_script check_running {
+           script “/usr/local/bin/check_running”
+           interval 10
+           weight 10
+        }
+        ```
 3）LVS配置
 
     如果没有配置LVS+keepalived，那么无需配置这段区域. 如果用的是nginx来代替LVS，也无需配置这里. 这里的LVS配置是专门为keepalived+LVS集成准备的.

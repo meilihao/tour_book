@@ -182,7 +182,7 @@ controller分类:
 > 一个 ReplicaSet 对象，其实就是由副本数目的定义和一个 Pod 模板组成的; Deployment 控制器实际操纵的，正是 ReplicaSet 对象，而不是 Pod 对象
 
 #### deployment
-部署pod并分布到各个node上, 每个node允许存在多个副本. 它用于保证service的服务能力和服务质量始终符合预期.
+部署pod并分布到各个node上, 每个node允许存在多个副本. 它用于保证service的服务能力和服务质量始终符合预期. 它面向的是无状态的服务.
 
 `kubectl get deployment ${deployment_name}`输出:
 - DESIRED : 期望状态是READY的副本数(spec.replicas 的值)
@@ -226,6 +226,8 @@ job设置completion可指定完成job所需要的pod总数,即job执行次数.
 在 Job 对象中，负责并行控制的参数有两个：
 - spec.parallelism，它定义的是一个 Job 在任意时间最多可以启动多少个 Pod 同时运行；
 - :spec.completions，它定义的是 Job 完成时 至少要完成的 Pod 数目，即 Job 的最小完成数
+
+> job生成的pod副本是不能自动重启的即pod的`restartFolicy=Never`.
 
 Job Controller 控制的对象，直接就是 Pod. Job Controller 在控制循环中进行的调谐（Reconcile）操作，是根据实际在 Running 状态 Pod 的数目、已经成功退出的 Pod 的数目，以及 parallelism、completions 参数的值共同计算出在这个周期里，应该创建或者删除的 Pod 数目，然后调用 Kubernetes API 来执行这个操作.
 
@@ -570,8 +572,13 @@ Horizontal Pod Autoscaler的操作对象是ReplicaSet或Deployment对应的Pod�
 ### volume
 参考:
 - [k8s学习笔记之持久化存储](https://zhuanlan.zhihu.com/p/29706309)
+- [存储类](https://kubernetes.io/zh/docs/concepts/storage/storage-classes/)
 
-在Kubernetes中，当Pod重建的时候，数据是会丢失的，Kubernetes也是通过数据卷挂载来提供Pod数据的持久化的. Kubernetes数据卷是对Docker数据卷的扩展，Kubernetes数据卷是Pod级别的，可以用来实现Pod中容器的文件共享. 目前，[Kubernetes支持的数据卷类型](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes)如下：
+在Kubernetes中，当Pod重建的时候，数据是会丢失的，Kubernetes也是通过数据卷挂载来提供Pod数据的持久化的. 即volume是pod中能被多个容器访问的共享目录.
+
+Kubernetes数据卷是对Docker数据卷的扩展，Kubernetes数据卷是Pod级别的，可以用来实现Pod中容器的文件共享, 且volume的生命周期与pod相同.
+
+目前，[Kubernetes支持的数据卷类型](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes)如下：
 - EmptyDir
 - HostPath
 - GCE Persistent Disk
@@ -586,7 +593,71 @@ Horizontal Pod Autoscaler的操作对象是ReplicaSet或Deployment对应的Pod�
 - Persistent Volume Claim
 - Downward API
 
-Kubernetes中提供了存储消费模式: Persistent Volume和Persistent Volume Claim机制.
+
+它属于静态管理的存储, 需要事先定义每个volume并挂载到pod中使用, 缺点有:
+- 配置参数烦琐, 需手工配置, 违背了k8s自动化的追求目录
+- 预定义的静态volume可能不符合目标应用的需求, 比如容量, 性能等.
+
+后来k8s发展了存储动态化的新机制即存储消费模式, 来事先存储的自动化管理: Persistent Volume(PV), Persistent Volume Claim(PVC), StorageClass.
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: standard
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp2
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+mountOptions:
+  - debug
+volumeBindingMode: Immediate
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: claim1
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard
+  resources:
+    requests:
+      storage: 30Gi
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-lamp-site
+spec:
+    containers:
+    - name: mysql
+      image: mysql
+      env:
+      - name: MYSQL_ROOT_PASSWORD
+        value: "rootpasswd"
+      volumeMounts:
+      - mountPath: /var/lib/mysql
+        name: site-data
+        subPath: mysql
+    volumes:
+    - name: site-data
+      persistentVolumeClaim:
+        claimName: my-lamp-site-data
+```
+
+> pv在pod之外定义而不是pod上.
+
+StorageClass用于描述和定义某种存储系统的特征. 它的name会出现在pvc中.
+
+PersistentVolumeClaim表示应用希望申请的PV规格, 其属性有:
+- accessModes : 存储访问模式
+- storageClassName : 用哪种storageClass来实现动态创建
+- resources : 存储的具体规格
+
 [Persistent Volume](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#types-of-persistent-volumes)是由系统管理员配置创建的一个数据卷（目前支持HostPath、GCE Persistent Disk、AWS Elastic Block Store、NFS、iSCSI、GlusterFS、RBD），它代表了某一类存储插件实现；而对于普通用户来说，通过Persistent Volume Claim可请求并获得合适的Persistent Volume，而无须感知后端的存储实现. Persistent Volume和Persistent Volume Claim相互关联，有着完整的生命周期管理：
 - 准备：系统管理员规划或创建一批Persistent Volume；
 - 绑定：用户通过创建Persistent Volume Claim来声明存储请求，Kubernetes发现有存储请求的时候，就去查找符合条件的Persistent Volume（最小满足策略）。找到合适的就绑定上，找不到就一直处于等待状态；
@@ -633,20 +704,72 @@ pv 存在:
 
 具体地说，StorageClass 对象会定义如下两个部分内容：
 1. PV 的属性 : 比如，存储类型、Volume 的大小等等
-1. 创建这种 PV 需要用到的存储插件 : 比如，Ceph 等等
+
+  - parameters : 创建pv的必要参数
+  - reclaimPolicy : pv回收策略(删除或保留)
+1. 创建这种 PV 需要用到的存储插件(provisioner) : 比如，Ceph 等等
 有了这样两个信息之后，Kubernetes 就能够根据用户提交的 PVC，找到一个对应的 StorageClass 了。然后，Kubernetes 就会调用该 StorageClass 声明的存储插件，创建出需要的 PV
 
 
 #### 本地数据卷
+参考:
+- [超长干货讲透 3 中 K8S 存储：emptyDir、hostPath、local](https://www.infoq.cn/article/ah1n57f8tge2wisquj00)
+
 EmptyDir、HostPath只能用于本地文件系统, 所以当Pod发生迁移的时候，数据便会丢失. 该类型Volume的用途是：Pod中容器间的文件共享、共享宿主机的文件系统.
 
 1. EmptyDir
-如果Pod配置了EmpyDir数据卷，在Pod的生命周期内都会存在，当Pod被分配到 Node上的时候，会在Node上创建EmptyDir数据卷，并挂载到Pod的容器中. 只要Pod 存在，EmpyDir数据卷都会存在（容器删除不会导致EmpyDir数据卷丟失数据），但是如果Pod的生命周期终结（Pod被删除），EmpyDir数据卷也会被删除，并且永久丢失.
 
-EmpyDir数据卷非常适合实现Pod中容器的文件共享, 比如可以通过一个专职日志收集容器，在每个Pod中和业务容器中进行组合，来完成日志的收集和汇总.
+  ```yaml
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: test-pod
+  spec:
+    containers:
+    - image: busybox
+      name: test-emptydir
+      command: [ "sleep", "3600" ]
+      volumeMounts:
+      - mountPath: /data
+        name: data-volume
+    volumes:
+    - name: data-volume
+      emptyDir: {}
+  ```
+
+  如果Pod配置了EmpyDir数据卷，在Pod的生命周期内都会存在. 当Pod被分配到 Node上的时候，会在Node上创建EmptyDir数据卷(从名称可见, 初始内容为空)且无需指定宿主机上对应的目录文件，并挂载到Pod的容器中. 只要Pod 存在，EmpyDir数据卷都会存在（容器删除不会导致EmpyDir数据卷丟失数据），但是如果Pod的生命周期终结（Pod被删除），EmpyDir数据卷也会被删除，并且永久丢失.
+
+  EmpyDir数据卷非常适合实现Pod中容器的文件共享, 比如可以通过一个专职日志收集容器，在每个Pod中和业务容器中进行组合，来完成日志的收集和汇总.
+
+  > emptyDir.medium=Memory时使用基于内存的存储, 该内存使用量会被计入容器的内存使用量并受到资源限制和配额机制的管理.
 
 1. HostPath
-HostPath数据卷允许将容器宿主机上的文件系统挂载到Pod中, 增加了Pod与节点的耦合. 如果Pod需要使用宿主机上的某些文件，可以使用HostPath, 比如kube-apiserver, kube-controller-manager.
+
+  ```yaml
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: test-pod2
+  spec:
+    containers:
+    - image: busybox
+      name: test-hostpath
+      command: [ "sleep", "3600" ]
+      volumeMounts:
+      - mountPath: /test-data
+        name: test-volume
+    volumes:
+    - name: test-volume
+      hostPath:
+        # directory location on host
+        path: /data
+        # this field is optional
+        type: Directory
+  ```
+
+  HostPath数据卷允许将容器宿主机上的文件系统挂载到Pod中, 增加了Pod与节点的耦合. 如果Pod需要使用宿主机上的某些文件，可以使用HostPath, 比如kube-apiserver, kube-controller-manager.
+
+  > k8s无法将hostPath在宿主机上使用的资源计入资源配额管理.
 
 #### 网络数据卷
 Kubernetes提供了很多类型的数据卷以集成第三方的存储系统，包括一些非常流行的分布式文件系统，也有在IaaS平台上提供的存储支持，这些存储系统都是分布式的，通过网络共享文件系统.
@@ -663,9 +786,13 @@ kubernetes 支持的 Projected Volume 一共有四种：
 - Downward API
 - ServiceAccountToken
 
+ConfigMap/Secret用于解决应用配置问题, 但Secret针对的是敏感信息的配置.
+
 其实，Secret、ConfigMap，以及 Downward API 这三种 Projected Volume 定义的信息，还可以通过环境变量的方式出现在容器里. 但是，通过环境变量获取这些信息的方式，**不具备自动更新的能力**. 所以，建议使用 Volume 文件的方式访问这些信息.
 
 > Kubernetes 项目的 Projected Volume 其实只有三种，因为第四种 ServiceAccountToken，只是一种特殊的 Secret 而已
+
+> k8s 1.7开始Secret中的数据可被加密存放, 而不仅仅是base64编码.
 
 #### Secret
 把 Pod 想要访问的加密数据存放到 Etcd 中, 避免直接在配置中保存敏感信息, 再通过在 Pod 里挂载 Volume 的方式，访问这些 Secret 里保存的信息(以文件的形式出现在了容器的 Volume 目录里)
@@ -702,7 +829,14 @@ Service Account 的授权信息和文件，实际上保存在它所绑定的一�
 > 把 Kubernetes 客户端以容器的方式运行在集群里，然后使用 default Service Account 自动授权的方式，被称作"InClusterConfig".
 
 ### StatefulSet
-适合于有状态服务, 比如数据库服务MySQL和PostgreSQL，集群化管理服务ZooKeeper、etcd等.
+适合于有状态服务, 比如数据库服务MySQL和PostgreSQL，集群化管理服务ZooKeeper、etcd等. 对于复杂的有状态集群应用来说, StatefulSet还是不够通用和强大, **kubernetes operator更适用且是未来有状态集群的主流**.
+
+有状态集群的特定:
+- 每个节点有固定的id, 通过该id, 其内成员可以相互发现并通信
+- 集群规模比较固定, 不能随意变动
+- 每个节点都是有状态的, 会持久化数据到存储中, 每个节点在重启后需要使用原有的持久化数据
+- 成员节点的启动(关闭)顺序通常是确定的
+- 磁盘损坏, 则该节点可能无法正常运行, 进而导致集群功能受损
 
 StatefulSet 将应用状态抽象为了两种情况：
 - 拓扑状态 : 应用的多个实例之间不是完全对等的关系, 它们必须按照某些顺序启动，比如应用的主节点 A 要先于从节点 B 启动. 而如果把 A 和 B 两个 Pod 删除掉，它们再次被创建出来时也必须严格按照这个顺序才行. 并且新创建出来的 Pod，必须和原来 Pod 的网络标识一样，这样原先的访问者才能使用同样的方法，访问到这个新 Pod. 
@@ -716,7 +850,9 @@ Kubernetes 将 Pod 的拓扑状态（比如：哪个节点先启动，哪个节�
 
 注意: 解析到的 Pod 的 IP 地址，并不是固定的. 对于`有状态应用`实例的访问必须使用 DNS 记录或者 hostname 的方式，而绝不应该直接访问这些 Pod 的 IP 地址.
 
-StatefulSet 的控制器直接管理的是 Pod, 通过 Headless Service为这些有编号的 Pod在 DNS 服务器中生成带有同样编号的 DNS 记录. StatefulSet 还为每一个 Pod 分配并创建一个同样编号的 PVC以维持存储状态.
+StatefulSet 的控制器直接管理的是 Pod, 通过 Headless Service为这些有编号的 Pod在 DNS 服务器中生成带有类同编号的 DNS 记录, 格式是`<pod name>.<headless service name>`. StatefulSet 还为每一个 Pod 分配并创建一个同样编号的 PV/PVC以维持存储状态. 删除pod时默认不会删除与其关联的存储卷(为了保证数据安全).
+
+StatefulSet控制的pod副本启停顺序是受控的, 操作第n个pod时, 前n-1个pod已经是运行且准备好的状态.
 
 设计思想: StatefulSet 其实就是一种特殊的 Deployment，而其独特之处在于，它的每个 Pod 都被编号了。而且，这个编号会体现在 Pod 的名字和 hostname 等标识信息上，这不仅代表了 Pod 的创建顺序，也是 Pod 的重要网络标识. 有了这些编号后，StatefulSet 就使用 Kubernetes 里的两个标准功能：Headless Service 和 PV/PVC，实现了对 Pod 的拓扑状态和存储状态的维护.
 
@@ -788,6 +924,12 @@ $ kubectl scale relicationcontroller yourRcName --replicas=10
 # 缩容Pod的副本数目到1
 $ kubectl scale relicationcontroller yourRcName --replicas=1
 ```
+
+HPA(Horizontal Pod autoscaler, 水平pod自动扩缩容)是手动`kubectl scale`的升级版, 通过追踪分析指定deployment控制的所有目标pod的负载变化情况, 来确定是否需要有针对性地调整目标pod的副本数量. 当前k8s内置了基于pod CPU利用率来自动扩容的机制.
+
+VPA(Vertical pod autoscaler, 垂直pod自动扩缩容), 它根据容器资源使用率自动推测并设置pod合理的cpu和内存的需求指标, 从而更加精准地调度pod, 实现整体上节省集群资源的目标.
+
+当前vpa和hpa还不能操控同一组目标pod
 
 #### 滚动升级
 滚动升级是一种平滑过渡的升级方式，通过逐步替换的策略，保证整体系统的稳定，在初始升级的时候就可以及时发现、调整问题，以保证问题影响度不会扩大.
@@ -1297,6 +1439,162 @@ BPF（Berkeley Packet Filter，伯克利包过滤器，于4.9内核开始支持�
 
 #### Multus
 Intel的 multus-cni可以为运行在Kubernetes的Pod提供多个网络接口，它可以将多个CNI插件组合在一起为Pod配置不同类型的网络. Multus自己不会进行任何网络设置，而是调用其他插件（如Flannel、Calico）来完成真正的网络配置.
+
+## 安全
+### 角色
+参考:
+- [使用 RBAC 鉴权](https://kubernetes.io/zh/docs/reference/access-authn-authz/rbac/)
+
+从本质上将, k8s是一个多用户共享资源的的资源对象管理系统. 它有两类用户:
+- 运行在pod里的应用
+- kubectl用户
+
+k8s设计了ServiceAccout来代表pod应用的账号, 为pod提供必要的身份验证. 在该基础上它实现了基于角色的访问控制权限系统RBAC(role-based access control).
+
+默认情况下, k8s为每个命名空间创建一个默认名称为default的ServiceAccount， 仅在其所在的命名空间中的pod上使用, 可通过`kubectl get sa -A`查看.
+
+ServiceAccount通过Secret来保存对应用户(应用)身份凭证, 信息包括ca.crt和签名后的Token. Token中包含了对应ServiceAccount的名称, api server通过该token即可确定ServiceAccount的身份. 默认情况下, 用户创建一个pod时, 其会绑定对应命名空间中的default这个ServiceAccount, 并由k8s将该SA中的身份信息(ca.crt, Token等)持久化到容器里固定位置的本地文件中. 当容器里的用户进程通过k8s提供的client api去访问api server时, 这些api会自动读取并附加到req中以完成身份认证. 至于身份认证通过后的访问权限由RBAC决定.
+
+k8s包括Role和ClusterRole两种角色:
+- Role : 定义了一组特定权限的规则, 比如可以操作某类资源对象, 其权限仅限于其命名空间
+
+  ```yaml
+  apiVersion: rbac.authorization.k8s.io/v1
+  kind: Role
+  metadata:
+    namespace: default
+    name: pod-reader
+  rules:
+  - apiGroups: [""] # "" 标明 core API 组
+    resources: ["pods"]
+    verbs: ["get", "watch", "list"]
+  ```
+
+  上面定义了一个Role, 授予了对Pod资源的读访问权限, 绑定该Role的用户具有对pod资源的get, wach和list权限.
+
+  ```yaml
+  apiVersion: rbac.authorization.k8s.io/v1
+  kind: ClusterRole
+  metadata:
+    # "namespace" 被忽略，因为 ClusterRoles 不受名字空间限制
+    name: secret-reader
+  rules:
+  - apiGroups: [""]
+    # 在 HTTP 层面，用来访问 Secret 对象的资源的名称为 "secrets"
+    resources: ["secrets"]
+    verbs: ["get", "watch", "list"]
+  ```
+
+  上面定义了一个ClusterRole用于读取任意命名空间中的Secret.
+- ClusterRole : 最用于整个k8s.
+
+角色与具体用户绑定(用户授权)由RoleBinding和ClusterRoleBinding解决.
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+# 此角色绑定允许 "jane" 读取 "default" 名字空间中的 Pods
+kind: RoleBinding
+metadata:
+  name: read-pods
+  namespace: default
+subjects: # 表示要授权的对象, 可以指定不止一个“subject（主体）”, 支持Group(用户组), User(某个用户), ServiceAccount(pod应用所使用的账号)
+- kind: User
+  name: jane # "name" 是区分大小写的
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  # "roleRef" 指定与某 Role 或 ClusterRole 的绑定关系
+  kind: Role # 此字段必须是 Role 或 ClusterRole
+  name: pod-reader     # 此字段必须与你要绑定的 Role 或 ClusterRole 的名称匹配
+  apiGroup: rbac.authorization.k8s.io
+```
+
+上面将"pod-reader" Role 授予在 "default" 名字空间中的用户 "jane"。 这样，用户 "jane" 就具有了读取 "default" 名字空间中 pods 的权限.
+
+### NetworkPolicy(网络策略)
+它是网络安全相关的资源对象, 用于解决用户应用间的网络隔离和授权问题.
+
+NetworkPolicy是一种关于pod间相互通信, 以及pod与其他网络端点间相互通信的安全规则设定, 它在公有云中很有用. 它使用label选择pod, 并定义选定pod所允许的通信规则. 默认情况下, pod间以及pod与其他网络端点间是没有范围限制的.
+
+## 部署
+### k8s
+端口使用情况:
+- api server
+
+  - 8080 : http
+  - 6443 : https
+- controller manager
+
+  - 10252
+- scheduler
+
+  - 10251
+- kubelet
+
+  - 10250
+  - 10255 : 只读端口号
+- etcd
+
+  - 2379 : 供 etcd client访问
+  - 2380 : 供 etcd cluster内peer间访问
+- coredns
+
+  - 53 : udp
+  - 53 : tcp
+- others
+
+  - calico
+
+    - 179
+#### kubekey(**推荐**)
+
+#### kubeadm
+> kubeadm在k8s 1.13时达到GA.
+
+前提: 安装kubelet, kubeadm, kubectl, woker节点不需要kubectl; 关闭swap.
+
+kubeadm将使用kubelet服务以容器方式部署和启动k8s的主要服务, 因此需要先启动kubelet服务`systemctl enable kubelet && systemctl start kubelet`.
+
+kubeadm的初始化控制平面(init)命令和加入节点(join)命令均可以通过指定配置文件的方式覆盖默认参数. 它还会把配置文件以ConfigMap的形式保存到集群中, 以便后续的查询和升级.
+
+```bash
+kubeadm config print init-defaults # 输出kubeadm init命令默认参数的内容
+kubeadm config print join-defaults # 输出kubeadm join命令默认参数的内容
+kubeadm config migrate # 在新旧版本间进行配置转换
+kubeadm config images list # 列出所需要的镜像列表
+kubeadm config images pull # 拉取镜像到本地
+```
+
+部署步骤:
+1. `kubeadm config images pull`
+1. `kubeadm init --config=init-config.yaml`, 安装master节点
+
+  kubeadm的安装过程不涉及网络插件(CNI)的初始化, 因此kubeadm初始安装完成的cluster不具备网络功能, 任何pod(包括coredns)都无法正常工作. 而网络插件的安装往往对kubeadm init命令有一定的要求, 比如安装calico时指定`--pod-netword-cidr=192.168.0.0/16`.
+
+  kubeadm init在执行具体安装前会执行pre-flight checks的系统预检查, 以确保安装环境合规, 用户可通过` kubeadm init phase preflight`执行预检查操作, 也看通过`--ignore-preflight-errors`跳过预检查.
+
+  > k8s默认设置cgrouupdriver是systemd, 而docker服务的cgroup驱动默认是cgroupfs, 建议也改成systemd(`vim /etc/docker/daemon.json`的`exec-opts`).
+
+  看到`Your Kubernetes control-plane has initialized successfully!`表明master已安装成功, 已可使用kubeclt访问master. kubeadm默认使用ca证书, 因此需要为kubectl配置证书以访问master, 相关操作在安装log末尾有提示.
+
+  > `~/.kube/config`其实就是`/etc/kubernetes/admin.conf`
+
+  在初始安装的master节点上也启动了kubelet和kube-proxy, 在默认情况下它不参与工作负载的调度. 如果需要master节点也作为Node角色需要用`kubectl taint nodes --all node-role.kubernetes.io/master-`删除node的label "node-role.kubernetes.io/master".
+1. 添加worker node
+
+  1. 启动kubelet
+  1. `kubeadm join xxx`, `kubeadm join`所需参数来自于安装master的log的末尾.
+
+  加入node后, 可用`kubectl get node`确认, 此时STATUS都是NotReady.
+1. 安装CNI插件
+
+  - calico : `kubectl apply -f "https://docs.projectcalico.org/manifests/calico.yaml"`
+
+  在CNI成功运行后， node status变为Ready.
+1. 验证cluster是否正常
+
+  `kubectl get node -A`, 查看所有pod是否都已成功运行. 如果有状态错误的pod可用`kubectl -n=kube-system describe pod <pod_name>`查看原因.
+
+  如果安装失败, 可用kubeadm reset来将主机恢复原状, 再执行kubeadm init. 但涉及CNI安装失败时建议kubeadm reset后需重启, 再执行`kubeadm init`.
 
 ## 生态
 ### 监控
