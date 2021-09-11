@@ -236,3 +236,5 @@ ssh-agent gnome-session # 请使用当前系统的窗口管理器取代gnome-ses
 ```
 
 或在`~/.bashrc`添加`export $(gnome-keyring-daemon --start --components=secrets,ssh)`来启用ssh-agent.
+
+**最佳方法是在`/etc/profile`中追加`eval "$(ssh-agent)"`**.
