@@ -110,3 +110,26 @@ $ etcdctl lease timetolive [--keys] 694d5765fc71500b // 查询租约的 TTL 以�
 - main ID: 在etcd中每个事务的唯一id,全局递增不重复.
 - sub ID: 在事务中的连续多个修改操作会从0开始编号,这个编号就是sub ID
 - revision: 由(mainID,subID)组成的唯一标识
+
+## Env
+```conf
+ETCD_NAME=etcd3 # etcd节点名称, 每个节点都应不同
+ETCD_DATA_DIR=/etc/etcd/data # etcd数据存储目录
+
+ETCD_CERT_FILE=/etc/etcd/pki/etcd_server.crt # etcd为client提供服务的server crt
+ETCD_KEY_FILE=/etc/etcd/pki/etcd_server.key
+ETCD_TRUSTED_CA_FILE=/etc/kubernetes/pki/ca.crt
+ETCD_CLIENT_CERT_AUTH=true # 是否启用客户端证书认证
+ETCD_LISTEN_CLIENT_URLS=https://192.168.18.5:2379 # 为client提供服务的url地址
+ETCD_ADVERTISE_CLIENT_URLS=https://192.168.18.5:2379 # 广播给集群中其他成员自己为客户端提供服务的地址
+
+ETCD_PEER_CERT_FILE=/etc/etcd/pki/etcd_server.crt # etcd为peer提供服务的server crt
+ETCD_PEER_KEY_FILE=/etc/etcd/pki/etcd_server.key
+ETCD_PEER_TRUSTED_CA_FILE=/etc/kubernetes/pki/ca.crt
+ETCD_LISTEN_PEER_URLS=https://192.168.18.5:2380 # 为本集群其他节点提供服务的url地址
+ETCD_INITIAL_ADVERTISE_PEER_URLS=https://192.168.18.5:2380 # 广播给集群中其他成员自己为peer提供服务的地址
+
+ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster # 集群名称
+ETCD_INITIAL_CLUSTER="etcd1=https://192.168.18.3:2380,etcd2=https://192.168.18.4:2380,etcd3=https://192.168.18.5:2380" # 集群各节点的endpoint列表
+ETCD_INITIAL_CLUSTER_STATE=new # new, 初始集群状态; existing,集群已存在时使用
+```

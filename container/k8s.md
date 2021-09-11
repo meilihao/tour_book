@@ -10,6 +10,7 @@ env: k8s 1.14.1 / Rancher v2.2.3
 - [kubernetes-handbook](https://github.com/rootsongjc/kubernetes-handbook)
 - [ Kubernetes Handbook （Kubernetes指南）](https://github.com/feiskyer/kubernetes-handbook)
 - [Pod 一直处于 Pending 状态](https://cloud.tencent.com/document/product/457/42948)
+- [《Kubernetes权威指南》第 5 版的示例代码](https://github.com/kubeguide/K8sDefinitiveGuide-V5-Sourcecode)
 
 Kubernetes 最主要的设计思想是从更宏观的角度，以统一的方式来定义任务之间的各种关系，并且为将来支持更多种类的关系留有余地.
 
@@ -297,7 +298,7 @@ restartPolicy 和 Pod 里容器的状态，以及 Pod 状态的对应关系:
 
 在 Kubernetes 项目里，Pod 的实现需要使用一个中间容器，这个容器叫作 Infra 容器. 在这个 Pod 中，Infra 容器永远都是第一个被创建的容器，而其他用户定义的容器，则通过 Join Network Namespace 的方式，与 Infra 容器关联在一起.
 
-> Infra 容器一定要占用极少的资源，所以它使用的是一个非常特殊的镜像，叫作：k8s.gcr.io/pause. 这个镜像是一个用汇编语言编写的、永远处于“暂停”状态的容器，解压后的大小也只有 100~200 KB 左右.
+> Infra 容器一定要占用极少的资源，所以它使用的是一个非常特殊的镜像，叫作：k8s.gcr.io/pause. 这个镜像是一个用汇编语言编写的、永远处于“暂停”状态的容器，解压后的大小也只有 100~200 KB 左右. kubelet的`--pod-infra-container-image`可指定infra容器.
 > 在 Pod 中，所有 Init Container 定义的容器，都会比 spec.containers 定义的用户容器先启动. 之后Init Container 容器会按顺序逐一启动，而直到它们都启动并且退出了，用户容器才会启动
 > sidecar 模式指在一个 Pod 中启动一个辅助容器，来完成一些独立于主进程（主容器）之外的工作. 最典型的例子是 Istio 这个微服务治理项目
 
@@ -1441,6 +1442,25 @@ BPF（Berkeley Packet Filter，伯克利包过滤器，于4.9内核开始支持�
 Intel的 multus-cni可以为运行在Kubernetes的Pod提供多个网络接口，它可以将多个CNI插件组合在一起为Pod配置不同类型的网络. Multus自己不会进行任何网络设置，而是调用其他插件（如Flannel、Calico）来完成真正的网络配置.
 
 ## 安全
+k8s除了提供了基于CA的双向数字证书认证方式外, 也提供了基于HTTP Token的简单认证方式. 各组件与API Server之间的通信方式仍然采用HTTPS， 但不使用CA数字证书. 这种认证与CA证书相比, 安全性很低, 不建议在生产环境使用.
+
+采用基于HTTP Token的简单认证方式时, API Server对外暴露HTTPS端口, 客户端携带Token来完成认证过程. 需要说明的是, kubectl命令行工具比较特殊, 它同时支持CA双向认证和简单认证两种模式与API Server通信, 其他客户端组件只能配置为基于CA证书的认证或非安全方式与API Server通信.
+
+### 基于Token认证的配置过程
+1. 创建包括用户名、密码和UID的文件token_auth_file，放置在合适的目录下，例如/etc/kuberntes目录. 需要注意的是，这是一个纯文本文件, 用户名、密码都是明文.
+
+  ```bash
+  # cat /etc/kubernetes/token_auth_file
+  admin,admin,1
+  system,system,2
+  ```
+1. 设置kube-apiserver的启动参数`--token-auth-file=/etc/kubernetes/token_auth_file`, 然后重启API Server服务
+1. 用curl验证和访问API Server
+
+  ```bash
+  # curl -k --header "Authorization:Bearer admin" https://192.168.18.3:6443/version
+  ```
+
 ### 角色
 参考:
 - [使用 RBAC 鉴权](https://kubernetes.io/zh/docs/reference/access-authn-authz/rbac/)
@@ -1596,7 +1616,576 @@ kubeadm config images pull # 拉取镜像到本地
 
   如果安装失败, 可用kubeadm reset来将主机恢复原状, 再执行kubeadm init. 但涉及CNI安装失败时建议kubeadm reset后需重启, 再执行`kubeadm init`.
 
+#### 以二进制文件方式安装Kubernetes集群
+采用该方式的原因: 精细调整k8s各组件服务的参数及安全设置, 高可用模式等.
+
+这里以部署3个master的高可用k8s cluster为例.
+
+3个master的ip分别是192.168.18.3/4/5, 并通过vip 192.168.18.100(HAProxy+Keepalived)统一访问master. nginx+Keepalived的ha配置可参考[部署一套完整的Kubernetes高可用集群（二进制，最新版v1.18）下](https://blog.51cto.com/lizhenliang/2501185)或[附028.Kubernetes_v1.20.0高可用部署架构二](https://www.cnblogs.com/itzgr/p/14173665.html).
+
+> 建议生产环境使用ecdsa证书, 这里仅用rsa证书演示.
+
+1. 创建CA证书
+
+  为etcd和api server启用基于CA认证的安全机制, 需要CA证书进行配置.
+
+  ```bash
+  # openssl genrsa -out ca.key 2048
+  # openssl req -x509 -new -nodes -key ca.key -subj "/CN=192.168.18.3" -days 36500 -out ca.crt
+  # openssl x509 -in ca.crt -noout -text
+  # cp ca.key ca.crt /etc/kubernetes/pki
+  ```
+
+1. 部署安全的高可用etcd集群
+
+  1. 部署etcd二进制及etcd.service
+  
+    从[etcd tags](https://github.com/etcd-io/etcd/tags)下载etcd-v3.5.0-linux-amd64.tar.gz, 将解压得到的etcd和etcdctl拷贝到/usr/bin.
+
+    创建/usr/lib/systemd/system/etcd.service, 综合了[etcd.service](https://github.com/etcd-io/etcd/blob/main/contrib/systemd/etcd.service)和kubekey使用的etcd.service:
+    ```conf
+    [Unit]
+    Description=etcd key-value store
+    Documentation=https://github.com/etcd-io/etcd
+    After=network.target
+
+    [Service]
+    User=root
+    Type=notify
+    EnvironmentFile=/etc/etcd/etcd.conf
+    ExecStart=/usr/bin/etcd
+    NotifyAccess=all
+    RestartSec=10s
+    LimitNOFILE=40000
+    Restart=always
+
+    [Install]
+    WantedBy=multi-user.target
+    ```
+  1. 创建etcd的server/client证书
+
+    ```bash
+    # cat > etcd_ssl.cnf << EOF
+    [ req ]
+    req_extensions = v3_req
+    distinguished_name = req_distinguished_name
+
+    [ req_distinguished_name ]
+
+    [ v3_req ]
+    basicConstraints = CA:FALSE
+    keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+    subjectAltName = @alt_names
+
+    [ alt_names ]
+    IP.1 = 192.168.18.3
+    IP.2 = 192.168.18.4
+    IP.3 = 192.168.18.5
+    EOF
+    # --- create server crt
+    # openssl genrsa -out etcd_server.key 2048
+    # openssl req -new -key etcd_server.key -config etcd_ssl.cnf -subj "/CN=etcd-server" -out etcd_server.csr
+    # openssl x509 -req -in etcd_server.csr -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -days 36500 -extensions v3_req -extfile etcd_ssl.cnf -out etcd_server.crt
+    # --- create client crt
+    # openssl genrsa -out etcd_client.key 2048
+    # openssl req -new -key etcd_client.key -config etcd_ssl.cnf -subj "/CN=etcd-client" -out etcd_client.csr
+    # openssl x509 -req -in etcd_client.csr -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key -CAcreateserial -days 36500 -extensions v3_req -extfile etcd_ssl.cnf -out etcd_client.crt
+    # cp etcd_server.key etcd_server.crt etcd_client.key etcd_client.crt /etc/etcd/pki
+    ```
+  1. 创建`/etc/etcd/etcd.conf`
+  
+    ```bash
+    # --- 18.3
+    # cat /etc/etcd/etcd.conf
+    ETCD_NAME=etcd1
+    ETCD_DATA_DIR=/etc/etcd/data
+
+    ETCD_CERT_FILE=/etc/etcd/pki/etcd_server.crt
+    ETCD_KEY_FILE=/etc/etcd/pki/etcd_server.key
+    ETCD_TRUSTED_CA_FILE=/etc/kubernetes/pki/ca.crt
+    ETCD_CLIENT_CERT_AUTH=true
+    ETCD_LISTEN_CLIENT_URLS=https://192.168.18.3:2379
+    ETCD_ADVERTISE_CLIENT_URLS=https://192.168.18.3:2379
+
+    ETCD_PEER_CERT_FILE=/etc/etcd/pki/etcd_server.crt
+    ETCD_PEER_KEY_FILE=/etc/etcd/pki/etcd_server.key
+    ETCD_PEER_TRUSTED_CA_FILE=/etc/kubernetes/pki/ca.crt
+    ETCD_LISTEN_PEER_URLS=https://192.168.18.3:2380
+    ETCD_INITIAL_ADVERTISE_PEER_URLS=https://192.168.18.3:2380
+
+    ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster
+    ETCD_INITIAL_CLUSTER="etcd1=https://192.168.18.3:2380,etcd2=https://192.168.18.4:2380,etcd3=https://192.168.18.5:2380"
+    ETCD_INITIAL_CLUSTER_STATE=new
+    # --- 18.4
+    # cat /etc/etcd/etcd.conf
+    ETCD_NAME=etcd2
+    ETCD_DATA_DIR=/etc/etcd/data
+
+    ETCD_CERT_FILE=/etc/etcd/pki/etcd_server.crt
+    ETCD_KEY_FILE=/etc/etcd/pki/etcd_server.key
+    ETCD_TRUSTED_CA_FILE=/etc/kubernetes/pki/ca.crt
+    ETCD_CLIENT_CERT_AUTH=true
+    ETCD_LISTEN_CLIENT_URLS=https://192.168.18.4:2379
+    ETCD_ADVERTISE_CLIENT_URLS=https://192.168.18.4:2379
+
+    ETCD_PEER_CERT_FILE=/etc/etcd/pki/etcd_server.crt
+    ETCD_PEER_KEY_FILE=/etc/etcd/pki/etcd_server.key
+    ETCD_PEER_TRUSTED_CA_FILE=/etc/kubernetes/pki/ca.crt
+    ETCD_LISTEN_PEER_URLS=https://192.168.18.4:2380
+    ETCD_INITIAL_ADVERTISE_PEER_URLS=https://192.168.18.4:2380
+
+    ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster
+    ETCD_INITIAL_CLUSTER="etcd1=https://192.168.18.3:2380,etcd2=https://192.168.18.4:2380,etcd3=https://192.168.18.5:2380"
+    ETCD_INITIAL_CLUSTER_STATE=new
+    # --- 18.5
+    # cat /etc/etcd/etcd.conf
+    ETCD_NAME=etcd3
+    ETCD_DATA_DIR=/etc/etcd/data
+
+    ETCD_CERT_FILE=/etc/etcd/pki/etcd_server.crt
+    ETCD_KEY_FILE=/etc/etcd/pki/etcd_server.key
+    ETCD_TRUSTED_CA_FILE=/etc/kubernetes/pki/ca.crt
+    ETCD_CLIENT_CERT_AUTH=true
+    ETCD_LISTEN_CLIENT_URLS=https://192.168.18.5:2379
+    ETCD_ADVERTISE_CLIENT_URLS=https://192.168.18.5:2379
+
+    ETCD_PEER_CERT_FILE=/etc/etcd/pki/etcd_server.crt
+    ETCD_PEER_KEY_FILE=/etc/etcd/pki/etcd_server.key
+    ETCD_PEER_TRUSTED_CA_FILE=/etc/kubernetes/pki/ca.crt
+    ETCD_LISTEN_PEER_URLS=https://192.168.18.5:2380
+    ETCD_INITIAL_ADVERTISE_PEER_URLS=https://192.168.18.5:2380
+
+    ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster
+    ETCD_INITIAL_CLUSTER="etcd1=https://192.168.18.3:2380,etcd2=https://192.168.18.4:2380,etcd3=https://192.168.18.5:2380"
+    ETCD_INITIAL_CLUSTER_STATE=new
+    ```
+  1. 启动etcd并测试etcd
+  
+    ```bash
+    # systemctl daemon-reload && systemctl enable etcd && systemctl start etcd
+    # etcdctl --cacert=/etc/kubernetes/pki/ca.crt --cert=/etc/etcd/pki/etcd_client.crt --key=/etc/etcd/pki/etcd_client.key --endpoints=https://192.168.18.3:2379,https://192.168.18.4:2379,https://192.168.18.5:2379 endpoint health # 所有节点都返回"healthy"表示etcd cluster已正常运行
+    ```
+
+1.  部署安全的高可用k8s master集群
+
+  1. 部署kube-apiserver
+  
+    从[kubernetes tags](https://github.com/kubernetes/kubernetes/tags)选中1.22.1, 在其CHANGELOG中获取Client/Server/Node Binaries, 将解压得到的二进制拷贝到/usr/bin下.
+
+    > master 需要部署etcd, kube-apiserver, kube-controller-manager, kube-scheduler; node需要部署container runtime, kubelet, kube-proxy.
+
+    ```bash
+    # --- 生成kube-apiserver需要的证书, 169.169.0.1是master service的ClusterIP即kubeServiceCIDR(from kubekey)的首地址
+    # cat master_ssl.cnf
+    [req]
+    req_extensions = v3_req
+    distinguished_name = req_distinguished_name
+    [req_distinguished_name]
+
+    [ v3_req ]
+    basicConstraints = CA:FALSE
+    keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+    subjectAltName = @alt_names
+
+    [alt_names]
+    DNS.1 = kubernetes
+    DNS.2 = kubernetes.default
+    DNS.3 = kubernetes.default.svc
+    DNS.4 = kubernetes.default.svc.cluster.local
+    DNS.5 = k8s-1
+    DNS.6 = k8s-2
+    DNS.7 = k8s-3
+    IP.1 = 169.169.0.1
+    IP.2 = 192.168.18.3
+    IP.3 = 192.168.18.4
+    IP.4 = 192.168.18.5
+    IP.5 = 192.168.18.100
+    # openssl genrsa -out apiserver.key 2048
+    # openssl req -new -key apiserver.key -config master_ssl.cnf -subj "/CN=192.168.18.3" -out apiserver.csr
+    # openssl x509 -req -in apiserver.csr -CA ca.crt -CAkey ca.key -CAcreateserial -days 36500 -extensions v3_req -extfile master_ssl.cnf -out apiserver.crt
+    # cp apiserver.key apiserver.crt /etc/kubernetes/pki
+    # --- 在3台master分别设置并启动kube-apiserver.service
+    # cat /usr/lib/systemd/system/kube-apiserver.service
+    [Unit]
+    Description=Kubernetes API Server
+    Documentation=https://github.com/kubernetes/kubernetes
+
+    [Service]
+    EnvironmentFile=/etc/kubernetes/apiserver
+    ExecStart=/usr/bin/kube-apiserver $KUBE_API_ARGS
+    Restart=always
+
+    [Install]
+    WantedBy=multi-user.target
+    # cat /etc/kubernetes/apiserver
+    KUBE_API_ARGS="--insecure-port=0 \
+    --secure-port=6443 \
+    --tls-cert-file=/etc/kubernetes/pki/apiserver.crt \
+    --tls-private-key-file=/etc/kubernetes/pki/apiserver.key \
+    --client-ca-file=/etc/kubernetes/pki/ca.crt \
+    --apiserver-count=3 \
+    --endpoint-reconciler-type=master-count \
+    --etcd-servers=https://192.168.18.3:2379,https://192.168.18.4:2379,https://192.168.18.5:2379 \
+    --etcd-cafile=/etc/kubernetes/pki/ca.crt \
+    --etcd-certfile=/etc/etcd/pki/etcd_client.crt \
+    --etcd-keyfile=/etc/etcd/pki/etcd_client.key \
+    --service-cluster-ip-range=169.169.0.0/16 \
+    --service-node-port-range=30000-32767 \
+    --allow-privileged=true \
+    --logtostderr=false --log-dir=/var/log/kubernetes --v=0"
+    # systemctl daemon-reload && systemctl enable kube-apiserver && systemctl start kube-apiserver
+    # systemctl status kube-apiserver # 验证running且没有错误日志
+    ```
+
+    KUBE_API_ARGS参数说明:
+    - insecure-port=0 : http服务端口, 默认是8080, 0表示关闭http服务
+    - secure-port=6443 : https服务端口, 默认是6443
+    - apiserver-count=3 : api server数量是3, 同时需要设置`endpoint-reconciler-type=master-count`
+    - etcd-servers : 连接etcd的ulr列表
+    - etcd-certfile : api server作为etcd client时使用的证书
+    - service-cluster-ip-range : 即kubeServiceCIDR, Service虚拟IP地址范围, 以CIDR格式表示. 该IP范围不能与宿主机的ip地址重合
+    - service-node-port-range ： Service可使用的宿主机端口号范围
+    - allow-privileged ： 是否允许容器以特权模式允许
+    - logtostderr ： 是否将日志输出到stderr， 默认是true. 当使用systemd时, 日志会把输出到journald; 设置为false时表示不输出到stderr, 此时可以输出到指定日志文件
+    - log-dir : 日志的输出目录
+    - v : 日志level
+
+  1. 为kube-controller-manager, kube-scheduler, kubelet, kube-proxy, kubectl访问kube-apiserver创建client证书和kubeconfig
+
+    ```bash
+    # openssl genrsa -out client.key 2048
+    # openssl req -new -key client.key -subj "/CN=admin" -out client.csr # admin用于标识连接kube-apiserver的client端
+    # openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out client.crt -days 36500
+    # cp client.key client.crt /etc/kubernetes/pki
+    # cat /etc/kubernetes/kubeconfig
+    apiVersion: v1
+    kind: Config
+    clusters:
+    - name: default
+      cluster:
+        server: https://192.168.18.100:9443 # 负载均衡器HAProxy使用的vip地址
+        certificate-authority: /etc/kubernetes/pki/ca.crt
+    users:
+    - name: admin # 连接api server的用户名, 与client.crt中`/CN`名称保持一致
+      user:
+        client-certificate: /etc/kubernetes/pki/client.crt
+        client-key: /etc/kubernetes/pki/client.key
+    contexts:
+    - context:
+        cluster: default
+        user: admin # 连接api server的用户名, 与client.crt中`/CN`名称保持一致
+      name: default
+    current-context: default
+    ```
+  1. 部署kube-controller-manager
+
+    ```bash
+    # --- 在3台master分别设置并启动kube-controller-manager.service
+    # cat /usr/lib/systemd/system/kube-controller-manager.service
+    [Unit]
+    Description=Kubernetes Controller Manager
+    Documentation=https://github.com/kubernetes/kubernetes
+
+    [Service]
+    EnvironmentFile=/etc/kubernetes/controller-manager
+    ExecStart=/usr/bin/kube-controller-manager $KUBE_CONTROLLER_MANAGER_ARGS
+    Restart=always
+
+    [Install]
+    WantedBy=multi-user.target
+    # cat /etc/kubernetes/controller-manager
+    KUBE_CONTROLLER_MANAGER_ARGS="--kubeconfig=/etc/kubernetes/kubeconfig \
+    --leader-elect=true \
+    --service-cluster-ip-range=169.169.0.0/16 \
+    --service-account-private-key-file=/etc/kubernetes/pki/apiserver.key \
+    --root-ca-file=/etc/kubernetes/pki/ca.crt \
+    --log-dir=/var/log/kubernetes --logtostderr=false --v=0"
+    # systemctl daemon-reload && systemctl enable kube-controller-manager && systemctl start kube-controller-manager
+    # systemctl status kube-controller-manager # 验证running且没有错误日志
+    ```
+
+    KUBE_CONTROLLER_MANAGER_ARGS参数说明:
+    - kubeconfig : 连接kube-apiserver的配置
+    - leader-elect : 启用选举机制, 在3个master节点中都应设为true
+    - service-cluster-ip-range : 与kube-apiserver的service-cluster-ip-range一致
+    - service-account-private-key-file : 为ServiceAccount自动颁发token使用的私钥文件
+
+ 1. 部署kube-scheduler
+
+    ```bash
+    # --- 在3台master分别设置并启动kube-scheduler.service
+    # cat /usr/lib/systemd/system/kube-scheduler.service
+    [Unit]
+    Description=Kubernetes Scheduler
+    Documentation=https://github.com/kubernetes/kubernetes
+
+    [Service]
+    EnvironmentFile=/etc/kubernetes/scheduler
+    ExecStart=/usr/bin/kube-scheduler $KUBE_SCHEDULER_ARGS
+    Restart=always
+
+    [Install]
+    WantedBy=multi-user.target
+    # cat /etc/kubernetes/scheduler
+    KUBE_SCHEDULER_ARGS="--kubeconfig=/etc/kubernetes/kubeconfig \
+    --leader-elect=true \
+    --logtostderr=false --log-dir=/var/log/kubernetes --v=0"
+    # systemctl daemon-reload && systemctl enable kube-scheduler && systemctl start kube-scheduler
+    # systemctl status kube-scheduler # 验证running且没有错误日志
+    ```
+
+  1. 部署HAProxy和Keepalived实现高可用
+
+    在192.168.18.3/4上部署Keepalived和HAProxy, 并让HAProxy将客户端请求转发到3个kube-apiserver上.
+
+    ```bash
+    # --- 在18.3/4上部署HAProxy
+    # cat haproxy.cfg
+    global
+        log         127.0.0.1 local2
+        chroot      /var/lib/haproxy
+        pidfile     /var/run/haproxy.pid
+        maxconn     4096
+        user        haproxy
+        group       haproxy
+        daemon
+        stats socket /var/lib/haproxy/stats
+
+    defaults
+        mode                    http
+        log                     global
+        option                  httplog
+        option                  dontlognull
+        option                  http-server-close
+        option                  forwardfor    except 127.0.0.0/8
+        option                  redispatch
+        retries                 3
+        timeout http-request    10s
+        timeout queue           1m
+        timeout connect         10s
+        timeout client          1m
+        timeout server          1m
+        timeout http-keep-alive 10s
+        timeout check           10s
+        maxconn                 3000
+
+    frontend  kube-apiserver
+        mode                 tcp
+        bind                 *:9443
+        option               tcplog
+        default_backend      kube-apiserver
+
+    listen stats # 状态健康的服务配置
+        mode                 http
+        bind                 *:8888
+        stats auth           admin:password
+        stats refresh        5s
+        stats realm          HAProxy\ Statistics
+        stats uri            /stats
+        log                  127.0.0.1 local3 err
+
+    backend kube-apiserver
+        mode        tcp
+        balance     roundrobin # 均衡负载策略, 这里是轮询模式
+        server  k8s-master1 192.168.18.3:6443 check
+        server  k8s-master2 192.168.18.4:6443 check
+        server  k8s-master3 192.168.18.5:6443 check
+    # docker run -d --name k8s-haproxy \
+      --net=host \
+      --restart=always \
+      -v ${PWD}/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro \
+      haproxytech/haproxy-debian:2.3
+    ```
+
+    在一切正常情况下, 访问`http://192.168.18.3:8888/stats`可访问HAProxy的管理页面, 看到`backend kube-apiserver`的3个server都是`UP`即表示与3个kube-apiserver成功建立了连接, 也表示HAProxy工作正常.
+
+    ```bash
+    # --- 在18.3/4上部署Keepalived, 它监控HAProxy状态维护vip
+    # cat keepalived.conf # master 1
+    ! Configuration File for keepalived
+
+    global_defs {
+      router_id LVS_1
+    }
+
+    vrrp_script checkhaproxy
+    {
+        script "/usr/bin/check-haproxy.sh"
+        interval 2
+        weight -30
+    }
+
+    vrrp_instance VI_1 {
+        state MASTER
+        interface ens33
+        virtual_router_id 51
+        priority 100
+        advert_int 1
+
+        virtual_ipaddress {
+            192.168.18.100/24 dev ens33
+        }
+
+        authentication {
+            auth_type PASS
+            auth_pass password
+        }
+
+        track_script {
+            checkhaproxy
+        }
+    }
+    # cat check-haproxy.sh
+    #!/bin/bash
+
+    count=`netstat -apn | grep 9443 | wc -l`
+
+    if [ $count -gt 0 ]; then
+        exit 0
+    else
+        exit 1
+    fi
+    # cat keepalived.conf - master 2
+    ! Configuration File for keepalived
+
+    global_defs {
+      router_id LVS_2
+    }
+
+    vrrp_script checkhaproxy
+    {
+        script "/usr/bin/check-haproxy.sh"
+        interval 2
+        weight -30
+    }
+
+    vrrp_instance VI_1 {
+        state BACKUP
+        interface ens33
+        virtual_router_id 51
+        priority 100
+        advert_int 1
+
+        virtual_ipaddress {
+            192.168.18.100/24 dev ens33
+        }
+
+        authentication {
+            auth_type PASS
+            auth_pass password
+        }
+
+        track_script {
+            checkhaproxy
+        }
+    }
+    # docker run -d --name k8s-keepalived \
+      --restart=always \
+      --net=host \
+      --cap-add=NET_ADMIN --cap-add=NET_BROADCAST --cap-add=NET_RAW \
+      -v ${PWD}/keepalived.conf:/container/service/keepalived/assets/keepalived.conf \
+      -v ${PWD}/check-haproxy.sh:/usr/bin/check-haproxy.sh \
+      osixia/keepalived:2.0.20 --copy-service
+    ```
+
+    正常情况下在192.168.18.3上执行`ip addr`可以看到192.168.18.100出现在某张网卡上， 且执行`curl -v -k https://192.168.18.100:9443`根据respone可验证确实访问到了kube-apiserver.
+
+1. 部署node
+
+  1. 部署container runtime, 请参考网上内容.
+  1. 部署kubelet
+
+    ```bash
+    # --- 在3个node上设置kubelet
+    # cat /usr/lib/systemd/system/kubelet.service
+    [Unit]
+    Description=Kubernetes Kubelet Server
+    Documentation=https://github.com/kubernetes/kubernetes
+    After=docker.target
+
+    [Service]
+    EnvironmentFile=/etc/kubernetes/kubelet
+    ExecStart=/usr/bin/kubelet $KUBELET_ARGS
+    Restart=always
+
+    [Install]
+    WantedBy=multi-user.target
+
+    # --- 注意: 修改hostname-override
+    # cat /etc/kubernetes/kubelet
+    KUBELET_ARGS="--kubeconfig=/etc/kubernetes/kubeconfig --config=/etc/kubernetes/kubelet.config \
+    --hostname-override=192.168.18.3 \
+    --network-plugin=cni \
+    --logtostderr=false --log-dir=/var/log/kubernetes --v=0"
+
+    # cat /etc/kubernetes/kubelet.config
+    kind: KubeletConfiguration
+    apiVersion: kubelet.config.k8s.io/v1beta1
+    address: 0.0.0.0
+    port: 10250
+    cgroupDriver: cgroupfs
+    clusterDNS: ["169.169.0.100"]
+    clusterDomain: cluster.local
+    authentication:
+      anonymous:
+        enabled: true
+    # systemctl daemon-reload && systemctl enable kubelet && systemctl start kubelet
+    # systemctl status kubelet # 验证running且没有错误日志
+    ```
+
+    KUBELET_ARGS参数说明:
+    - config : kubelet配置文件
+    - hostname-override : 设置本node在集群中的名称, 默认是hostname
+    - network-plugin : 网络插件类型, 建议使用CNI网络插件
+
+    KubeletConfiguration参数说明:
+    - cgroupDriver : 默认是cgroupfs, systemd环境请设为systemd.
+    - clusterDNS : 集群dns服务器的ip地址
+    - clusterDomain : 服务dns域名后缀
+    - authentication : 是否允许匿名访问或者是否使用webhook进行鉴权
+
+  1. 部署kube-proxy
+
+    ```bash
+    # cat /usr/lib/systemd/system/kube-proxy.service
+    [Unit]
+    Description=Kubernetes Kube-Proxy Server
+    Documentation=https://github.com/kubernetes/kubernetes
+    After=network.target
+
+    [Service]
+    EnvironmentFile=/etc/kubernetes/proxy
+    ExecStart=/usr/bin/kube-proxy $KUBE_PROXY_ARGS
+    Restart=always
+
+    [Install]
+    WantedBy=multi-user.target
+
+    # --- 注意: 修改hostname-override
+    # cat /etc/kubernetes/proxy
+    KUBE_PROXY_ARGS="--kubeconfig=/etc/kubernetes/kubeconfig \
+    --hostname-override=192.168.18.3 \
+    --proxy-mode=iptables \
+    --logtostderr=false --log-dir=/var/log/kubernetes --v=0"
+    # systemctl daemon-reload && systemctl enable kube-proxy && systemctl start kube-proxy
+    # systemctl status kube-proxy # 验证running且没有错误日志
+    ```
+  1. 注册node
+
+    在node的kubelet和kube-proxy正常运行后, 将相应node注册到master上.
+1. 验证cluster
+
+  ```bash
+  # export KUBECONFIG=/etc/kubernetes/kubeconfig
+  # kubctl get node # 看到所有的node, 且状态是NotReady, 这是因为还没有部署CNI网络插件.
+  # kubectl apply -f "https://docs.projectcalico.org/manifests/calico.yaml" # 安装calico
+  # kubctl get node # nody状态都变为了Ready
+  ```
+
 ## 生态
+### 私有镜像
+参考`Harbor权威指南`
+
 ### 监控
 Prometheus Operator, 可使用Helm安装.
 
