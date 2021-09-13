@@ -58,7 +58,20 @@ cluster是计算,存储和网络资源的集合. k8s使用这些资源运行各�
 ### CRI/OCI
 CRI是Kubernetes提供的API，用于与容器运行时进行对话，以创建/删除容器化的应用程序.
 
-它们通过IPC在gRPC中作为kubelet进行通信，并且运行时在同一主机上运行，并且CRI运行时负责从kubelet获取请求并执行OCI容器运行时以运行容器.
+CRI包括Protocol Buffers, gRPC API, 运行库支持以及开发中的标准规范和工具. [gRPC API](https://github.com/kubernetes/cri-api/blob/master/pkg/apis/runtime/v1/api.proto)包括:
+- ImageService : 提供了从仓库中拉取镜像, 查看和移除镜像的功能
+- RuntimeService : 负责Pod和容器的生命周期管理，以及与容器的交互 （kubelet exec/attach/port-forward）
+
+kubelet使用gRPC框架通过unix socket与容器运行时(或CRI代理shim)通信, 在这个过程中kubelet是client.
+
+> 在kubelet中可以用--container-runtime- endpoint和--image-service-endpoint参数设置这个Socket.
+
+Pod由一组应用容器组成，其中包含共有的环境和资源约束。在 CRI里，这个环境被称为PodSandbox。Kubernetes有意为容器运行时留 下一些发挥空间，它们可以根据自己的内部实现来解释PodSandbox。对 于Hypervisor类的运行时，PodSandbox会具体化为一个虚拟机。其他例 如Docker，会是一个Linux命名空间.
+
+在启动Pod之前，kubelet调用RuntimeService.RunPodSandbox来创建
+环境. 这一过程包括为Pod设置网络资源（分配IP等操作）. PodSandbox被激活之后，就可以独立地创建、启动、停止和删除不同的容器了. kubelet会在停止和删除PodSandbox之前首先停止和删除其中的 容器.
+
+kubelet的职责在于通过RPC管理容器的生命周期，实现容器生命周期的钩子，存活和健康监测，以及执行Pod的重启策略等. RuntimeService服务包括对Sandbox和Container操作的方法.
 
 ![](/misc/img/container/a634ac215282c8c142b83e5cdd4b6d64.png)
 
@@ -1318,6 +1331,13 @@ Kubernetes Ingress提供了负载平衡器的典型特性：HTTP路由，粘性�
 targetPort 是Pod上的端口.
 
 ## cmd
+- `kubectl top node/pod` # 查看node或pod的资源使用情况, 需要在集群中允许metrics server.
+- `kubectl api-versions` # 列出当前系统支持的api版本
+- `kubectl api-resources` # kubectl可操作的资源对象列表
+- `kubectl port-forward --address 0.0.0.0 pod/xxx 8888:80` # 将pod的80端口映射到宿主机的8888端口
+- `kubectl plugin list` # 查看当前系统已安装的插件
+- `kubectl get pod/example svc/tomcat-service` # 获取多种不同类型的对象
+- `kubectl create -f pod1.yaml -f pod2.yaml -f service1.yaml` # 同时应用多个yaml文件
 - `kubectl get svc tomcat-service -o yaml` # yaml格式输出
 - `kubectl run alpine --rm -ti --image=alpine /bin/sh` # 创建调试pod
 - `kubectl logs -f POD-NAME` # 获取pod日志
@@ -2181,6 +2201,16 @@ kubeadm config images pull # 拉取镜像到本地
   # kubectl apply -f "https://docs.projectcalico.org/manifests/calico.yaml" # 安装calico
   # kubctl get node # nody状态都变为了Ready
   ```
+
+## 升级
+### kubeadm
+建议升级时版本差异不能过大(通常是3个大版本以内), 以免某些功能或api版本被启用后导致低版本的node无法运行.
+
+这里以1.21->1.22为例:
+1. 准备1.22的kubeadm
+1. 查看升级计划`kubeadm upgrade plan`
+1. 执行控制平面升级计划`kubeadm upgrade apply 1.22.0`, 此时kubelet还是旧版本
+1. 执行节点配置升级`kubeadm upgrade node config --kubelet-version 1.22.0`
 
 ## 生态
 ### 私有镜像
