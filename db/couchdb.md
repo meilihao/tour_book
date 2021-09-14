@@ -305,11 +305,15 @@
 
 - 数据库复制
 
-    查看复制进度: http://localhost:5984/_active_tasks的progress.
-    复制时, 源和目的必须都已存在; 支持`"create_target":true`选项, 不存在目的时自动创建; 复制仅针对创建复制时的状态, 复制开始后的变更(创建/修改/删除)都不会被复制.
+    查看复制进度: http://username:password@localhost:5984/_active_tasks的progress.
+    复制时, **源和目的必须都必须已存在**， 或使用`"create_target":true`选项, 不存在目的时自动创建; 复制仅针对创建复制时的状态, 复制开始后的变更(创建/修改/删除)都不会被复制.
 
     复制内容包括新增/已修改/已删除的doc. couchdb中每个数据库有一个序列号, 每次变更都会加一, 且会记录哪个变更对应哪个序列号. couchdb支持增量复制.
-    couchdb可使用`"continous":true`进行持续复制, 重启couchdb后是否仍生效未知.
+    couchdb可使用`"continous":true`进行持续复制. 从 CouchDB 1.1.0 开始，可以通过在`_replicator`数据库中插入文档来定义在服务器重启后无需执行任何操作的永久连续复制, 非`_replicator`中定义的复制任务会在couchdb重启后消失. 且对于临时复制，当作业完成时无法查询它们的状态. 删除`_replicator`的定义会导致复制停止.
+
+    > `"continous":true`原理: couchdb使用_changes api, 在任何新文档进入source时自动复制到目标, 不是实时, 有一个复杂的算法来确定复制以获得最佳性能的理想时刻.
+
+    如果想要双向复制，只需要触发两个复制, 源和目标交换.
 
     1. 本地复制
 

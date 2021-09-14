@@ -5,6 +5,8 @@ keepalived可提供vrrp以及health-check功能，可以只用它提供双机浮
 
 keepalived是以VRRP虚拟路由冗余协议为基础实现高可用的，可以认为是实现路由器高可用的协议，即将N台提供相同功能的路由器组成一个路由器组，这个组里面有一个master和多个backup，master上面有一个对外提供服务的vip（该路由器所在局域网内其他机器的默认路由为该vip），**master会发组播**，当backup收不到VRRP包时就认为master宕掉了，这时就需要根据VRRP的优先级来选举一个backup当master. 这样的话就可以保证路由器的高可用了.
 
+在Keepalived 有两个角色：Master(一个)、Backup（多个），如果设置一个为Master，但Master挂了后再起来，必然再次业务又一次切换，这对于有状态服务是不可接受的. 解决方案就是所有机器都设置为Backup，且在优先级高的Backup配置中设置nopreemt(不抢占).
+
 ## 组件
 keepalived也是模块化设计，不同模块复杂不同的功能，它主要有三个模块，分别是core、check和VRRP，其中：
 - core模块：为keepalived的核心组件，负责主进程的启动、维护以及全局配置文件的加载和解析
@@ -20,6 +22,7 @@ Healthcheck子进程检查各自服务器的健康状况, 例如http,lvs. 如果
 ## 配置
 参考:
 - [Keepalive详解](https://www.cnblogs.com/rexcheny/p/10778567.html)
+- [keepalived 配置整理](https://weizhimiao.github.io/2017/02/11/keepalived%E9%85%8D%E7%BD%AE%E6%95%B4%E7%90%86/)
 
 keepalived只有一个配置文件keepalived.conf，配置文件里面主要包括以下几个配置项，分别是global_defs、static_ipaddress、static_routes、VRRP_script、VRRP_instance和virtual_server.
 
@@ -57,8 +60,8 @@ keepalived只有一个配置文件keepalived.conf，配置文件里面主要包�
         vrrp_instance VI_1 {
             state MASTER               # 指定instance初始角色(MASTER 表示主节点，BACKUP 表示备份节点)，实际根据优先级决定. 与backup节点不一样
             interface eth0             # 表示发vrrp包的接口
-            virtual_router_id 51       # VRID，相同VRID为一个组，决定多播MAC地址. 主备节点需要设置为相同
-            priority 100               # 优先级, 主节点的优先级需要设置比备份节点高. backup节点改为90.
+            virtual_router_id 51       # VRID(0-255)，相同VRID为一个组，决定多播MAC地址. 主备节点需要设置为相同
+            priority 100               # 优先级(1-255), 主节点的优先级需要设置比备份节点高. backup节点改为90.
             advert_int 1               # 设置主备之间的检查间隔，单位为秒
             authentication {
                 auth_type PASS         # 认证方式，可以是pass或ha
@@ -70,10 +73,11 @@ keepalived只有一个配置文件keepalived.conf，配置文件里面主要包�
                 172.16.60.129/24 dev  eth0 # VIP地址
                 # 192.168.1.33/24 brd 192.168.1.255 dev eno1 label eno1:1 # IP/掩码 dev 配置在哪个网卡的哪个别名上
             }
-            notify_master "/etc/keepalived/keepalived.sh master" # 当前节点成为主节点时触发的脚本
-            notify_backup "/etc/keepalived/keepalived.sh backup" # 当前节点转为备节点时触发的脚本
-            notify_fault "/etc/keepalived/keepalived.sh fault" # 当前节点出现故障转为"FAULT"状态时触发的脚本
-            notify xxx # 表示只要状态切换都会调用的脚本，并且该脚本是在以上三个脚本执行之后再调用的
+            notify_master "/etc/keepalived/keepalived.sh master" # 当前节点状态转为master时触发的脚本
+            notify_backup "/etc/keepalived/keepalived.sh backup" # 当前节点状态转为backup时触发的脚本
+            notify_fault "/etc/keepalived/keepalived.sh fault" # 当前节点keepalived出现故障转为"FAULT"状态时触发的脚本
+            notify_stop "/etc/keepalived/keepalived.sh fault" # 当前节点keepalived停止时触发的脚本
+            notify xxx # 表示只要状态切换都会调用的脚本，并且该脚本是在以上四个脚本执行之后再调用的
             # 追踪脚本，通常用于去执行vrrp_script中定义的脚本内容
             track_script {
                 check_running
@@ -94,8 +98,8 @@ keepalived只有一个配置文件keepalived.conf，配置文件里面主要包�
             unicast_peer {              
                 172.19.1.15      #对端ip
             }
-            nopreempt                   # 定义工作模式为非抢占模式.  **抢占模式时主节点故障恢复后, 就会重新抢回vip (根据配置里的优先级决定的).**
-            preempt_delay 300           # 抢占式模式下，节点上线后触发新选举操作的延迟时长
+            nopreempt                   # 定义工作模式为非抢占模式, 默认是抢占模式. **抢占模式时主节点故障恢复后, 就会重新抢回vip (根据配置里的优先级决定的).**. 首先nopreemt必须在state为BACKUP的节点上才生效（因为是BACKUP节点决定是否来成为MASTER的）. 推荐使用将所有节点的state都设置成BACKUP并且都加上nopreempt选项，这样就完成了关于autofailback功能，当想手动将某节点切换为MASTER时只需去掉该节点的nopreempt选项并且将priority改的比其他节点大，然后重新加载配置文件即可（等MASTER切过来之后再将配置文件改回去再reload一下）
+            preempt_delay 300           # 抢占式模式下，节点上线后触发新选举操作的延迟时长, 避免节点还没进入工作状态就进行抢占导致小段时间内不可用. 这里的间隔时间要大于vrrp_script中定义的时长
         }
         ```
 
@@ -159,10 +163,48 @@ keepalived只有一个配置文件keepalived.conf，配置文件里面主要包�
         example:
         ```conf
         vrrp_script check_running {
-           script “/usr/local/bin/check_running”
+           script "/usr/local/bin/check_running"
            interval 10
            weight 10
+           timeout 2
+           fall 3
         }
+        ```
+
+        ```bash
+        # cat /usr/local/bin/check_running
+        #!/bin/bash
+        #author : panbuhei
+        #nginx check script in keepalived
+
+        NGINX_PIDNUM=`ps -ef | grep nginx | grep -v grep | wc -l`
+
+        NGINX_PORTNUM=`ss -antpl | grep nginx | wc -l`
+
+        if [ $NGINX_PIDNUM -eq 0 ];then
+            exit 1
+        elif [ $NGINX_PORTNUM -eq 0 ];then
+            exit 1
+        else
+            exit 0
+        fi
+        # --- 其他 vrrp_script
+        # cat /etc/keepalived/curl.sh
+        #!/bin/bash
+        curl -m 2 -I http://172.20.27.10:9000/haproxy-status &> /dev/null
+        if [ $? -eq 0 ];then
+            exit 0
+        else
+            exit 2
+        fi
+        # cat /etc/keepalived/ping.sh
+        #!/bin/bash
+        ping -c 2 172.20.0.1 &> /dev/null
+        if [ $? -eq 0 ];then
+            exit 0
+        else
+            exit 2
+        fi
         ```
 3）LVS配置
 

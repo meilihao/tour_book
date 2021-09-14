@@ -451,6 +451,7 @@ zfs 0.8.1 rename后`/dev/zvol/{datapath}`会跟着变化, 且mkfs正常.
 	- zrepl
 ### pool is busy
 `fuser -vm /dev/zd640`
+`lsblk` # using by drbd
 
 ### zfs 类clone 无法挂载
 `XFS (zd32): Filesystem has duplicate UUID adf19c69-ebc4-4622-97e2-1ab899f8f5c3 - can't mount` from `syslog`.

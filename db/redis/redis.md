@@ -92,6 +92,8 @@ master服务器会记录一个replicationId的伪随机字符串，用于标识�
 1. 如果无法部分同步(比如初次同步)，则会请求进行全量同步，这时master服务器会将自己的rdb文件发送给slave服务器进行数据同步，并记录同步期间的其他写入，再发送给slave服务器，以达到完全同步的目的，这种方式称为全量复制
 
 ### 配置
+> 主从复制的开启，完全是在从节点发起的；不需要我们在主节点做任何事情.
+
 假设Redis的master服务器地址为192.168.0.101
 
 两种方式：
@@ -106,10 +108,37 @@ master服务器会记录一个replicationId的伪随机字符串，用于标识�
 
 在Redis2.6以后，slave只读模式是默认开启的，我们可以通过配置文件中的slave-read-only选项配置.
 
+> 如果当前服务器已经是某个主服务器(master server)的从属服务器，那么执行 SLAVEOF host port 将使当前服务器停止对旧主服务器的同步，丢弃旧数据集，转而开始对新主服务器进行同步.
+
+> 利用`SLAVEOF NO ONE`不会丢弃同步所得数据集这个特性，可以在主服务器失败的时候，将从属服务器用作新的主服务器, 从而实现无间断运行.
+
+> redis主从复制是[异步的](http://www.redis.cn/topics/cluster-tutorial.html).
+
 ### 主从复制中的key过期问题
 Redis处理key过期有惰性删除和定期删除两种机制，而在配置主从复制后，slave服务器就没有权限处理过期的key，这样的话，对于在master上过期的key，在slave服务器就可能被读取，因为master会累积过期的key，积累一定的量之后，发送del命令到slave，删除slave上的key.
 
 业务层采用expireat timestamp 方式，这样命令传送到从库就没有影响, 前提是主从的时间要同步.
+
+## cluster
+参考:
+- [Redis Cluster数据分片实现原理、及请求路由实现](https://www.huaweicloud.com/articles/38e2316d01880fdbdd63d62aa26b31b4.html)
+- [Redis Cluster 会丢数据吗？](https://segmentfault.com/a/1190000021147037)
+
+Redis Cluster是一种服务器Sharding技术(分片和路由都是在服务端实现)，采用多主多从，每一个分区都是由一个Redis主机和多个从机组成，片区和片区之间是相互平行的. Redis Cluster集群采用了P2P的模式，完全去中心化.
+
+Redis Cluster 不保证强一致性，在一些特殊场景，客户端即使收到了写入确认，还是可能丢数据的:
+- 异步复制
+
+    在 master 写成功，但 slave 同步完成之前，master 宕机了，slave 变为 master，数据丢失.
+
+    wait 命令可以增强这种场景的数据安全性, 但并不保证强一致性且影响性能. 它会阻塞当前 client 直到之前的写操作被指定数量的 slave 同步成功.
+- 网络分区
+
+    如果网络分区很短暂，那数据就不会丢失；但分区后一个 master 继续接收写请求， 如果在网络分区期间集群重新选举了某个slave节点为主节点，那么数据就会丢失了.
+
+    可以设置节点过期时间，减少 master 在分区期间接收的写入数量，降低数据丢失的损失.
+
+    > 过去一定时间(maximum window, 最大时间窗口即节点过期时间）后，分区的多数边就会进行选举，slave 成为 master， 这时分区少数边的 master 在达到过期时间后，就被认为是故障的，进入 error 状态，停止接收写请求，可以被 slave 取代.
 
 ## FAQ
 ### redis做mq

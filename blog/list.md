@@ -145,3 +145,6 @@
 
 ## secure
 - [记一次微信数据库解密过程](https://www.freebuf.com/articles/rookie/195107.html?utm_source=tuicool&utm_medium=referral)
+
+## os
+- [从无盘启动看Linux启动原理](https://zhuanlan.zhihu.com/p/270269074)
