@@ -286,7 +286,17 @@ pod有两类:
   一旦创建就记入etcd, 并被k8s调度到某个node上运行.
 - 静态(static) pod
 
-  不记入etcd, 被存放在某个具体node的一个特定文件上, 且只能在该node上启动运行.
+  不记入etcd, 被存放在某个具体node的一个特定文件上, 且由kubelet管理并只能在该node上启动运行. 它们不能通过API Server进行管理，无法与ReplicationController、Deployment或者DaemonSet进行关联，并且kubelet无法对它们进行健康检查.
+
+  创建静态Pod有两种方式, 配置文件方式和HTTP方式:
+  - 配置文件方式
+
+    设置kubelet的启动参数`--config`，指定kubelet需要监控的配置文件所在的目录，kubelet会定期扫描该目录，并根据该目录下的.yaml或.json文件进行创建操作.
+
+    由于静态Pod无法通过API Server直接管理，所以在Master上尝试删除这个Pod(`kubectl delete pod xxx`)时，会使其变成Pending状态，且不会被删除. 删除该Pod的操作只能是到其所在Node上将其定义文件删除.
+  - HTTP方式
+
+    通过设置kubelet的启动参数`--manifest-url`，kubelet将会定期从该URL地址下载Pod的定义文件，并以.yaml或.json文件的格式进行解析, 然后创建Pod. 其实现方式与配置文件方式是一致的.
 
 围绕着容器和 Pod 不断向真实的技术场景扩展，我们就能够摸索出一幅如下所示的 Kubernetes 项目核心功能的“全景图”:
 ![Kubernetes 项目核心功能的“全景图](https://static001.geekbang.org/resource/image/16/06/16c095d6efb8d8c226ad9b098689f306.png)
@@ -296,18 +306,6 @@ Pod是有生命周期的，Pod被分配到一个Node上之后，就不会离开�
 > pod类似于进程组的或虚拟机的角色, 而容器就是里面的进程
 > 凡是调度、网络、存储，以及安全相关的属性，基本上是 Pod 级别的; 凡是跟容器的 Linux Namespace 相关的属性或容器要共享宿主机的 Namespace，都一定是 Pod 级别的, 因为Pod 的设计就是要让它里面的容器尽可能多地共享 Linux Namespace，仅保留必要的隔离和限制能力
 > Pod是一组共享了某些资源的容器, Pod 里的所有容器，共享的是同一个 Network Namespace，并且可以声明共享同一个 Volume
-> 容器进程返回值非零, k8s会认为容器发生故障就会按照Pod的restartPolicy进行处理
-
-restartPolicy:
-- Always ：在任何情况下，只要容器不在运行状态，就自动重启容器
-- OnFailure : 只在容器 异常时才自动重启容器
-- Never : 从来不重启容器
-
-> Pod 的恢复过程，永远都是发生在当前节点上，而不会跑到别的节点上去. 事实上，一旦一个 Pod 与一个节点（Node）绑定，除非这个绑定发生了变化（pod.spec.node 字段被修改），否则它永远都不会离开这个节点包括(宿主机宕机). 而如果想让 Pod 出现在其他的可用节点上，就必须使用 Deployment Controller 来管理 Pod.
-
-restartPolicy 和 Pod 里容器的状态，以及 Pod 状态的对应关系:
-- 只要 Pod 的 restartPolicy 指定的策略允许重启异常的容器（比如：Always），那么这个 Pod 就会保持 Running 状态，并进行容器重启。否则，Pod 就会进入 Failed 状态 .
-- 对于包含多个容器的 Pod，只有它里面所有的容器都进入异常状态后，Pod 才会进入 Failed 状态. 在此之前，Pod 都是 Running 状态. Pod 的 READY 字段会显示正常容器的个数.
 
 在 Kubernetes 项目里，Pod 的实现需要使用一个中间容器，这个容器叫作 Infra 容器. 在这个 Pod 中，Infra 容器永远都是第一个被创建的容器，而其他用户定义的容器，则通过 Join Network Namespace 的方式，与 Infra 容器关联在一起.
 
@@ -461,7 +459,7 @@ Lifecycle定义了Container Lifecycle Hooks:
 
 Pod 生命周期的变化主要体现在 Pod API 对象的Status 部分，这是它除了 Metadata 和 Spec 之外的第三个重要字段. 其中pod.status.phase就是 Pod 的当前状态，它有如下几种可能的情况：
 - Pending : Pod 的 YAML 文件已经提交给了 Kubernetes，API 对象已经被创建并保存在 Etcd 当中. 但是这个 Pod 里有些容器因为某种原因而不能被顺利创建, 比如，调度不成功.
-- Running : Pod 已经调度成功，跟一个具体的节点绑定. 它包含的容器都已经创建成功，并且至少有一个正在运行中.
+- Running : Pod 已经调度成功，跟一个具体的节点绑定. 它包含的容器都已经创建成功，并且至少有一个正在运行/正在启动/正在重启中.
 - Succeeded : Pod 里的所有容器都正常运行完毕，并且已经退出了. 这种情况在运行Job任务时最为常见.
 - Failed : Pod 里至少有一个容器以不正常的状态（非 0 的返回码）退出. 这个状态的出现意味着得想办法 Debug 这个容器的应用，比如查看 Pod 的 Events 和日志
 - Unknown : 异常状态，意味着 Pod 的状态不能持续地被 kubelet 汇报给 kube-apiserver，这很有可能是主从节点（Master 和 Kubelet）间的通信出现了问题
@@ -472,8 +470,110 @@ Pod 生命周期的变化主要体现在 Pod API 对象的Status 部分，这是
 
 > [type Pod struct](https://github.com/kubernetes/api/blob/master/core/v1/types.go)
 
+容器进程返回值非零或健康检查失败, k8s会认为容器发生故障并按照Pod的restartPolicy进行处理.
+
+restartPolicy, 应用于pod内的所有容器, 并且仅在pod所在的node上有kubelet进行判断和重启操作:
+- Always ：在任何情况下，只要容器不在运行状态，就自动重启容器
+- OnFailure : 只在容器终止并退出码非0时才自动重启容器
+- Never : 从来不重启容器
+
+kubelet重启失效容器的时间间隔以sync-frequency乘以2n来计算，例如1、2、4、8倍等，最长延时5min，并且在成功重启后的10min后重置该时间.
+
+Pod的重启策略与控制方式息息相关，当前可用于管理Pod的控制器包括ReplicationController、Job、DaemonSet及直接通过kubelet管理（静态Pod）. 每种控制器对Pod的重启策略要求如下:
+- RC和DaemonSet：必须设置为Always，需要保证该容器持续运行
+- Job：OnFailure或Never，确保容器执行完成后不再重启
+- kubelet：在Pod失效时自动重启它，不论将RestartPolicy设置为什么值，也不会对Pod进行健康检查
+
+> Pod 的恢复过程，永远都是发生在当前节点上，而不会跑到别的节点上去. 事实上，一旦一个 Pod 与一个节点（Node）绑定，除非这个绑定发生了变化（pod.spec.node 字段被修改），否则它永远都不会离开这个节点包括(宿主机宕机). 而如果想让 Pod 出现在其他的可用节点上，就必须使用 Deployment Controller 来管理 Pod.
+
+restartPolicy 和 Pod 里容器的状态，以及 Pod 状态的对应关系:
+- 只要 Pod 的 restartPolicy 指定的策略允许重启异常的容器（比如：Always），那么这个 Pod 就会保持 Running 状态，并进行容器重启。否则，Pod 就会进入 Failed 状态 .
+- 对于包含多个容器的 Pod，只有它里面所有的容器都进入异常状态后，Pod 才会进入 Failed 状态. 在此之前，Pod 都是 Running 状态. Pod 的 READY 字段会显示正常容器的个数.
+
 #### health check
 kubelet 就会根据指定 Probe 的返回值决定这个容器的状态，而不是直接以容器进行是否运行（来自 Docker 返回的信息）作为依据.
+
+Kubernetes 对 Pod的健康状态可以通过三类探针来检查： LivenessProbe, ReadinessProbe, StartupProbe, 常用的是前两者. kubelet定期执行这三类探针来诊断容器的健康状况.
+1. LivenessProbe探针：用于判断容器是否存活（Running状 态），如果LivenessProbe探针探测到容器不健康，则kubelet将杀掉该容器，并根据容器的重启策略做相应的处理. 如果一个容器不包含 LivenessProbe探针，那么kubelet认为该容器的LivenessProbe探针返回的值永远是Success.
+1. ReadinessProbe探针：用于判断容器服务是否可用（Ready状态），达到Ready状态的Pod才可以接收请求. 对于被Service管理的Pod，Service与Pod Endpoint的关联关系也将基于Pod是否Ready进行设置. 如果在运行过程中Ready状态变为False，则系统自动将其从Service 的后端Endpoint列表中隔离出去，后续再把恢复到Ready状态的Pod加回后端Endpoint列表. 这样就能保证客户端在访问Service时不会被转发到服务不可用的Pod实例上.
+1. StartupProbe探针: 某些应用启动慢, 此时ReadinessProbe就不适用了, 而StartupProbe可以处理该场景.
+
+上面3种探针均可配置以下三种实现方式:
+1. ExecAction：在容器内部执行一个命令，如果该命令的返回码为0，则表明容器健康
+1. TCPSocketAction：通过容器的IP地址和端口号执行TCP检查，如果能够建立TCP连接，则表明容器健康
+1. HTTPGetAction：通过容器的IP地址、端口号及路径调用 HTTP Get方法，如果响应的状态码大于等于200且小于400，则认为容器健康
+
+对于每种探测方式，都需要设置initialDelaySeconds和 timeoutSeconds两个参数，它们的含义分别如下:
+- initialDelaySeconds：启动容器后进行首次健康检查的等待时间，单位为s。
+- timeoutSeconds：健康检查发送请求后等待响应的超时时间， 单位为s. 当超时发生时，kubelet会认为容器已经无法提供服务, 将会重启该容器
+
+
+```yaml
+# exec
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    test: liveness
+  name: liveness-exec
+spec:
+  containers:
+  - name: liveness
+    image: gcr.io/google_containers/busybox
+    args:
+    - /bin/sh
+    - -c
+    - echo ok > /tmp/health; sleep 10; rm -rf /tmp/health; sleep 600
+    livenessProbe:
+      exec: # 通过执行`cat /tmp/health`命令来判断容器运行是否正常. 在该Pod运行后，将在创建/tmp/health文件10s后删除该文件，而LivenessProbe健康检查的初始探测时间（initialDelaySeconds）为 15s，探测结果是Fail，将导致kubelet杀掉该容器并重启它
+        command:
+        - cat
+        - /tmp/health
+      initialDelaySeconds: 15
+      timeoutSeconds: 1
+
+
+
+# tcpsocket
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-healthcheck
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - containerPort: 80
+    livenessProbe:
+      tcpSocket:
+        port: 80
+      initialDelaySeconds: 30
+      timeoutSeconds: 1
+
+
+
+# http
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-healthcheck
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - containerPort: 80
+    livenessProbe:
+      httpGet:
+        path: /_status/healthz
+        port: 80
+      initialDelaySeconds: 30
+      timeoutSeconds: 1
+```
+
 
 livenessProbe支持exec, HTTP, TCP.
 
@@ -484,6 +584,8 @@ livenessProbe支持exec, HTTP, TCP.
 1. 默认均通过判断容器进程的返回值是否为零来判断探测是否成功; 默认连续3次非零则启用应对策略
 1. liveness失败是重启容器, readiness失败是将容器设为不可用, 不再接收Service转发的请求
 1. 两者独立无依赖, 可组合使用
+
+Kubernetes的ReadinessProbe机制可能无法满足某些复杂应用对容器内服务可用状态的判断，所以Kubernetes从1.11版本开始，引入Pod Ready++特性对Readiness探测机制进行扩展，在1.14版本时达到GA稳定版，称其为Pod Readiness Gates. 通过Pod Readiness Gates机制，Gates给予了pod之外的组件控制某个pod就绪的能力, 用户可以将自定义的ReadinessProbe 探测方式设置在Pod上，辅助Kubernetes设置Pod何时达到服务可用状态 （Ready）. 做法是用户需要提供一个外部的控制器（Controller）来设置相应的Condition(可用性)状态. 自定义Condition默认值为False, Kubernetes将在判断全部readinessGates条件都为True时，才设置Pod为服务可用状态（Ready为True）.
 
 #### Pod生命周期
 ![pod生命周期](http://dockone.io/uploads/article/20190520/c8e551e53f7e7e2a3af022c4ea672fe9.png)
@@ -906,14 +1008,255 @@ admin
 ### ConfigMap
 很多生产环境中的应用程序配置较为复杂，可能需要多个Config文件、命令行参数和环境变量的组合. 并且这些配置信息应该从应用程序镜像中解耦出来，以保证镜像的可移植性以及配置信息不被泄露.
 
-ConfigMap包含了一系列的键值对，用于存储被Pod或者系统组件（如controller）访问的信息.
+ConfigMap以一系列的`key:value`的形式存在，用于存储被Pod或者系统组件（如controller）访问的信息.
 
-与 Secret 类似，它与 Secret 的区别在于，ConfigMap 保存的是不需要加密的、应用所需的配置信息. 而  其用法几乎与 Secret 完全相同.
+与 Secret 类似，它与 Secret 的区别在于，ConfigMap 保存的是不需要加密的、应用所需的配置信息. 而其用法几乎与 Secret 完全相同.
+
+典型用法:
+1. 生成容器内的环境变量
+1. 设置容器启动命令的启动参数(需设置为环境变量)
+1. 以volume的形式挂载为容器内部的文件或目录
+
+使用ConfigMap的限制条件:
+- ConfigMap必须在Pod之前创建
+- ConfigMap受Namespace限制，只有处于相同Namespace中的Pod才可以引用它
+- ConfigMap无法用于静态pod
+- pod使用envFrom基于ConfigMap定义环境变量时无效的环境变量名称将被忽略, 并在event中记录InvalidVariableNames.
+- 容器以 subPath 卷挂载方式使用 ConfigMap 时，将无法接收 ConfigMap 的更新
+
+创建ConfigMap:
+```bash
+# cat cm.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-appvars
+data:
+  apploglevel: info
+  appdatadir: /var/data
+  file: |
+    xxxx
+    xxxx
+# kubectl create configmap -f cm-appvars.yaml
+# kubectl describe configmap cm-appvars
+# kubectl get configmap cm-appvars -o yaml
+# kubectl create configmap NAME --from-file=[key=]file --from-file=[key=]file # 从文件创建
+# kubectl create configmap NAME --from-file=dir # 从目录创建， 每个文件名变为key， 内容为value
+# kubectl create configmap NAME --from-literal=key1=value1 --from-literal=key2=value2 # 直接创建
+```
+
+使用ConfigMap:
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cm-test-pod
+spec:
+  containers:
+  - name: cm-test
+    image: busybox
+    command: [ "/bin/sh", "-c", "env | grep APP" ]
+    env: # 此时生成env是APPLOGLEVEL=info,...
+    - name: APPLOGLEVEL
+      valueFrom:
+        configMapKeyRef:
+          name: cm-appvars
+          key: apploglevel
+    - name: APPDATADIR
+      valueFrom:
+        configMapKeyRef:
+          name: cm-appvars
+          key: appdatadir
+  restartPolicy: Never
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cm-test-pod
+spec:
+  containers:
+  - name: cm-test
+    image: busybox
+    command: [ "/bin/sh", "-c", "env" ]
+    envFrom: # 此时生成env是apploglevel=info,...
+    - configMapRef
+       name: cm-appvars
+  restartPolicy: Never
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: cm-test-app
+spec:
+  containers:
+  - name: cm-test-app
+    image: kubeguide/tomcat-app:v1
+    ports:
+    - containerPort: 8080
+    volumeMounts:
+    - name: serverxml
+      mountPath: /configfiles
+  volumes:
+  - name: serverxml
+    configMap: # 在引用ConfigMap时不指定items，则使用volumeMount方式在容器内的目录下为每个item都生成一个文件名为key的文件
+      name: cm-appvars
+      items:
+      - key: file
+        path: server.xml # value内容将以server.xml内容的形式挂载
+```
+> 环境变量的名称受POSIX命名规范`[a-zA-Z_][a- zA-Z0-9_]*`约束，不能以数字开头. 如果包含非法字符，则系统将跳过该条环境变量的创建，并记录一个Event来提示环境变量无法生成， 但并不阻止Pod的启动.
 
 #### Downward API
-让 Pod 里的容器能够直接获取到这个 Pod 本身的信息,比如metadata
+让 Pod 里的容器能够直接获取到这个 Pod 本身的信息,比如metadata.
 
-注意: Downward API 能够获取到的信息，一定是**Pod 里的容器进程启动之前就能够确定下来的信息**. 而如果你想要获取 Pod 容器运行后才会出现的信息，比如，容器进程的 PID，那就肯定不能使用 Downward API 了，而应该考虑在 Pod 里定义一个 sidecar 容器
+注意: Downward API 能够获取到的信息，一定是**Pod 里的容器进程启动之前就能够确定下来的信息**. 而如果你想要获取 Pod 容器运行后才会出现的信息，比如，容器进程的 PID，那就肯定不能使用 Downward API 了，而应该考虑在 Pod 里定义一个 sidecar 容器.
+
+Downward API可以通过以下两种方式将Pod信息注入容器内部:
+- 环境变量：用于单个变量，可以将Pod信息和Container信息注入容器内部
+- Volume挂载：将数组类信息生成为文件并挂载到容器内部
+
+  容器以 subPath 卷挂载方式使用 downwardAPI 时，将不能接收到它的更新.
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dapi-envars-fieldref
+  labels:
+    zone: us-est-coast
+    cluster: test-cluster1
+    rack: rack-22
+  annotations:
+    build: two
+    builder: john-doe
+spec:
+  containers:
+    - name: test-container
+      image: busybox
+      command: [ "sh", "-c"]
+      args: # 通过kubectl logs 查看输出
+      - while true; do
+          echo -en '\n';
+          printenv MY_NODE_NAME MY_POD_NAME MY_POD_NAMESPACE;
+          printenv MY_POD_IP MY_POD_SERVICE_ACCOUNT;
+          sleep 10;
+        done;
+      - while true; do
+          echo -en '\n';
+          if [[ -e /etc/podinfo/cpu_limit ]]; then
+            echo -en '\n'; cat /etc/podinfo/cpu_limit; fi;
+          if [[ -e /etc/podinfo/cpu_request ]]; then
+            echo -en '\n'; cat /etc/podinfo/cpu_request; fi;
+          if [[ -e /etc/podinfo/mem_limit ]]; then
+            echo -en '\n'; cat /etc/podinfo/mem_limit; fi;
+          if [[ -e /etc/podinfo/mem_request ]]; then
+            echo -en '\n'; cat /etc/podinfo/mem_request; fi;
+          sleep 5;
+        done;
+      - while true; do
+          if [[ -e /etc/podinfo2/labels ]]; then
+            echo -en '\n\n'; cat /etc/podinfo2/labels; fi;
+          if [[ -e /etc/podinfo2/annotations ]]; then
+            echo -en '\n\n'; cat /etc/podinfo2/annotations; fi;
+          sleep 5;
+        done;
+      resources:
+        requests:
+          memory: "32Mi"
+          cpu: "125m"
+        limits:
+          memory: "64Mi"
+          cpu: "250m"
+      volumeMounts:
+        - name: podinfo
+          mountPath: /etc/podinfo
+        - name: podinfo2
+          mountPath: /etc/podinfo2
+        - name: workdir1
+          mountPath: /logs
+          subPathExpr: $(MY_POD_NAMESPACE)/$(MY_POD_NAME) # 先使用DownwardAPI注入到env， 在通过subPathExpr将其设置为subPath的名称. volumeMounts.subPath 属性可用于指定所引用的卷内的子路径，而不是其根路径, 这里的效果就是: 宿主机的/mnt/<pod namespace>/<pod name>被映射到了容器的/logs
+      env:
+        - name: MY_NODE_NAME # 将Pod信息注入为环境变量
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: MY_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: MY_POD_SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.serviceAccountName
+        - name: MY_CPU_REQUEST # 将容器资源信息注入为环境变量
+          valueFrom:
+            resourceFieldRef:
+              containerName: test-container
+              resource: requests.cpu
+        - name: MY_CPU_LIMIT
+          valueFrom:
+            resourceFieldRef:
+              containerName: test-container
+              resource: limits.cpu
+        - name: MY_MEM_REQUEST
+          valueFrom:
+            resourceFieldRef:
+              containerName: test-container
+              resource: requests.memory
+        - name: MY_MEM_LIMIT
+          valueFrom:
+            resourceFieldRef:
+              containerName: test-container
+              resource: limits.memory
+  volumes:
+    - name: podinfo
+      downwardAPI:
+        items:
+          - path: "cpu_limit"
+            resourceFieldRef:
+              containerName: client-container
+              resource: limits.cpu
+              divisor: 1m
+          - path: "cpu_request"
+            resourceFieldRef:
+              containerName: client-container
+              resource: requests.cpu
+              divisor: 1m
+          - path: "mem_limit"
+            resourceFieldRef:
+              containerName: client-container
+              resource: limits.memory
+              divisor: 1Mi
+          - path: "mem_request"
+            resourceFieldRef:
+              containerName: client-container
+              resource: requests.memory
+              divisor: 1Mi
+    - name: podinfo2
+      downwardAPI:
+        items:
+          - path: "labels"
+            fieldRef:
+              fieldPath: metadata.labels
+          - path: "annotations"
+            fieldRef:
+              fieldPath: metadata.annotations
+    - name: workdir1
+      hostPath:
+        path: /mnt
+  restartPolicy: Never
+```
+
+valueFrom语法是Downward API的写法.
 
 #### ServiceAccountToken
 Service Account 就是 Kubernetes 系统内置的一种"服务账户"，它是 Kubernetes 进行权限分配的对象.
@@ -1167,7 +1510,7 @@ kubectl attach POD -c CONTAINER // -c 容器名. 如果省略，则默认选择�
 
 kubectl exec在容器中执行命令:
 ```
-kubectl exec POD [-c CONTAINER] -- COMMAND [args...]
+kubectl exec POD [-c CONTAINER] -- COMMAND [args...] # `-c`可指定pod中的container
 ```
 
 
