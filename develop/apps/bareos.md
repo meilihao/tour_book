@@ -27,26 +27,86 @@ Bareos 由 bacula fork而來.
 > [bareos网络连接概览](https://docs.bareos.org/TasksAndConcepts/NetworkSetup.html#network-connections-overview)
 
 ## 编译
+参考:
+- [Configure (cmake) build settings](https://docs.bareos.org/DeveloperGuide/BuildAndTestBareos/systemtests.html)
+
 env: Ubuntu 20.04
 
 ```bash
-apt install libreadline-dev libpq-dev chrpath
+# git clone -b Release/20.0.3 --depth=1 git@github.com:bareos/bareos.git # 应使用`git clone xxx`方式获取bareos源码, 因为cmake需要从git tag/log获取信息.
+# cmake -P write_version_files.cmake
+# apt install libreadline-dev libpq-dev chrpath
 # mkdir build && cd build
 # cmake -Dpostgresql=yes -Dtraymonitor=no -Dmysql=no -Dsqlite3=no .. # make install时用, 而非deb打包时, cmake参数参考`debian/rules`
 dpkg-checkbuilddeps
 # generate changelog from [here](https://github.com/bareos/bareos/blob/15f82cd288f295f4ae13c3f27775eb2df46f2c98/.travis.yml)
 NOW=$(LANG=C date -R -u)
 BAREOS_VERSION=$(cmake -P get_version.cmake | sed -e 's/-- //')
-printf "bareos (%s) unstable; urgency=low\n\n  * See https://docs.bareos.org/release-notes/\n\n -- nobody <nobody@example.com>  %s\n\n" "${BAREOS_VERSION}" "${NOW}" | tee debian/changelog
-vim debian/rules # ~~根据上面的cmake参数定制deb打包编译bareos时需要的参数~~. 不能修改参数, 只能装全依赖, 因为deb打包时dh_install并没有根据参数(比如`-Dmysql=no`, `-Dtraymonitor=no`等)忽略相关依赖文件.
-fakeroot debian/rules binary
+printf "bareos (%s) unstable; urgency=low\n\n  * See https://docs.bareos.org/release-notes/\n\n -- nobody <nobody@example.com>  %s\n\n" "${BAREOS_VERSION}" "${NOW}" | tee debian/changelog # 或从官方deb中拷贝一份
+vim debian/rules # ~~根据上面的cmake参数定制deb打包编译bareos时需要的参数~~. 不能修改参数, 只能装全依赖, 因为deb打包时dh_install并没有根据参数(比如`-Dmysql=no -Dsqlite3=no`, `-Dtraymonitor=no`等)忽略相关依赖文件. 不禁用traymonitor会报很多错. 删除override_dh_install并未使用的libbareoscats-mysql, libbareoscats-sqlite3
+fakeroot debian/rules binary # 来自`/.travis/travis_before_script.sh`. 编译完成后在打包时会报错， 因为生成的debian/control还是包含了mysql， sqlit3和traymonitor, 同时还要去掉debian/bareos-[director|filedaemon|storage].install中的traymonitor相关项, 修改后再次执行该命令即可.
+# --- 制作apt local repo
+# mkdir bareos-apt
+# mv bareos*.deb bareos-apt
+# cd bareos-apt
+# apt-ftparchive packages . > Packages
+# vim /etc/apt/sources.list
+deb [trusted=yes] file:///root/bareos-apt/ ./ # 放在第一行， 优先使用. "[trusted=yes]"在apt 1.1开始支持
+...
+# apt-get update [--allow-insecure-repositories] # allow-insecure-repositories会忽略报错: `The repository 'file:/xxx xxx/ Release' does not have a Release file`
 ```
+
+> 使用`dpkg-scanpackages bareos-apt | gzip> bareos-apt/Packages.gz`, `apt update`时会报"File not found - /root/bareos-apt/Packages"
+
+总结: bareos debian/rules 是编译全部组件的, 禁用部分选项则需要修改相关的deb构建脚本. 
 
 仅cmake编译(非fakeroot打包编译)的缺陷:
 1. arm没有vmware插件, 因为依赖的vmware不提供arm so
 1. xxx.service 没有User/Group, 可使用root
 1. 数据库配置在`/usr/local/etc/bareos-dir.d/catalog/Mycatalog.conf`, 且默认使用sqlite3, 需改用postgres
 1. `bareos-dir -t -f -d 500 -v`发现database bareos不存在. 需手动配置db见[这里](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareos.html#other-platforms)
+
+```bash
+# --- kylin v10
+# dnf install kylin-lsb kylin-release # 其他依赖rpmbuild时根据提示安装
+# rpmdev-setuptree
+# cd ~/rpmbuild
+# cp bareos-Release-20.0.3.tar.gz SOURCES/bareos-20.0.3.tar.gz
+# cp bareos-Release-20.0.3/core/platforms/packaging/bareos.spec SPECS/bareos.spec # 或使用官方[src.rpm里的spec](https://download.bareos.org/bareos/release/20/CentOS_7/src/).
+# --- set bareos compile platform, 见[core/platforms](https://github.com/bareos/bareos/tree/master/core/platforms), 这里应该参照centos把platform指定为redhat
+# vim SOURCES/bareos-20.0.3.tar.gz
+# 修改:
+#     - core/cmake/distname.sh: CentOS) -> CentOS|Kylin)
+#     - core/cmake/BareosGetDistInfo.cmake: COMMAND ${CMAKE_CURRENT_LIST_DIR}/distname.sh -> COMMAND bash ${CMAKE_CURRENT_LIST_DIR}/distname.sh # 因为vim编辑distname.sh后丢失可执行权限
+# vim SPECS/bareos.spec
+# 修正: Version: 20.0.3; Release: 3%{?dist}; user/group: bareos-> root
+#      build_qt_monitor 0, build_sqlite3 0; build_mysql 0; systemd_support 1; droplet 0 (kylin没有droplet, 但bareos repo包含了libdroplet的源码)
+#      redhat-lsb->kylin-lsb; lsb-release->kylin-release
+#      按照官方bareos.spec 修正changelog
+# cd SPECS && rpmbuild -bb bareos.spec # [rpmbuild报error: `Installed (but unpackaged) file(s)`, 因为glusterfs没启用但还是编译出了相关文件](/shell/tools/packages.md)
+# --- 编译python-bareos
+# cd ../BUILD/bareos
+# mv python-bareos python-bareos-20.0.3
+# cp python-bareos-20.0.3/packaging/python-bareos.spec ../../SPECS
+# tar -czf python-bareos-20.0.3.tar.gz python-bareos-20.0.3
+# cp python-bareos-20.0.3.tar.gz ../../SOURCES
+# cd ../..
+# vim SPECS/python-bareos.spec
+# 修正：Version:        20.0.3; Release:        3%{?dist}
+#      按照官方bareos.spec 修正changelog
+# cd SPECS && rpmbuild -bb python-bareos.spec
+# --- 制作本地dnf repo
+# cat /etc/yum.repos.d/local.repo 
+[local-media]
+name=Kylinv10 - bareos
+baseurl=file:///root/rpmbuild/RPMS/aarch64/
+gpgcheck=0
+enabled=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-kylin
+# createrepo /root/rpmbuild/RPMS/aarch64
+# yum clean all
+# yum makecache # 会报`cannot download repodata/repomd.xml`， 因此不能省略createrepo的步骤.
+```
 
 ## 概念
 - volume : Bareos将在其上写入备份数据的单个物理磁带（或可能是单个文件）
@@ -74,7 +134,7 @@ psql -h localhost -p 5432 -U postgres -W # 测试密码登录
 systemctl restart postgresql
 
 # -- [官方安装文档](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareos.html#section-installbareospackages)
-apt install bareos bareos-database-postgresql # 输入db密码. bareos-database-postgresql会利用dbconfig-common mechanism, 在apt install过程中配置db, db配置在`/etc/dbconfig-common/bareos-database-common.conf`. 可用`dpkg-reconfigure bareos-database-common`重新配置, 手动配置db见[这里](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareos.html#other-platforms)
+apt install bareos bareos-database-postgresql # 输入db密码. bareos-database-postgresql会利用dbconfig-common mechanism, 在apt install过程中配置db, db配置在`/etc/dbconfig-common/bareos-database-common.conf`. 可用`dpkg-reconfigure bareos-database-common`重新配置, 手动配置db见[这里](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareos.html#other-platforms), 它是先配置bareos db conf(dbname=bareos, dbuser=bareos, password=password)让用户输入postgres的管理员信息进行授权变更.
 
 systemctl restart bareos-dir # db config in /etc/bareos/bareos-dir.d/catalog/MyCatalog.conf
 systemctl restart bareos-sd
@@ -1148,7 +1208,7 @@ dir, sd, fd均无报错.
 查看`bareos-dir.d/console/admin.conf`发现它使用了`bareos-dir.d/profile/web-admin.conf`, 而web-admin.conf的acl中禁用了configure.
 
 解决方法:
-更新web-admin.conf的acl, 取消禁用configure.
+更新web-admin.conf的acl, 取消禁用configure. 需要重启bareos-dir.service(bconsole的reload命令无效).
 
 ### job‘s jobstatus
 定义在`/usr/share/bareos-webui/public/js/bootstrap-table-formatter.js`, 对应的翻译在`/usr/share/bareos-webui/module/Application/language/cn_CN.po`.

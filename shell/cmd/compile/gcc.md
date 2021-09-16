@@ -137,3 +137,6 @@ FAIL: gcc.c-torture/execute/builtins/fprintf.c execution,  -O0
 1. 将上面发现命令中的`-o priv/icu_driver/couch_icu_driver.o`替换为`-E -o t.i`, 搜索t.i发现从`/usr/local/include/unicode/ucol.h`引入了`ucol_strcollIter_52`, 应该是之前libicu52的残留, 删除`/usr/local/include/unicode`目录, 最后重新编译即可.
 
 > `/usr/local/include/unicode/ucol.h`本身定义的`ucol_strcollIter`没有`_52`后缀, 应该是gcc编译时根据`.h`做了处理, 推测是`.h`中的`# U_ICU_VERSION_SUFFIX _52`+宏展开的原因
+
+### unrecognized command line option '-fmacro-prefix-map=.'
+gcc 8才开始支持'-fmacro-prefix-map'

@@ -129,3 +129,10 @@ sudo aptitude purge ~c # purge them
 
 ### apt `Couldn't find any package by glob 'qemu'`
 `apt remove qemu*` 改为 `apt remove "qemu*"`
+
+### `debian/rules`中的`dh --list`没有输出`systemd`
+根据[dh源码](https://github.com/Debian/debhelper/blob/master/dh)结合locate查找"*.pm", 发现`dh --list`输出的是`/usr/share/perl5/Debian/Debhelper/Sequence`里的文件.
+
+根据`dpkg -S /usr/share/perl5/Debian/Debhelper/Sequence/systemd.pm`, `systemd.pm`属于`debhelper/dh-systemd`.
+
+> 高版本debhelper已包含`systemd.pm`. 低版本包含在`dh-systemd`.

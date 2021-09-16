@@ -90,6 +90,9 @@ $ python3 main.py
 ### 其他
 ```sh
 $ pip --version
+$ pip config list -v # 查看正在使用的pip conf. ubuntu 16.04的pip没有config子命令.
+$ pip config set global.index-url https://mirrors.aliyun.com/pypi/simple # 推荐, 避免存在多份pip conf导致有效配置被覆盖
+$ pip config set global.trusted-host "mirrors.aliyun.com"
 $ python -m pip -V # 检查是否安装pip成功
 $ mkdir -p ~/.pip
 $ vim ~/.pip/pip.conf # [为pip换源](https://blog.csdn.net/xuezhangjun0121/article/details/81664260), 会用到sudo时建议添加到`/etc/pip.conf`
@@ -102,6 +105,9 @@ index-url = https://mirrors.aliyun.com/pypi/simple
 $ python -m site # pip 软件包的安装位置
 $ sudo vim /usr/lib/python[2.7|3.8]/site.py # 这里也支持修改 USER_SITE, USER_BASE 
 ENABLE_USER_SITE = False # 将该值设置为 False 即可, 顺便可到`/home/${USER}/.local/lib`下清理已下载的package
+$ pip install -r requirements.txt
+$ pip freeze > requirements.txt
+$ pip install pip-20.x.tar.gz # 升级pip
 ```
 
 > pip配置查找: `python -m  pip config list -v`
@@ -1998,5 +2004,5 @@ python setup.py install
 
 或`export PYTHONPATH="$PYTHONPATH:xxx"`
 
-
-
+#### `pip3 install -r uvicorn`时报与urllib3相关的`temporary failure in name resolution`
+无法访问到pip源即dns故障, 检查是否配置了`~/.pip/pip.conf`

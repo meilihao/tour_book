@@ -160,3 +160,10 @@ rehat开发的包管理软件, 已被dnf取代.
 可以通过 --define "_build_id_links none" 参数取消文件的生成.
 
 增加 build-id 的目的是为了可快速找到正确的二进制文件以及 Debuginfo.
+
+### dnf install httpd报"nothing provides httpd-mmn"
+```bash
+# dnf download httpd
+# dnf download httpd-devel
+# dnf install httpd-*.rpm 
+```
