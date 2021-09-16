@@ -1,4 +1,6 @@
 # 常用命令
+- `su postgres -c psql`
+- `sudo -u postgres psql`
 - `psql -h 127.0.0.1 -p 5432 -U user -d dbname` : 连接数据库
 - `\encoding [编码名称]` : 显示或设定用户端编码
 - `\q` : 退出 psql

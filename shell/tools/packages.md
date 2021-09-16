@@ -95,8 +95,8 @@ deb-src http://pl.archive.ubuntu.com/ubuntu/ natty main restricted
 
 ### rpmbuild error: `installed (but unpackaged) file(s) found`
 解决方法有2:
-1. 在/usr/lib/rpm/macros文件中有一个定义:%_unpackaged_files_terminate_build 1，把1改为0只警告, **推荐**
-1. 找到 /usr/lib/rpm/macros 中 %__check_files  /usr/lib/rpm/check-files %{buildroot}   注释掉
+1. 在/usr/lib/rpm/macros文件中有一个定义:`%_unpackaged_files_terminate_build 1`，把1改为0只警告, **推荐**
+1. 找到 /usr/lib/rpm/macros 中`%__check_files  /usr/lib/rpm/check-files %{buildroot}`注释掉
 
 ## desktop
 ### UbuntuDDE

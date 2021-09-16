@@ -124,17 +124,17 @@ wget -O /etc/apt/sources.list.d/bareos.list http://download.bareos.org/bareos/re
 # -- install
 sudo apt install postgresql-12 postgresql-client-12 pgadmin4
 
-vim ${pg}/pg_hba.conf
-local bareos bareos md5 # bareos默认使用本地pg, 因此添加该匹配规则
+vim ${pg}/pg_hba.conf # kylinv10在/var/lib/pgsql/data/pg_hba.conf， 且kylin环境需要将原有两条`host all ... ident`的ident替换为md5, 否则下面的psql测试密码登入将无法登入
+local bareos bareos md5 # 插在最前面. bareos默认使用本地pg, 因此添加该匹配规则
 
 sudo -u postgres psql # 进入psql
 > alter user postgres with password 'postgres'; # 为postgres创建密码
-psql -h localhost -p 5432 -U postgres -W # 测试密码登录
+psql -h localhost -p 5432 -U postgres -W # 测试密码登入
 
 systemctl restart postgresql
 
 # -- [官方安装文档](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareos.html#section-installbareospackages)
-apt install bareos bareos-database-postgresql # 输入db密码. bareos-database-postgresql会利用dbconfig-common mechanism, 在apt install过程中配置db, db配置在`/etc/dbconfig-common/bareos-database-common.conf`. 可用`dpkg-reconfigure bareos-database-common`重新配置, 手动配置db见[这里](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareos.html#other-platforms), 它是先配置bareos db conf(dbname=bareos, dbuser=bareos, password=password)让用户输入postgres的管理员信息进行授权变更.
+apt install bareos bareos-database-postgresql # 输入db密码. bareos-database-postgresql会利用dbconfig-common mechanism, 在apt install过程中配置db, db配置在`/etc/dbconfig-common/bareos-database-common.conf`. 可用`dpkg-reconfigure bareos-database-common`重新配置, 手动配置db见[这里](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareos.html#other-platforms), 它是先配置bareos db conf(dbname=bareos, dbuser=bareos, password=password)让用户输入postgres的管理员信息进行授权变更. kylin环境是参照官方文档调用scripts初始化db后, 再自行修改bareos密码来确定其password.
 
 systemctl restart bareos-dir # db config in /etc/bareos/bareos-dir.d/catalog/MyCatalog.conf
 systemctl restart bareos-sd
