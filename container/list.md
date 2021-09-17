@@ -17,6 +17,7 @@
 - [docker 容器基础技术：linux cgroup 简介](https://cizixs.com/2017/08/25/linux-cgroup/)
 - [Nydus: Dragonfly 的容器镜像服务](https://kernel.taobao.org/2020/11/nydus/)
 - [为什么 Kubernetes 选择了 ETCD？](https://www.mgasch.com/2021/01/listwatch-part-1/)
+- [容器的四大基础技术](https://linux.cn/article-13792-1.html)
 
 ## net
 - [Life of a Packet in Cilium：实地探索 Pod-to-Service 转发路径及 BPF 处理逻辑, **他的其他博文也很好**](https://arthurchiao.art/blog/cilium-life-of-a-packet-pod-to-service-zh/)
