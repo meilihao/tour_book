@@ -136,6 +136,17 @@ $ pip install --target /usr/lib/python3.7/dist-packages netifaces # 指定pip安
 
 > 可使用`apt-file search "sdl-config"`查找pygame的依赖
 
+python3.8源码安装:
+```bash
+# ./configure --enable-optimizations
+# make
+# make install
+# ln -s /usr/local/bin/python3.8 /usr/bin/python3
+# ln -s /usr/local/bin/pip3.8 /usr/bin/pip3
+# python3 -V
+# pip3 # 会报`subprocess.CalledProcessError: Command '('lsb_release', '-a')' returned non-zero exit status 1`, `mv /usr/bin/lsb_release /usr/bin/lsb_release.bak`可解决但会丢失lsb_release命令. 原因: python路径下缺少 'lsb_release.py' 模块, 最佳解决方法: 1. 查找到lsb_release模块所在的目录: `find / -name 'lsb_release.py'`; 2. 将其复制到设置python3.8的系统模块加载位置，也就是报错处subprocess.py所在的目录`cp  /usr/lib/python3/dist-packages/lsb_release.py /usr/local/lib/python3.8/`
+```
+
 ### idle
 - `>>>`为提示符
 - 连续两个回车表示结束.

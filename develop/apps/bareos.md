@@ -82,6 +82,7 @@ deb [trusted=yes] file:///root/bareos-apt/ ./ # 放在第一行， 优先使用.
 # 修正: Version: 20.0.3; Release: 3%{?dist}; user/group: bareos-> root
 #      build_qt_monitor 0, build_sqlite3 0; build_mysql 0; systemd_support 1; droplet 0 (kylin没有droplet, 但bareos repo包含了libdroplet的源码)
 #      redhat-lsb->kylin-lsb; lsb-release->kylin-release
+#      Requires: php-zip -> Requires: php-common; Requires: libzip # kylin repo没有php-zip， 参考centos7/8, 它由php-common+libzip替代
 #      按照官方bareos.spec 修正changelog
 # cd SPECS && rpmbuild -bb bareos.spec # [rpmbuild报error: `Installed (but unpackaged) file(s)`, 因为glusterfs没启用但还是编译出了相关文件](/shell/tools/packages.md)
 # --- 编译python-bareos

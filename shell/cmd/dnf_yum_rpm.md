@@ -36,6 +36,7 @@ DNF配置文件的位置:
 # dnf autoremove # 去除不要的孤立(不再被其他包依赖)依赖包
 # dnf provides /bin/bash # 查找某一文件的提供者
 # dnf whatprovides "/usr/bin/qemu-kvm" # 查找某一文件的提供者
+# dnf whatprovides libmysqlclient* # 查找某一包的提供者
 # dnf install /path/to/file.rpm
 # dnf install https://xyz.com/file.rpm
 
@@ -140,6 +141,7 @@ rehat开发的包管理软件, 已被dnf取代.
 # yum groupinstall # 软件包组 安装指定的软件包组
 # yum groupremove # 软件包组 移除指定的软件包组
 # yum groupinfo # 软件包组 查询指定的软件包组信息
+# yum whatprovides libmysqlclient* # 查找某一包的提供者
 ```
 
 ## FAQ
