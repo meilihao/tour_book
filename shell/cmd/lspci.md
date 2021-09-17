@@ -28,12 +28,13 @@ $ sudo lspci -nn -d 10de: # 所有 Nvidia 设备
 ## FAQ
 ### 查找pci controller的驱动
 ```bash
+# --- 直接通过lspci查找
+$ lspci -nk/lspci -v
+# --- 根据总线号查找
 $ sudo lspci
 ...
 02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 01)
 $ find /sys | grep drivers.*02:00
 /sys/bus/pci/drivers/r8169/0000:02:00.0
 $ lspci -vvv -s 87:00.0
-# # --- 直接通过lspci查找
-$ lspci -nk/lspci -v
 ```
