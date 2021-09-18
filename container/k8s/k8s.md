@@ -614,6 +614,9 @@ containers:
 
 PodPreset（Pod 预设置 form v1.11): PodPreset 里定义的内容，只会在 Pod 被创建之前追加在这个对象本身上, 不推荐, 使用yaml模板更直观.
 
+#### pod调度
+在k8s上， 很少直接使用pod, 通常是通过Deployment, DaemonSet, Job等控制器完成对pod的创建, 调度和生命周期的自动化管理.
+
 ### service
 定义了外界访问一组特定pod的方法. 它提供了一套简化的服务代理和发现机制，天然适应微服务架构. 其特征有:
 1. 拥有唯一名称

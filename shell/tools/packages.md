@@ -16,6 +16,7 @@
 - [apt source包打包](https://www.debian.org/doc/manuals/apt-howto/ch-sourcehandling.zh-cn.html)
 - [Debian 新维护者手册](https://www.debian.org/doc/manuals/maint-guide/)
 - [RPM打包流程、示例及常见问题](https://bbs.huaweicloud.com/forum/thread-38327-1-1.html)
+- [RPM 包的构建 - SPEC 基础知识](https://www.cnblogs.com/michael-xiang/p/10480809.html)
 - [RPM 包的构建 - 实例](https://www.cnblogs.com/michael-xiang/p/10500704.html)
 
 ###　构建源
@@ -42,7 +43,7 @@
 
 ```bash
 # yum install -y rpm-build rpmdevtools
-# rpmdev-setuptree # 构建rpm build环境, 默认在 $HOME 目录下多了一个叫做 rpmbuild的目录
+# rpmdev-setuptree # 构建rpm build环境, 默认在 $HOME 目录下多了一个叫做 rpmbuild的目录. rpmbuild默认路径是由在/usr/lib/rpm/macros里的宏变量`%_topdir`来定义. `echo '%_topdir %(echo $HOME)/rpmbuild' > ~/.rpmmacros`可更改该路径.
 # cp ~/rpmbuild/
 # rpmdev-newspec -o SPECS/xxx.spec 生成SPEC 文件的模板
 # cd SPECS
@@ -78,6 +79,17 @@ rpmbuild 的选项:
 - --target 指定生成 rpm 包的平台，默认会生成 i686 和 x86_64 的 rpm 包，但一般我只需要 x86_64 的 rpm 包
 
 可以先rpmbuild -bp ,再-bc 再-bi 如果没问题，rpmbuild -ba 生成src包与二进制包.
+
+#### spec
+```bash
+rpmdev-newspec -o name.spec
+```
+
+spec:
+```conf
+%setup -q                                    # 解压源码并切换到目录
+%setup -c -n bareos                          # 解压源码到bareos目录
+```
 
 ## FAQ
 ### 通过deb-src构建deb
