@@ -108,6 +108,7 @@ ENABLE_USER_SITE = False # 将该值设置为 False 即可, 顺便可到`/home/$
 $ pip install -r requirements.txt
 $ pip freeze > requirements.txt
 $ pip install pip-20.x.tar.gz # 升级pip
+$ pip install setuptools== # 查询支持的软件版本
 ```
 
 > pip配置查找: `python -m  pip config list -v`
@@ -2017,3 +2018,6 @@ python setup.py install
 
 #### `pip3 install -r uvicorn`时报与urllib3相关的`temporary failure in name resolution`
 无法访问到pip源即dns故障, 检查是否配置了`~/.pip/pip.conf`
+
+### 安装setuptools-50.2.0.tar.gz`(python3 setup.py install )`报"RuntimeError: cannot build setuptools without metadata. Run `bootstrap.py`"
+使用`pip3 install setuptools==50.2.0`

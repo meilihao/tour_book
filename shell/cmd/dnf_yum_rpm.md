@@ -120,7 +120,10 @@ DNF配置文件的位置:
 # rpm -Uvh filename.rpm # 升级软件
 # rpm -e filename.rpm # 卸载软件
 # rpm -i --nodeps xxx.rpm # `--nodeps`安装时不检查依赖
+# rpm --reinstall xxx.rpm # 重复安装 from rpm v4.12.0
 # rpm -q --provides openssl-libs | grep libcrypto.so.10 # 查看openssl-libs中的libcrypto.so.10版本
+# rpm -qp --scripts ./packagecloud-test-1.1-1.x86_64.rpm # 查看preinstall 和 postinstall scripts
+# rpm -q --scripts <pkg> # 查看已安装的pkg的rpm scripts
 ```
 
 # yum
@@ -142,6 +145,100 @@ rehat开发的包管理软件, 已被dnf取代.
 # yum groupremove # 软件包组 移除指定的软件包组
 # yum groupinfo # 软件包组 查询指定的软件包组信息
 # yum whatprovides libmysqlclient* # 查找某一包的提供者
+```
+
+# rpmlint
+检查rpm spec 的信息，给予提示以及改进，同时也支持对于rpm 文件处理. 比如rpmlint 会在将 ELF 以外的文件保存至 /usr/lib 目录时返回警告.
+
+```bash
+yum install -y rpmlint
+rpmlint SPECS/rong.spec
+rpmlint RPMS/x86_64/dalong-demo-1-1.x86_64.rpm
+```
+
+## rpmbuild
+参考:
+- [RPM打包原理、示例、详解及备查](https://cloud.tencent.com/developer/article/1444873)
+- [RPM包制作之rpmbuild命令说明](http://www.someapp.cn/article/3.mhtml)
+- [How RPM packages are made: the source RPM](https://fedoramagazine.org/how-rpm-packages-are-made-the-source-rpm/)
+- [重建一个源代码 RPM](https://wiki.centos.org/zh/HowTos/RebuildSRPM)
+- [RPM打包流程、示例及常见问题](https://bbs.huaweicloud.com/forum/thread-38327-1-1.html)
+- [RPM 包的构建 - SPEC 基础知识](https://www.cnblogs.com/michael-xiang/p/10480809.html)
+- [RPM 包的构建 - 实例](https://www.cnblogs.com/michael-xiang/p/10500704.html)
+- [How to create an RPM package/zh-cn](https://fedoraproject.org/wiki/How_to_create_an_RPM_package/zh-cn)
+
+```bash
+# yum install -y rpm-build rpmdevtools
+# rpmdev-setuptree # 构建rpm build环境, 默认在 $HOME 目录下多了一个叫做 rpmbuild的目录. rpmbuild默认路径是由在/usr/lib/rpm/macros里的宏变量`%_topdir`来定义. `echo '%_topdir %(echo $HOME)/rpmbuild' > ~/.rpmmacros`可更改该路径.
+# cp ~/rpmbuild/
+# rpmdev-newspec -o SPECS/xxx.spec 生成SPEC 文件的模板
+# cd SPECS
+# rpmbuild -bb xxx.spec # 开始构建, 也可使用`rpmbuild -bb xxx.spec --buildroot="xxx" --define "_topdir xxx" --define "centos_version 700"`, 指定define参数: _topdir指定编译的根目录. 指定buildroot原因: 默认的buildroot是BUILDROOT下的子目录, 该目录的文件名包含该os的特定信息.
+```
+
+有些项目的xxx.spec不包含编译步骤, 它们是通过组合自编译 + xxx.spec(仅打包, 通过将需要的文件追加到`%files`来指定打包需要的文件)来实现的.
+
+rpmdev-setuptree生成的文件说明:
+|默认位置|宏代码|名称|用途|
+|~/rpmbuild/SPECS|%_specdir|Spec 文件目录|保存 RPM 包配置（.spec）文件|
+|~/rpmbuild/SOURCES|%_sourcedir|源代码目录|保存源码包（如 .tar 包）和所有 patch 补丁|
+|~/rpmbuild/BUILD|%_builddir|构建目录|源码包被解压至此，并在该目录的子目录完成编译|
+|~/rpmbuild/BUILDROOT|%_buildrootdir|最终安装目录|保存 %install 阶段安装的文件|
+|~/rpmbuild/RPMS|%_rpmdir|标准 RPM 包目录|生成/保存二进制 RPM 包|
+|~/rpmbuild/SRPMS|%_srcrpmdir|源代码 RPM 包目录|生成/保存源码 RPM 包(SRPM)|
+
+配置在SPEC文件中的，具体来说各个阶段：
+|阶段|读取的目录|写入的目录|具体动作|
+|%prep|%_sourcedir|%_builddir|读取位于 %_sourcedir 目录的源代码和 patch. 之后，解压源代码至 %_builddir 的子目录并应用所有 patch.|
+|%build|%_builddir|%_builddir|编译位于 %_builddir 构建目录下的文件。通过执行类似 ./configure && make 的命令实现。|
+|%install|%_builddir|%_buildrootdir|读取位于 %_builddir 构建目录下的文件并将其安装至 %_buildrootdir 目录。这些文件就是用户安装 RPM 后，最终得到的文件。注意一个奇怪的地方: 最终安装目录 不是 构建目录。通过执行类似 make install 的命令实现。|
+|%check|%_builddir|%_builddir|检查软件是否正常运行。通过执行类似 make test 的命令实现。很多软件包都不需要此步。|
+|bin|%_buildrootdir|%_rpmdir|读取位于 %_buildrootdir 最终安装目录下的文件，以便最终在 %_rpmdir 目录下创建 RPM 包。在该目录下，不同架构的 RPM 包会分别保存至不同子目录， noarch 目录保存适用于所有架构的 RPM 包。这些 RPM 文件就是用户最终安装的 RPM 包。|
+|src|%_sourcedir|%_srcrpmdir|创建源码 RPM 包（简称 SRPM，以.src.rpm 作为后缀名），并保存至 %_srcrpmdir 目录。SRPM 包通常用于审核和升级软件包。|
+
+> 特别需要注意的是：%install 部分使用的是绝对路径，而 %file 部分使用则是相对路径.
+
+rpmbuild 的选项:
+- -bp 只解压源码及应用补丁, 执行到pre
+- -bc 只进行编译, 执行到 build段
+- -bi 只进行安装到%{buildroot}, 执行install段
+- -bb 只生成二进制 rpm 包
+- -bs 只生成源码 rpm 包
+- -ba 生成二进制 rpm 包和源码 rpm 包
+- -bl 检测有文件没包含
+- --target 指定生成 rpm 包的平台，默认会生成 i686 和 x86_64 的 rpm 包，但一般我只需要 x86_64 的 rpm 包
+- --buildroot ： 替换%buildroot值
+
+可以先rpmbuild -bp ,再-bc 再-bi 如果没问题，rpmbuild -ba 生成src包与二进制包.
+
+#### spec
+```bash
+rpmdev-newspec -o name.spec
+```
+
+spec:
+```conf
+Version: xxx # 不能包含`-`
+%prep
+%setup -q                                    # 解压源码并切换到目录
+%setup -c -n bareos                          # 解压源码到bareos目录
+```
+
+scripts section:
+- %pre 安装前执行的脚本
+- %post 安装后执行的脚本
+- %preun 卸载前执行的脚本
+- %postun 卸载后执行的脚本
+- %pretrans 在事务开始时执行脚本
+- %posttrans 在事务结束时执行脚本
+
+```
+%files
+%defattr (-,root,root,0755)                         ← 设定默认权限
+%config(noreplace) /etc/my.cnf                      ← 表明是配置文件，noplace表示替换文件
+%doc %{src_dir}/Docs/ChangeLog                      ← 表明这个是文档
+%attr(644, root, root) %{_mandir}/man8/mysqld.8*    ← 分别是权限，属主，属组
+%attr(755, root, root) %{_sbindir}/mysqld
 ```
 
 ## FAQ
@@ -167,5 +264,10 @@ rehat开发的包管理软件, 已被dnf取代.
 ```bash
 # dnf download httpd
 # dnf download httpd-devel
-# dnf install httpd-*.rpm 
+# dnf install httpd-*.rpm
 ```
+
+### rpmbuild error: `installed (but unpackaged) file(s) found`
+解决方法有2:
+1. 在/usr/lib/rpm/macros文件中有一个定义:`%_unpackaged_files_terminate_build 1`，把1改为0只警告, **推荐**
+1. 找到 /usr/lib/rpm/macros 中`%__check_files  /usr/lib/rpm/check-files %{buildroot}`注释掉

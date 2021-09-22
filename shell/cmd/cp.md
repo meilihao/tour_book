@@ -21,4 +21,5 @@
 $cp -r source_dir  dest_dir # 复制目录
 $ sudo cp -rpv /nvim-linux64/*  / # 复制安装nvim, 有问题:`无法以目录'./nvim-linux64/bin' 来覆盖非目录'/bin'`, 可先处理`./nvim-linux64/bin/nvim`, 再用cp复制剩余内容.
 $ sudo cp -r usr/* /usr # 同上, 实现绿色安装软件
+$ cp –r test/ newtest  # 将当前目录 test/ 下的所有文件复制到新目录 newtest 
 ```

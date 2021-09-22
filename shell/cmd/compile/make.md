@@ -246,6 +246,15 @@ else
 endif
 ```
 
+### [使用环境变量](https://stackoverflow.com/questions/4728810/how-to-ensure-makefile-variable-is-set-as-a-prerequisite)
+```makefile
+check-env:
+    if test "$(ENV)" = "" ; then \
+        echo "ENV not set"; \ # 分号不能丢
+        exit 1; \
+    fi
+```
+
 ## cmake
 参考:
 - [抛弃 Autotools 向 CMake 迈进吧](https://linux.cn/article-13419-1.html)

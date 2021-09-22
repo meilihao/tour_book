@@ -84,6 +84,23 @@ $ ll build/
 $ dpkg-scanpackages . | gzip -9c > Packages.gz #  制作本地软件源
 ```
 
+## dpkg-buildpackage
+选项:
+- -nc : doesn't call the clean target, 因此无需重新编译(但可能还是需要编译少量内容)
+- -uc : don't sign the changes file
+- -us : unsigned source package
+
+## deb debug package
+打deb包时, 通过将可执行文件的符号表通过剥离成独立的 dbg 包, 称为 debug package. 正常情况下 -dbg.deb 不会安装.
+
+新版本（debhelper/9.20151219 or newer in Debian）的 debhelper 已经把 -dbg.deb 改为 -dbgsym.deb，详情请见[DebugPackage](https://wiki.debian.org/DebugPackage).
+
+## 打包
+- [BuildingTutorial](https://wiki.debian.org/BuildingTutorial#Building_the_modified_package)
+- [Easy way to create a Debian package and local package repository](https://linuxconfig.org/easy-way-to-create-a-debian-package-and-local-package-repository)
+- [apt source包打包](https://www.debian.org/doc/manuals/apt-howto/ch-sourcehandling.zh-cn.html)
+- [Debian 新维护者手册](https://www.debian.org/doc/manuals/maint-guide/)
+
 ## snap
 
 ## FAQ
@@ -136,3 +153,16 @@ sudo aptitude purge ~c # purge them
 根据`dpkg -S /usr/share/perl5/Debian/Debhelper/Sequence/systemd.pm`, `systemd.pm`属于`debhelper/dh-systemd`.
 
 > 高版本debhelper已包含`systemd.pm`. 低版本包含在`dh-systemd`.
+
+### 通过deb-src构建deb
+```bash
+# vim /etc/apt/source.list # 添加deb-src源
+deb-src http://pl.archive.ubuntu.com/ubuntu/ natty main restricted
+# apt update
+# apt build-dep ccache # 安装构建ccache所需的依赖
+# apt-get -b source ccache # 获取ccache源码并构建
+# dpkg -i ccache*.deb
+```
+
+### dpkg-buildpackage报Warning "Compatibility levels before 9 are deprecated"
+将项目`debian/compat`中的数字改为9即可
