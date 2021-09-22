@@ -198,6 +198,16 @@ rpmdev-setuptree生成的文件说明:
 
 > 特别需要注意的是：%install 部分使用的是绝对路径，而 %file 部分使用则是相对路径.
 
+在 rpmbuild 中，对上表中的每个宏代码都有对应的目录：
+
+|宏代码|名称|默认位置|用途|
+|%_specdir|	Spec 文件目录|	~/rpmbuild/SPECS|	保存 RPM 包配置（.spec）文件|
+|%_sourcedir|	源代码目录	|~/rpmbuild/SOURCES|	保存源码包（如 .tar 包）和所有 patch 补丁|
+|%_builddir|构建目录|~/rpmbuild/BUILD|源码包被解压至此，并在该目录的子目录完成编译|
+|%_buildrootdir|最终安装目录|~/rpmbuild/BUILDROOT|保存 %install 阶段安装的文件|
+|%_rpmdir|标准 RPM 包目录|~/rpmbuild/RPMS|生成/保存二进制 RPM 包|
+|%_srcrpmdir|源代码 RPM 包目录|~/rpmbuild/SRPMS|生成/保存源码 RPM 包(SRPM)|
+
 rpmbuild 的选项:
 - -bp 只解压源码及应用补丁, 执行到pre
 - -bc 只进行编译, 执行到 build段
