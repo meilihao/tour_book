@@ -7,7 +7,8 @@
 1. 浏览器配置
 
     1. SwitchyOmega
-    1. OneTab
+    1. better-onetab/OneTab
+    1. Bookmarks clean up
 1. postman
 1. wechat
 1. git

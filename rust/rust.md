@@ -1563,9 +1563,15 @@ Rust使用move关键字来强制让闭包所定义环境中的自由变量转移
 
 > iter 方法生成一个不可变引用的迭代器. 如果需要一个获取所有权并返回拥有所有权的迭代器，则可以调用 into_iter. 类似的, 如果希望迭代可变引用，则可以调用 iter_mut.
 
-这些调用 next 方法的方法被称为 消费适配器（consuming adaptors），因为调用他们会消耗迭代器.
+这些调用 next 方法的方法被称为 消费适配器（consuming adaptors），因为调用它们会消费迭代器.
 
-Iterator trait 中定义了另一类方法，被称为 迭代器适配器（iterator adaptors），允许开发者将当前迭代器变为不同类型的迭代器, 可以链式调用多个迭代器适配器。不过因为所有的迭代器都是惰性的，必须调用一个消费适配器方法以便获取迭代器适配器调用的结果.
+Iterator trait 中定义了另一类方法，被称为 迭代器适配器（iterator adaptors），允许开发者将当前迭代器变为不同类型的迭代器, 可以链式调用多个迭代器适配器. 不过因为所有的迭代器都是惰性的，必须调用一个消费适配器方法以便获取迭代器适配器调用的结果.
+
+```rust
+let v1: Vec<i32> = vec![1, 2, 3];
+// v1.iter().map(|x| x + 1); // 指定的闭包从未被调用过: 因为迭代器适配器是惰性的必须有消费
+let v2: Vec<_> = v1.iter().map(|x| x + 1).collect(); // 调用 collect 方法消费新迭代器
+```
 
 Rust 的 for 循环可以用于任何实现了  IntoIterator trait 的数据结构.
 
@@ -1583,6 +1589,8 @@ Rust中使用了trait来抽象迭代器模式. Iterator trait是Rust中对迭代
 Iter类型迭代器，next方法返回的是Option<&[T]>或Option<&mut [T]>类型的值. for循环会自动调用迭代器的next方法. for循环中的循环变量(是引用)则是通过模式匹配，从next返回的Option<&[T]>或Option<&mut [T]>类型中获取&[T]或&mut [T]类型的值.
 
 IntoIter类型的迭代器的next方法返回的是Option<T>类型，在for循环中产生的循环变量是值，而不是引用.
+
+> 迭代器可能比循环快的原因: 它“展开”（unroll）了循环. 展开是一种移除循环控制代码的开销并替换为每个迭代中的重复代码的优化.
 
 ### IntoIterator trait
 如果想要迭代某个集合容器中的元素，必须将其转换为迭代器才可以使用.

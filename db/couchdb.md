@@ -659,3 +659,6 @@ emit([deleted],doc);
 ### db清理
 参考:
 - [`POST /{db}/_compact`](https://docs.couchdb.org/en/main/api/database/compact.html)
+- [Compaction](https://docs.couchdb.org/en/main/maintenance/compaction.html)
+
+> 清理操作也需要空间: 它是先生成新文件再删除旧文件的操作.

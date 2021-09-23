@@ -29,6 +29,7 @@ DNF配置文件的位置:
 # dnf install httpd # 安装包
 # dnf reinstall httpd # 重装包
 # dnf download httpd # 下载包, 但不安装
+# dnf download --source httpd # 下载src.rpm
 # dnf info httpd # 查看包的详细信息
 # dnf remove httpd # 卸载http包
 # dnf remove --duplicates # 删除重复软件包的旧版本
@@ -115,8 +116,10 @@ DNF配置文件的位置:
 # rpm -qpR rpm包 # 查看软件包的依赖关系
 
 # --- 其他
+# rpm2cpio xxx.rpm | cpio -div # `apt install rpm2cpio`, rpm解压
 # rpm -q --whatprovides /etc/pki/CA # 查找文件的提供者
 # rpm -ivh filename.rpm # 安装软件
+# rpm -ivh 源码包名*.src.rpm # 安装至 ~/rpmbuild 目录
 # rpm -Uvh filename.rpm # 升级软件
 # rpm -e filename.rpm # 卸载软件
 # rpm -i --nodeps xxx.rpm # `--nodeps`安装时不检查依赖
@@ -252,10 +255,6 @@ scripts section:
 ```
 
 ## FAQ
-### Ubuntu 如何解压 rpm 文件
-```
-# rpm2cpio xxx.rpm | cpio -div # `apt install rpm2cpio`
-```
 
 ### 从rpm提前spec
 `rpmrebuild -e -p --notest-install rsyslog-8.39.0-4.el7.x86_64.rpm`
