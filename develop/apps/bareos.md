@@ -135,9 +135,10 @@ psql -h localhost -p 5432 -U postgres -W # 测试密码登入
 systemctl restart postgresql
 
 # -- [官方安装文档](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareos.html#section-installbareospackages)
-apt install bareos bareos-database-postgresql # 输入db密码. bareos-database-postgresql会利用dbconfig-common mechanism, 在apt install过程中配置db, db配置在`/etc/dbconfig-common/bareos-database-common.conf`. 可用`dpkg-reconfigure bareos-database-common`重新配置, 手动配置db见[这里](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareos.html#other-platforms), 它是先配置bareos db conf(dbname=bareos, dbuser=bareos, password=password)让用户输入postgres的管理员信息进行授权变更. kylin环境是参照官方文档调用scripts初始化db后, 再自行修改bareos密码来确定其password.
+apt install bareos bareos-database-postgresql # 输入db密码. bareos-database-postgresql会利用dbconfig-common mechanism, 在apt install过程中配置db, 相关配置会保存在`/etc/dbconfig-common/bareos-database-common.conf`. 可用`dpkg-reconfigure bareos-database-common`重新配置, 手动配置db见[这里](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareos.html#other-platforms), 它是根据bareos-database-common.conf来进行db初始化.
+# --- rpm: 因为redhat环境在bareos-database-postgresql时没有交互配置db的过程, 因此[需要参照官方文档执行scripts来初始化db](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareos.html#other-platforms), db初始化完成后需要利用pg postgres账号修改pg bareos账号的密码, 再更新bareos db conf: /etc/bareos/bareos-dir.d/catalog/MyCatalog.conf.
 
-systemctl restart bareos-dir # db config in /etc/bareos/bareos-dir.d/catalog/MyCatalog.conf
+systemctl restart bareos-dir
 systemctl restart bareos-sd
 systemctl restart bareos-fd
 
@@ -145,12 +146,11 @@ bareos-dir -t -f -d 500 -v # 测试bareos-dir是否正常, 包括与pg的连接
 bareos-fd -t -f -d 500 -v
 bareos-dbcheck -B # 作用同上, 显示db的连接信息
 
-apt install bareos-webui # 基于php+apache2
-systemctl restart bareos-dir
-
+apt install bareos-webui # 默认基于php+apache2, 推荐使用nginx
 # -- 配置webui, 也可使用[bconsole configure子命令](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareosWebui.html#create-a-restricted-consoles)
-cp /etc/bareos/bareos-dir.d/console/admin.conf.example vim /etc/bareos/bareos-dir.d/console/admin.conf && chown bareos:bareos /etc/bareos/bareos-dir.d/console/admin.conf
-vim /etc/bareos/bareos-dir.d/console/admin.conf # 设置bareos-dir admin用于bareos-webui
+cp /etc/bareos/bareos-dir.d/console/admin.conf.example /etc/bareos/bareos-dir.d/console/admin.conf
+vim /etc/bareos/bareos-dir.d/console/admin.conf # 设置bareos-dir admin用于bareos-webui. 如果bconsole reload失败则需要: chown bareos:bareos /etc/bareos/bareos-dir.d/console/admin.conf
+vim /etc/bareos/bareos-dir.d/profile/webui-admin.conf # 按需求修改CommandACL, 比如删除`!purge, !prune, !configure`.
 systemctl restart bareos-dir # 不能省略, 否则可能webui无法登入(账号正确)
 systemctl restart apache2 # 访问http://HOSTNAME/bareos-webui即可使用webui, webui也可使用[nginx](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareosWebui.html#nginx), 但访问地址要变为`http://bareos:9100/`
 ```
