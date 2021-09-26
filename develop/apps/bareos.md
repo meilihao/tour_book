@@ -152,7 +152,28 @@ cp /etc/bareos/bareos-dir.d/console/admin.conf.example /etc/bareos/bareos-dir.d/
 vim /etc/bareos/bareos-dir.d/console/admin.conf # 设置bareos-dir admin用于bareos-webui. 如果bconsole reload失败则需要: chown bareos:bareos /etc/bareos/bareos-dir.d/console/admin.conf
 vim /etc/bareos/bareos-dir.d/profile/webui-admin.conf # 按需求修改CommandACL, 比如删除`!purge, !prune, !configure`.
 systemctl restart bareos-dir # 不能省略, 否则可能webui无法登入(账号正确)
-systemctl restart apache2 # 访问http://HOSTNAME/bareos-webui即可使用webui, webui也可使用[nginx](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareosWebui.html#nginx), 但访问地址要变为`http://bareos:9100/`
+systemctl restart apache2 # 访问http://HOSTNAME/bareos-webui即可使用webui
+```
+
+bareos-webui也可使用[nginx](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareosWebui.html#nginx), 但访问地址要变为`http://bareos:9100/`
+```bash
+# apt/yum install nginx php-fpm # nginx 1.18.0
+# systemctl enable php-fpm
+# systemctl start php-fpm
+# mkdir snippets
+# cat snippets/fastcgi-php.conf
+fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+try_files $fastcgi_script_name = 404;
+set $path_info $fastcgi_path_info;
+fastcgi_param PATH_INFO $path_info;
+fastcgi_index index.php;
+include fastcgi_params;
+# vim /etc/nginx/bareos-webui.conf # 具体配置参考官网doc
+# -- 修正for kylinv10 with php7.2：
+#    1. fastcgi_pass unix:/var/run/php5-fpm.sock; -> fastcgi_pass unix:/var/run/php5-fpm.sock;
+# -- 修正for ubuntu 20.04 with php7.4：
+#    1. fastcgi_pass unix:/var/run/php5-fpm.sock; -> fastcgi_pass unix:/var/run/php/php-fpm.sock;
+# systemctl restart nginx
 ```
 
 ### bareos-fd部署
