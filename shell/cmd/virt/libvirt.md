@@ -1,4 +1,8 @@
 # libvirt
+
+## news
+- [从v6.0.0开始libvirt-python.spec仅支持python3](https://github.com/libvirt/libvirt-python/commit/b22e4f2441078aec048b9503fde2b45e78710ce1)
+
 ## 构建
 参考:
 - [Centos7.6 下编译安装 Libvirt 7.5](https://blog.frytea.com/archives/546/)
@@ -130,6 +134,9 @@ Ubuntu16.04.6+飞腾主板+libvirt 6.0.0, systemd里没有报错日志, 也没�
 
 ### `'HWCAP_CPUID' undeclared`
 内核版本太低, 比如4.4, HWCAP_CPUID没有定义. libvirt从6.4.0开始引入它.
+
+### `pip install libvirt-python`报`Perhaps you should add the directory containing `libvirt.pc' to the PKG_CONFIG_PATH environment variable`和`Package 'libvirt', required by 'virtual:world', not found`
+`dnf install libvirt libvirt-devel`
 
 ## virtsh
 virsh 属于 libvirt 工具， libvirt 是目前使用最为广泛的对 KVM 虚拟机进行管理的工具和 API, 它还可管理 VMware, VirtualBox, Hyper-V等.

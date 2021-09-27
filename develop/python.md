@@ -2021,3 +2021,6 @@ python setup.py install
 
 ### 安装setuptools-50.2.0.tar.gz`(python3 setup.py install )`报"RuntimeError: cannot build setuptools without metadata. Run `bootstrap.py`"
 使用`pip3 install setuptools==50.2.0`
+
+### `No module named 'gi'`
+`yum install python3-gobject-base`

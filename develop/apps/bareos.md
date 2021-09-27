@@ -160,8 +160,8 @@ bareos-webui也可使用[nginx](https://docs.bareos.org/IntroductionAndTutorial/
 # apt/yum install nginx php-fpm # nginx 1.18.0
 # systemctl enable php-fpm
 # systemctl start php-fpm
-# mkdir snippets
-# cat snippets/fastcgi-php.conf
+# mkdir /etc/nginix/snippets
+# cat /etc/nginix/snippets/fastcgi-php.conf
 fastcgi_split_path_info ^(.+?\.php)(/.*)$;
 try_files $fastcgi_script_name = 404;
 set $path_info $fastcgi_path_info;

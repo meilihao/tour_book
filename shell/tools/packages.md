@@ -1,7 +1,7 @@
 # packages.md
 
 ## 源
-- [neokylin v10](http://update.cs2c.com.cn:8080/NS/V10/V10SP1-2500/os/adv/lic/)
+- [neokylin v10](http://update.cs2c.com.cn:8080/NS/V10/V10SP2/os/adv/lic/)
 
 ## tools
 - [command-not-found](https://command-not-found.com/)

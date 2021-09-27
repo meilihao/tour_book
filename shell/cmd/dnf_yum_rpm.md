@@ -22,6 +22,7 @@ DNF配置文件的位置:
 # dnf history undo 3 # 执行与指定历史ID执行的所有操作相反的操作
 # dnf history rollback 7 # 撤消在历史ID之后执行的所有操作
 
+# dnf --showduplicates list $pkgname # 显示软件的多版本列表
 # dnf list # 列出用户系统上的所有来自软件库的可用软件包和所有已经安装在系统上的软件包
 # dnf list installed # 已安装包的列表
 # dnf list available # 列出来自所有可用软件库的可供安装的软件包
@@ -265,7 +266,7 @@ scripts section:
 
 在新版本的 Fedora 27 以及 Redhat 8 中，增加了对于 build-id 的支持，在使用 rpmbuild 时默认会自动添加，会在 /usr/lib/.build-id 目录下生成相关的文件.
 
-可以通过 --define "_build_id_links none" 参数取消文件的生成.
+可以通过`--define "_build_id_links none"`参数取消文件的生成.
 
 增加 build-id 的目的是为了可快速找到正确的二进制文件以及 Debuginfo.
 
@@ -280,3 +281,20 @@ scripts section:
 解决方法有2:
 1. 在/usr/lib/rpm/macros文件中有一个定义:`%_unpackaged_files_terminate_build 1`，把1改为0只警告, **推荐**
 1. 找到 /usr/lib/rpm/macros 中`%__check_files  /usr/lib/rpm/check-files %{buildroot}`注释掉
+
+### [yum锁定软件版本](https://www.onitroad.com/jc/linux/centos/centos-redhat-fedora-yum-lock-package-version-command.html)
+有两种方法：
+- 将`--exclude`指令传递给yum命令，以定义要从更新或安装中排除的软件包列表
+
+    ```bash
+    # yum --exclude httpd,php xxx
+    # cat /etc/yum.repo.d/xxx.repo
+    ...
+    exclude=python-3*       # Exclude Single Package
+    exclude=httpd php       # Exclude Multiple Packages
+    ```
+- `yum/dnf versionlock`命令版本锁定rpm软件包命令
+
+> [`dnf install python3-dnf-plugin-versionlock`](https://www.getpagespeed.com/server-setup/centos-rhel-8-how-to-prevent-a-package-from-upgrading)
+
+> `yum -y install yum-versionlock`
