@@ -305,6 +305,8 @@
 
 - 数据库复制
 
+    **couchdb v2开始, source和target必须是完整的url形式.**
+
     查看复制进度: http://username:password@localhost:5984/_active_tasks的progress.
     复制时, **源和目的必须都必须已存在**， 或使用`"create_target":true`选项, 不存在目的时自动创建; 复制仅针对创建复制时的状态, 复制开始后的变更(创建/修改/删除)都不会被复制.
 

@@ -153,6 +153,8 @@ vim /etc/bareos/bareos-dir.d/console/admin.conf # 设置bareos-dir admin用于ba
 vim /etc/bareos/bareos-dir.d/profile/webui-admin.conf # 按需求修改CommandACL, 比如删除`!purge, !prune, !configure`.
 systemctl restart bareos-dir # 不能省略, 否则可能webui无法登入(账号正确)
 systemctl restart apache2 # 访问http://HOSTNAME/bareos-webui即可使用webui
+
+systemctl enable bareos-dir bareos-sd bareos-fd postgresql
 ```
 
 bareos-webui也可使用[nginx](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareosWebui.html#nginx), 但访问地址要变为`http://bareos:9100/`

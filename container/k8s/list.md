@@ -14,9 +14,7 @@
 - [为什么 Kubernetes 选择了 ETCD？](https://www.mgasch.com/2021/01/listwatch-part-1/)
 
 ## ha
-- [高可用背后的原理](http://lioncruise.github.io/2017/10/24/k8s-HA-principle/)
 - [[k8s源码分析][kube-scheduler]scheduler之高可用及原理](https://www.jianshu.com/p/e30addc18560)
 - [关于kube-controller-manager以及kube-scheduler的HA实现方式](https://w564791.gitbooks.io/kubernetes_gitbook/content/concept/leader-election.html)
-- [利用Kubernetes中的leaderelection实现组件高可用](https://segmentfault.com/a/1190000021763304)
 - [谈谈k8s的leader选举--分布式资源锁](https://blog.csdn.net/weixin_39961559/article/details/81877056)
 - [Kubernetes 源码剖析之 Leader 选举](https://wemp.app/posts/8ca1c89e-856e-4e37-bd20-5f34b43ddc40)

@@ -242,12 +242,12 @@ scripts section:
 - %pre 安装前执行的脚本
 - %post 安装后执行的脚本
 - %preun 卸载前执行的脚本
-- %postun 卸载后执行的脚本
+- %postun 卸载后执行的脚本 : 无需定义清理安装文件的脚本, 软件包被卸载时会由包管理器来自动清理(按安装时由包管理器创建的文件记录, 非包管理器创建的文件会被忽略).
 - %pretrans 在事务开始时执行脚本
 - %posttrans 在事务结束时执行脚本
 
 ```
-%files
+%files # **推荐使用完整的绝对路径避免安装时与其他包的路径冲突**
 %defattr (-,root,root,0755)                         ← 设定默认权限
 %config(noreplace) /etc/my.cnf                      ← 表明是配置文件，noplace表示替换文件
 %doc %{src_dir}/Docs/ChangeLog                      ← 表明这个是文档
@@ -298,3 +298,56 @@ scripts section:
 > [`dnf install python3-dnf-plugin-versionlock`](https://www.getpagespeed.com/server-setup/centos-rhel-8-how-to-prevent-a-package-from-upgrading)
 
 > `yum -y install yum-versionlock`
+
+### rpmbuild报"Arch dependent binaries in noarch package"
+在amd64上打包arm64的包(golang程序), spec的`BuildArch`是`noarch`.
+
+解决方法: 在spec文件里`%define _binaries_in_noarch_packages_terminate_build   0`
+
+### rpm安装报`file /opt from install of <xxx.rpm> conflicts with file from package <pkg>`
+原spec:
+```conf
+%files
+%defattr(-,root,root,-)
+/*
+```
+
+改为:
+```conf
+%files
+%defattr(-,root,root,-)
+/opt/*
+```
+
+### `rpm -i`安装同名软件包的多个版本时会提示"file xxx from install of yyy conflicts with file from package zzz"
+使用`rpm -i --force`时, `rpm -qa`会查到多个软件包版本.
+
+使用`yum/dnf install`时会先移除旧软件包再安装.
+
+### `rpm -e`遇到script error
+`rpm -e --noscripts xxx`, 删除软件包时不执行script.
+
+### yum/dnf upgrade script执行顺序
+参考:
+- [升级和安装的rpm过程中 spec 文件中脚本调用顺序和参数](https://blog.csdn.net/kyle__shaw/article/details/115461583)
+- [How to execute a script at %pre, %post, %preun or %postun stage (spec file) while installing/upgrading an rpm](https://www.golinuxhub.com/2018/05/how-to-execute-script-at-pre-post-preun-postun-spec-file-rpm/)
+
+在执行这些脚本时，都会有相同的传入值 `$1`, 来判断具体执行的是以下的哪步操作:
+![](/misc/img/shell/13-05-20182B15-53-21.png.webp)
+
+安装/升级/删除过程中，具体执行的操作的顺序:
+|install| upgrade| un-install|
+|pre $1=1 |   %pre $1=2 |  %preun $1=0|
+|copy files | copy files | remove files|
+|%post $1=1 | %post $1=2 | %postun $1=0|
+||%preun $1=1 from old RPM.   ||
+||delete files only found in old package  ||
+||%postun $1=1 from old RPM.  ||
+
+v1->v2的脚本执行顺序:
+1. 执行 v2 的 %pre
+1. 释放 v2 中的文件
+1. 执行 v2 的 %post
+1. 执行 v1 的 %preun
+1. 删除 v1 中特有的文件
+1. 执行 v1 中的 %postun
