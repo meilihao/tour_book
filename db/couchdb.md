@@ -663,4 +663,6 @@ emit([deleted],doc);
 - [`POST /{db}/_compact`](https://docs.couchdb.org/en/main/api/database/compact.html)
 - [Compaction](https://docs.couchdb.org/en/main/maintenance/compaction.html)
 
+存储空间耗光时couchdb的表现: 访问couchdb时好时坏.
+
 > 清理操作也需要空间: 它是先生成新文件再删除旧文件的操作.
