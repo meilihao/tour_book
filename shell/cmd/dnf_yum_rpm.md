@@ -249,6 +249,7 @@ scripts section:
 ```
 %files # **推荐使用完整的绝对路径避免安装时与其他包的路径冲突**
 %defattr (-,root,root,0755)                         ← 设定默认权限
+/opt/xxx                                            # 即/opt/xxx及其所有子文件
 %config(noreplace) /etc/my.cnf                      ← 表明是配置文件，noplace表示替换文件
 %doc %{src_dir}/Docs/ChangeLog                      ← 表明这个是文档
 %attr(644, root, root) %{_mandir}/man8/mysqld.8*    ← 分别是权限，属主，属组
