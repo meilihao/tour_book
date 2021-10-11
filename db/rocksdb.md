@@ -14,7 +14,7 @@ RocksDB是一个嵌入式的K-V（任意字节流）存储. 所有的数据在�
 
 ## 编译
 1. 参照[rocksdb INSTALL](https://github.com/facebook/rocksdb/blob/master/INSTALL.md), 选择平台安装依赖lib
-1. `cd rocksdb_source_root`, 选择`make static_lib/make shared_lib`进行编译
+1. `cd rocksdb_source_root`, 查看Makefile, 选择`make static_lib/make shared_lib`进行编译
 
     如果构建环境存在jemalloc/tcmalloc, make会通过`build_tools/build_detect_platform <platform>`将相应的环境变量存入生成的make_config.mk中, 供自身使用
 1. 参考rocksdb的Makefile, 再执行`make install-static/make install-shared`即可. 如果安装位置需要还可使用`INSTALL_PATH=/usr/local make install-static/install-shared`, `INSTALL_PATH`默认已是`/usr/local`, 最终`librocksdb.a/librocksdb.so`会出现在`$INSTALL_PATH/lib`下

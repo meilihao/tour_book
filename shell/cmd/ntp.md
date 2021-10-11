@@ -1,6 +1,7 @@
 # ntp (Network Time Protocol)
 参考:
 - [ntpd时钟同步服务](http://xstarcd.github.io/wiki/sysadmin/ntpd.html)
+- [再见 NTP，是时候拥抱下一代时间同步服务 Chrony 了](https://cloud.tencent.com/developer/article/1546322)
 
 > **推荐使用新版ntp协议实现: chrony**
 
