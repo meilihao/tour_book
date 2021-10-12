@@ -58,7 +58,7 @@ keepalived只有一个配置文件keepalived.conf，配置文件里面主要包�
 
         ```conf
         vrrp_instance VI_1 {
-            state MASTER               # 指定instance初始角色(MASTER 表示主节点，BACKUP 表示备份节点)，实际根据优先级决定. 与backup节点不一样
+            state MASTER               # 指定instance初始角色(MASTER 表示主节点，BACKUP 表示备份节点)，实际根据优先级决定. 与backup节点不一样. 当所有节点都是backup时， 优先级最高的节点先进入backup角色再根据后续条件(比如preempt_delay后)转为master.
             interface eth0             # 表示发vrrp包的接口
             virtual_router_id 51       # VRID(0-255)，相同VRID为一个组，决定多播MAC地址. 主备节点需要设置为相同
             priority 100               # 优先级(1-255), 主节点的优先级需要设置比备份节点高. backup节点改为90.
@@ -75,8 +75,8 @@ keepalived只有一个配置文件keepalived.conf，配置文件里面主要包�
             }
             notify_master "/etc/keepalived/keepalived.sh master" # 当前节点状态转为master时触发的脚本
             notify_backup "/etc/keepalived/keepalived.sh backup" # 当前节点状态转为backup时触发的脚本
-            notify_fault "/etc/keepalived/keepalived.sh fault" # 当前节点keepalived出现故障转为"FAULT"状态时触发的脚本
-            notify_stop "/etc/keepalived/keepalived.sh fault" # 当前节点keepalived停止时触发的脚本
+            notify_fault "/etc/keepalived/keepalived.sh fault" # 当前节点keepalived出现故障转为"FAULT"状态时触发的脚本, 即track_script返回非0
+            notify_stop "/etc/keepalived/keepalived.sh stop" # 当前节点keepalived停止时触发的脚本
             notify xxx # 表示只要状态切换都会调用的脚本，并且该脚本是在以上四个脚本执行之后再调用的
             # 追踪脚本，通常用于去执行vrrp_script中定义的脚本内容
             track_script {
@@ -99,7 +99,7 @@ keepalived只有一个配置文件keepalived.conf，配置文件里面主要包�
                 172.19.1.15      #对端ip
             }
             nopreempt                   # 定义工作模式为非抢占模式, 默认是抢占模式. **抢占模式时主节点故障恢复后, 就会重新抢回vip (根据配置里的优先级决定的).**. 首先nopreemt必须在state为BACKUP的节点上才生效（因为是BACKUP节点决定是否来成为MASTER的）. 推荐使用将所有节点的state都设置成BACKUP并且都加上nopreempt选项，这样就完成了关于autofailback功能，当想手动将某节点切换为MASTER时只需去掉该节点的nopreempt选项并且将priority改的比其他节点大，然后重新加载配置文件即可（等MASTER切过来之后再将配置文件改回去再reload一下）
-            preempt_delay 300           # 抢占式模式下，节点上线后触发新选举操作的延迟时长, 避免节点还没进入工作状态就进行抢占导致小段时间内不可用. 这里的间隔时间要大于vrrp_script中定义的时长
+            preempt_delay 300           # 抢占式模式下，节点上线后触发新选举后的后续操作延迟时长即延迟设置vip, 避免节点还没进入工作状态就进行抢占导致小段时间内不可用. 这里的间隔时间要大于vrrp_script中定义的时长
         }
         ```
 
@@ -149,11 +149,11 @@ keepalived只有一个配置文件keepalived.conf，配置文件里面主要包�
         ```conf
         vrrp_script <SCRIPT_NAME> {
            script <STRING>|<QUOTED-STRING> # path of the script to execute，需要运行的脚本，返回值为0表示正常; 其它值都会当成检测失败.
-           interval <INTEGER>  # seconds between script invocations, default 1 second ，脚本运行时间，即隔多少秒去检测
-           timeout <INTEGER>   # seconds after which script is considered to have failed，脚本运行的超时时间
-           weight <INTEGER:-254..254>  # adjust priority by this weight, default 0
+           interval <INTEGER>  # seconds between script invocations, default 1 second ，脚本运行时间，即隔多少秒去检测, **推荐**
+           timeout <INTEGER>   # seconds after which script is considered to have failed，脚本运行的超时时间, **推荐**
+           weight <INTEGER:-254..254>  # adjust priority by this weight, default 0. 当script返回非零时， keepalived发送自己的vrrp通告为100+weight.
            rise <INTEGER>              # required number of successes for OK transition，配置几次检测成功才认为服务正常
-           fall <INTEGER>              # required number of successes for KO transition，配置几次检测失败才认为服务异常
+           fall <INTEGER>              # required number of successes for KO transition，配置几次检测失败才认为服务异常, **推荐**
            user USERNAME [GROUPNAME]   # user/group names to run script under
                                        #   group default to group of user
            init_fail                   # assume script initially is in failed state，配置初始时失败状态

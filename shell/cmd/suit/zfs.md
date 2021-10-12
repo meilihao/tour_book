@@ -7,6 +7,8 @@
 - [man pages](https://zfsonlinux.org/manpages/0.8.4/index.html)
 - [Btrfs vs ZFS 实现 snapshot 的差异](https://farseerfc.me/zhs/btrfs-vs-zfs-difference-in-implementing-snapshots.html)
 - [zfs使用jemalloc(未验证)](https://gitlab.openebs100.io/openebs/cstor/commit/043de97885a79533d1ee262a9e6d23cb9f604c1c)
+- [OpenZFS开源文件系统2.0+：持久化L2ARC读缓存、ZIL写缓存提速](https://zhuanlan.zhihu.com/p/338227098)
+- [ZFS──瑞士军刀般的文件系统](https://www.eaimty.com/2020/02/zfs-file-system.html)
 
 ```sh
 # ubuntu 18.04
@@ -75,7 +77,7 @@ thin: zfs支持thin provisioning,
 - Cache : 用于2级自适应的**读缓存**的设备 (zfs L2ARC), 提供在 memory 和 disk的缓冲层, 用于改善静态数据的随机读写性能
 
 	zfs实际有两层缓存: ARC(在内存) + L2ARC(高速存储设备上, 比如Flash，SSD，Nvme等)
-- Log : zfs Intent Log(zfs ZIL/SLOG, zfs意图日志,一种对于 data 和 metadata 的日志机制，先写入然后再刷新为写事务), 用于崩溃恢复, 最好配置并使用快速的 SSD来存储ZIL, 以获得更佳性能. ZIL支持mirror. ZIL也可认为是zfs的**写缓存**.
+- Log : zfs Intent Log(zfs ZIL/SLOG, zfs意图日志,一种对于 data 和 metadata 的日志机制，先写入然后再刷新为写事务), 持久性写缓存, 用于崩溃恢复, 最好配置并使用快速的 SSD来存储ZIL, 以获得更佳性能. ZIL支持mirror. ZIL也可认为是zfs的**写缓存**.
 
 VDEV始终是动态条带化的. 一个 device 可以被加到 VDEV, 但是不能移除.
 

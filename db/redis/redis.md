@@ -78,6 +78,8 @@ Redis的主从复制机制是指可以让从服务器(slave)能精确复制主�
 
 redis可以通过Sentinel系统管理多个Redis服务器，当master服务器发生故障时，Sentineal系统会根据一定的规则将某台slave服务器升级为master服务器,继续提供服务，实现故障转移，保证Redis服务不间断.
 
+查看role: `redis-cli info|grep role`
+
 ### 原理
 master服务器会记录一个replicationId的伪随机字符串，用于标识当前的数据集版本，还会记录一个当数据集的偏移量offset，不管master是否有配置slave服务器，replication Id和offset会一直记录并成对存在，可以通过`info replication`命令查看.
 
@@ -172,3 +174,13 @@ Redis Cluster 不保证强一致性，在一些特殊场景，客户端即使收
     1. 消息的顺序. score至关重要，这关系到消息的先后顺序. 一种可行的方案是使用timestamp+seq作为score，这样能够保证消息的顺序
     1. 重复消息的添加. member即message body, 由于有序集合的限制, 无法添加重复member
 - stream
+
+### `READONLY You can't write against a read only slave`
+Redis 主服务器（master server）具有读写的权限，而 从服务器（slave master）默认 只具有读的权限, 如果在从服务器中写数据则会报该错误.
+
+解决方法:
+1. 梳理逻辑不在slave上写
+1. 运行在slave上写
+
+    - 修改 redis.conf 配置文件中的参数`slave-read-only  yes`，将 yes 修改为 no, 然后保存并重启 redis 服务， 此时从服务器就具备了读写权限
+    - 在redis-cli中执行`config set slave-read-only no`
