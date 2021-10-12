@@ -6,3 +6,4 @@
 
 ## ha
 - [keepalived实现redis双主备份](https://blog.51cto.com/huangzhijun/1725606)
+- [keepalived+redis 高可用redis主从解决方案](https://developer.aliyun.com/article/524588)
