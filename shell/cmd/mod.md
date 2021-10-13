@@ -21,6 +21,22 @@ depmod会遍历文件/lib/modules/`uname -r`/modules.dep解析模块依赖关系
 # modinfo
 显示内核模块的信息
 
+字段说明:
+- firmware : driver支持的固件
+- alias:
+
+    比如`pci:v00008086d00005A84sv*sd*bc03sc*i*`, 可将其分成以下字符部分：
+    - v00008086：v代表供应商ID, 它标识硬件制造商. 该清单由PCI特别兴趣小组维护. `0x8086`代表"英特尔公司"
+    - d00005A84：d代表由制造商选择的设备ID. 此ID通常与供应商ID配对, 以形成硬件设备的唯一32位标识符
+    - `sv*，sd*`：子系统供应商版本和子系统设备版本用于设备的进一步标识（`*`指示它将匹配任何内容）
+    - bc03：基类. 它定义了它是哪种设备: IDE interface, Ethernet controller, USB Controller, .... bc03表示Display controller. lspci将数字映射到设备类.
+    - `sc*`：基类的子类
+    - `i*`：界面
+
+- vermagic
+
+    加载模块时, 将vermagic检查值中的字符串是否匹配, 如果它们不匹配, 将得到一个错误, 内核将拒绝加载该模块. modprobe可以通过使用--force标志来克服这一点. 当然, 这些检查是为了保护kernel, 因此使用此选项很危险.
+
 ### example
 ```bash
 # modinfo -F filename qla2xxx # 检查光纤驱动模块是否存在
