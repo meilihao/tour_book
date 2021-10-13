@@ -1,4 +1,7 @@
 # lspci
+参考:
+- [The PCI ID Repository](https://pci-ids.ucw.cz)
+
 列出所有的pci设备即连接到 PCI 总线的所有设备, 比如主板, 声卡, 显卡, 网卡和usb接口设备等.
 
 ## 选项
