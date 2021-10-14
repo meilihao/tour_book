@@ -18,6 +18,7 @@
 - -e : 同`-A`
 - -f : 显示UID,PPIP,C与STIME栏位
 - -l : 采用详细的格式来显示程序状况
+- -o : 显示指定列, 比如`pid,user,cgroup,args`
 - u : 以用户为主的格式来显示程序状况
 - -U <用户名/Uid> : 列出属于该用户的程序的状况(不含参数)
 - -u : 同`-U`
@@ -37,6 +38,7 @@
     # ps auxf # 输出进程树
     # ps -A -O pgid # 基本属性+`-O`指定的属性
     # ps -C smbd --no-header
+    # ps xawf -eo pid,user,cgroup,args # 查看cgroup
 
 ## 扩展
 

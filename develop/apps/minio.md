@@ -44,6 +44,7 @@ MinIO可创建每组4到16个磁盘组成的纠删码集合(推荐是8 from [基
 ```bash
 MINIO_ACCESS_KEY=minioadmin MINIO_SECRET_KEY=minioadmin ./minio server /mnt/data
 
+mc config host add minio http://172.18.100.177:9000 minioadmin minioadmin --api s3v4 # minio即为要添加的alias
 mc alias set myminio http://127.0.0.1:9000 minioadmin minioadmin
 mc mb myminio/test # 创建buckets, 不能省略alias, 比如这里的myminio, 否则命令也会报创建成功, 但实际没有创建
 mc cp a.sh myminio/test # put file
@@ -52,13 +53,13 @@ mc cp a.sh myminio/test # put file
 ### 分布式
 **分布式Minio至少需要4个硬盘，使用分布式Minio会自动引入纠删码功能**.
 
-> 分布式Minio里所有的节点需要有同样的access秘钥和secret秘钥，这样这些节点才能建立联接, 且需NTP保障时间一致.
+> 分布式Minio里所有的节点需要有同样的access秘钥和secret秘钥，这样这些节点才能建立联接, 且**需NTP保障时间一致**.
 
 > 建议运行分布式MinIO设置的所有节点都是同构的，即相同的操作系统，相同数量的磁盘和相同的网络互连
 
 > 每个对象被写入一个EC集合中，因此该对象分布在不超过16个磁盘上
 
-部署1(当节点, 四挂载):
+部署1(单节点, 四挂载):
 ```bash
 export MINIO_ACCESS_KEY="minio"
 export MINIO_SECRET_KEY="minio123"
@@ -75,8 +76,11 @@ nohup ./minio server --address ":9004" http://127.0.0.1:9001/usr/minio/data1 htt
 export MINIO_ACCESS_KEY="minio"
 export MINIO_SECRET_KEY="minio123"
 cd /usr/minio/
-./minio server --address :9001 http://127.0.0.1:9001/usr/minio/data1 http://127.0.0.1:9001/usr/minio/data2  http://127.0.0.1:9002/usr/minio/data3 http://127.0.0.1:9002/usr/minio/data4 > /usr/minio/minio1.log 2>&1 &
-./minio server --address :9002 http://127.0.0.1:9001/usr/minio/data1 http://127.0.0.1:9001/usr/minio/data2  http://127.0.0.1:9002/usr/minio/data3 http://127.0.0.1:9002/usr/minio/data4 > /usr/minio/minio2.log 2>&1 &
+# --- peer_id都应能被对方访问到, local_ip是否能用127.0.0.1待测试???
+# --- on local
+./minio server --address :9001 http://<local_ip>:9001/usr/minio/data1 http://<local_ip>:9001/usr/minio/data2  http://<peer_id>:9002/usr/minio/data3 http://<peer_id>:9002/usr/minio/data4 > /usr/minio/minio1.log 2>&1 &
+# --- on peer
+./minio server --address :9002 http://<peer_id>:9001/usr/minio/data1 http://<peer_id>:9001/usr/minio/data2  http://<local_ip>:9002/usr/minio/data3 http://<local_ip>:9002/usr/minio/data4 > /usr/minio/minio2.log 2>&1 &
 ```
 
 ### [升级 MinIO](https://docs.min.io/cn/)
@@ -140,3 +144,6 @@ ec代码在`cmd/erasure-*.go`, 入口在`cmd/erasure-coding.go#NewErasure`
 ## FAQ
 ### 1. `Disk /usr/minio/data1 is a root disk. Please ensure the disk is mounted properly, refusing to use root disk.`
 使用了挂载在`/`下的export, 即分布式minio必须使用数据盘.
+
+### Waiting for the first server to format the disks
+清空所有组成minio cluster的盘(包括其下的隐藏文件)再重试即可.

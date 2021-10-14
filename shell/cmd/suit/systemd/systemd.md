@@ -251,6 +251,9 @@ $ sudo systemctl rescue
 ### systemd-cgtop
 查看资源的消耗状态
 
+### systemd-cgls
+查看cgroup层次结构（以及组成单元的详细信息）
+
 ### systemd-analyze
 systemd-analyze命令用于查看启动耗时
 ```
