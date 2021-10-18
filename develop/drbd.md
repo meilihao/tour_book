@@ -23,8 +23,19 @@ DRBD在远程传输上支持三种模式：
 
 > DRBD8.0以后的版本支持双主模式, 此时需要共享的集群文件系统(GFS，OCFS2等)来解决并发读写问题, 通过集群文件系统的分布式锁机制解决集群中两个主节点同时操作数据的问题.
 
+> **应用写drbd device和drbd写底层disk的bio偏移量是相同的**.
+
 ## cmd
-1. drbdadm status my_res : 查看资源状态, 包含role
+```bash
+# drbdadm status my_res : 查看资源状态, 包含role
+# --- 创建drbd
+# drbdadm -c /etc/drbd.conf create-md r0 --force # 创建drbd metadata
+# drbdadm -c /etc/drbd.conf up r0 # 创建drbd device
+# drbdadm -c /etc/drbd.conf primary r0 --force # 设为primary
+# --- 其他
+# drbdadm -c /etc/drbd.conf down r0 # down drbd device
+# drbdadm -c /etc/drbd.conf secondary r0 --force # set secondary role
+```
 
 ## FAQ
 ### drbd 9 role自动变primary
@@ -59,3 +70,10 @@ drbd设备超过限制, 目前了解最大是2^20, 已验证过的最大值是65
 
 ### 多primariy
 /etc/drbd.d/global-common.conf设置allow-two-primaries, 由上层gfs2实现锁防止多写.
+
+### drbd未向底层disk(/dev/zd0)写入数据
+env: drbd 9.1.2
+
+r0.res: node2的hostname是不存在的, disk与node1相同， address是127.0.0.1， 端口与node1相同. protocol是C.
+
+用dd向/dev/drbd0写入数据, zd0相应位置没有数据, 说明drbd0缓存了数据(能缓存多大多久, 未知)， `sync`也没有效果, 但当`down r0`时drbd会将缓存数据写入zd0.

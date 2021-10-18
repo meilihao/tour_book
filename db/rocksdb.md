@@ -306,6 +306,8 @@ uint32_t Extend(uint32_t crc, const char* buf, size_t size) {
 
     编译出的程序没法链接librocksdb.so时, 可参考[/go/cgo.md].
 
+    **grocksdb的每个tag是与指定rocksdb version对应的(tag message上有提示)**.
+
 ### 同步写 与 异步写
 参考:
 - [RocksDB 笔记](http://alexstocks.github.io/html/rocksdb.html)

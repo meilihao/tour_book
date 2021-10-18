@@ -288,3 +288,6 @@ i440fx是1996年推出的架构, 已过时. q35是2009年推出的架构, 更现
 
 ### 获得更多输出
 qemu窗口-视图-勾选"显示标签页"
+
+### 查询qemu vm的默认选项
+`virt-install --os-variant <os>`, 参数os是`osinfo-query os`输出的"Short ID".
