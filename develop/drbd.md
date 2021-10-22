@@ -32,6 +32,7 @@ DRBD在远程传输上支持三种模式：
 # drbdadm -c /etc/drbd.conf create-md r0 --force # 创建drbd metadata
 # drbdadm -c /etc/drbd.conf up r0 # 创建drbd device
 # drbdadm -c /etc/drbd.conf primary r0 --force # 设为primary
+# drbdadm -c /etc/drbd.conf status r0
 # --- 其他
 # drbdadm -c /etc/drbd.conf down r0 # down drbd device
 # drbdadm -c /etc/drbd.conf secondary r0 --force # set secondary role
@@ -77,3 +78,8 @@ env: drbd 9.1.2
 r0.res: node2的hostname是不存在的, disk与node1相同， address是127.0.0.1， 端口与node1相同. protocol是C.
 
 用dd向/dev/drbd0写入数据, zd0相应位置没有数据, 说明drbd0缓存了数据(能缓存多大多久, 未知)， `sync`也没有效果, 但当`down r0`时drbd会将缓存数据写入zd0.
+
+### `unknown filesysem type 'drbd'`
+直接挂载drbd的底层disk报该错. 解决方法: 创建drbd device来操作该disk.
+
+### [drbd matedata大小](https://linbit.com/drbd-user-guide/drbd-guide-9_0-cn/#s-meta-data-size)

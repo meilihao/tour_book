@@ -352,3 +352,14 @@ v1->v2的脚本执行顺序:
 1. 执行 v1 的 %preun
 1. 删除 v1 中特有的文件
 1. 执行 v1 中的 %postun
+
+### 构建rpm报:`error: cannot open Packages database in /var/lib/rpm`
+rpmdb本地数据存储文件损坏.
+
+```bash
+# --- 清理YUM仓库本地数据存储文件
+mv /var/lib/rpm/__db* /tmp # 或 for i in `ls /var/lib/rpm | grep 'db.'`;do mv $i $i.bak;done 或 rm -f /var/lib/rpm/__db*
+# --- 执行如下命令，清理yum缓存
+rpm --rebuilddb
+yum clean all
+```
