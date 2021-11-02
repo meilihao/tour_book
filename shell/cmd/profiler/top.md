@@ -1,10 +1,13 @@
 # top
 参考:
 - [如何使用 top 命令](https://diabloneo.github.io/2019/08/29/How-to-use-top-command/)
+- [Linux top 命令里的内存相关字段（VIRT, RES, SHR, CODE, DATA）](https://liam.page/2020/07/17/memory-stat-in-TOP/)
 
 > 默认刷新频率: 3s.
 
 > 默认排序列是`%CPU`
+
+> 将各个进程中的RSS值相加后,一般都会超出整个系统的内存消耗,这是因为RSS中包含了各个进程之间的共享内存
 
 top 的界面其实有两个模式：full-screen mode(全屏模式) 和 alternate-display mode(多窗口模式)，默认是全屏模式.
 
@@ -173,6 +176,12 @@ top 支持显示一个定位信息，可以看到自己现在处于第几行，�
 - z : 改名进程信息的颜色
 - Z : 进入颜色定制界面, 便于清晰展示内容
 
+
+## example
+```bash
+# top -bn 1 # 完成显示(不分屏)top信息1次
+```
+
 ## FAQ
 ### 进程字段排序
 先按键盘`x`, 可打开排序列的高亮效果.
@@ -181,3 +190,6 @@ top 支持显示一个定位信息，可以看到自己现在处于第几行，�
 - 按内存占用率排序: `shift + m`
 - 按CPU占用时间排序: `shift + t`
 - 按PID排序: `shift + n`
+
+### 等式
+不一定有等式 CODE + DATA = RES 成立，但一定成立等式 ANON(在堆上分配的内存) = RES - SHR 及不等式 ANON <= DATA (vm_physic) <= DATA. 如果观察到程序稳定运行时 RES - SHR 不断增长，则可能预示着程序存在内存泄漏现象

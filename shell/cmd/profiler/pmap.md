@@ -38,3 +38,5 @@
 1. 第二列: vma的大小
 1. 第三列: 属性(r,read; w, write; x, execute; s, shared; p, private)
 1. 第四列: 内存映射的文件, [anon]为匿名内存映射
+
+total即virt大小.

@@ -293,6 +293,11 @@ alias ll='ls -l'
 ## logger/日志
 logger是一个shell命令接口，可以通过该接口使用Syslog的系统日志模块，还可以从命令行直接向系统日志文件写入一行信息
 
+## set命令
+```conf
+set -e # 若指令传回值不等于0, 则立即退出shell
+```
+
 ## 调试
 参考:
 - [Shell脚本调试的几种方式](https://blog.csdn.net/Jerry_1126/article/details/52096886)

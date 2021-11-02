@@ -12,6 +12,9 @@ xfs fs扩容
 ```
 
 ## 其他命令
+参考:
+- [修改云盘的UUID](https://help.aliyun.com/document_detail/199739.html)
+
 ```bash
 - xfs_admin: 调整 xfs 文件系统的各种参数
 - xfs_copy: 拷贝 xfs 文件系统的内容到一个或多个目标系统（并行方式）
@@ -29,4 +32,8 @@ xfs fs扩容
 - xfs_ncheck: generate pathnames from i-numbers for XFS
 - xfs_rtcp: XFS实时拷贝命令 
 - xfs_io: 调试xfs I/O路径
+```
+
+```bash
+# xfs_admin -U generate /dev/sdb7 # 使用xfs_admin为分区生成新的uuid. 其他方法: 1. `tune2fs -U c1b9d5a2-f162-11cf-9ece-0020afc76f16 /dev/sda5` 2. `uuidgen | xargs tune2fs /dev/sda5 -U`
 ```

@@ -57,3 +57,4 @@ btrfs 其他常用命令如下：
 - 删除子卷：btrfs subvolume delete MOUNT_POIN/DIR
 - 创建子卷快照(子卷快照必须存放与当前子卷的同一父卷中)：btrfs subvolume snapshot SUBVOL PARVOL
 - 删除快照同删除子卷一样：btrfs subvolume delete MOUNT_POIN/DIR
+- 修改fs uuid: btrfstune -U $(uuidgen) /dev/sdb1

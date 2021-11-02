@@ -248,8 +248,9 @@ list jobid=2  #列出jobid等于2有状态信息
 list Job=t3_full       #列出Job名称等于t3_full的任务信息
 list jobname=t3_full   #列出Job名称等于t3_full的任务信息
 list joblog jobid=78   #列出jobid=78的详细备份日志信息
-list jobmedia jobid=78 #列出jobid=78的状态信息与所在Volume信息
+list jobmedia/volumes jobid=78 #列出jobid=78的状态信息与所在Volume信息
 list files jobid=78    #列出jobid=78的状态信息与所备份的数据信息
+list jobs jobname=xxx client=xxx jobstatus=x joblevel=x last
  
 list clients           #列出备份的客户端
 list jobtotals         #列出所有作业任务使用的空间大小
@@ -261,7 +262,8 @@ list pool    #查看定义的dbpool属性
 llist pool   #查看定义的dbpool属性(更详细)
 
 llist backups client="xxx" filset="any" order=desc limit=200 # 显示该客户端的所有(不限制fileset)备份任务的前200条. v20.2 order参数不生效
-llist jobs job="xxx" order=desc limit=200 # **llist jobs不支持order**
+llist jobs job="xxx" jobstatus=x order=desc limit=200 # **llist jobs不支持order**
+llist jobid=2160 # 输出jobid=2160的信息
 
 > llist = long list, 即使用与list相同的参数, 但会列出所选记录的完整内容(from db)
 
@@ -271,7 +273,7 @@ show pools         #查看池的信息
 show pools=dbpool  #查看dbpool池的信息
 show filesets
 show clients
-show storages
+show storages [verbose]
 show schedule
 show jobs
 show message
@@ -286,6 +288,10 @@ status storage  # 查看 storage 的状态
 # --- run执行job任务. bareos storage空间满后会阻塞分配到其上的job
 run  # 未指定job时需要选择job, 即进入交互模式操作
 run job=t3_full yes   #手动执行job为t3_full任务作业
+rerun jobid=xxx yes
+cancel jobid=xxx yes
+enable jobid=xxx yes
+disable jobid=xxx yes
 
 # --- estimate : 对某次任务进行评估. 它会连接到客户端，并输出这次任务的fileset 中 文件数,和这次备份任务所占的空间
 estimate job=t3_full listing client=t3-fd  #估算下这个备份有多少文件,需要多大容量. 作业任务t3_full,客户端t3-fd
@@ -294,7 +300,7 @@ delete JobId=79  #删除jobid等于79的备份
 list JobId=79    #查看就没有这个备份包了,但在status中还是会出这个,实际存储中空间并没有减小.
 
 # --- 特殊的几个命令
-.jobs     #查看定义的job作业任务名称
+.jobs [type=R]     #查看定义的job作业任务名称. `type=R`是restore job.
 .clients  #查看定义的客户端名称
 .filesets #查看定义的备份资源FS的名称
 .msgs     #查看定义的日志消息记录的名称
@@ -795,6 +801,12 @@ fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
       Incremental Backup Pool = Incremental    # Incremental备份, 使用 "Incremental" 池（在storage中定义）
     }
     ```
+
+
+    备份类型:
+    - Full : 备份整个文件
+    - Incremental : 备份状态变化的文件
+    - Differential : 备份修改了（modified标志变化）的文件
 - job : 任务配置
 
     任务类型分: Backup(备份)/Restore(还原), 默认存在的backup-bareos-fd.conf和BackupCatalog.conf是备份job, RestoreFiles.conf是还原job.
@@ -1197,6 +1209,10 @@ BVFS（Bareos虚拟文件系统）提供了一个API来浏览目录中的备份�
 
 截获bareos cmd: 在BareosBSock.php的send()开头添加打印语句:`error_log("[". date("Y-m-d H:i:s", time()) ."] : $cmd \n", 3, "/tmp/bareos_cmd.log");`.
 
+### bareos python sdk截获cmd
+1. 根据bareos-restapi.py的`current_user.jsonDirector.call()`找到`self.jsonDirector = bareos.bsock.DirectorConsoleJson`
+1. 为`DirectorConsoleJson.call()`添加打印即可, 比如`pprint(command)`
+
 ### log
 使用`-d 500`参数, 可打印详细日志
 
@@ -1242,3 +1258,10 @@ dir, sd, fd均无报错.
 - golang
 
     - [barethoven](https://github.com/myENA/barethoven)
+
+### systemd显示bareos-sd运行中但实际bareos-sd未执行(未监听端口)
+bareos-sd所在host宕机重启后出现该现象. 原因: bareos-sd的pidfile是持久化的, 宕机后该pidfile未清理.
+
+修改bareos-sd.service的PIDFile=/run/xxx.pid, 发现`systemctl start bareos-sd`无法启动.
+
+解决方法: 监控bareos-sd是否监听了端口, 否则执行`systemctl restart bareos-sd`
