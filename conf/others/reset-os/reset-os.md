@@ -25,3 +25,7 @@
 - 向日葵
 
     使用`sudo apt install com.oray.sunlogin.client`, 直接使用`dpkg -i <官方>.deb`会报缺依赖, 且该依赖不再apt repo里.
+### llvm
+```bash
+sudo apt install clang-13 lldb-13 lld-13  llvm-13 llvm-13-dev
+```

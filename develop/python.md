@@ -87,6 +87,22 @@ $ python3 setup.py build_ext --inplace # --inplace 参数让 Cython 在当前目
 $ python3 main.py
 ```
 
+[`Cython.Build.cythonize(module_list, exclude=None, nthreads=0, aliases=None, quiet=False, force=False, language=None, exclude_failures=False, show_all_warnings=False, **options)`参数](https://blog.csdn.net/jay_yxm/article/details/106679075):
+- module_list : 作为模块列表，传递一个 glob 模式，一个 glob 模式列表或一个扩展对象列表。后者允许您通过常规 distutils 选项单独配置扩展。您还可以传递具有 glob 模式作为其源的扩展对象。然后，cythonize 将解析模式并为每个匹配的文件创建扩展的副本
+- exclude : 当将glob模式传递作为module_list时，可以通过将某些模块名称传递到exclude选项中来显式排除某些模块名称
+- nthreads : 并行编译的并发构建数（需要multiprocessing模块）
+- alias
+- quiet : 如果为True，则Cython在编译过程中不会打印错误，警告或状态消息。
+- force : 强制重新编译Cython模块，即使时间戳不表明需要重新编译也是如此。
+- language : 要全局启用C ++模式，可以通过language='c++'。否则，这将基于编译器指令在每个文件级别确定。这仅影响基于文件名找到的模块。传入的扩展实例cythonize()将不会更改。建议使用编译器指令而不是此选项。# - distutils: language = c++
+- exclude_failures :对于广泛的“尝试编译”模式，该模式将忽略编译失败并仅排除失败的扩展，请通过exclude_failures=True。请注意，这仅对编译.py文件有意义，这些文件也可以不经编译而使用。
+- show_all_warnings : 默认情况下，并非所有Cython警告都会被打印。设置为true以显示所有警告。
+- annotate : 如果True，将为每个编译的.pyx或.py文件生成一个 HTML 文件。与普通的 C 代码相比，HTML 文件指示了每个源代码行中的 Python 交互量。它还允许您查看为每行 Cython 代码生成的 C / C ++代码。当优化速度函数以及确定何时 释放 GIL时，此报告非常有用
+- compiler_directives -允许集合中的编译器指令setup.py是这样的：compiler_directives={'embedsignature': True}
+
+注意:
+- [celery 4.3开始才支持Cythonized Tasks](https://docs.celeryproject.org/en/stable/history/whatsnew-4.3.html)
+
 ### 其他
 ```sh
 $ pip --version
