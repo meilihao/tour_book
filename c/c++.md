@@ -950,3 +950,6 @@ clean:
 
 ### 用GCC或者Clang观察预处理后的C++代码
 `g++/clang++ -E -P -std=c++11 -Wall -DBOOST_LOG_DYN_LINK -c ./main.cc >> main.output`
+
+### EXPORT_API
+定义动态链接库的导出符号

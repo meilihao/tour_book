@@ -36,6 +36,11 @@ DRBD在远程传输上支持三种模式：
 # --- 其他
 # drbdadm -c /etc/drbd.conf down r0 # down drbd device
 # drbdadm -c /etc/drbd.conf secondary r0 --force # set secondary role
+## --- 扩容
+# zfs set volsize=20G mypool/test
+# drbdadm resize r0
+# e2fsck -f /dev/drbd0
+# resize2fs /dev/drbd0
 ```
 
 ## FAQ

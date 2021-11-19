@@ -27,6 +27,7 @@ export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 
 # --- rust
 export PATH=$HOME/.cargo/bin:$PATH
+# https://lug.ustc.edu.cn/wiki/mirrors/help/rust-static/
 export RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static # 用于更新 toolchain
 export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup # 用于更新 rustup
 

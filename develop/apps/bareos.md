@@ -262,7 +262,7 @@ list pool    #查看定义的dbpool属性
 llist pool   #查看定义的dbpool属性(更详细)
 
 llist backups client="xxx" filset="any" order=desc limit=200 # 显示该客户端的所有(不限制fileset)备份任务的前200条. v20.2 order参数不生效
-llist jobs job="xxx" jobstatus=x order=desc limit=200 # **llist jobs不支持order**
+llist jobs job="xxx" jobstatus=x limit=200 offset=100 [days=14]# **llist jobs不支持order**
 llist jobid=2160 # 输出jobid=2160的信息
 
 > llist = long list, 即使用与list相同的参数, 但会列出所选记录的完整内容(from db)
@@ -1265,3 +1265,9 @@ bareos-sd所在host宕机重启后出现该现象. 原因: bareos-sd的pidfile�
 修改bareos-sd.service的PIDFile=/run/xxx.pid, 发现`systemctl start bareos-sd`无法启动.
 
 解决方法: 监控bareos-sd是否监听了端口, 否则执行`systemctl restart bareos-sd`
+
+### run job时joblog卡住, `status storage=xxx`显示`Device is BLOCKED waiting for mount of volume "Full-0010"`
+解决方法:
+1. list volume
+2. purge volume=Full-0010 yes
+3. 在Full-0010所在storage执行`systemctl restart bareos-sd`

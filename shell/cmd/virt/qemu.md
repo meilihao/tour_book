@@ -1,6 +1,7 @@
 # qemu
 参考:
 - [Linux 虚拟化入门（一）Qemu，KVM，Virsh 概念指南](https://blog.frytea.com/archives/539/)
+- [QEMU/KVM磁盘在线备份](https://cloud.tencent.com/developer/article/1468103)
 
 Qemu是一个广泛使用的开源计算机仿真器和虚拟机.
 

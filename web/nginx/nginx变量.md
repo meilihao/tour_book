@@ -62,7 +62,8 @@ file path for the current request, based on the root or alias directives, and th
 - $request_id 唯一的请求标识符
 - $request_length 请求的总长度(包括request line, header, 和 request body)
 - $request_method HTTP方法，通常为"GET"或者"POST"
-- $request_time 请求处理时间,单位是秒,精度是毫秒.请求处理时间由从客户端接收到第一个字节开始计时.
+- $request_time 请求处理时间,单位是秒,精度是毫秒.请求处理时间由从客户端接收到第一个字节开始计时, 用于log_format, **推荐使用**
+- $upstream_response_time Nginx 接受完 client 的请求后，再和 upstream server 请求的过程，这个指标才能真正反应 upstream server 的响应情况，虽然通常`upstream_response_time<=request_time`, 用于log_format, **推荐使用**
 - $request_uri 完整的原始请求行（带参数）
 - $scheme 请求协议类型，为"http"或"https"
 - $sent_http_xxx 任意响应头的属性值；属性名使用小写并且用`_`替代`-`

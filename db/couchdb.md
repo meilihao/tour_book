@@ -3,7 +3,8 @@
 - [CouchDB 教程](https://www.w3cschool.cn/couchdb/)
 - [CouchDB 让人头痛的十大问题](https://www.linuxidc.com/Linux/2012-02/54134.htm)
 
-**强烈推荐不使用它, 坑很深. 个人体验是小众且应用范围窄, 开发麻烦, 查询麻烦等, 总之是麻烦比解决方法多**, 推荐使用tidb cluster代替它.
+**强烈推荐不使用它, 坑很深. 个人体验是小众且应用范围窄, 开发麻烦, 查询麻烦等, 总之是麻烦比解决方法多**, 推荐使用tidb cluster代替它:
+1. doc频繁变动, couchdb又会保存历史version, 容易耗光存储
 
 存储格式：JSON : **没有表的概念，数据直接以文档的形式存储在数据库中，每个数据库是一个独立的文档集合**, 因此其数据库就类似于sql的table.
 查询语言：JavaScript
@@ -399,7 +400,7 @@ couchdb内置reduce函数:
     - `endkey=1&descending`: 读取范围是[endkey,文件结尾], 且到endkey为止
 - skip : 指定结果中需要跳过的记录数目
 - group : 指定是否对键进行分组
-- reduce : 指定reduce=false可以只返回 Map 方法的运行结果
+- reduce : 指定reduce=false可以只返回 Map 方法的运行结果. 获取总条数时需要`reduce=true`
 - group_level : 当key为array时, 允许使用group_level指定使用array的前n个元素作为新key来执行mapreduce.
 - include_docs=true : 返回doc
 

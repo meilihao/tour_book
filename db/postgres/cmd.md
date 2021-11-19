@@ -19,3 +19,10 @@ CREATE ROLE
 postgres=# GRANT ALL PRIVILEGES ON DATABASE mytestdb to mytestuser;
 GRANT
 ```
+
+## sql结果保存到file
+```sql
+postgres=# \o /var/lib/pgsql/data/output.txt -- 前提: db user有对应目录保存文件的权限
+postgres=# select * from dummy_table;
+postgres=# \o
+```

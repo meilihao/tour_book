@@ -94,3 +94,12 @@ Redis被配置为保存数据库快照，但它目前不能持久化到硬盘, �
 
     > CONFIG SET dir /tmp/some/directory/other/than/var # 更换redis dir
     > CONFIG SET dbfilename temp.rdb
+
+### 复制进度
+参考:
+- [Redis主从同步与故障切换，有哪些坑？](https://new.qq.com/omn/20201125/20201125A0GFNT00.html)
+
+通过redis 的`INFO replication`命令查看主库接收写命令的进度信息（master_repl_offset）和从库复制写命令的进度信息（slave_repl_offset）, 即`diff=master_repl_offset-slave_repl_offset`, diff=0为复制完成.
+
+### redis cmd监控
+`redis-cli monitor`

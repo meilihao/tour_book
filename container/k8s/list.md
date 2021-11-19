@@ -12,6 +12,9 @@
 - [白话 Kubernetes Runtime](https://juejin.im/entry/5c8e5c28e51d4554ad53a1fc)
 - [eBPF技术应用云原生网络实践系列之kubernetes网络](https://mlog.club/article/5493341)
 - [为什么 Kubernetes 选择了 ETCD？](https://www.mgasch.com/2021/01/listwatch-part-1/)
+- [virtual-kubelet 是一个开源的社区主导型项目，是Kubernetes kubelet的一种实现](https://luanlengli.github.io/2020/11/10/kubernetes%E5%9F%BA%E4%BA%8Evirtual-kubelet%E5%AE%9E%E7%8E%B0%E5%BC%B9%E6%80%A7Pod.html)
+
+    它伪装成kubelet，与Kubernetes集群API通信, 实现Kubernetes API向阿里云的ECI、AWS的Fargate等serverless平台扩展.
 
 ## ha
 - [[k8s源码分析][kube-scheduler]scheduler之高可用及原理](https://www.jianshu.com/p/e30addc18560)

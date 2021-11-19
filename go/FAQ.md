@@ -462,3 +462,29 @@ func handler(ctx *gin.Context) {
 
 ### fmt.Println没有按照预期执行
 type有`Error() string`即实现了error接口时, fmt.Println优先执行它而不是`Stringer`即可.
+
+### json: error calling MarshalJSON for type json.RawMessage
+```go
+type Msg struct{
+	Data json.RawMessage
+}
+
+d:=&Msg{
+	Data: json.RawMessage("test")
+}
+_,err:=json.Marshal(d) // 此处报该错误
+```
+
+原因:`data, _:=json.Marshal("test")`的data与`json.RawMessage("test")`不相等, 即缺少引号.
+
+解决方法:
+```go
+func MarshalAny(v interface{}) json.RawMessage {
+	data,_:=json.Marshal(v)
+	return data
+}
+
+d:=&Msg{
+	Data: MarshalAny("test")
+}
+```
