@@ -128,3 +128,6 @@
 - [HTTP/3 explained](https://daniel.haxx.se/http3-explained/)
 - [quic status](https://datatracker.ietf.org/wg/quic/about/)
 - [HTTP/3 status](https://datatracker.ietf.org/doc/draft-ietf-quic-http/)
+- [QUIC 协议在蚂蚁集团落地之综述](https://my.oschina.net/alimobile/blog/5296337)
+
+    QUIC LB 组件：基于 NGINX 4层 UDP Stream 模块开发.

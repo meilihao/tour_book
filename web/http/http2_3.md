@@ -18,6 +18,8 @@ HTTP/3不存在明文的不安全版本.
 ## quic
 QUIC没有非加密的版本.
 
+跟 TLS 类似，QUIC 的 0RTT 握手，是建立在已经同一个服务器建立过连接的基础上，所以如果是纯的第一次连接，仍然需要一个 RTT.
+
 ## FAQ
 ### [http3为什么不基于UDP使用SCTP](https://http3-explained.haxx.se/zh/why-quic/why-tcpudp)
 SCTP是一个支持数据流的可靠的传输层协议，而且在WebRTC上已有基于UDP的对它的实现.

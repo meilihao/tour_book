@@ -14,6 +14,9 @@
 - [Arch Package, arch官方repo](https://www.archlinux.org/packages/)
 - [aur.archlinux.org - AUR=Arch User Repository, 创建 AUR 的初衷是方便用户维护和分享新软件包，并由官方定期从中挑选软件包进入 community 仓库](https://aur.archlinux.org/packages/)
 
+### 其他打包工具
+- [Arch Linux 软件包制作入门](https://linux.cn/article-13843-1.html)
+
 ## desktop
 ### UbuntuDDE
 参考:

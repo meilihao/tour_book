@@ -35,14 +35,14 @@ export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup # 用�
 export LESSCHARSET=utf-8 # git diff中文乱码
 
 # --- llvm
-alias clang="clang-12"
-alias opt="opt-12"
-alias llvm-dis="llvm-dis-12"
-alias llvm-as="llvm-as-12"
-alias llvm-link="llvm-link-12"
-alias llvm-mc="llvm-mc-12"
-alias lli="lli-12"
-alias llc="llc-12"
+alias clang="clang-13"
+alias opt="opt-13"
+alias llvm-dis="llvm-dis-13"
+alias llvm-as="llvm-as-13"
+alias llvm-link="llvm-link-13"
+alias llvm-mc="llvm-mc-13"
+alias lli="lli-13"
+alias llc="llc-13"
 
 # --- liteide
 export LD_LIBRARY_PATH="/opt/liteide/lib:$LD_LIBRARY_PATH"
