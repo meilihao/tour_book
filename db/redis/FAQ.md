@@ -103,3 +103,20 @@ Redis被配置为保存数据库快照，但它目前不能持久化到硬盘, �
 
 ### redis cmd监控
 `redis-cli monitor`
+
+### 模拟redis aof文件损坏
+```bash
+cp /var/lib/redis/appendonly.aof . # 获取正常aof文件
+redis-check-aof appendonly.aof # 获得size=59962
+truncate appendonly.aof -s 59960
+echo "y"|redis-check-aof --fix appendonly.aof
+```
+
+解决方法:
+```
+cat redis.service
+[Service]
+ExecStartPre=/usr/bin/bash -c "echo 'y'|redis-check-aof --fix /var/lib/redis/appendonly.aof||true" # 可能会丢少量数据
+```
+
+> 追加`||true`原因: appendonly.aof不存在或大小为0时, redis-check-aof会报错

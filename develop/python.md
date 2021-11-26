@@ -2040,3 +2040,31 @@ python setup.py install
 
 ### `No module named 'gi'`
 `yum install python3-gobject-base`
+
+### [flask请求上下文流程](https://zhuanlan.zhihu.com/p/353187030)
+
+### uwsgi 2.0.20(use http) +golang 1.17.2 + `guonaihong/gout v0.2.4`请求丢失
+gout发给uwsgi的请求可能丢失, 表现为go报错:`EOF`或`read: connection reset by peer`.
+
+解决方法: uwsgi前加nginx, uwsgi与nginx用socket通信.
+nginx:
+```conf
+{
+    listen 8359;
+    server_name _;
+    charset utf-8;
+
+    location / {
+        include /etc/nginx/uwsgi_params;
+        uwsgi_pass 127.0.0.1:8361;
+    }
+}
+```
+
+uwsgi.ini:
+```conf
+[uwsgi]
+socket=127.0.0.1:8361
+...
+```
+

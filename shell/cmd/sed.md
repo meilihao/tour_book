@@ -63,6 +63,7 @@ $ sed -e '/google/c\hello' access.log # 将包含"google"的行替换成字符�
 $ sed -n '1,5p;1,5=' access.log # 显示1~5行,并在结果的1~5行上添加行号
 $ sed -i '/原行内容/a要添加的新一行内容' 文件
 $ sed -i '325a要添加的新一行内容' 文件
+$ sed -i '6i 要添加的新一行内容' 文件 # 插入内容
 $ sed -n "/test_string/p" a.log # **仅检测sed匹配到的内容**
 $ sed -i "s@if \[ -f /etc/exports \] && grep -q@if [ -f /etc/exports ] # \&\& grep -q@" b.bak # `&`表示引用及引用被匹配到的字符串, 因此必须转义, 否则此例会导致在被替换字符串中出现两次匹配内容.
 $ sed -i "/LFS_Sources_Root=\${LFSRoot}\/sources/d" build/tcl.sh # 删除行

@@ -9,4 +9,6 @@ ipmitool 是一种可用在 linux 系统下的命令行方式的 ipmi 平台管�
 ### example
 ```
 # ipmitool fru print # 查看主板信息, 依赖mod: ipmi_devintf, ipmi_si
+# ipmitool sensor list # 查看ipmi sensor, 不带属性名
+# ipmitool sensor get "Chassis_Fan1" # 查看背板风扇1的sensor信息, 带属性名
 ```

@@ -74,7 +74,7 @@ deb [trusted=yes] file:///root/bareos-apt/ ./ # 放在第一行， 优先使用.
 # cp bareos-Release-20.0.3.tar.gz SOURCES/bareos-20.0.3.tar.gz
 # cp bareos-Release-20.0.3/core/platforms/packaging/bareos.spec SPECS/bareos.spec # 或使用官方[src.rpm里的spec](https://download.bareos.org/bareos/release/20/CentOS_7/src/).
 # --- set bareos compile platform, 见[core/platforms](https://github.com/bareos/bareos/tree/master/core/platforms), 这里应该参照centos把platform指定为redhat
-# vim SOURCES/bareos-20.0.3.tar.gz
+# vim SOURCES/bareos-20.0.3.tar.gz # 先解压bareos-20.0.3.tar.gz再编辑再重新打包, 会在执行`pmbuild -bb bareos.spec`时因为解压处理软连接问题而报错
 # 修改:
 #     - core/cmake/distname.sh: CentOS) -> CentOS|Kylin)
 #     - core/cmake/BareosGetDistInfo.cmake: COMMAND ${CMAKE_CURRENT_LIST_DIR}/distname.sh -> COMMAND bash ${CMAKE_CURRENT_LIST_DIR}/distname.sh # 因为vim编辑distname.sh后丢失可执行权限
@@ -1271,3 +1271,25 @@ bareos-sd所在host宕机重启后出现该现象. 原因: bareos-sd的pidfile�
 1. list volume
 2. purge volume=Full-0010 yes
 3. 在Full-0010所在storage执行`systemctl restart bareos-sd`
+
+### 使用官方bareos-webui nginx配置可能访问`localhost:9100`空白
+env: php-fpm 7.2
+
+安装php-fpm后会生成`/etc/nginx/default.d/php.conf`, bareos-webui.conf中的`location ~ \.php$`需要使用`php.conf`配置中的`fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;`:
+```
+ include snippets/fastcgi-php.conf;
+
+                # php5-cgi alone:
+                # pass the PHP
+                # scripts to FastCGI server
+                # listening on 127.0.0.1:9000
+                #fastcgi_pass 127.0.0.1:9000;
+
+                # php5-fpm:
+                fastcgi_pass unix:/var/run/php5-fpm.sock;
+
+                # APPLICATION_ENV:  set to 'development' or 'production'
+                #fastcgi_param APPLICATION_ENV development;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; # 脚本文件请求的路径,也就是说当访问127.0.0.1/index.php的时候，需要读取网站根目录下面的index.php文件，如果没有配置这一配置项时，nginx不回去网站根目录下访问.php文件，所以返回空白 
+                fastcgi_param APPLICATION_ENV production;
+```

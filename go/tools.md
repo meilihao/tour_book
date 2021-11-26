@@ -1,4 +1,27 @@
 # tools
+## print struct
+- [github.com/davecgh/go-spew](github.com/davecgh/go-spew)
+
+	```go
+	package main
+
+	import (
+	    "github.com/davecgh/go-spew/spew"
+	)
+
+	type Project struct {
+	    Id      int64  `json:"project_id"`
+	    Title   string `json:"title"`
+	    Name    string `json:"name"`
+	    Data    string `json:"data"`
+	    Commits string `json:"commits"`
+	}
+
+	func main() {
+	    o := Project{Name: "hello", Title: "world"}
+	    spew.Dump(o)
+	}
+	```
 
 ## memmap 可视化数据结构工具
 ```go

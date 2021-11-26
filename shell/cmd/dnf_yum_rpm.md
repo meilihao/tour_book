@@ -226,12 +226,16 @@ rpmbuild 的选项:
 可以先rpmbuild -bp ,再-bc 再-bi 如果没问题，rpmbuild -ba 生成src包与二进制包.
 
 #### spec
+参考:
+- [How to create an RPM package/zh-cn](https://fedoraproject.org/wiki/How_to_create_an_RPM_package/zh-cn)
+
 ```bash
 rpmdev-newspec -o name.spec
 ```
 
 spec:
 ```conf
+Release: 3%{?dist} # 发行编号, 初始值为 1%{?dist}, 每次制作新包时, 应该递增该数字
 Version: xxx # 不能包含`-`
 %prep
 %setup -q                                    # 解压源码并切换到目录

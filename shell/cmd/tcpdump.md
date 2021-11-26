@@ -47,6 +47,9 @@ tcpdump停止捕获数据包时:
     # tcpdump -i eth1 src host 211.167.237.199 and dst port 1467 # 211.167.237.199通过ssh源端口连接到221.216.165.189的1467端口
     # tcpdump -e -i ens160 arp # 截获arp
     # tcpdump -vv -eqtnni ens160 arp # 截获收到的arp
+    # tcpdump -A port 8359
+    # tcpdump -i lo dst port 8359 -X -n -s 0 -vv # 截获发送到127.0.0.1:8359上的tcp数据
+    # tcpdump -i lo src port 8359 or dst port 8359 -X -n -s 0 -vv # 截获发送到127.0.0.1:8359上或由它发出的tcp数据
 
 注意:
 1. 主机有多个网卡时(比如192.168.0.166, 192.168.0.168), 发生数据包的ip是不确定的.
