@@ -86,6 +86,9 @@ LD_LIBRARY_PATH='' dpkg-buildpackage -rfakeroot -nc -uc # 使用`-nc`避免重�
 ```
 
 ## linstor-client
+参考:
+- [DRBD9 and LINSTOR the easy way](https://pub.nethence.com/storage/drbd-linstor)
+
 ```bash
 linstor node restore <node> # 重新注册node
 linstor physical-storage list # 罗列node上的disk

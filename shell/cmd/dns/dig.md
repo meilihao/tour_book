@@ -1,4 +1,6 @@
 # dig
+参考:
+- [如何使用 dig](https://linux.cn/article-14051-1.html)
 
 ## 描述
 

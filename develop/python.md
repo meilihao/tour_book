@@ -2068,3 +2068,11 @@ socket=127.0.0.1:8361
 ...
 ```
 
+### date format
+- [Python datetime 格式化字符串：strftime()](https://blog.csdn.net/shomy_liu/article/details/44141483)
+
+### 打印对象
+ref:
+- [Python打印对象的全部属性](https://blog.51cto.com/steed/2046408)
+
+`print('\n'.join(('%s:%s' % item for item in dict1.items())))`  # 每行一对key和value，中间是分号

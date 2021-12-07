@@ -165,7 +165,7 @@ mirror/raidz设备不能从pool中删除, 但可增删不活动的hot spares(热
 只要读取数据或zfs遇到错误，`zpool scrub`就会在可能的情况下进行静默修复.
 
 ```sh
-$ zpool scrub <pool> # 检修 pool
+$ zpool scrub <pool> # 检修 pool, 异步执行, 命令启动zpool后台检查后会立即返回. 此时zpool status输出的scan会显示scrub的执行信息.
 $ zpool scrub -s <pool> # 取消正在运行的检修
 ```
 

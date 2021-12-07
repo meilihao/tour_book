@@ -68,7 +68,7 @@ deb [trusted=yes] file:///root/bareos-apt/ ./ # 放在第一行， 优先使用.
 
 ```bash
 # --- kylin v10
-# dnf install kylin-lsb kylin-release # 其他依赖rpmbuild时根据提示安装
+# dnf install kylin-lsb kylin-release jansson-devel # 其他依赖rpmbuild时根据提示安装. jansson-devel kylin默认没有,导致没法启用".api json"
 # rpmdev-setuptree
 # cd ~/rpmbuild
 # cp bareos-Release-20.0.3.tar.gz SOURCES/bareos-20.0.3.tar.gz

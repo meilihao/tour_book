@@ -36,4 +36,5 @@ xfs fs扩容
 
 ```bash
 # xfs_admin -U generate /dev/sdb7 # 使用xfs_admin为分区生成新的uuid. 其他方法: 1. `tune2fs -U c1b9d5a2-f162-11cf-9ece-0020afc76f16 /dev/sda5` 2. `uuidgen | xargs tune2fs /dev/sda5 -U`
+# xfs_admin -lu /dev/mapper/vg_test-lv_test # 查看lable和uuid
 ```
