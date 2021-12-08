@@ -117,16 +117,10 @@
 - [Golang底层实现系列——map的底层实现](https://segmentfault.com/a/1190000040269520)
 - [golang cron 定时任务](https://cloud.tencent.com/developer/article/1422445)
 
-## tools
-- [Go数据结构完美打印](https://github.com/shivamMg/ppds)
-- [Go调优神器trace介绍](https://studygolang.com/articles/9693)
-- [go代码混淆](https://www.bcskill.com/index.php/archives/1000.html)
-
 ## mirror
 - [go sdk](https://mirrors.ustc.edu.cn/golang/)
 
 ## 编译
-- [使用 upx 压缩 go build 打包的可执行文件](https://abelsu7.top/2019/10/24/go-build-compress-using-upx/)
 - [交叉编译Go程序](https://holmesian.org/golang-cross-compile)
 
 ## example

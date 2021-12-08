@@ -1,6 +1,6 @@
 # tools
 ## print struct
-- [github.com/davecgh/go-spew](github.com/davecgh/go-spew)
+- [github.com/davecgh/go-spew， **推荐**](github.com/davecgh/go-spew)
 
 	```go
 	package main
@@ -22,6 +22,7 @@
 	    spew.Dump(o)
 	}
 	```
+- [Go数据结构完美打印](https://github.com/shivamMg/ppds)
 
 ## memmap 可视化数据结构工具
 ```go
@@ -60,6 +61,15 @@ func main() {
 ```
 dot -Tpng -o a.png a.dot
 ```
+
+## 压缩binary
+- [使用 upx 压缩 go build 打包的可执行文件](https://abelsu7.top/2019/10/24/go-build-compress-using-upx/)
+
+## 代码混淆
+- [go代码混淆 - gobfuscate](https://www.bcskill.com/index.php/archives/1000.html)
+
+## 调优
+- [Go调优神器trace介绍](https://studygolang.com/articles/9693)
 
 ## IDE
 ### FAQ

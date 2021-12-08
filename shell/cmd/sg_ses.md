@@ -121,3 +121,6 @@ $ sg_ses -x 5 -C ident /dev/sg3
 > `sg_ses -p 0xa /dev/sg0`, sg0是主机柜, 此时能看到sdd sas_address信息.
 
 解决方法: 更换SAS卡
+
+### 设备类型
+- sr<N> : 光驱设备, major=11
