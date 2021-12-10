@@ -308,7 +308,7 @@
 
     **couchdb v2开始, source和target必须是完整的url形式.**
 
-    查看复制进度: http://username:password@localhost:5984/_active_tasks的progress.
+    查看复制进度: `http://username:password@localhost:5984/_active_tasks`的`progress(0~100, 100是完成)`, 新版couchdb用其中的`changes_pending("0/没有该属性"是完成)`判断.
     复制时, **源和目的必须都必须已存在**， 或使用`"create_target":true`选项, 不存在目的时自动创建; 复制仅针对创建复制时的状态, 复制开始后的变更(创建/修改/删除)都不会被复制.
 
     复制内容包括新增/已修改/已删除的doc. couchdb中每个数据库有一个序列号, 每次变更都会加一, 且会记录哪个变更对应哪个序列号. couchdb支持增量复制.
