@@ -58,6 +58,29 @@ $ file test
 
 [GOOS 与 GOARCH 支持的参数](https://golang.org/doc/install/source#environment)
 
+## cgo
+编译参数:
+- `-linkmode external -extldflags -static`
+
+    ref:
+    - [CGO_ENABLED环境变量对Go静态编译机制的影响](https://johng.cn/cgo-enabled-affect-go-static-compile/)
+
+    在$GOROOT/cmd/cgo/doc.go中，文档介绍了cmd/link的两种工作模式：internal linking和external linking:
+    - internal linking
+
+        若用户代码中仅仅使用了net、os/user等几个标准库中的依赖cgo的包时, cmd/link默认使用internal linking(go本身实现的linker)，而无需启动外部external linker(如:gcc、clang等)，不过由于cmd/link功能有限，仅仅是将.o和pre-compiled的标准库的.a写到最终二进制文件中. 因此如果标准库中是在CGO_ENABLED=1情况下编译的，那么编译出来的最终二进制文件依旧是动态链接的，即便在go build时传入-ldflags '-extldflags "-static"'亦无用，因为根本没有使用external linker.
+
+    - external linking
+
+        运行机制则是cmd/link将所有生成的.o都打到一个.o文件中，再将其交给外部的链接器(比如gcc或clang)去做最终链接处理. 如果此时，在cmd/link的参数中传入-ldflags '-linkmode "external" -extldflags "-static"'，那么gcc/clang将会去做静态链接，将.o中undefined的符号都替换为真正的代码. 因此可以通过-linkmode=external来强制cmd/link采用external linker.
+
+    结论:
+    - 根据程序用了哪些标准库包, 如果仅仅是非net、os/user等的普通包, 那么程序默认将是纯静态的，不依赖任何c lib等外部动态链接库
+    - 如果使用了net这样的包含cgo代码的标准库包, 那么CGO_ENABLED的值将影响你的程序编译后的属性, 是静态的还是动态链接的:
+        
+        - CGO_ENABLED=0的情况下，Go采用纯静态编译
+        - 如果CGO_ENABLED=1，但依然要强制静态编译，需传递-linkmode=external给cmd/link
+
 # ast
 Go语言的优势在于它是一个静态类型语言，语法很简单，与动态类型语言相比更简单一些, 且Go语言标准库支持代码解析功能. 代码解析流程可分为3步:
 
