@@ -2,6 +2,8 @@
 参考:
 - [Managing storage devices#Getting started with iSCSI](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/managing_storage_devices/getting-started-with-iscsi_managing-storage-devices)
 - [FC 和iSCSI的使用差异](https://www.huaweicloud.com/articles/57a2047190a7768914f2a0040d3da26f.html)
+- [NVMe over Fabric - nvmetcli(nvme target)](https://documentation.suse.com/zh-cn/sles/12-SP4/html/SLES-all/cha-nvmeof.html#sec-nvmeof-host-configuration)
+- [Configuring iSCSI Initiator(优化)](https://spdk.io/doc/iscsi.html)
 
 
 ```bash
@@ -299,9 +301,11 @@ iscsiadm:
 ### example
 ```bash
 # iscsiadm -m discovery -t st -p 192.168.10.10
-# iscsiadm -m discoverydb -t st -p 192.168.10.10 -o show # 输出discovery信息(含认证)
+# iscsiadm -m discovery -t st -p 192.168.10.10 -o show # 输出discovery信息(含认证)
 # iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linux.x8664:sn.d497c356ad80 -p 192.168.10.10 --login # 此时是禁用CHAP的情况 ,在 iSCSI 客户端成功登录之后,会在客户端主机上多出一块名为`/dev/sd${xxx}` 的设备文件. `-T`表示要挂载的盘. 如果target使用了多张网卡时会存在多路径问题, 挂载磁盘数=target提供的磁盘数*路径数
-# iscsiadm -m session -P 3 # 获取挂载信息, `-P`, 信息的详细level, 越大越详细.
+# iscsiadm -m session -P 3 | grep "Attached scsi disk" | awk '{print $4}' # 获取挂载信息并显示所有已登录iSCSI会话中每个SCSI LUN的`/dev`节点名称. `-P`, 信息的详细level, 越大越详细.
+# iscsiadm -m node --login # Connect to target, 即挂载所有discovery中发现的scsi盘
+# iscsiadm -m node -o delete # 删除Target节点缓存, 这将导致启动器忘记所有先前发现的iSCSI目标节点
 # mkfs.xfs /dev/sdb
 # mkdir /iscsi
 # mount /dev/sdb /iscsi
@@ -309,7 +313,7 @@ iscsiadm:
 # vim /etc/fstab
 UUID=eb9cbf2f-fce8-413a-b770-8b0f243e8ad6 /iscsi xfs defaults,_netdev 0 0 # 由于iscsi 磁盘是一块网络存储设备,而 iSCSI 协议是基于TCP/IP 网络传输数据的, 因此必须在/etc/fstab 配置文件中添加上_netdev 参数,表示当系统联网后再进行挂载操作,以免系统开机时间过长或开机失败.
 # umount /iscsi   # 如果磁盘正在挂载使用，建议先卸载再登出
-# iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linux.x8664:sn.d497c356ad80 -u # 登出
+# iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linux.x8664:sn.d497c356ad80 -u # 登出, 或使用`iscsiadm -m node --logout`全部登出
 ```
 
 针对某个target设置chap:
@@ -471,6 +475,13 @@ env: Ubuntu 16.04 arm64, zfs 0.8.6
 
 ### iscsi client block的model属性
 iscsi盘的`lsblk --scsi`的model属性是其target使用的storage object的name.
+
+### nqn
+nvme命令首先从`/etc/nvme/hostnqn`读取默认值, 如果不存在, 则由来自 NVMe 主机内核模块自动生成的NQN.
+```bash
+# cat /etc/nvme/hostnqn
+nqn.2014-08.org.nvmexpress:uuid:75953f3b-77fe-4e03-bf3c-09d5a156fbcd
+```
 
 # tgtadm
 参考:

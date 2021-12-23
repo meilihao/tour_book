@@ -39,4 +39,5 @@ $ rsync -avc --dry-run --update ./* root@192.168.0.137:/opt/test # 仅计算同�
 $ rsync -avc --update --exclude="adapter" ./* root@192.168.0.137:/opt/test # 会排除./adapter
 $ rsync -P --rsh=ssh aliyun:~/git/lfs.img.zstd . # 断点续传
 $ rsync -ah --progress source destination # 拷贝带进度
+$ sspass -p "<password>" rsync -ah --progress source destination # 传入ssh password
 ```
