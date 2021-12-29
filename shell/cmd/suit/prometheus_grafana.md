@@ -80,6 +80,28 @@ EOF
 - --config.file=prometheus.yml : 指定配置文件
 - --web.listen-address=:9090 : 指定web访问端口, 此时必须指定`--config.file=prometheus.yml`
 
+systemd demo:
+```bash
+# cat > /etc/sysconfig/prometheus << EOF
+OPTIONS="--config.file=/opt/prometheus/prometheus.yml"
+EOF
+# cat > /lib/systemd/system/prometheus.service << EOF
+[Unit]
+Description=prometheus
+Documentation=https://prometheus.io/
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/opt/prometheus/prometheus $OPTIONS
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
 ## 部署node_exporter
 ```
 # ./node_exporter
@@ -100,6 +122,29 @@ scrape_configs:
 此时访问http://localhost:9090，进入到Prometheus Server, 选择顶部导航栏的 Status --> Targets 中可以看到多了一个新的名为"node"的job且State为"Up"即表示添加job成功.
 
 systemd部署见[node_exporter.service](https://github.com/prometheus/node_exporter/blob/master/examples/systemd/node_exporter.service)
+
+systemd demo:
+```bash
+# cat > /etc/sysconfig/node_exporter << EOF
+OPTIONS="--collector.textfile.directory /var/lib/node_exporter/textfile_collector"
+EOF
+# cat > /lib/systemd/system/node_exporter.service << EOF
+[Unit]
+Description=node_exporter
+Documentation=https://prometheus.io/
+After=network.target
+
+[Service]
+Type=simple
+User=root
+EnvironmentFile=/etc/sysconfig/node_exporter
+ExecStart=/usr/local/bin/node_exporter $OPTIONS
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
 
 # grafana
 参考:
@@ -141,6 +186,8 @@ User：用户，这个概念应该很简单. Grafana里面用户有三种角色a
 
 > grafana配置位置: /etc/grafana/grafana.ini
 
+非docker版安装参考[Download Grafana](https://grafana.com/grafana/download).
+
 ### Grafana 配置数据源
 点击左侧菜单栏-设置-data sources-"Add data source"-选择"Prometheus", 在"Settings" tag页输入Prometheus配置信息, 再选中"Dashboards" tag页Import "Prometheus 2.0 Stats", 再保存即可.
 
@@ -172,3 +219,14 @@ prometheus(`/home/tidb/tidb-deploy/prometheus-9090/scripts/run_prometheus.sh`)�
 
 ### grafana添加"Data Sources / Prometheus"报`HTTP Error Bad Gateway`
 尝试使用`curl http://<prometheus_sever>/metrics`测试, 通常是当前浏览器无法访问到`http://<prometheus_sever>/metrics`导致的, 比如grafana, prometheus部署在aliyun, 此时用`localhost:9090`作为prometheus url就会报该错.
+
+### grafana添加prometheus源时报`Error reading Prometheus: Post "/api/v1/query":  unsupported protocol scheme`
+配置中的HTTP节的URL必须填写内容.
+
+### grafana share, 比如面板内嵌(embe)
+ref:
+- [Share a panel](https://grafana.com/docs/grafana/latest/sharing/share-panel/)
+
+方法需两步:
+1. 在grafana.ini的`[security]`中启用`allow_embedding=true`, 否则会报`Refused to display '<grafana url>' in a frame because it set 'X-Frame-Options' to 'deny'.`
+2. 在grafana.ini的`[auth.anonymous]`中启用`enabled=true`, 否则嵌入的iframe就需要登入.

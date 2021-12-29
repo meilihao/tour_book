@@ -19,6 +19,10 @@
 PV管理工具
 
 - pvs: 简要显示物理卷信息
+
+    ```bash
+    # pvs --reportformat json
+    ```
 - pvdisplay: 显示物理卷详细信息
 - pvcreate: 创建物理卷
 - pvremove: 移除物理卷
@@ -26,6 +30,11 @@ PV管理工具
 VG管理工具
 
 - vgs: 简要显示卷组信息
+
+
+    ```bash
+    # vgs --reportformat json
+    ```
 - vgdisplay: 显示卷组详细信息
 - vgcreate: 创建卷组
 - vgextend: 扩展卷组
@@ -35,6 +44,10 @@ VG管理工具
 LV管理工具
 
 - lvs: 简要显示逻辑卷信息
+
+    ```bash
+    # lvs --reportformat json
+    ```
 - lvdisplay: 显示逻辑卷详细信息
 - lvcreate: 创建逻辑卷
         

@@ -166,3 +166,21 @@ deb-src http://pl.archive.ubuntu.com/ubuntu/ natty main restricted
 
 ### dpkg-buildpackage报Warning "Compatibility levels before 9 are deprecated"
 将项目`debian/compat`中的数字改为9即可
+
+### 创建debian/changelog
+`dch --create`, 并使用`dch -i`插入新changelog.
+
+### 构建deb报`dch: error: fatal error occurred while parsing debian/changelog`
+debian/changelog格式有错误, 解决方法有两种:
+1. 找出错误
+1. 使用`dch --create`构建一份新的changelog, 并将内容替换为旧debian/changelog的第一条记录.
+
+### 构建deb报`debsign: gpg error occurred!  Aborting....`
+debuild默认构建deb需要gpg签名, 通过`man debuild`可用`debuild -i -us -uc -b`构建deb
+
+### 构建deb报`Now running lintian liburing_2.1-1_amd64.changes ...\nE: liburing-dev: debian-changelog-file-missing`
+通过`man debuild`可用`debuild --no-lintian`禁止运行lintian, `--no-lintian`必须是第一个参数. **通过liburing构建deb观察到该报错在构建出deb之后, 因此推测它不影响deb构建.**
+
+### 构建deb后没找到deb
+1. deb在当前目录的上一层
+1. 指定了构建目录, 比如liburing在`/tmp/release/<os>/liburing`

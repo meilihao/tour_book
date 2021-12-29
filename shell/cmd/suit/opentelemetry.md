@@ -133,6 +133,8 @@ API分为四个部分：
   jaegertracing/all-in-one:1.21
 ```
 
+> [jaeger使用的port](https://www.jaegertracing.io/docs/1.29/getting-started/)
+
 实际部署参考[start_jaeger.sh](/container/dockerfile/jaeger_elasticsearch)
 
 访问http://localhost:16686即可看到jaeger ui.
@@ -166,21 +168,35 @@ EOF
 # ss -anlpt |grep 16686 # 16686 for jaeger ui
 ```
 
-**当前(2020/11/07), opentelemetry-all-in-one(jaeger-collector)不支持opentelemetry go sdk发送的数据, 报["unknown service opentelemetry.proto.collector.metrics.v1.MetricsService"](https://github.com/jaegertracing/jaeger/issues/2620)**
+**当前(2020/11/07), opentelemetry-all-in-one(jaeger-collector)不支持opentelemetry go sdk发送的metrics数据, 报["unknown service opentelemetry.proto.collector.metrics.v1.MetricsService"](https://github.com/jaegertracing/jaeger/issues/2620)**
 
 > jaeger-collector 等价于 OpenTelemetry collector, 估计是jaeger定制的OpenTelemetry collector.
 
 ### 2. prometheus+grafana
 参考[prometheus_grafana.md](/shell/cmd/suit/prometheus_grafana.md)
 
-### 3. OpenTelemetry Collector
-1. 下载[binary](https://github.com/open-telemetry/opentelemetry-collector/releases).
+### 3. OpenTelemetry Collector(v0.41.0)
+1. 下载[binary](https://github.com/open-telemetry/opentelemetry-collector-releases/releases).
 1. 运行otelcol_linux_amd64
 
+    ref:
+    - [opentelemetry-collector examples](https://github.com/open-telemetry/opentelemetry-collector/blob/main/examples)
+    - [OpenTelemetry Collector Architecture](https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/design.md)
+    - [Configuring the OpenTelemetry Collector:](https://www.sumologic.com/blog/configure-opentelemetry-collector/)
+
+    **[opentelemetry-collector git repo默认不再包含`exporter/jaegerexporter`(已被移到[`opentelemetry-collector-contrib `](https://github.com/open-telemetry/opentelemetry-collector-contrib)), PR是[这个](](https://github.com/open-telemetry/opentelemetry-collector/issues/3474)), 因此可用ocb工具精简binary. 同时根据[otel发行版Distributions](https://opentelemetry.io/docs/collector/distributions/), otel官方提供的binary已包含全部opentelemetry-collector-contrib组件**.
+
+    > otel精简构建可参考[OpenTelemetry Collector builder](https://github.com/open-telemetry/opentelemetry-collector/tree/main/cmd/builder)+[distributions/otelcol-contrib/manifest.yaml](https://github.com/open-telemetry/opentelemetry-collector-releases/blob/main/distributions/otelcol-contrib/manifest.yaml)
+
     ```bash
+    # --- 下载相应版本的ocb
+    # cat << EOF > otelcol-builder.yaml
+    exporters:
+      - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/exporter/jaegerexporter v0.41.0
+      - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/exporter/prometheusexporter v0.41.0
+    # ocb --config otelcol-builder.yaml # 参考 opentelemetry-collector-releases的distributions/otelcol-contrib/manifest.yaml
+    # mv /tmp/otelcol-distribution1631641147/otelcol-custom /usr/local/bin/otelcol
     # cat << EOF > otel-config.yaml
-    # [OpenTelemetry Collector Architecture](https://github.com/open-telemetry/opentelemetry-collector/blob/master/docs/design.md)
-    # [Configuring the OpenTelemetry Collector:](https://www.sumologic.com/blog/configure-opentelemetry-collector/)
     extensions:
       health_check:
       pprof:
@@ -208,11 +224,12 @@ EOF
 
     # logging is print in stdout
     exporters:
-      # logging:
-      #   logLevel: debug
+      logging:
+        logLevel: debug
       jaeger:
         endpoint: localhost:14250
-        insecure: true # 否则需要设置tls
+        tls:
+          insecure: true # 否则需要设置tls
       prometheus: # 作为prometheus的client(opentelemetry-collector收集的其clients的metrics), 被prometheus server采集metrics
         endpoint: "0.0.0.0:8889"
         namespace: promexample
@@ -220,7 +237,7 @@ EOF
           label1: value1
 
     service:
-
+      extensions: [health_check, pprof, zpages]
       pipelines:
 
         # traces:
@@ -246,20 +263,20 @@ EOF
           receivers: [otlp]
           processors: [batch]
           exporters: [logging]
-
-      extensions: [health_check, pprof, zpages]
     EOF
-    # ./otelcol_linux_amd64 --config otel-config.yaml
+    # otelcol --config otel-config.yaml
     ```
 
+    > 通过[otel receiver/otlpreceiver](https://github.com/open-telemetry/opentelemetry-collector/blob/main/receiver/otlpreceiver)和[otel exporter/otlpexporter](https://github.com/open-telemetry/opentelemetry-collector/blob/main/exporter/otlpexporter)推测exporters的otlp是用于级联opentelemetry-collector.
+
 otelcol端口:
+- 4317 : grpc, 接收OpenTelemetry client的上传(以前port是55680)
+- 4318 : http, 接收OpenTelemetry client的上传(以前port是55681)
 - 1777 : pprof extension
 - 8888 : prometheus server采集OpenTelemetry Collector's metrics
 - 8889 : 作为prometheus的client(opentelemetry-collector收集的其clients的metrics), 被prometheus server采集metrics
 - 13133 : health_check extension
 - 55679 : zpages extension
-- 55680 : grpc, 接收OpenTelemetry client的上传
-- 55681 : http, 接收OpenTelemetry client的上传
 
 > opentelemetry collector 支持级联by [otlpexporter](https://github.com/open-telemetry/opentelemetry-collector/tree/master/exporter/otlpexporter)/[otlphttpexporter](https://github.com/open-telemetry/opentelemetry-collector/tree/master/exporter/otlphttpexporter), 此时前一级的opentelemetry-collector也被成为opentelemetry agent.
 
@@ -284,3 +301,6 @@ systemctl start elasticsearch
 ```
 
 解决方法: 重启jaeger-collector和jaeger-query后解决.
+
+### ocb构建报`IncludeCore is deprecated. Starting from v0.41.0, you need to include all components explicitly`
+不是错误, 只是WARN并打印了stack信息.
