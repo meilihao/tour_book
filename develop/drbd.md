@@ -88,3 +88,6 @@ r0.res: node2的hostname是不存在的, disk与node1相同， address是127.0.0
 直接挂载drbd的底层disk报该错. 解决方法: 创建drbd device来操作该disk.
 
 ### [drbd matedata大小](https://linbit.com/drbd-user-guide/drbd-guide-9_0-cn/#s-meta-data-size)
+
+### 谁占用drbd
+用`cat /sys/kernel/debug/drbd/resources/r46/volumes/0/openers`查看.

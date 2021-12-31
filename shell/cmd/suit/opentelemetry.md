@@ -273,7 +273,7 @@ otelcol端口:
 - 4317 : grpc, 接收OpenTelemetry client的上传(以前port是55680)
 - 4318 : http, 接收OpenTelemetry client的上传(以前port是55681)
 - 1777 : pprof extension
-- 8888 : prometheus server采集OpenTelemetry Collector's metrics
+- 8888 : OpenTelemetry Collector's exposed metrics
 - 8889 : 作为prometheus的client(opentelemetry-collector收集的其clients的metrics), 被prometheus server采集metrics
 - 13133 : health_check extension
 - 55679 : zpages extension

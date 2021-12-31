@@ -76,10 +76,6 @@ EOF
 
 访问http://localhost:9090
 
-其他配置:
-- --config.file=prometheus.yml : 指定配置文件
-- --web.listen-address=:9090 : 指定web访问端口, 此时必须指定`--config.file=prometheus.yml`
-
 systemd demo:
 ```bash
 # cat > /etc/sysconfig/prometheus << EOF
@@ -87,7 +83,7 @@ OPTIONS="--config.file=/opt/prometheus/prometheus.yml"
 EOF
 # cat > /lib/systemd/system/prometheus.service << EOF
 [Unit]
-Description=prometheus
+Description=prometheus server daemon
 Documentation=https://prometheus.io/
 After=network.target
 

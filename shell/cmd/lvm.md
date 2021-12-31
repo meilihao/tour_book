@@ -51,6 +51,7 @@ LV管理工具
 - lvdisplay: 显示逻辑卷详细信息
 - lvcreate: 创建逻辑卷
         
+    - -l ： 指定逻辑卷的大小（LE数）
     - -L: 大小[mMgGtT]
     - -n: 指定创建卷名
     - -s: 指定创建为快照
@@ -90,6 +91,8 @@ LVM 还具备有`快照卷`功能，该功能类似于虚拟机软件的还原�
 # vgremove storage # 删除vg
 # pvremove /dev/sdb /dev/sdc # 删除物理卷设备 
 ```
+
+lvm可用`ls /dev/mapper/*`查看, 用`dmsetup remove /dev/dm-2`删除, [可用`vgchange -ay <vg>`重新激活](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/configuring_and_managing_logical_volumes/assembly_lvm-activation-configuring-and-managing-logical-volumes).
 
 ## vg配置
 在`/etc/lvm/backup/<vg_name>`里.
