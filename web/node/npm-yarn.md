@@ -31,12 +31,13 @@
 
 `npm bin -g`  # npm全局 二进制命令PATH
 
+`npm config ls -l`
 # yarn
 
 ```sh
 # 实际是在`~/.yarnrc`添加配置信息,与npm配置(`~/.npmrc`)方式一样
 yarn config get registry
-yarn config set registry 'https://registry.npm.taobao.org'  
+yarn config set registry 'https://registry.npm.taobao.org'
 ```
 
 `yarn global bin` # yarn全局 二进制命令PATH

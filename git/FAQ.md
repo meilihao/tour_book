@@ -208,13 +208,6 @@ git show commitId fileName # 查看某次commit中具体某个文件的修改
 # git checkout -b xxx orgin/xxx
 ```
 
-### git log filter
-```
-# git log --author="meilihao"
-# git log --since="2019-02-20" --until='2012-12-10'
-# git log --after="2019-02-20"
-```
-
 ### Git cherry-pick `from another repository`/`cross repository`
 参考:
 - [使用 Git 時如何做出跨 repo 的 cherry-pick](https://blog.m157q.tw/posts/2017/12/30/git-cross-repo-cherry-pick/)
@@ -372,8 +365,15 @@ hello_zstack.git是全新repo, 必须有git log(即有内容)才行.
 # git pull --depth 1 origin master
 ```
 
+### git log filter
+```
+# git log --author="meilihao" --reverse --pretty="%H" |xargs -I {} bash -c "git show {} --stat --pretty='%b'|grep src"
+# git log --since="2019-02-20" --until='2012-12-10'
+# git log --after="2019-02-20"
+```
+
 ### [git筛选commit制作patch](https://stackoverflow.com/questions/14591888/apply-patches-created-with-git-log-p?rq=1)
-`git log --reverse --author="John\|Mary" –since "Fri Jul 23 09:38:07 2021 +0800" --no-merges --pretty="%H" -- <path>`:
+`git log --reverse --author="John\|Mary" --since "Fri Jul 23 09:38:07 2021 +0800" --no-merges --pretty="%H" -- <path>`:
 - `--reverse` : git log本身输出是倒叙的
 - `-since` : 指定大于等于某个时刻
 - `--no-merges` : 不包含merge commit
@@ -396,3 +396,11 @@ done
 ```
 
 > 上述script使用`git log xxx | awk '{print -NR, " ", $0}'` + `git format-patch $c -o patches`时会因为`$c`的内的换行导致执行结果与实际不符.
+
+### 查看commit的文件变动
+```bash
+git show <commit> --stat # 使用`--stat`时可能因输出内容过宽导致出现`...`替换从而导致后接的grep不匹配
+git show <commit> --name-only # 对merge无效
+git show <commit> --name-status # 对merge无效
+git show 6db185d0118853b9382f6550b3741f13557450a1 --stat --pretty="%b"
+```

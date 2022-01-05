@@ -9,13 +9,14 @@
 - [*从理论到实践，全方位认识DNS](https://www.cloudxns.net/Index/index.html)
 
 ## 硬件
- - [为什么寄存器比内存快？](2015_05_23_012.md)
+- [为什么寄存器比内存快？](2015_05_23_012.md)
 
 ## base
- - [互联网协议入门（一）](http://www.ruanyifeng.com/blog/2012/05/internet_protocol_suite_part_i.html)
- - [MVC，MVP 和 MVVM 的图示](http://www.ruanyifeng.com/blog/2015/02/mvcmvp_mvvm.html)
+- [互联网协议入门（一）](http://www.ruanyifeng.com/blog/2012/05/internet_protocol_suite_part_i.html)
+- [MVC，MVP 和 MVVM 的图示](http://www.ruanyifeng.com/blog/2015/02/mvcmvp_mvvm.html)
 - [浏览器HTTP缓存原理分析](http://www.cnblogs.com/tzyy/p/4908165.html)
 - [Web消息推送的技术及websocket](2016_09_11_001.md)
+- [Http协议中的各种长度限制总结](https://sites.google.com/site/gzhpwiki/home/guo-cheng-shi-jian/http-xie-yi-zhong-de-ge-zhong-zhang-du-xian-zhi-zong-jie)
 
 ## web
 - [已支持http2的软件](https://github.com/http2/http2-spec/wiki/Implementations)

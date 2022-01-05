@@ -60,7 +60,7 @@ LV管理工具
 
     - -L: 指定大小
 - resize2fs: 调整文件系统
-- lvremove: 缩小逻辑卷
+- lvremove: 删除逻辑卷
 
 功能/命令 物理卷管理 卷组管理 逻辑卷管理
 扫描 pvscan vgscan lvscan
@@ -81,6 +81,7 @@ LVM 还具备有`快照卷`功能，该功能类似于虚拟机软件的还原�
 # lvcreate -L 20G --thinpool Data_Pool storage # 创建thin pool, 它是建立在vg上
 # lvcreate -V 10G --thin -n thin_LV_data01 storage/Data_Pool # 创建thin volume
 # lvcreate -n vo -l 37 storage # 用37个pe创建lv
+# lvdisplay /dev/mapper/vo # 或 lvdisplay /dev/storage/vo
 # mkfs.ext4 /dev/storage/vo
 # lvextend -L 290M /dev/storage/vo # lv扩容, 但需先umount
 # e2fsck -f /dev/storage/vo # 检查文件系统的完整性，并重置硬盘容量
@@ -94,5 +95,11 @@ LVM 还具备有`快照卷`功能，该功能类似于虚拟机软件的还原�
 
 lvm可用`ls /dev/mapper/*`查看, 用`dmsetup remove /dev/dm-2`删除, [可用`vgchange -ay <vg>`重新激活](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/configuring_and_managing_logical_volumes/assembly_lvm-activation-configuring-and-managing-logical-volumes).
 
+lvm会以`/dev/<vg>/<lv>`形式生成块设备的软连接, 这与zvol类似.
+
 ## vg配置
 在`/etc/lvm/backup/<vg_name>`里.
+
+## FAQ
+### 从lv名称中获取vg名称
+lv名称的第一个`-`前的字符为vg名称

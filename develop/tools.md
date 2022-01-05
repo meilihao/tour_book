@@ -13,3 +13,9 @@
 
 - [火焰图]
 - [perf]
+
+## api转换
+to OpenAPI 3.0:
+- [postman-to-swagger](https://www.npmjs.com/package/postman-to-swagger)
+- [postman-to-swagger(online)](https://metamug.com/util/postman-to-swagger/)
+- [postman-to-swagger : lib](https://github.com/tecfu/postman-to-swagger)
