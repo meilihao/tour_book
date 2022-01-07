@@ -1,4 +1,19 @@
 # virt-manager
+基于libvirt的管理vm的gui工具.
+
+virt-viewer经常用于替换传统的VNC客户端查看器， 因为后者通常不支持x509认证授权的SSL/TLS加密， 而virt-viewer是支持的.
+
+virt-install命令行工具为虚拟客户机的安装提供了一个便捷易用的方式， 它也是用libvirt API来创建KVM、 Xen、 LXC等各种类型的客户机， 同时， 它也为
+virt-manager的图形界面创建客户机提供了安装系统的API. 使用virt-install中的一些选项（--initrd-inject、 --extra-args等） 和Kickstart文件， 可以实现无人值守的自动化安装客户机系统.
+
+virt-top是一个用于展示虚拟化客户机运行状态和资源使用率的工具.
+
+## 安装与使用
+```bash
+# dnf install virt-manager
+# virt-manager -c qemu+ssh://192.168.158.31/system
+```
+
 ## 构建
 前提:
 1. qemu
@@ -83,3 +98,14 @@ ubuntu 16.04没有python3-libxml2, 用`pip3 install libxml2-python3`
 
 ### virt-manager新建连接报错: `Cannot recv data: ssh_askpass: exec(/usr/bin/ssh-askpass): No such file or directory`
 在virt-manager所在机器执行`apt install ssh-askpass`
+
+### 动态迁移
+ref:
+- [<<KVM实战>> 4.3.3中的6.动态迁移]
+
+在KVM虚拟环境中， 如果遇到宿主机负载过高或需要升级宿主机硬件等需求时， 可以选择将部分或全部客户机动态迁移到其他的宿主机上继续运行. 需要满足如下前提条件才能使动态迁移成功实施:
+1. 源宿主机和目的宿主机使用共享存储, 如NFS、 iSCSI、 基于光纤通道的LUN、GFS2等， 而且它们挂载共享存储到本地的挂载路径需要完全一致，被迁移的客户机就是使用该共享存储上的镜像文件
+1. 硬件平台和libvirt软件的版本要尽可能的一致， 如果软硬件平台差异较大， 可能会增加动态迁移失败的概率
+1. 源宿主机和目的宿主机的网络通畅并且打开了对应的端口
+1. 源宿主机和目的宿主机必须有相同的网络配置， 否则可能出现动态迁移之后客户机的网络不能正常工作的情况
+1. 如果客户机使用了和源宿主机建立桥接的方式获得网络， 那么只能在同一个局域网（LAN） 中进行迁移， 否则客户机在迁移后， 其网络将无法正常工作

@@ -26,3 +26,7 @@ swap.target                                                                     
 $ systemctl cat dev-sda2.swap
 $ sudo systemctl mask dev-sdXX.swap
 ```
+
+### swap大小
+ref:
+- [RHEL推荐的SWAP空间的大小划分原则](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/managing_storage_devices/getting-started-with-swap_managing-storage-devices)

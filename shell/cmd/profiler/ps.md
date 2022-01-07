@@ -18,7 +18,13 @@
 - -e : 同`-A`
 - -f : 显示UID,PPIP,C与STIME栏位
 - -l : 采用详细的格式来显示程序状况
+- -L : 显示线程(LWP, light-weight-process)
 - -o : 显示指定列, 比如`pid,user,cgroup,args`
+
+    - lwp ： 线程id
+    - psr ： 当前分配给进程运行的处理器编号
+    - ruser ： 运行进程的用户
+    - args : 运行的命令及其参数
 - u : 以用户为主的格式来显示程序状况
 - -U <用户名/Uid> : 列出属于该用户的程序的状况(不含参数)
 - -u : 同`-U`
@@ -39,6 +45,8 @@
     # ps -A -O pgid # 基本属性+`-O`指定的属性
     # ps -C smbd --no-header
     # ps xawf -eo pid,user,cgroup,args # 查看cgroup
+    # ps -eLo psr | grep -e "^[[:blank:]]*3$" | wc -l # 显示线程使用的cpu id并筛选出id=3的线程并汇总个数
+    # ps -eLo ruser,pid,ppid,lwp,psr,args | awk '{if($5==3) print $0}' # 显示运行在cpu id=3上的线程
 
 ## 扩展
 

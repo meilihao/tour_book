@@ -1,7 +1,148 @@
 # libvirt
+目前使用最广泛的对kvm进行管理的工具和应用程序接口, 它也支持xen, vmware, virtualbox, hyper-v等平台虚拟化, 以及openvz, lxc等容器虚拟化.
+
+libvirt对多种不同的Hypervisor的支持是通过一种基于驱动程序的架构来实现的. libvirt对不同的Hypervisor提供了不同的驱动： 对Xen有Xen的驱动， 对QEMU/KVM有QEMU驱动， 对VMware有VMware驱动. 在libvirt源代码中， 可以很容易找到qemu_driver.c、 xen_driver.c、 xenapi_driver.c、 VMware_driver.c、 vbox_driver.c这样的驱动源码.
+
+## 概念
+- 节点（Node） 
+
+   是一个物理机器, 上面可能运行着多个虚拟客户机. Hypervisor和Domain都运行在节点上.
+
+   通常node上除了需要运行相应的Hypervisor以外， 还需要让libvirtd这个守护进程处于运行中的状态， 以便让客户端连接到libvirtd， 从而进行管理操作。 不过， 也并非所有的Hypervisor都需要运行libvirtd守护进程， 比如VMware ESX/ESXi就不需要在服务器端运行libvirtd， 依然可以通过libvirt客户端连接到VMware, 具体可参考[这里](http://libvirt.org/drvesx.html).
+
+- Hypervisor也称虚拟机监控器（VMM）
+
+   如KVM、 Xen、 VMware、 Hyper-V等， 是虚拟化中的一个底层软件层， 它可以虚拟化一个节点让其运行多个虚拟客户机（不同客户机可能有不同的配置和操作系统）。
+- 域（Domain） 是在Hypervisor上运行的一个客户机操作系统实例
+
+   域也被称为实例（instance， 如在亚马逊的AWS云计算服务中客户机就被称为实例） 、 客户机操作系统
+（guest OS） 、 虚拟机（virtual machine） ， 它们都是指同一个概念.
+
+## 功能
+1. 域的管理
+
+   包括对节点上的域的各个生命周期的管理， 如启动、 停止、 暂停、 保存、 恢复和动态迁移。 还包括对多种设备类型的热插拔操作， 包括磁盘、 网卡、 内存和
+CPU。 当然不同的Hypervisor上对这些热插拔的支持程度有所不同.
+1. 远程节点的管理
+
+   只要物理节点上运行了libvirtd这个守护进程, 远程的管理程序就可以连接到该节点进程管理操作， 经过认证和授权之后， 所有的libvirt功能都可以被访
+问和使用.
+
+   libvirt支持多种网络远程传输类型， 如SSH、 TCP套接字、 Unix domainsocket、 TLS的加密传输等. 假设使用了最简单的SSH， 不需要额外的配置工作， 比如，在example.com节点上运行了libvirtd， 而且允许SSH访问， 在远程的某台管理机器上就可以用`virsh -c qemu+ssh://root@example.com/system`命令行来连接到example.com上， 从而管理其上的域.
+1. 存储的管理
+
+   任何运行了libvirtd守护进程的主机， 都可以通过libvirt来管理不同类型的存储， 如创建不同格式的客户机镜像（qcow2、 raw、 qde、 vmdk等） 、 挂载NFS共享存储系统、 查看现有的LVM卷组、 创建新的LVM卷组和逻辑卷、 对磁盘设备分区、 挂载iSCSI共享存储、 使用Ceph系统支持的RBD远程存储， 等等。 当然在libvirt中， 对存储的管理也是支持远程的.
+1. 网络的管理
+
+   任何运行了libvirtd守护进程的主机， 都可以通过libvirt来管理物理的和逻辑的网络接口。 包括列出现有的网络接口卡， 配置网络接口， 创建虚拟网络接口， 网络接口的桥接， VLAN管理， NAT网络设置， 为客户机分配虚拟网络接口， 等等.
+1. 提供一个稳定、 可靠、 高效的应用程序接口， 以便可以完成前面的4个管理功能
+
+   libvirt主要由3个部分组成:
+   1. 应用程序编程接口库
+
+      应用程序接口是为其他虚拟机管理工具（ 如virsh、virt-manager等） 提供虚拟机管理的程序库支持
+   2. 一个守护进程（ libvirtd）
+
+      libvirtd守护进程负责执行对节点上的域的管理工作， 在用各种工具对虚拟机进行管理时， 这个守护进程一定要处于运行状态中. 而且这个守护进程可以分为两种： 一种是root权限的libvirtd， 其权限较大， 可以完成所有支持的管理工作； 一种是普通用户权限的libvirtd， 只能完成比较受限的管理工作.
+   3. 一个默认命令行管理工具（ virsh）
+
+      virsh是libvirt项目中默认的对虚拟机管理的一个命令行工具
+
+## arch
+libvirt API大致可划分为如下8个部分:
+1. 连接Hypervisor相关的API： 以virConnect开头的一系列函数
+
+   只有在与Hypervisor建立连接之后， 才能进行虚拟机管理操作， 所以连接Hypervisor的API是其他所有API使用的前提条件. 与Hypervisor建立的连接为其他API的执行提供了路径， 是其他虚拟化管理功能的基础.
+
+   通过调用virConnectOpen函数可以建立一个连接， 其返回值是一个virConnectPtr对象， 该对象就代表到Hypervisor的一个连接； 如果连接出错， 则返回空值（NULL）. 而virConnectOpenReadOnly函数会建立一个只读的连接， 在该连接上可以使用一些查询的功能， 而不使用创建、 修改等功能. virConnectOpenAuth函数提供了根据认证建立的连接. virConnectGetCapabilities函数返回对Hypervisor和驱动的功能描述的XML格式的字符串. virConnectListDomains函数返回一列域标识符， 它们代表该Hypervisor上的活动域
+
+   libvirt使用了在互联网应用中广泛使用的URI（Uniform Resource Identifier， 统一资源标识符） 来标识到某个Hypervisor的连接:
+   - 本地uri: `driver[+transport]:///[path][?extral-param]`
+
+      > driver是连接Hypervisor的驱动名称（如qemu、 xen、 xbox、 lxc等）, transport是选择该连接所使用的传输方式（可以为空， 也可以是"unix"） ， path是连接到服务器端上的某个路径， ?extral-param是可以额外添加的一些参数（如Unix domainsockect的路径）
+
+      在libvirt中KVM使用QEMU驱动. QEMU驱动是一个多实例的驱动， 它提供了一个系统范围内的特权驱动（即`system`实例） 和一个用户相关的非特权驱动（即`session`实例）. 
+
+      session实例是根据客户端的当前用户和用户组去服务器端寻找对应用户下的实例. 在建立session连接后， 可以查询和控制的域或其他资源都仅仅是在当前用户权限范围内的， 而不是整个节点上的全部域或其他资源.
+
+      system实例需要系统特权账号`root`权限. 在建立system连接后， 由于它是具有最大权限的， 因此可以查询和控制整个节点范围内的域， 还可以管理该节点上特权用户才能管理的块设备、 PCI设备、 USB设备、 网络设备等系统资源.
+
+      一般来说， 为了方便管理， 在公司内网范围内建立到system实例的连接进行管理的情况比较常见， 当然为了安全考虑, 赋予不同用户不同的权限就可以使用建立到.
+
+      在libvirt中， 本地连接QEMU/KVM的几个URI示例如下：
+      - `qemu:///session`： 连接到本地的session实例， 该连接仅能管理当前用户的虚拟化资源
+      - `qemu+unix:///session`： 以Unix domain sockect的方式连接到本地的session实例， 该连接仅能管理当前用户的虚拟化资源
+      - `qemu:///system`： 连接到本地的system实例， 该连接可以管理当前节点的所有特权用户可以管理的虚拟化资源
+      - `qemu+unix:///system`： 以Unix domain sockect的方式连接到本地的system实例, 该连接可以管理当前节点的所有特权用户可以管理的虚拟化资源
+   - 远程URI: `driver[+transport]://[user@][host][:port]/[path][?extral-param]`
+
+      > transport表示传输方式， 其取值可以是ssh、 tcp、 libssh2等； user表示连接远程主机使用的用户名， host表示远程主机的主机名或IP地址， port表示连接远程主机的端口, 其余参数的意义与本地URI中介绍的完全一样.
+
+      在libvirt中， 远程连接QEMU/KVM的URI示例如下：
+      - `qemu+ssh://root@example.com/system`： 通过ssh通道连接到远程节点的system实例，具有最大的权限来管理远程节点上的虚拟化资源. 建立该远程连接时， 需要经过ssh的用户名和密码验证或者基于密钥的验证.
+      - `qemu+ssh://user@example.com/session`： 通过ssh通道连接到远程节点的使用user用户的session实例， 该连接仅能对user用户的虚拟化资源进行管理， 建立连接时同样需要经过ssh的验证。
+      - `qemu://example.com/system`： 通过建立加密的TLS连接与远程节点的system实例相连接， 具有对该节点的特权管理权限。 在建立该远程连接时， 一般需要经过TLS x509安全协议的证书验证
+      - `qemu+tcp://example.com/system`： 通过建立非加密的普通TCP连接与远程节点的system实例相连接， 具有对该节点的特权管理权限。 在建立该远程连接时， 一般需要经过SASL/Kerberos认证授权
+
+      除了针对QEMU、 Xen、 LXC等真实Hypervisor的驱动之外， libvirt自身还提供了一个名叫“test”的傀儡Hypervisor及其驱动程序. test Hypervisor是在libvirt中仅仅用于测试和命令学习的目的， 因为在本地的和远程的Hypervisor都连接不上（或无权限连接）时， test这个Hypervisor却一直都会处于可用状态. 其用法: `virsh -c test:///default <cmd, 比如list>`
+1. 域管理的API： 以virDomain开头的一系列函数
+
+   虚拟机最基本的管理职能就是对各个节点上的域的管理， 故在libvirt API中实现了很多针对域管理的函数. 要管理域， 首先要获取virDomainPtr这个域对象， 然后才能对域进行操作.
+
+   有很多种方式来获取域对象， 如virDomainPtrvirDomainLookupByID(virConnectPtr conn， int id)函数是根据域的id值到conn这个连接上去查找相应的域. 类似的， virDomainLookupByName、 virDomainLookupByUUID等函数分别是根据域的名称和UUID去查找相应的域. 在得到某个域的对象后， 就可以进行很多操作， 可以查询域的信息（如virDomainGetHostname、 virDomainGetInfo、virDomainGetVcpus、 virDomainGetVcpusFlags、 virDomainGetCPUStats等） ， 也可以控制域的生命周期（如virDomainCreate、 virDomainSuspend、 virDomainResume、virDomainDestroy、 virDomainMigrate等）
+1. 节点管理的API： 以virNode开头的一系列函数
+
+   域运行在物理节点之上， libvirt也提供了对节点进行信息查询和控制的功能. 节点管理的多数函数都需要使用一个连接Hypervisor的对象作为其中的一个传入参数， 以便可以查询或修改该连接上的节点信息. virNodeGetInfo函数是获取节点的物理硬件信息，virNodeGetCPUStats函数可以获取节点上各个CPU的使用统计信息，virNodeGetMemoryStats函数可以获取节点上的内存的使用统计信息，virNodeGetFreeMemory函数可以获取节点上可用的空闲内存大小。 还有一些设置或者控制节点的函数, 如virNodeSetMemoryParameters函数可以设置节点上的内存调度的参数，virNodeSuspendForDuration函数可以让节点（宿主机） 暂停运行一段时间
+1. 网络管理的API： 以virNetwork开头的一系列函数和部分以virInterface开头的函数
+
+   libvirt也对虚拟化环境中的网络管理提供了丰富的API。 libvirt首先需要创建virNetworkPtr对象， 然后才能查询或控制虚拟网络。 查询网络相关信息的函数有，virNetworkGetName函数可以获取网络的名称， virNetworkGetBridgeName函数可以获取该网络中网桥的名称, virNetworkGetUUID函数可以获取网络的UUID标识，virNetworkGetXMLDesc函数可以获取网络的以XML格式的描述信息， virNetworkIsActive函数可以查询网络是否正在使用中。控制或更改网络设置的函数有，virNetworkCreateXML函数可以根据提供的XML格式的字符串创建一个网络（返回virNetworkPtr对象） ， virNetworkDestroy函数可以销毁一个网络（同时也会关闭使用该网络的域） ， virNetworkFree函数可以回收一个网络（但不会关闭正在运行的域） ，virNetworkUpdate函数可根据提供XML格式的网络配置来更新一个已存在的网络。 另外，virInterfaceCreate、 virInterfaceFree、 virInterfaceDestroy、 virInterfaceGetName、virInterfaceIsActive等函数可以用于创建、 释放和销毁网络接口， 以及查询网络接口的名称和激活状态
+1. 存储卷管理的API： 以virStorageVol开头的一系列函数
+
+   libvirt对存储卷（volume） 的管理主要是对域的镜像文件的管理， 这些镜像文件的格式可能是raw、 qcow2、 vmdk、 qed等。 libvirt对存储卷的管理， 首先需要创建virStorageVolPtr这个存储卷对象， 然后才能对其进行查询或控制操作。 libvirt提供了3个函数来分别通过不同的方式来获取存储卷对象， 如virStorageVolLookupByKey函数可以根据全局唯一的键值来获得一个存储卷对象， virStorageVolLookupByName函数可以根据名称在一个存储资源池（storage pool） 中获取一个存储卷对象， virStorageVolLookupByPath函数可以根据它在节点上的路径来获取一个存储卷对象。 有一些函数用于查询存储卷的信息， 如virStorageVolGetInfo函数可以查询某个存储卷的使用情况， virStorageVolGetName函数可以获取存储卷的名称， virStorageVolGetPath函数可以获取存储卷的路径，virStorageVolGetConnect函数可以查询存储卷的连接。 一些函数用于创建和修改存储卷，如virStorageVolCreateXML函数可以根据提供的XML描述来创建一个存储卷，virStorageVolFree函数可以释放存储卷的句柄（但是存储卷依然存在）,virStorageVolDelete函数可以删除一个存储卷， virStorageVolResize函数可以调整存储卷的大小
+1. 存储池管理的API： 以virStoragePool开头的一系列函数
+
+   libvirt对存储池（pool） 的管理包括对本地的基本文件系统、 普通网络共享文件系统、 iSCSI共享文件系统、 LVM分区等的管理。 libvirt需要基于virStoragePoolPtr这个存储池对象才能进行查询和控制操作。 一些函数可以通过查询获取一个存储池对象， 如virStoragePoolLookupByName函数可以根据存储池的名称来获取一个存储池对象，virStoragePoolLookupByVolume可以根据一个存储卷返回其对应的存储池对象。virStoragePoolCreateXML函数可以根据XML描述来创建一个存储池（默认已激活） ，virStoragePoolDefineXML函数可以根据XML描述信息静态地定义一个存储池（尚未激活） ， virStorage PoolCreate函数可以激活一个存储池。 virStoragePoolGetInfo、virStoragePoolGetName、 virStoragePoolGetUUID函数可以分别获取存储池的信息、 名称和UUID标识。 virStoragePool IsActive函数可以查询存储池状态是否处于使用中，virStoragePoolFree函数可以释放存储池相关的内存（但是不改变其在宿主机中的状态） ，virStoragePoolDestroy函数可以用于销毁一个存储池（但并没有释放virStoragePoolPtr对象， 之后还可以用virStoragePoolCreate函数重新激活它） ， virStoragePoolDelete函数可以物理删除一个存储池资源（该操作不可恢复）
+1. 事件管理的API： 以virEvent开头的一系列函数。
+
+   libvirt支持事件机制， 在使用该机制注册之后， 可以在发生特定的事件（如域的启动、 暂停、 恢复、 停止等） 时得到自己定义的一些通知。
+1. 数据流管理的API： 以virStream开头的一系列函数
+   libvirt还提供了一系列函数用于数据流的传输
 
 ## news
 - [从v6.0.0开始libvirt-python.spec仅支持python3](https://github.com/libvirt/libvirt-python/commit/b22e4f2441078aec048b9503fde2b45e78710ce1)
+
+## 安装与配置
+安装方法: `dnf install libvirt`
+查看version: `libvirtd --version`
+libvirt的C API的使用: `dnf install libvirt-devel`
+libvirt的Python API的使用: `dnf install libvirt-python`
+
+libvirt相关配置在`/etc/libvirt`:
+1. libvirt.conf
+
+   libvirt.conf文件用于配置一些常用libvirt连接（通常是远程连接） 的别名, 比如:
+   ```conf
+   uri_aliases = [
+   "remote1=qemu+ssh://root@192.168.93.201/system",
+   ]
+   ```
+
+   此时可使用`virsh -c remote1`进行远程管理
+1. libvirtd.conf
+
+   libvirtd.conf是libvirt的守护进程libvirtd的配置文件， 被修改后需要让libvirtd重新加载配置文件（或重启libvirtd） 才会生效. 在libvirtd.conf中配置了libvirtd启动时的许多设置， 包括是否建立TCP、 UNIX domain socket等连接方式及其最大连接数， 以及这些连接的认证机制， 设置libvirtd的日志级别等.
+
+   **在默认情况下， libvirtd在监听一个本地的Unix domain socket**, 而没有监听基于网络的TCP/IP socket. 要让TCP、 TLS等连接生效， 需要在启动libvirtd时加上--listen参数（简写为-l） , 而默认的systemctl start libvirtd命令在启动libvirtd服务时并没带--listen参数.
+
+   **libvirtd守护进程的启动或停止， 并不会直接影响正在运行中的客户机**. libvirtd在启动或重启完成时， 只要客户机的XML配置文件是存在的， libvirtd会自动加载这些客户的配置， 获取它们的信息。 当然，如果客户机没有基于libvirt格式的XML文件来运行（例如直接使用qemu命令行来启动的客户机） ， libvirtd则不能自动发现它.
+
+   通过libvirt启动客户机， 经过文件解析和命令参数的转换， 最终也会调用qemu命令行工具来实际完成客户机的创建.
+1. qemu.conf
+
+   qemu.conf是libvirt对QEMU的驱动的配置文件， 包括VNC、 SPICE等， 以及连接它们时采用的权限认证方式的配置， 也包括内存大页、 SELinux、 Cgroups等相关配置.
+1. qemu
+
+   在qemu目录下存放的是使用QEMU驱动的域的配置文件, 比如`centos7u2-1.xml`. 同时该目录下的networks目录保存了创建一个域时默认使用的网络配置
 
 ## 构建
 参考:
@@ -139,12 +280,19 @@ Ubuntu16.04.6+飞腾主板+libvirt 6.0.0, systemd里没有报错日志, 也没�
 `dnf install libvirt libvirt-devel`
 
 ## virtsh
-virsh 属于 libvirt 工具， libvirt 是目前使用最为广泛的对 KVM 虚拟机进行管理的工具和 API, 它还可管理 VMware, VirtualBox, Hyper-V等.
+virsh 属于 libvirt 的命令行工具, 与virt-manager类似, libvirt 是目前使用最为广泛的对 KVM 虚拟机进行管理的工具和 API, 它还可管理 VMware, VirtualBox, Hyper-V等.
 
 Libvirt 分服务端和客户端, Libvirtd 是一个 daemon 进程, 是服务端, 可以被本地的 virsh 调用, 也可以被远程的 virsh 调用, virsh 相当于客户端.
 
+virsh同时支持交互模式和非交互模式.
+
+> virsh是用C语言编写的一个使用libvirt API的虚拟化管理工具. virsh程序的源代码在libvirt项目源代码的tools目录下， 实现virsh工具最核心的一个源代码文件是virsh.c
+
 ### 常用命令
-> 可参考`man virsh`
+ref:
+- `man virsh`
+- [<<KVM实战>>的4.2 virsh]
+- [QEMU中的命令行参数及其monitor中的命令， 在virsh中的对应关系](http://wiki.libvirt.org/page/QEMUSwitchToLibvirt) 
 
 如下命令启动虚拟机： `virsh create <name of virtual machine>`
 启动虚拟机： `virsh start <name>`

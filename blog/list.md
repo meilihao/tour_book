@@ -123,6 +123,7 @@
 - [图解 TCMalloc](https://zhuanlan.zhihu.com/p/29216091)
 - [/etc/hostname 和 /etc/hosts 详解](https://emacsist.github.io/2015/12/09/etc-hostname-%E5%92%8C-etc-hosts-%E8%AF%A6%E8%A7%A3/)
 - [vivo 敏感词匹配系统的设计与实践](https://my.oschina.net/vivotech/blog/5344892)
+- [endoflife - 软件维护截止时间](https://endoflife.date/)
 
 ## search
 - [Elasticsearch 5.4 中文文档](http://cwiki.apachecn.org/display/Elasticsearch/Index)

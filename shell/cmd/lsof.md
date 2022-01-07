@@ -106,6 +106,7 @@ lsof打开的文件有：
     # lsof -d file_description(like 2) # 根据文件描述列出对应的文件信息
     # lsof -i 4 -a -p 1234 # 列出被进程号为1234的进程所打开的所有IPV4 network files
     # lsof -i @nf5260i5-td:20,21,80 -r 3 # 列出目前连接主机nf5260i5-td上端口为：20，21，80相关的所有文件信息，且每隔3秒重复执行
+    # lsof -t /dev/drbd1 # 获取使用/dev/drbd1的进程列表
 
 ## FAQ
 ### 通过ssh执行`lsof -i:8000`导致高cpu且不会退出

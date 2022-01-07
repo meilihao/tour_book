@@ -7,6 +7,9 @@
 - [command-not-found](https://command-not-found.com/)
 - [cmd package search by man](http://manpages.ubuntu.com/manpages/focal/man8/), 比如[cgdisk](http://manpages.ubuntu.com/manpages/focal/man8/cgdisk.8.html)
 - [pkgs.org](https://pkgs.org)
+- rpm
+
+    - [rpmfind](https://rpmfind.net/)
 
 ### 构建源
 - [CentOS 的 SRPM](http://mirror.centos.org/)

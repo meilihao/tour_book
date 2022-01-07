@@ -113,16 +113,22 @@ $ ln -sf /usr/bin/qemu-system-x86_64 /usr/libexec/qemu-kvm
 参考:
 - [qemu命令行参数](https://blog.csdn.net/GerryLee93/article/details/106475710)
 
+- boot :
+
+    - once=d : 指定系统的启动顺序是首次光驱, guest reboot后根据默认order(启动顺序)启动
+- cdrom : 分配给guest的光驱
 - display
 
     - curses : 仅用于文本模式(text mode is used only with BIOS firmware), 当出现"640 x 480 Graphic mode"时表示guest已切换到图形模式.
     - sdl : qemu console gui
 - -cpu <cpu>/help : help可获取qemu支持模拟的cpu
 - -kernel bzImage : 使用linux bzImage, 但`CONFIG_PVH=y`时可直接使用vmlinux
+- -m <N>G : 分配内存大小
 - -M <machine>/help : 当前版本的Qemu工具支持的开发板列表
 - -s : 设置gdbserver的监听端口, 等同于`-gdb tcp::1234`
 - -S : 启动时cpu仅加电, 但不继续执行, 相当于将断点打在CPU加电后要执行的第一条指令处，也就是BIOS程序的第一条指令. 必须在qemu monitor输入`c`才能继续. 未使用`-monitor`时, 按`Ctrl+Alt+2`可进入qemu的monitor界面,`Ctrl+Alt+1`回到qemu
 - -serial stdio : redirects the virtual serial port to the host's terminal input/output, 丢失early boot信息即加电到出现终端登入界面间的信息.
+- smp <N> : 为对称多处理器结构分配N个vCPU
 - -monitor
 
     tcp – raw tcp sockets, **推荐**.
@@ -132,9 +138,14 @@ $ ln -sf /usr/bin/qemu-system-x86_64 /usr/libexec/qemu-kvm
     server – listening in server mode
     nowait – qemu will wait for a client socket application to connect to the port before continuing unless this option is used. In most cases you’ll want to use the nowait option.
 
+qemu默认会启动一个vnc server(port 5900), 可用vncviewer工具连上该server来查看guest.
+
+> centos 7常使用tigervnc-server和tigervnc作为vnc server和vncviewer.
+
 ## qemu monitor
-进入: 鼠标点击qemu窗口，然后ctrl+alt+2即可切换到控制台
+进入: 鼠标点击qemu窗口，然后ctrl+alt+2即可切换到控制台; ctrl+alt+1回到guest窗口.
 滚屏: ctrl + 上/下
+查看是否使用kvm: info kvm
 
 ## 操作
 ### 模拟cpu加电
@@ -245,11 +256,18 @@ i440fx是1996年推出的架构, 已过时. q35是2009年推出的架构, 更现
 ```
 或通过`/proc/cpuinfo`查询:
 ```
-# egrep '^flags.*(vmx|svm)' /proc/cpuinfo
+# egrep '^flags.*(vmx|svm)' /proc/cpuinfo # vmx is intel; svm is amd
 # LC_ALL=C lscpu | grep Virtualization
+# virt-host-validate # 该工具验证主机是否以合适的方式配置来运行 libvirt 管理程序驱动程序
 ```
 
-硬件不支持, 检查bios/uefi是否关闭了虚拟化支持, 此时可用kvm-ok检查.
+硬件不支持, 检查bios/uefi是否关闭了虚拟化支持, 此时可用kvm-ok(ubuntu/debian from cpu-checker)检查.
+
+arm检查:
+```bash
+# dmesg | grep -i kvm # 也发现过不输出`Hyp mode initialized successfully`的机器存在/dev/kvm
+KVM [1]: Hyp mode initialized successfully
+```
 
 ### Dmesg print "psmouse serio1: VMMouse at isa0060/serio1/input0 lost sync at byte 1" when using vmmouse
 一旦鼠标移动到qemu gui上, 就会提示该信息. qemu 4.2正常, 5.1.0有该问题.

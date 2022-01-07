@@ -1,6 +1,7 @@
 # mysql
 参考:
 - [MySQL5.7的官方文档(中文版)](https://www.docs4dev.com/docs/zh/mysql/5.7/reference/manual-info.html)
+- [MariaDB general release maintenance periods](https://mariadb.org/about/#maintenance-policy)
 
 MySQL 的逻辑架构图:
 ![](/misc/img/mysql/dfff6efbab0d51a715a36f867daeacf8.png)
