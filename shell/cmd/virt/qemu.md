@@ -5,6 +5,8 @@
 
 Qemu是一个广泛使用的开源计算机仿真器和虚拟机.
 
+**QEMU社区推荐使用功能丰富的`-device`参数来替代以前的一些参数（如`-usb`等）**.
+
 操作:
 ```
 $ sudo yum install qemu -y
@@ -25,6 +27,8 @@ $ qemu-system-x86_64 -boot menu=on,splash-time=15000 # 查看seabios version
 
 编译:
 > qemu 6.x.x编译可参考[这里](https://github.com/archlinux/svntogit-packages/blob/packages/qemu/trunk/PKGBUILD)
+
+在QEMU源代码目录下， 运行完./configure命令后， 会生成一个config-host.mak， 在这个文件里可以看到使能了哪些选项（CONFIG_XX=y）.
 
 ```bash
 $ sudo apt install -y ninja-build meson pkg-config libglib2.0-dev libpixman-1-dev libjemalloc-dev libzstd-dev liburing-dev # qemue 5.2.0开始构建系统切换到ninja+meson. libzstd-dev最低要求1.4.0, 而deepin v20是1.3.8, 可到[这里](https://packages.debian.org/buster-backports/libzstd-dev)下载libzstd1和libzstd-dev. liburing-dev 未在apt repo里, 可在[这里](https://packages.debian.org/sid/liburing-dev)下载liburing-dev和liburing1来安装
@@ -76,11 +80,93 @@ $ ln -sf /usr/bin/qemu-system-x86_64 /usr/libexec/qemu-kvm
 
     `qemu-img create -f qcow2 test-vm-1.qcow2 10G`:
     - -f 选项用于指定镜像的格式，qcow2 格式是 Qemu 最常用的镜像格式，采用来写时复制技术来优化性能
+    - -o options : 功能选项, 可用`qemu-img create -f qcow2 -o?`查询qcow2支持的option
+
+        - backing_file=xxx : 基于img xxx创建镜像, 即实现增量镜像的效果, 参考[KVM虚拟机镜像那点儿事，qcow2六大功能，内部快照和外部快照有啥区别？](https://sq.sf.163.com/blog/article/218146701477384192)
+
+            backing file就是基于这个原理的用处，一个qcow2的image可以保存另一个disk image的改变，而不影响另一个image.
     - test-vm-1.qcow2 是镜像文件的名字
     - 10G是镜像文件大小
 
+    > QED 的开发已被放弃, 建议使用qcow2.
+
     `qemu-img convert -p -c -f raw -O qcow2 vm500G.raw /path/new-vm500G.qcow2`:
     - -p : 显示转换进度
+
+    `qemu-img check [-f fmt] filename`: 对磁盘镜像文件进行一致性检查， 查找镜像文件中的错误.
+    - -f fmt : 指定文件的格式. 如果不指定格式, qemu-img会自动检测.
+
+    `qemu-img commit [-f fmt] filename`: 提交filename文件中的更改到后端支持镜像文件（创建时通过backing_file指定的）中
+
+    `qemu-img convert [-c] [-f fmt] [-O output_fmt] [-o options] filename[filename2[...]] output_filename`: 将fmt格式的filename镜像文件根据options选项转换为格式为output_fmt的, 名为output_filename的镜像文件. 比如将vmware vmdk转为qcow2. 一般来说， 输入文件格式fmt由qemu-img工具自动检测到， 而输出文件格式output_fmt根据自己需要来指定,  默认会被转换为raw文件格式（且默认使用稀疏文件的方式存储, 以节省存储空间）
+
+    如果使用qcow2、 qcow等作为输出文件格式来转换raw格式的镜像文件（非稀疏文件格式）, 镜像转换还可以将镜像文件转化为更小的镜像，因为它可以将空的扇区删除, 使之在生成的输出文件中不存在.
+
+    - -c : 表示对输出img进行压缩, 但仅qcow2和qcow支持压缩, 并且这种压缩是只读的， 如果压缩的扇区被重写， 则会被重写为未压缩的数据.
+
+    `qemu-img info [-f fmt] filename`: 查看filename的信息. 如果是稀疏文件则还会显示预计分配大小和实际分配大小; 如果由snapshot则也会显示出来
+
+    `qemu-img snapshot [-l|-a snapshot|-c snapshot|-d snapshot] filename`.
+    - -l : 表示查询并列出镜像文件中的所有快照
+    - -a snapshot : 让镜像文件使用某个快照
+    - -c snapshot : 创建一个快照
+    - -d : 删除一个快照
+
+    `qemu-img rebase [-f fmt] [-t cache] [-p] [-u] -b backing_file [-F backing_fmt] filename`: 改变镜像文件的后端镜像文件,  只有qcow2和qed格式支持rebase命令
+
+    这个命令可以工作于两种模式之下， 一种是安全模式（Safe Mode） ， 这是默认的模式， qemu-img会根据比较原来的后端镜像与现在的后端镜像的不同进行合理的处理； 另一种是非安全模式（Unsafe Mode） ， 是通过“-u”参数来指定的， 这种模式主要用于将后端镜像重命名或移动位置后对前端镜像文件的修复处理， 由用户去保证后端镜像的一致性
+    - -b backing_file : 指定的文件作为后端镜像
+    - -F backing_fmt : 后端镜像被转化为指定的backing_fmt后端镜像格式
+
+    `qemu-img resize filename [+|-]size`
+
+    改变镜像文件的大小， 使其不同于创建之时的大小. “+”和“-”分别表示增加和减少镜像文件的大小， size也支持K、 M、 G、 T等单位的使用. 缩小镜像的大小之前， 需要在客户机中保证其中的文件系统有空余空间， 否则数据会丢失。 另外， qcow2格式文件不支持缩小镜像的操作.
+
+    在增加了镜像文件大小后， 也需启动客户机在其中应用“fdisk”“parted”等分区工具进行相应的操作, 才能真正让客户机使用到增加后的镜像空间。 不过使用resize命令时需要小心（做好备份） ， 如果失败， 可能会导致镜像文件无法正常使用， 而造成数据丢失.
+
+
+    qemu-img支持的format可用`qemu-img -h|grep 'Supported formats'`查询:
+    - raw
+    
+        原始的磁盘镜像格式， 也是qemu-img命令默认的文件格式. 这种格式的文件的优势在于它非常简单， 且非常容易移植到其他模拟器（emulator， QEMU也是一个emulator）上去使用. 如果客户机文件系统（如Linux的ext2/ext3/ext4、 Windows的NTFS） 支持“空洞”（hole） ， 那么镜像文件只有在被写有数据的扇区才会真正占用磁盘空间， 从而节省磁盘空间. qemu-img默认的raw格式的文件其实是稀疏文件（sparse file）.
+        
+        raw格式只有一个参数选项： preallocation, 它有3个值： off， falloc， full:
+        - off就是禁止预分配空间， 即采用稀疏文件方式， 这是默认值
+        - falloc是qemu-img创建镜像时候调用posix_fallocate()函数来预分配磁盘空间给镜像文件（但不往其中写入数据， 所以也能瞬时完成）.
+        - full是除了实实在在地预分配空间以外， 还逐字节地写0， 所以很慢. 尽管一开始就实际占用磁盘空间的方式没有节省磁盘的效果， 不过这种方式在写入新的数据时不需要宿主机从现有磁盘中分配空间， 因此在第一次写入数据时， 这种方式的性能会比稀疏文件的方式更好一点
+
+        > [稀疏文件](https://en.wikipedia.org/wiki/Sparse_file)是计算机系统块设备中能有效利用磁盘空间的文件类型， 它用元数据（metadata） 中的简要描述来标识哪些块是空的， 只有在空间被实际数据占用时， 才将数据实际写到磁盘中.
+    - qcow2
+
+        qcow2是QEMU目前推荐的镜像格式， 它是使用最广、 功能最多的格式。 它支持稀疏文件（即支持空洞） 以节省存储空间， 它支持可选的AES加密以提高镜像文件安全性， 支持基于zlib的压缩， 支持在一个镜像文件中有多个虚拟机快照
+
+        在qemu-img命令中qcow2支持如下几个选项:
+        - compat（兼容性水平， compatibility level） ， 可以等于0.10或者1.1， 表示适用于0.10版本以后的QEMU， 或者是1.1版本以后的QEMU
+        - backing_file : 用于指定后端镜像文件
+        - backing_fmt : 设置后端镜像的镜像格式
+        - cluster_size : 设置镜像中簇的大小， 取值为512B～2MB， 默认值为64kB。 较小的簇可以节省镜像文件的空间， 而较大的簇可以带来更好的性能， 需要根据实际情况来平衡。一般采用默认值即可
+        - preallocation， 设置镜像文件空间的预分配模式， 其值可为off、 falloc、 full、metadata. 前3种与raw格式的类似， metadata模式用于设置为镜像文件预分配metadata的磁盘空间， 所以这种方式生成的镜像文件稍大一点， 不过在其真正分配空间写入数据时效率更高. 生成镜像文件的大小依次是`off<metadata<falloc=full`， 性能上full最好， 其他3种依次递减.
+        - encryption， 用于设置加密， 该选项将来会被废弃， 不推荐使用. 对于需要加密镜像的需求， 推荐使用Linux本身的Linux dm-crypt/LUKS系统
+        - lazy_refcounts， 用于延迟引用计数（refcount） 的更新， 可以减少metadata的I/O操作， 以达到提高performance的效果.  适用于cache=writethrough这类不会自己组合metadata操作的情况. 它的缺点是一旦客户机意外崩溃， 下次启动时会隐含一次qemu-img check-rall的操作， 需要额外花费点时间. 它是当compact=1.1时才有的选项.
+        - refcount_bits， 一个引用计数的比特宽度， 默认为16
+    - qcow
+
+        这是较旧的QEMU镜像格式， 现在已经很少使用了， 一般用于兼容比较老版本的QEMU, 推荐使用qcow2.
+    - vdi
+    
+        兼容Oracle（Sun） VirtualBox1.1的镜像文件格式（Virtual Disk Image）
+    - vmdk
+
+        兼容VMware 4版本以上的镜像文件格式（Virtual Machine Disk Format）
+    - vpc
+
+        兼容Microsoft的Virtual PC的镜像文件格式（Virtual Hard Disk format）
+    - vhdx
+
+        兼容Microsoft Hyper-V的镜像文件格式
+    - sheepdog
+
+        heepdog项目是由日本NTT实验室发起的、 为QEMU/KVM做的一个开源的分布式存储系统， 为KVM虚拟化提供块存储.
 
 - qemu-nbd：磁盘挂载工具
 
