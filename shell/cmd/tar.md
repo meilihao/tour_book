@@ -101,3 +101,6 @@ $ tar --exclude='*/*/*' -tvf lfs-rootfs-10.0-systemd.tar.xz # 仅显示顶层文
 # tar --exclude=lfs_root -czpf /mnt/lfs-backup-tools-${LFSVersion}.tar.gz .
 $ tar -xvf lfs-backup-*.tar.gz # 可能是tar打包时使用了`-p`导致解压时处理权限(比如这里的解压后需恢复root权限)出错, 添加`sudo`后不报错
 ```
+
+### 解压"xxx.gz"
+`gunzip xxx.gz`

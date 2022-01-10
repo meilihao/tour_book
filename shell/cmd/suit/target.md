@@ -483,6 +483,9 @@ nvme命令首先从`/etc/nvme/hostnqn`读取默认值, 如果不存在, 则由�
 nqn.2014-08.org.nvmexpress:uuid:75953f3b-77fe-4e03-bf3c-09d5a156fbcd
 ```
 
+### target属性
+- [alua_access_state](https://www.kite.com/python/docs/rtslib_fb.ALUATargetPortGroup.alua_access_state) : ALUA state. 参考[多路径ALUA技术如何优化I/O处理](https://www.cnblogs.com/pipci/p/11431183.html)
+
 # tgtadm
 参考:
 - [github.com/longhorn/go-iscsi-helper](https://github.com/longhorn/go-iscsi-helper/blob/master/iscsi/target.go)
