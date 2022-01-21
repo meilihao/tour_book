@@ -385,7 +385,7 @@ Alternatively you can use the redoc format: http://127.0.0.1:8000/redoc
 - 选中状态全传(可以剪枝:目录内容全选时可只传该目录id)
 
 ## plugin
-> [官方plugins](https://github.com/bareos/bareos/tree/master/contrib)
+> [官方 plugins](https://github.com/bareos/bareos/tree/master/core/src/plugins/filed), [官方 contrib plugins](https://github.com/bareos/bareos/tree/master/contrib)和[开源plugins](https://github.com/marcolertora/bareos-tasks-plugins)
 
 bareos原生支持dir, storage, filedaemon的插件扩展. 使用插件前必须在配置中启用它们, **修改后需要重启服务**, 当前支持python 2/3. **bareos 20开始推荐使用python3, 虽然官方20.0.1目前plugins都是python2的**.
 
@@ -400,15 +400,20 @@ bareos原生支持dir, storage, filedaemon的插件扩展. 使用插件前必须
 因为最常用的是fd-plugins, 这里重点介绍. 其他两种请参考[bareos docs](https://docs.bareos.org/TasksAndConcepts/Plugins.html)
 
 ### fd-plugins
-以官方MySQL Plugin举例:
+以[官方MySQL Plugin](https://github.com/bareos/bareos/tree/master/contrib/fd-plugins/mysql-python)举例:
 1. 配置
 
-    - client的`bareos-fd.d/client/myself.conf`的`Plugin Directory`
-    - director中的`bareos-dir.d/fileset/mysql.conf`: `Include.Plugin = "python:module_path=/usr/lib64/bareos/plugins:module_name=bareos-fd-mysql"`
+    - client安装bareos-filedaemon-python-plugin
+    - client的`bareos-fd.d/client/myself.conf`的`Plugin Directory`指向fd plugins目录`/usr/lib/bareos/plugins`
+    - director中的`bareos-dir.d/fileset/mysql.conf`: `Include.Plugin = "python:module_path=/usr/lib/bareos/plugins:module_name=bareos-fd-mysql"`
 
-        插件参数拼接在Plugin中以`:`分隔即可, 比如`Plugin = "python:module_path=/usr/lib64/bareos/plugins:module_name=bareos-fd-mysql:mysqlhost=dbhost:mysqluser=bareos:mysqlpassword=bareos"`
+        插件参数拼接在Plugin中以`:`分隔即可, 比如`Plugin = "python:module_path=/usr/lib/bareos/plugins:module_name=bareos-fd-mysql:mysqlhost=dbhost:mysqluser=bareos:mysqlpassword=bareos"`
+
+        **module_path即client的fd plugins目录**
 
     > bareos-fd-mysql插件中的[_mysqlbackups_](https://docs.bareos.org/Appendix/Howtos.html#backup-of-mysql-databases-using-the-python-mysql-plugin)是虚拟目录, 说明fd plugins可将io流(mysqldump的输出)发送到storage中.
+
+    还原时, 显示的是`_mysqlbackups_`的文件
 
 其他官方插件:
 - [`bareos-fd-local-fileset`](https://github.com/aussendorf/bareos-fd-python-plugins/wiki): 备份时动态将filename=/etc/bareos/extra-files中的文件列表加入fileset
@@ -455,7 +460,7 @@ fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
 
     - bareos-dir.conf : 管理storage对director的授权
 
-        - Password : 授权director访问sd的密码. 在director创建storage时会用到.
+        - Password : 授权director访问sd的密码. 在director创建storage时会用到. 同理bareos-fd也有该文件和该字段, 作用相同.
     - bareos-mon.conf : 管理storage对bareos traymonitor的授权
 - message : storage message管理
     
@@ -492,7 +497,7 @@ fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
       Description = "备份所有系统，除了不需要备份的。"
       Include {                                   # 备份中需要包含的文件
         Options {                                 # 选项
-          Compression = LZ4                       # 压缩
+          Compression = LZ4                       # [压缩](https://docs.bareos.org/Configuration/Director.html)
           Signature = MD5                         # 每个文件产生MD5校验文件
           One FS = No                             # 所有指定的文件（含子目录是mountpoint）都会被备份
           # One FS = Yes                          # 指定的文件（含子目录）如不在同一文件系统下不会被备份
@@ -1256,6 +1261,8 @@ dir, sd, fd均无报错.
 ### job‘s jobstatus
 定义在`/usr/share/bareos-webui/public/js/bootstrap-table-formatter.js`, 对应的翻译在`/usr/share/bareos-webui/module/Application/language/cn_CN.po`.
 
+或在[BareosDirPluginPrometheusExporter.py](https://github.com/bareos/bareos/blob/master/contrib/dir-plugins/prometheus/BareosDirPluginPrometheusExporter.py)
+
 ### bareos client
 - golang
 
@@ -1295,3 +1302,6 @@ env: php-fpm 7.2
                 fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; # 脚本文件请求的路径,也就是说当访问127.0.0.1/index.php的时候，需要读取网站根目录下面的index.php文件，如果没有配置这一配置项时，nginx不回去网站根目录下访问.php文件，所以返回空白 
                 fastcgi_param APPLICATION_ENV production;
 ```
+
+### bconsole执行`status client=bareos-fd`报`Probing client protocol... (result will be saved until config reload)`
+看`/var/log/bareos/bareos.log`提示`Unable to authenticate with File daemon at "localhost:9102"`, 是dir中client的配置的Password字段错误, 用`/etc/bareos/bareos-fd.d/director/bareos-dir.conf`中Password替换即可.

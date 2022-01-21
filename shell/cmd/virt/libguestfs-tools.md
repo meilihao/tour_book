@@ -8,3 +8,5 @@ C/C++开发的管理程序之中. 它还有对其他很多流程编程语言（�
 libguestfs-tools提供了很多工具， 可以分别对应不同的功能和使用场景， 如： virt-ls用于列出虚拟机中的文件, virt-copy-in用于往虚拟机中复制文件或目录， virt-copy-out用于从虚拟机往外复制文件或目录， virt-resize用于调整磁盘大小， virt-cat用于显示虚拟机中的一个文件的内容， virt-edit用于编辑虚拟机中的文件， virt-df用于查看虚拟机中文件系统空间使用情况, 等等.
 
 libguestfs的一些工具用于Windows客户机镜像的操作时， 需要先安装libguestfswinsupport这个软件包； 当使用guestmount来挂载Windows镜像时, 还需要安装ntfs-3g软件包.
+
+virt-inspector探测image信息.
