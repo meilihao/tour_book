@@ -246,3 +246,10 @@ VRRP全称Virtual Router Redundancy Protocol，即虚拟路由冗余协议。对
 1. VRRP协议需要具有IP备份，优先路由选择，减少不必要的路由器通信等功能。
 1. VRRP协议将两台或多台路由器设备虚拟成一个设备，对外提供虚拟路由器IP（一个或多个）。然而，在路由器组内部，如果实际拥有这个对外IP的路由器如果工作正常的话，就是master，或者是通过算法选举产生的，MASTER实现针对虚拟路由器IP的各种网络功能，如ARP请求，ICMP，以及数据的转发等，其他设备不具有该IP，状态是BACKUP。除了接收MASTER的VRRP状态通告信息外，不执行对外的网络功能，当主级失效时，BACKUP将接管原先MASTER的网络功能。
 1. VRRP协议配置时，需要配置每个路由器的虚拟路由ID(VRID)和优先权值，**使用VRID将路由器进行分组，具有相同VRID值的路由器为同一个组**，VRID是一个0-255的整整数；**同一个组中的路由器通过使用优先权值来选举MASTER，优先权大者为MASTER**，优先权也是一个0-255的正整数。
+
+## FAQ
+### keepalived v2.0.12报: `Child (PID xxx) failed to terminate after kill`并之后一直是这种日志
+现象: vrrp_script超时后keepalived进入FAULT状态且vrrp_script不会再执行
+
+官方issue: [Child (PID 24646) failed to terminate after kill - filling up logs](https://github.com/acassen/keepalived/issues/1989)
+官方fix: [Handle script timeouts when child process has terminated](https://github.com/acassen/keepalived/commit/79e1ec8ae4da5b0a9defd53b87f3d4ceb1fbd005), 至少需要v2.0.19

@@ -1219,6 +1219,8 @@ BVFS（Bareos虚拟文件系统）提供了一个API来浏览目录中的备份�
 bareos-dird log在`/var/log/bareos/bareos.log`
 bareos-fd log在systemd.
 
+/var/log/bareos/bareos-audit.log是bareos dir的审计日志, 比如bconsole执行的命令.
+
 ### 使用官方plugin [bareos-fd-mysql](https://docs.bareos.org/Appendix/Howtos.html#backup-mysql-python)执行job时报`... PluginSave: Command plugin "<python plugin>" required, but is not loaded`
 fd `/etc/bareos/bareos-fd.d/client/myself.conf`配置:
 ```

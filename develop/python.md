@@ -2076,3 +2076,13 @@ ref:
 - [Python打印对象的全部属性](https://blog.51cto.com/steed/2046408)
 
 `print('\n'.join(('%s:%s' % item for item in dict1.items())))`  # 每行一对key和value，中间是分号
+
+### `pyrasite-shell <pid>`卡住
+解决方法:
+1. 安装依赖
+
+    1. `pip2 install pyrasite meliae`
+    1. `dnf install gdb python2-debuginfo`或`apt install python-dbg gdb`
+1. 开启进程调试
+
+    `echo 0|sudo tee /proc/sys/kernel/yama/ptrace_scope` # 关闭kernel对进程调试的检查, 否则会导致程序卡住. kylin v10 arm64没有该文件

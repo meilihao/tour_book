@@ -28,6 +28,25 @@
 $ watch -n 3 -d free
 ```
 
+## `/proc/meminfo`
+- MemFree: 空闲内存数
+
+    MemUsed(已被用掉的内存)=MemTotal-MemFree
+- MemAvailable
+
+    MemAvailable≈MemFree+Buffers+Cached，它是内核使用特定的算法计算出来的，是一个估计值. 它与MemFree的关键区别点在于，MemFree是说的系统层面，MemAvailable是说的应用程序层面
+
+    之前遇到过`kylin v10 + 飞腾主板 + cpu>=16`的机器`MemAvailable<MemFree`, 估计与保留内存有关, 可参考[Linux内存管理 (25)内存sysfs节点解读](cnblogs.com/arnoldlu/p/8568330.html)
+- Buffer：缓冲区内存数
+- Cache：缓存区内存数
+- Shared：多个进程共享的内存空间
+
+公式:
+- OS Mem total = OS Mem used + OS Mem free
+- APP buffers/cache used = OS Mem used - OS Mem buffers - OS Mem cached
+- APP buffers/cache free = OS Mem free + OS Mem buffers + OS Mem cached
+- APP buffers/cache total = APP buffers/cache used + APP buffers/cache free
+
 ## FAQ
 ### buffer/cache区别
 buffers是指用来给**块设备**做的缓冲大小，它只记录文件系统的**metadata以及 追踪瞬时页面(tracking in-flight pages)**.

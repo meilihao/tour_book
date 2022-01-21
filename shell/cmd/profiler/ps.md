@@ -47,6 +47,8 @@
     # ps xawf -eo pid,user,cgroup,args # 查看cgroup
     # ps -eLo psr | grep -e "^[[:blank:]]*3$" | wc -l # 显示线程使用的cpu id并筛选出id=3的线程并汇总个数
     # ps -eLo ruser,pid,ppid,lwp,psr,args | awk '{if($5==3) print $0}' # 显示运行在cpu id=3上的线程
+    # ps aux | awk 'NR>0 {$6=int($5/1024)"M";}{ print;}' | column -t # 查看进程rss内存(MB)
+    # ps aux | awk '{mem += $6} END {print mem/1024/1024}'
 
 ## 扩展
 

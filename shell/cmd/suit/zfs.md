@@ -77,6 +77,8 @@ thin: zfs支持thin provisioning,
 - Cache : 用于2级自适应的**读缓存**的设备 (zfs L2ARC), 提供在 memory 和 disk的缓冲层, 用于改善静态数据的随机读写性能
 
 	zfs实际有两层缓存: ARC(在内存) + L2ARC(高速存储设备上, 比如Flash，SSD，Nvme等)
+
+	ARC内存占用可用[`arc_summary.py`](https://github.com/openzfs/zfs/tree/master/cmd/arc_summary)获取, 或使用arcstat命令
 - Log : zfs Intent Log(zfs ZIL/SLOG, zfs意图日志,一种对于 data 和 metadata 的日志机制，先写入然后再刷新为写事务), 持久性写缓存, 用于崩溃恢复, 最好配置并使用快速的 SSD来存储ZIL, 以获得更佳性能. ZIL支持mirror. ZIL也可认为是zfs的**写缓存**.
 
 VDEV始终是动态条带化的. 一个 device 可以被加到 VDEV, 但是不能移除.

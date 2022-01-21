@@ -6,6 +6,7 @@
 `swapon --show` : 查看swap状态
 `swapon ${swap分区}`: 启用swap分区
 `swapoff ${swap分区}`: 关闭swap分区
+`swapoff -a`: 临时关闭swap
 
 ## FAQ
 ### swap在`/etc/fstab`的格式
@@ -19,12 +20,13 @@
 
 ```bash
 # --- 需swap on的状态下执行
-$ swapon --show
-$ systemctl list-units | grep swap
+# swapon --show
+# systemctl list-units | grep swap # 查询swap unit, 需swap启用时
 dev-sda2.swap                                                                             loaded active active    Swap Partition
 swap.target                                                                               loaded active active
-$ systemctl cat dev-sda2.swap
-$ sudo systemctl mask dev-sdXX.swap
+# systemctl cat dev-sda2.swap
+# systemctl mask dev-sdXX.swap # 在/etc/systemd/system/dev-sdXX.swap. xxx.swap可能不在/etc/systemd/system下, 但用`systemctl --type swap`可查询到其unit的名称
+# systemctl --type swap # 查询swap分区, 需swap启用时
 ```
 
 ### swap大小

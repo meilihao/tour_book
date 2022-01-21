@@ -123,7 +123,7 @@ DNF配置文件的位置:
 # rpm -ivh filename.rpm # 安装软件
 # rpm -ivh 源码包名*.src.rpm # 安装至 ~/rpmbuild 目录
 # rpm -Uvh filename.rpm # 升级软件, `-U`表示升级
-# rpm -e filename.rpm # 卸载软件
+# rpm -e filename.rpm [--nodeps] # 卸载软件
 # rpm -i --nodeps xxx.rpm # `--nodeps`安装时不检查依赖
 # rpm --reinstall xxx.rpm # 重复安装 from rpm v4.12.0
 # rpm -q --provides openssl-libs | grep libcrypto.so.10 # 查看openssl-libs中的libcrypto.so.10版本
@@ -368,3 +368,9 @@ mv /var/lib/rpm/__db* /tmp # 或 for i in `ls /var/lib/rpm | grep 'db.'`;do mv $
 rpm --rebuilddb
 yum clean all
 ```
+
+### dnf remove xxx时依赖xxx的包也被移除了
+1. 使用rpm移除(未测试)
+1. 修改/etc/dnf/dnf.conf 
+
+    将`clean_requirements_on_remove=True`改为`clean_requirements_on_remove=False`
