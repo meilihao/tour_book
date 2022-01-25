@@ -133,7 +133,18 @@ $ cat .vscode/settings.json
 
 运行代码:
 1. 根据`dpkg --info middlewared.deb`获取依赖, 再通过apt/pip3安装依赖
+
+    ```bash
+    $ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 31AAC6F320998A97
+    $ echo "deb [arch=amd64] http://apt.tn.ixsystems.com/apt-direct/angelfish/22.02-RC.2/angelfish/ truenas main" |sudo tee -a /etc/apt/sources.list.d/truenas.list
+    $ sudo apt install python3-ldap python3-prctl python3-zettarepl
+    $ pip3 install aiohttp aiohttp-wsgi ws4py flask croniter sentry_sdk setproctitle
+    ```
 1. 在提取的middlewared.deb数据的根目录中执行代码: `env PYTHONPATH=./usr/lib/python3/dist-packages:/usr/lib/python3/dist-packages usr/bin/middlewared -h`
+
+    middlewared options:
+    - [`--trace-malloc`](https://jira.ixsystems.com/browse/NAS-110712)
+
 
 ## FAQ
 ### db
