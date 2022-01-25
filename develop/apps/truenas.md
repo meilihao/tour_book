@@ -157,3 +157,7 @@ truenas使用sqlite3, db file在`/data/freenas-v1.db`
 python3-ldap包含了`/usr/lib/python3/dist-packages/_ldap.cpython-37m-x86_64-linux-gnu.so`, 当前使用python3.9因此无法import python3.7的so.
 
 下载[python3-ldap](https://packages.debian.org/bullseye/python3-ldap), 使用`sudo apt install -f ./python3-ldap_3.2.0-4+b3_amd64.deb`安装, 再删除`/var/lib/dpkg/status`中python3-ldap的Depends中的python3要求即: `python3 (<< 3.10), python3 (>= 3.9~)`
+
+### [获取升级所需manifest.json](https://update.freenas.org/scale/TrueNAS-SCALE-Angelfish-RC/manifest.json)
+### [运行所需manifest.json](https://update.freenas.org/scale/TrueNAS-SCALE-Angelfish-RC/manifest.json)
+由[scale_build/packages/build.py](https://github.com/truenas/scale-build/blob/TS-22.02-RC.2/scale_build/packages/build.py#L105)生成.
