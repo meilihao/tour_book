@@ -173,7 +173,13 @@ git config --global http.lowSpeedTime 300
 [submodule is link; subtree is copy](https://gb.yekai.net/concepts/subtree-vs-submodule)
 
 ### git中Untracked files如何清除
-`git clean -f -d`
+`git clean [-x -n] -f -d`
+
+选项:
+- -f : 删除当前目录下untracked的文件, 不包括文件夹和.gitignore中指定的文件和文件夹
+- -d : 删除当前目录下untracked的文件和文件夹, 不包括.gitignore中指定的文件和文件夹
+- -x : 删除当前目录下所有的untracked的文件和文件夹
+- -n : 仅显示会被删除的文件和文件夹, 但并不实际删除
 
 ### 查看远程分支的tag信息
 `git ls-remote -t  https://review.coreboot.org/coreboot.git`

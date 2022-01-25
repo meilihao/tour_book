@@ -385,7 +385,7 @@ Alternatively you can use the redoc format: http://127.0.0.1:8000/redoc
 - 选中状态全传(可以剪枝:目录内容全选时可只传该目录id)
 
 ## plugin
-> [官方 plugins](https://github.com/bareos/bareos/tree/master/core/src/plugins/filed), [官方 contrib plugins](https://github.com/bareos/bareos/tree/master/contrib)和[开源plugins](https://github.com/marcolertora/bareos-tasks-plugins)
+> [官方 plugins](https://github.com/bareos/bareos/tree/master/core/src/plugins/filed), [官方 contrib plugins](https://github.com/bareos/bareos/tree/master/contrib)和[开源plugins:"bareos-tasks-plugins"(其他它已包含在contrib plugins中)](https://github.com/marcolertora/bareos-tasks-plugins)
 
 bareos原生支持dir, storage, filedaemon的插件扩展. 使用插件前必须在配置中启用它们, **修改后需要重启服务**, 当前支持python 2/3. **bareos 20开始推荐使用python3, 虽然官方20.0.1目前plugins都是python2的**.
 

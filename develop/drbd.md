@@ -66,7 +66,7 @@ drbd 9在所有都是secondary情况下, 某个drbd device一旦写入数据会�
 drbd规定mount操作只能在primary节点进行.
 
 ### requested minor out of range
-drbd设备超过限制, 目前了解最大是2^20, 已验证过的最大值是65535
+drbd设备超过限制, 目前了解最大是2^20, 已验证过的最大值是150000
 
 ### conflicting use of IP 'xxx:65534'
 该端口虽然是空闲的, 但已配置在其他xxx.res中, 因此还是不能使用.
@@ -91,3 +91,9 @@ r0.res: node2的hostname是不存在的, disk与node1相同， address是127.0.0
 
 ### 谁占用drbd
 用`cat /sys/kernel/debug/drbd/resources/r46/volumes/0/openers`查看.
+
+### drbdadm create-md报错`... device-minor 'device-minor:<node_peer_hostname>:40' first used here`
+本端为对端配置的drbd index是40, 但实际上40已在对端存在.
+
+### drbd device配置中是否所有node上的index都必须相同?
+可以不同.

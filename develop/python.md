@@ -153,13 +153,16 @@ $ pip install --target /usr/lib/python3.7/dist-packages netifaces # 指定pip安
 
 > 可使用`apt-file search "sdl-config"`查找pygame的依赖
 
-python3.8源码安装:
+python3.8/3.9源码安装:
 ```bash
+# tar -xf Python-3.9.10.tgz
+# cd Python-3.9.10
 # ./configure --enable-optimizations
 # make
-# make install
-# ln -s /usr/local/bin/python3.8 /usr/bin/python3
-# ln -s /usr/local/bin/pip3.8 /usr/bin/pip3
+# make install # 有些blog这里使用`make altinstall`. make install会执行commoninstall、bininstall、maninstall三个过程，而make altinstall只执行commoninstall过程即不在`/usr/local/bin`下创建软链和安装man手册
+# ln -s /usr/local/bin/python3.9 /usr/bin/python3
+# ln -s /usr/local/bin/pip3.9 /usr/bin/pip3
+# echo "/usr/local/lib" > /etc/ld.so.conf.d/python3.9.conf
 # python3 -V
 # pip3 # 会报`subprocess.CalledProcessError: Command '('lsb_release', '-a')' returned non-zero exit status 1`, `mv /usr/bin/lsb_release /usr/bin/lsb_release.bak`可解决但会丢失lsb_release命令. 原因: python路径下缺少 'lsb_release.py' 模块, 最佳解决方法: 1. 查找到lsb_release模块所在的目录: `find / -name 'lsb_release.py'`; 2. 将其复制到设置python3.8的系统模块加载位置，也就是报错处subprocess.py所在的目录`cp  /usr/lib/python3/dist-packages/lsb_release.py /usr/local/lib/python3.8/`
 ```
@@ -2086,3 +2089,11 @@ ref:
 1. 开启进程调试
 
     `echo 0|sudo tee /proc/sys/kernel/yama/ptrace_scope` # 关闭kernel对进程调试的检查, 否则会导致程序卡住. kylin v10 arm64没有该文件
+
+### 安装高版本python
+```bash
+$ sudo apt install software-properties-common
+$ sudo add-apt-repository ppa:deadsnakes/ppa
+$ sudo apt update
+$ sudo apt install python3.10
+```

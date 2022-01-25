@@ -1,6 +1,8 @@
 # truenas scale
 version: 21.04-ALPHA.1
 
+> 22.02-RC.2至少需要python 3.9
+
 ## zfs
 zfs pool挂在在`/mnt`下.
 
@@ -113,6 +115,34 @@ class Resource(object):
 ### table定义
 `class xxxModel(sa.Model)`
 
+### 获取middlewared.deb
+根据[scale-build/conf/sources.list](https://github.com/truenas/scale-build/blob/master/conf/sources.list)找到[middlewared.deb](https://apt.tn.ixsystems.com/apt-direct/angelfish/22.02-RC.2/angelfish/pool/main/m/middlewared/)
+
+配置vscode阅读middlewared.deb提取源码:
+```bash
+$ cat .vscode/settings.json 
+{
+    "python.autoComplete.extraPaths": [
+        "./usr/lib/python3/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "./usr/lib/python3/dist-packages"
+    ]
+}
+```
+
+运行代码:
+1. 根据`dpkg --info middlewared.deb`获取依赖, 再通过apt/pip3安装依赖
+1. 在提取的middlewared.deb数据的根目录中执行代码: `env PYTHONPATH=./usr/lib/python3/dist-packages:/usr/lib/python3/dist-packages usr/bin/middlewared -h`
+
 ## FAQ
 ### db
 truenas使用sqlite3, db file在`/data/freenas-v1.db`
+
+### scale-build执行`make checkout`报`module 'functools' has no attribute 'cache'`
+根据[functools文档](https://docs.python.org/3/library/functools.html), 需要python 3.9
+
+### `ModuleNotFoundError: No module named '_ldap'`
+python3-ldap包含了`/usr/lib/python3/dist-packages/_ldap.cpython-37m-x86_64-linux-gnu.so`, 当前使用python3.9因此无法import python3.7的so.
+
+下载[python3-ldap](https://packages.debian.org/bullseye/python3-ldap), 使用`sudo apt install -f ./python3-ldap_3.2.0-4+b3_amd64.deb`安装, 再删除`/var/lib/dpkg/status`中python3-ldap的Depends中的python3要求即: `python3 (<< 3.10), python3 (>= 3.9~)`
