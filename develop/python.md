@@ -124,7 +124,9 @@ ENABLE_USER_SITE = False # 将该值设置为 False 即可, 顺便可到`/home/$
 $ pip install -r requirements.txt
 $ pip freeze > requirements.txt
 $ pip install pip-20.x.tar.gz # 升级pip
-$ pip install setuptools== # 查询支持的软件版本
+$ pip install setuptools== # 查询可用的软件版本
+$ pip show setuptools # 查看setuptools信息
+$ pip3 show -f pycryptodome # 显示pycryptodome包的文件
 ```
 
 > pip配置查找: `python -m  pip config list -v`
@@ -2097,3 +2099,6 @@ $ sudo add-apt-repository ppa:deadsnakes/ppa
 $ sudo apt update
 $ sudo apt install python3.10
 ```
+
+### python3-aiohttp报`type object '_asyncio.Task' has no attribute 'all_tasks'`
+asyncio.Task.all_tasks() is fully moved to asyncio.all_tasks() starting with 3.9. Also applies to current_task. 升级aiohttp即可.

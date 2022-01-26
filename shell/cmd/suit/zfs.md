@@ -96,7 +96,7 @@ zfs支持分层组织filesystem, 每个filesystem仅有一个父级, 而且支�
 ```sh
 $ sudo zpool create pool-test /dev/sdb /dev/sdc /dev/sdd # 创建了一个零冗余的RAID-0存储池, zfs 会在`/`中创建一个目录,目录名是pool name 
 $ sudo zpool [option] list # 显示系统上pools的列表, `-o`只显示指定列,`-H`隐藏列头. size是所有磁盘的大小, free是剩余未被使用的磁盘大小. 看pool实际可用大小用`zfs get all <pool>`的availabled, 已用used.
-$ sudo zpool status [-D] <pool> # 查看pool的状态,read/write列显示读写io时的错误次数, cksum列显示设备对读取请求返回损坏数据(校验和错误)的次数. `-v`输出详细信息, `-D`, dedup信息;`-x`仅显示有错误或因其他原因不可用的pool
+$ sudo zpool status [-D] [-L] <pool> # 查看pool的状态,read/write列显示读写io时的错误次数, cksum列显示设备对读取请求返回损坏数据(校验和错误)的次数. `-v`输出详细信息, `-D`, dedup信息;`-x`仅显示有错误或因其他原因不可用的pool; `-L`显示vdev的真实设备名
 $ sudo zpool destroy <pool> # 销毁pool
 $ sudo zpool destroy <pool>/data-set # 销毁dataset
 $ sudo zpool upgrade [<pool> | -a] # 更新 zfs 时，就需要更新指定/全部池
@@ -400,8 +400,10 @@ nfs配置见[fs.md](fs.md)
 
 ### zfs 2.0.0编译
 参考:
+- [官方Custom Packages制作指导](https://openzfs.github.io/openzfs-docs/Developer%20Resources/Custom%20Packages.html#)
 - [arch zfs-linux](https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=zfs-linux)
 - [arch zfs-utils](https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=zfs-utils)
+- [在 Ubuntu 20.04 上引入最新版本的 OpenZFS](https://qiita.com/yamakenjp/items/380ea5bb338940b5dc55)
 
 ```bash
 # # env deepin v20 amd64
@@ -430,7 +432,7 @@ nfs配置见[fs.md](fs.md)
 
 > 需要test时`dpkg -i`追加`zfs-test_2.0.0-1_amd64.deb`
 
-> ZFS模块可以通过两种方式加载到内核，DKMS和kABI, 区别在于: 如果安装基于DKMS的ZFS模块，然后由于某种原因更新了操作系统的内核，则必须再次重新编译ZFS内核模块, 否则它将无法工作; 但是基于kABI的ZFS模块的优势在于，如果更新操作系统的内核，则不需要重新编译.
+> ZFS模块可以通过两种方式加载到内核，DKMS和kmod, 区别在于: 如果安装基于DKMS的ZFS模块，然后由于某种原因更新了操作系统的内核，则可用再次重新编译ZFS内核模块(需要相关的源码), 否则它将无法工作; 但是基于kmod的ZFS模块仅针对特定版本的kernel; 基于RHEL/Centos的Kabi升级内核无需处理. 具体可参考[Custom Packages里的说明](https://openzfs.github.io/openzfs-docs/Developer%20Resources/Custom%20Packages.html)
 
 ## FAQ
 ### [zfs test](https://openzfs.github.io/openzfs-docs/Developer%20Resources/Building%20ZFS.html)

@@ -1,7 +1,7 @@
 # truenas scale
 version: 21.04-ALPHA.1
 
-> 22.02-RC.2至少需要python 3.9
+> 22.02-RC.2至少需要python 3.9, 推荐系统自带, 否则需要处理很多python相关依赖, 很耗时且可能根本无法处理(比如debian.org bullseye下载的python3.9-minimal有libc版本要求)
 
 ## zfs
 zfs pool挂在在`/mnt`下.
@@ -123,10 +123,14 @@ class Resource(object):
 $ cat .vscode/settings.json 
 {
     "python.autoComplete.extraPaths": [
-        "./usr/lib/python3/dist-packages"
+        "./usr/lib/python3/dist-packages",
+        "/home/chen/.local/lib/python3.9/site-packages",
+        "/usr/lib/python3/dist-packages"
     ],
     "python.analysis.extraPaths": [
-        "./usr/lib/python3/dist-packages"
+        "./usr/lib/python3/dist-packages",
+        "/home/chen/.local/lib/python3.9/site-packages",
+        "/usr/lib/python3/dist-packages"
     ]
 }
 ```
@@ -136,11 +140,12 @@ $ cat .vscode/settings.json
 
     ```bash
     $ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 31AAC6F320998A97
-    $ echo "deb [arch=amd64] http://apt.tn.ixsystems.com/apt-direct/angelfish/22.02-RC.2/angelfish/ truenas main" |sudo tee -a /etc/apt/sources.list.d/truenas.list
+    $ echo "deb [arch=amd64] http://apt.tn.ixsystems.com/apt-direct/angelfish/22.02-RC.2/angelfish/ truenas main" |sudo tee -a /etc/apt/sources.list.d/truenas.list # for python3-zettarepl
     $ sudo apt install python3-ldap python3-prctl python3-zettarepl
-    $ pip3 install aiohttp aiohttp-wsgi ws4py flask croniter sentry_sdk setproctitle
+    $ install special pkgs(see FAQ): python3-ldap, python3-prctl, python3-systemd
+    $ pip3 install aiohttp aiohttp-wsgi ws4py flask croniter sentry_sdk setproctitle pyjwt pycryptodomex josepy certbot-dns-cloudflare boto3 passlib html2text
     ```
-1. 在提取的middlewared.deb数据的根目录中执行代码: `env PYTHONPATH=./usr/lib/python3/dist-packages:/usr/lib/python3/dist-packages usr/bin/middlewared -h`
+1. 在提取的middlewared.deb数据的根目录中执行代码: `env PYTHONPATH=./usr/lib/python3/dist-packages:/home/chen/.local/lib/python3.9/site-packages:/usr/lib/python3/dist-packages usr/bin/middlewared -h`
 
     middlewared options:
     - [`--trace-malloc`](https://jira.ixsystems.com/browse/NAS-110712)
@@ -156,8 +161,27 @@ truenas使用sqlite3, db file在`/data/freenas-v1.db`
 ### `ModuleNotFoundError: No module named '_ldap'`
 python3-ldap包含了`/usr/lib/python3/dist-packages/_ldap.cpython-37m-x86_64-linux-gnu.so`, 当前使用python3.9因此无法import python3.7的so.
 
-下载[python3-ldap](https://packages.debian.org/bullseye/python3-ldap), 使用`sudo apt install -f ./python3-ldap_3.2.0-4+b3_amd64.deb`安装, 再删除`/var/lib/dpkg/status`中python3-ldap的Depends中的python3要求即: `python3 (<< 3.10), python3 (>= 3.9~)`
+下载[python3-ldap](https://packages.debian.org/bullseye/python3-ldap), 使用`sudo dpkg -i --ignore-depends=python3 ./python3-ldap_3.2.0-4+b3_amd64.deb`或`sudo apt install -f ./python3-ldap_3.2.0-4+b3_amd64.deb`(`apt install -f`可能不会成功, **推荐使用dpkg**)安装, 再删除`/var/lib/dpkg/status`中python3-ldap的Depends中的python3要求即: `python3 (<< 3.10), python3 (>= 3.9~)`
+
+> 类似的还有python3-prctl, python3-systemd
 
 ### [获取升级所需manifest.json](https://update.freenas.org/scale/TrueNAS-SCALE-Angelfish-RC/manifest.json)
 ### [运行所需manifest.json](https://update.freenas.org/scale/TrueNAS-SCALE-Angelfish-RC/manifest.json)
 由[scale_build/packages/build.py](https://github.com/truenas/scale-build/blob/TS-22.02-RC.2/scale_build/packages/build.py#L105)生成.
+
+内容:
+```json
+{
+    "buildtime": 1637616484,
+    "train": "TrueNAS-SCALE-Angelfish-RC",
+    "version": "22.02-RC.1-2"
+}
+```
+
+train内容可结合`https://update.freenas.org/scale`获取.
+
+### middlewared执行报`ImportError: cannot import name 'encode' from 'jwt'`
+需要使用pyjwt
+
+### apt install python3-zettarepl报`SyntaxError: invalid syntax`
+因为安装python3-zettarepl.deb里的脚本会用到py3clean, py3compile, 而它们是python3.7的, 无法处理zettarepl里用的python3.9语法.
