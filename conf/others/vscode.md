@@ -6,8 +6,10 @@
 1. Python
 1. Remote-SSH
 1. Rust
+1. Python
 1. vscode-proto3
 1. x86 and x86_64 Assembly
+1. Python
 
 ## 插件
 语言插件:
