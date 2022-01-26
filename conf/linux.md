@@ -3,6 +3,16 @@
 #### 制作u盘启动盘(linux下)
 
 1. [Ventoy](https://www.oschina.net/p/ventoy)
+
+	```bash
+	# cd ventoy-1.0.64
+	# ./VentoyGUI.x86_64 [--qt5] # 推荐使用qt
+	```
+
+	操作步骤:
+	1. 通过菜单`配置选项-清除Ventoy`清理U盘
+	2. `配置选项-分区类型`选择GPT. 不能选择`安全启动支持`, 旧主板或部分主板不支持
+	3. 点`安装`即可
 1. Rufus, 推荐, 也支持windows
 1 . [live-usb-install](http://sourceforge.net/projects/liveusbinstall/files/?source=navbar)
 1 . [UNetbootin](https://unetbootin.org/)

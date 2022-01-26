@@ -1,7 +1,8 @@
 ## ClearOS
-1. 环境变量/.ssh/v2raylui
+1. 环境变量
 
-    1. v2raylui : /etc/v2rayL/config.json
+    1. `~/.ssh`
+    1. v2rayA
 1. apt/dnf
 1. nginx.conf/备份DB
 1. 浏览器配置
