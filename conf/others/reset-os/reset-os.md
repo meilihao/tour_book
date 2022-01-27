@@ -7,6 +7,7 @@
 1. nginx.conf/备份DB
 1. 浏览器配置
 
+    1. 书签
     1. SwitchyOmega
     1. better-onetab/OneTab
     1. Bookmarks clean up

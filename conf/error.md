@@ -199,22 +199,6 @@ e2fsck -f /dev/<dev>
 tune2sf -j /dev/<dev>
 ```
 
-### chrome 55 没有flash
-
-`chrome://plugins`里的Adobe Flash Player显示: 
-
-Location:  internal-not-yet-present // 即flash并没有下载
-
-运行:
-```
-google-chrome-stable --proxy-server="socks5://127.0.0.1:1080" // 需梯子
-```
-
-再在`chrome://components/`下载`Adobe Flash Player`,重启即可.
-
-> 其实就是在`~/.config/google-chrome/PepperFlash`下载了一个flash的版本(文件夹名是flash对应的版本号)和latest-component-updated-flash校验文件.
-> 相应的命令行:`/usr/bin/google-chrome-stable %U --ppapi-flash-path=/home/chen/.config/google-chrome/PepperFlash/24.0.0.186/libpepflashplayer.so --ppapi-flash-version=24.0.0.186`
-
 ### socks5转http
 
 ```
