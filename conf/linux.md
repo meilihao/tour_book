@@ -171,9 +171,6 @@ tpm资料,[TPM安全芯片](http://baike.baidu.com/view/687208.htm),[Trusted Pla
 
 - [27 个 Linux 下软件包管理工具 DNF 命令例子](https://linux.cn/article-5718-1.html)
 
-# 编辑器
-## Ubuntu修改默认编辑器
-`sudo update-alternatives --config editor`
 
 # 快捷键
 1. `super + shift + tab`: 重启窗口管理器

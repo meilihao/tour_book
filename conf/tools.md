@@ -264,11 +264,6 @@ notify-send是一个可以让你发送桌面通知的命令.
 ## pdf
 PDF编辑器: LibreOffice Draw
 
-## 默认编辑器
-1. sudo update-alternatives --config editor
-1. select-editor
-1. echo export EDITOR=/usr/bin/vim >> ~/.bashrc # 终极方法, 需重启terminal
-
 ## xfce4 主菜单编辑工具
 ```
 sudo apt install alacarte
