@@ -13,3 +13,5 @@ $ sudo update-alternatives --config python3
 ```
 
 > 语法为: `update-alternatives --install <link> <name> <path> <priority> [--slave link name path]...`
+
+> 语法为: `update-alternatives --remove name path`
