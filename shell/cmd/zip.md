@@ -49,3 +49,15 @@ $ zip -9r lfs/lfs_root/iso/lfs-fsroot.zip lfs -x="lfs/lfs_root/*"
 $ unzip lfs-fsroot.zip
 # unzip tilix.zip -d / # 绿色安装tilix
 ```
+
+## FAQ
+### windows zip解压乱码
+Windows下生成的zip文件中的编码是GBK/GB2312等, 而Linux下的默认编码是UTF8.
+
+```bash
+$ export UNZIP = "-O GBK"  
+$ export ZIPINFO = "-O GBK"
+$ unzip xxx.zip
+```
+
+推荐: 将env放入`~/.bashrc`

@@ -81,6 +81,9 @@ select @@sql_mode,@@GLOBAL.SQL_MODE;
 
 4) 带语言参数导出
     mysqldump -uroot -p --default-character-set=latin1 --set-charset=gbk --skip-opt database_name > outfile_name.sql
+1. 备份多个db
+
+    mysqldump -uroot -p123456 --single-transaction --databases db1 db2> dbs.sql
 
 ps:
 
