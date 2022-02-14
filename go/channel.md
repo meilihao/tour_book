@@ -70,3 +70,30 @@ select {
 
 return nil
 ```
+
+### 控制并发数量
+ref:
+- [Go 语言高性能编程 - 利用 channel 的缓存区](https://geektutu.com/post/hpg-concurrency-control.html)
+
+```go
+func main() {
+	var wg sync.WaitGroup
+	ch := make(chan struct{}, 3)
+
+	for i := 0; i < 10; i++ {
+		ch <- struct{}{}
+		wg.Add(1)
+
+		go func(i int) {
+			defer wg.Done()
+
+			log.Println(i)
+			time.Sleep(time.Second)
+			
+			<-ch
+		}(i)
+	}
+
+	wg.Wait()
+}
+```
