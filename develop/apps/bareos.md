@@ -389,6 +389,8 @@ Alternatively you can use the redoc format: http://127.0.0.1:8000/redoc
 
 bareos原生支持dir, storage, filedaemon的插件扩展. 使用插件前必须在配置中启用它们, **修改后需要重启服务**, 当前支持python 2/3. **bareos 20开始推荐使用python3, 虽然官方20.0.1目前plugins都是python2的**.
 
+> **一个client无法同时加载python2和python3插件, 可创建两个client分别加载python2/3来解决**.
+
 > 前提: `apt install bareos-{director,storage,filedaemon}-python3-plugin`或`apt install bareos-{director,storage,filedaemon}-python2-plugin`, 都装时先安装python3的.
 
 > [Porting existing Python plugins和Switching to Python 3](https://docs.bareos.org/TasksAndConcepts/Plugins.html)
@@ -398,6 +400,25 @@ bareos原生支持dir, storage, filedaemon的插件扩展. 使用插件前必须
 > 插件依赖的python package在`core/src/plugins/{dir,file,store}d/python/pyfiles`下, 会由`bareos-{directoor,storage,filedaemon}-python-plugins-common`安装在`/usr/lib/bareos/plugins`下
 
 因为最常用的是fd-plugins, 这里重点介绍. 其他两种请参考[bareos docs](https://docs.bareos.org/TasksAndConcepts/Plugins.html)
+
+python3 plugin启用方法:
+1. 在client conf使用
+
+    ```conf
+    # vim /etc/bareos/bareos-fd.d/client/xxx.conf
+    FileDaemon {                          
+        Name = client-fd
+        ...
+        Plugin Names = "python3"
+        Plugin Directory = /usr/lib/bareos/plugins
+    }
+    ```
+1. 在fileset上使用
+
+    ```conf
+    # vim /etc/bareos/bareos-dir.d/fileset/xxx.conf
+    Plugin = "python:module_path …"
+    ```
 
 ### fd-plugins
 以[官方MySQL Plugin](https://github.com/bareos/bareos/tree/master/contrib/fd-plugins/mysql-python)举例:

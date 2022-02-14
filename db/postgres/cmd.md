@@ -10,6 +10,13 @@
 - `\d tblname` : 查看表结构
 - `\di` : 查看索引
 
+## 其他命令
+- `show config_file` : 查看配置文件
+- `show hba_file`
+- `show ident_file`
+- `show all`: 查看所有pg配置参数或使用`select * from pg_settings;`
+- 
+
 ## 添加用户
 ```sql
 postgres=# CREATE DATABASE mytestdb;
