@@ -202,3 +202,13 @@ serial key其实是由sequence实现的，当手动给serial列赋值的时候�
 格式: `hostname:port:database:username:password`, 比如`192.168.0.102:5432:postgres:postgres:rootroot`
 
 `.pgpass`的权限必须是`600`
+
+## 模拟操作
+### 插入可产生约2G wal日志的数据
+```psql
+create table t1(a int);
+insert into t1 values (generate_series(1,10000000));
+insert into t1 values (generate_series(1,10000000));
+insert into t1 values (generate_series(1,10000000));
+insert into t1 values (generate_series(1,10000000));
+```

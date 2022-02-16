@@ -15,7 +15,14 @@
 - `show hba_file`
 - `show ident_file`
 - `show all`: 查看所有pg配置参数或使用`select * from pg_settings;`
-- 
+- `show archive_command` : 查看指定参数
+
+## 内置函数
+```psql
+# select current_timestamp;
+# \df pg_start_backup # 查看pg_start_backup函数
+# select pg_xlogfile_name(pg_switch_xlog()); # 切换wal并输出pg_xlogfile_name
+```
 
 ## 添加用户
 ```sql

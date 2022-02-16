@@ -401,6 +401,8 @@ bareos原生支持dir, storage, filedaemon的插件扩展. 使用插件前必须
 
 因为最常用的是fd-plugins, 这里重点介绍. 其他两种请参考[bareos docs](https://docs.bareos.org/TasksAndConcepts/Plugins.html)
 
+区分python2/3 plugin的方法: 查看bareos-fd-xxx.py的load_bareos_plugin的返回值, bRC_OK是python3的, `bRCs['bRC_OK']`是python2的.
+
 python3 plugin启用方法:
 1. 在client conf使用
 
@@ -419,6 +421,8 @@ python3 plugin启用方法:
     # vim /etc/bareos/bareos-dir.d/fileset/xxx.conf
     Plugin = "python:module_path …"
     ```
+
+    **不能省略module_path**, 否则会报"No module named 'xxx'"(即使bareos-fd已配置Plugin Directory)
 
 ### fd-plugins
 以[官方MySQL Plugin](https://github.com/bareos/bareos/tree/master/contrib/fd-plugins/mysql-python)举例:

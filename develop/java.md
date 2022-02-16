@@ -697,7 +697,10 @@ beans是Spring配置文件的根元素，该元素可以指定如下属性:
 **bean可不实现bean xml中定义的`default-xxx`方法**.
 
 ### [`<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer>`](https://blog.csdn.net/qyf_5445/article/details/8211136)
-通过可将bean.xml的设定(bean的`<property>`)移到`.properties`文件中，而`.properties`文件可以作为自定义需求，动态设定bean参数
+通过可将bean.xml的设定(bean的`<property>`)动态覆盖到`.properties`文件中(类似于同时使用多个ini), 而`.properties`文件可以作为自定义需求动态设定bean.
 
 ### beanRefContext.xml(位于Classpath的根目录下)
 用来创建这个ApplicationContext实例, 配置中指明创建这个ApplicationContext所需的配置文件.
+
+### 清理maven cache
+`rm -rf ~/.m2/repository/*`

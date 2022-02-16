@@ -2102,3 +2102,9 @@ $ sudo apt install python3.10
 
 ### python3-aiohttp报`type object '_asyncio.Task' has no attribute 'all_tasks'`
 asyncio.Task.all_tasks() is fully moved to asyncio.all_tasks() starting with 3.9. Also applies to current_task. 升级aiohttp即可.
+
+
+### ModuleNotFoundError: No module named 'xxx'
+已检查PYTHONPATH下存在package xxx.
+
+经检查, 当前python脚本的命名是'xxx.py', 与package xxx重名, 导致脚本中的`import xxx`将当前脚本当做package xxx来import, 从而导致出错.
