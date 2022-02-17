@@ -19,9 +19,13 @@
 
 ## 内置函数
 ```psql
+# SELECT current_setting('server_version_num'); -- 查看server version
 # select current_timestamp;
 # \df pg_start_backup # 查看pg_start_backup函数
-# select pg_xlogfile_name(pg_switch_xlog()); # 切换wal并输出pg_xlogfile_name
+# select pg_xlogfile_name(pg_switch_xlog()); -- 切换wal并输出pg_xlogfile_name
+# select pg_current_wal_lsn(); -- 获得当前wal日志写入位置 # pg10前的版本需要将函数中的wal替换为xlog
+# select pg_walfile_name(pg_current_wal_lsn()); -- 转换wal日志位置为文件名
+# select pg_walfile_name_offset(pg_current_wal_lsn()); -- 转换wal日志位置为文件名和偏移量
 ```
 
 ## 添加用户

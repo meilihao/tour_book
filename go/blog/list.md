@@ -102,6 +102,7 @@
 - [Go项目收藏](http://php-note.com/article/detail/d5d8d5a3518840a7af4e4c6ae5b49a48)
 - [Go 资源大全中文版](https://mlog.club/topic/239)
 - [Java 程序员的 Golang 入门笔记](https://ehlxr.me/2017/07/22/from-java-to-golang/)
+- [从Java到Golang快速入门](https://www.flysnow.org/2016/12/28/from-java-to-golang.html)
 - [深入Go Module.pdf](/misc/pdf/深入Go Module.pdf)
 - [Getting Started with Go Context](https://dev.to/gopher/getting-started-with-go-context-l7g)
 

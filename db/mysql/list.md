@@ -12,3 +12,6 @@
 
 ## 下载
 - [mariadb connectors](https://mariadb.com/downloads/#connectors)
+
+## 备份
+- [使用XtraBackup完成对mysql全量、增量备份与恢复](https://developer.aliyun.com/article/689691)

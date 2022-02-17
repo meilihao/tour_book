@@ -219,6 +219,8 @@ hashCode() 的作用是获取哈希码, 也称为散列码；它实际上是返�
 1. 在外部调用静态方法时, 可以使用"类名.方法名"的方式, 也可以使用"对象名.方法名"的方式. 而实例方法只有后面这种方式. 也就是说, 调用静态方法可以无需创建对象
 1. 静态方法在访问本类的成员时, 只允许访问静态成员(即静态成员变量和静态方法), 而不允许访问实例成员变量和实例方法；实例方法则无此限制
 
+**java的方法必须是属于一个类或者类的实例的**
+
 ### 为什么 Java 中只有值传递?
 按值调用(call by value) 表示方法接收的是调用者提供的值, 按引用调用(call by reference) 表示方法接收的是调用者提供的变量地址. 一个方法可以修改传递引用所对应的变量值, 而不能修改传递值调用所对应的变量值. 它用来描述各种程序设计语言(不只是 Java)中方法参数传递方式.
 
@@ -599,11 +601,14 @@ bean实例创建后会利用`@Autowired`, `@Value`进行属性注入, 此时会�
 web.xml文件的作用是配置web工程启动,对于一个web工程来说，web.xml可以有也可以没有，如果存在web.xml文件；web工程在启动的时候，web容器(tomcat容器)会去加载web.xml文件，然后按照一定规则配置web.xml文件中的组件.
 
 
-web容器加载顺序:ServletContext -> context-param -> listener -> filter ->servlet, **不会因在web.xml中的书写顺序改变**:
+web容器加载顺序:ServletContext -> context-param(启动的初始化参数) -> listener -> filter ->servlet, **不会因在web.xml中的书写顺序改变**:
 1. web容器启动后,会去加载web.xml文件，读取listener和context-param两个节点
 1. 创建一个ServletContext（Servlet上下文）这个上下文供所有部分共享
 1. 容器将context-param转换成键值对，交给ServletContext
 1. 接着按照上述顺序继续执行
+
+> listener是实现了javax.servlet.ServletContextListener 接口的服务器端程序, 它也是随web应用的启动
+而启动，只初始化一次，随web应用的停止而销毁, 实际上就是监听 Web 应用的生命周期。主要作用是：做一些初始化的内容添加工作、设置一些基本的内容、比如一些参数或者是一些 固定的对象等等. listener被加载的顺序就是它们在web.xml中定义的顺序.
 
 在Web容器中使用Spring MVC，就要进行四个方面的配置:
 
@@ -669,6 +674,8 @@ web容器加载顺序:ServletContext -> context-param -> listener -> filter ->se
 
     > 其实`<context-param>`就是用于创建spring的 xxxApplicationContext, 比如`org.springframework.context.support.ClassPathXmlApplicationContext`
 
+    > ClassPathXmlApplicationContext是该容器从XML 文件(spring配置)中加载已被定义的bean, 即实现了包含了BeanFactory所提供的功能
+
 1. 配置ContextLoaderListerner:Spring MVC在Web容器中的启动类，负责Spring IOC(IOC介绍)容器在Web上下文中的初始化
 
     ```xml
@@ -696,6 +703,21 @@ beans是Spring配置文件的根元素，该元素可以指定如下属性:
 
 **bean可不实现bean xml中定义的`default-xxx`方法**.
 
+example:
+```xml
+<bean id="AuthorizationManager" class="org.zstack.identity.AuthorizationManager">
+        <zstack:plugin>
+            <zstack:extension interface="org.zstack.header.Component"/>
+            <zstack:extension interface="org.zstack.header.apimediator.GlobalApiMessageInterceptor"/>
+            <zstack:extension interface="org.zstack.header.zql.ZQLQueryExtensionPoint"/>
+        </zstack:plugin>
+    </bean>
+```
+属性:
+- id : bean在spring容器中的唯一id
+- name : 等同id
+- class : bean的实现类
+
 ### [`<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer>`](https://blog.csdn.net/qyf_5445/article/details/8211136)
 通过可将bean.xml的设定(bean的`<property>`)动态覆盖到`.properties`文件中(类似于同时使用多个ini), 而`.properties`文件可以作为自定义需求动态设定bean.
 
@@ -704,3 +726,6 @@ beans是Spring配置文件的根元素，该元素可以指定如下属性:
 
 ### 清理maven cache
 `rm -rf ~/.m2/repository/*`
+
+### spring xml配置
+- `import resource="applicationContext-tx.xml"/>` : include其他配置

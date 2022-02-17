@@ -4,6 +4,7 @@ ref:
 - [Postgres数据库归档热备份](https://www.escapelife.site/posts/b47f1fcb.html)
 - [PostgreSQL Plugin](https://docs.bareos.org/master/TasksAndConcepts/Plugins.html#postgresql-plugin)
 - [BareosFdPluginPostgres.py](https://github.com/bareos/bareos/blob/master/core/src/plugins/filed/python/postgres/BareosFdPluginPostgres.py)
+- [PostgreSQL 指南：内幕探索](https://cloud.tencent.com/developer/article/1459719)
 
 冷备份, 以及逻辑备份都是某一个时间点的备份, 没有增量的概念.
 
@@ -11,12 +12,26 @@ ref:
 
 在使用 PostgreSQL 数据库在做写入操作时，对数据文件做的任何修改信息，首先会写入 WAL 日志(预写日志), 然后才会对数据文件做物理修改。当数据库服务器掉重启时，PostgreSQL 数据库在启动时会优先读取 WAL日志，对数据文件进行恢复。因此，从理论上讲，如果我们有一个数据库的基础备份(也称为全备)，再配合 WAL 日志，是可以将数据库恢复到过去的任意时间点上.
 
+在PostgreSQL中, 自8.0版本开始提供了在线的全量物理备份，整个数据库集簇（即物理备份数据）的运行时快照被称为基础备份.
+
+PostgreSQL还在8.0版中引入了时间点恢复（Point-In-Time Recovery，PITR）. 这一功能可以将数据库恢复至任意时间点，这通过使用一个基础备份和由持续归档生成的归档日志来实现.
+
+> 从PostgreSQL10 开始将"pg_xlog"目录重命名为"pg_wal"
+
+在PG12以前, recovery.conf该文件的存在即触发恢复模式
+
+从PG12开始，recovery.conf被废弃, recovery.conf文件中的参数放到了postgresql.conf配置文件中, 如果文件存在，服务器将不会启动. 同时recovery.conf由下面两个新文件进行替换:
+- recovery.signal, 告诉PostgreSQL进入正常的归档恢复
+- standby.signal, 告诉PostgreSQL进入standby模式.
+
+如果两个文件都存在，则standby.signal优先. **恢复完成后将删除recovery.signal或standby.signal文件，但其中的参数postgresql.conf仍然保留。只要PostgreSQL不在恢复中，它们就会被忽略，但是最好用“#”注释禁用它们**.
+
 ## 备份
 WAL归档，其实就是把pg_wal里面的日志备份出来，当系统故障后可以通过归档的日志文件对数据进行恢复.
 
 1. 配置postgresql.conf:
 ```conf
-wal_level = replica # 该参数的可选的值有minimal，replica和logical，wal的级别依次增高，在wal的信息也越多。由于minimal这一级别的wal不包含从基础的备份和wal日志重建数据的足够信息，在该模式下，无法开启wal日志归档. replica在9.5及之前版本为hot_standby.
+wal_level = replica # 该参数的可选的值有minimal，replica和logical，wal的级别依次增高，在wal的信息也越多. 由于minimal这一级别的wal不包含从基础的备份和wal日志重建数据的足够信息，在该模式下，无法开启wal日志归档. replica在9.5及之前版本为hot_standby.
 archive_mode = on # 打开归档备份
 archive_command = 'test ! -f /var/lib/postgresql/12/wal_archive/%f && cp %p /var/lib/postgresql/12/wal_archive/%f' # 用于将日志拷贝到其他的地方, **注意备份的目录权限(这里即wal_archive)需要设置为数据库启动的用户权限**. 在shell脚本或命令中可以用 “%p” 表示将要归档的wal文件包含完整路径的信息的文件名，用“%f” 代表不包含路径信息的wal文件的文件名. 修改archive_command参数不需要重启，只需要reload数据库配置(`SELECT pg_reload_conf();`)即可
 ```
@@ -47,6 +62,18 @@ archive_command = 'test ! -f /var/lib/postgresql/12/wal_archive/%f && cp %p /var
 
 
 ```bash
+# --- 配置postgresql.conf开启wal归档, 参考上面的`备份`
+# --- 建立模拟数据
+$ sudo su postgres -c psql
+# create database app;
+# \c app;
+# create table test01(id int primary key,name varchar(20));
+# insert into test01 values(1,'a'), (2,'b'), (3,'c');
+# \q
+$ psql -U postgres -h 127.0.0.1 -p 5432 -c "select pg_start_backup(now()::text)"
+$ rsync -acvz -L --exclude "pg_wal" --exclude "pg_xlog" --exclude "pg_log" $PGDATA /xxx
+$ psql -U postgres -h 127.0.0.1 -p 5432 -c "select pg_stop_backup()"
+# --- 模拟故障
 $ psql -U postgres -h 127.0.0.1 -p 5432 -c "select pg_create_restore_point('$(date +\"\%Y\%m\%d\%H\%M\")');" # 创建一个还原点
 $ psql -U postgres -h 127.0.0.1 -p 5432 -d app -c "delete from test01;" # 模拟误操作: 删表
 $ psql -U postgres -h 127.0.0.1 -p 5432 -d app -c "select pg_switch_wal();" # 确保之前操作均已归档
@@ -66,8 +93,8 @@ recovery_target_timeline='latest' # 指定归档时间线，latest代表最新�
 $ vim /etc/postgresql/12/main/postgresql.conf
 archive_mode='off'
 # ---- 启动db
-$ sudo systemctl start postgresql # 监控日志, 直至出现`recovery has paused`
-$ psql -U postgres -h 127.0.0.1 -p 5432 -d app -c "select pg_wal_replay_resume();" # 解除暂停状态，将recovery.conf变成了recovery.done文件. 当然recovery.conf可以移除，避免下次数据重启数据再次恢复到该还原点
+$ sudo systemctl start postgresql # 监控日志. 将recovery.conf变成了recovery.done文件. 恢复后pg只接收只读连接, 需要执行"select pg_wal_replay_resume"解除该状态
+$ psql -U postgres -h 127.0.0.1 -p 5432 -d app -c "select pg_wal_replay_resume();" # 解除暂停状态. 当然recovery.conf可以移除，避免下次数据重启数据再次恢复到该还原点
 ```
 
 ## 数据复制方式
@@ -153,27 +180,67 @@ Checkpoint的概念太重要了，无论在Oracle，MySQL这个概念，**它主
 	假如设置 archive_timeout=60，那么每 60s 会触发一次 WAL 日志切换，同时触发日志归档. 这里有个隐含的假设，就是当前 WAL 日志中仍有未归档的 WAL 日志内容.
 
 	尽量不要把 archive_timeout 设置的很小，如果设置的很小，它会膨胀归档存储。因为，强制归档的日志，即使没有写满，也会是默认的 wal-segsize M 大小(比如wal日志写满的默认大小为16M).
+
 ### 全量备份当前数据库
 `pg_dump -U postgres -p 5432 -d draft -Z9 \
       -f /data/pg_wal_backup/pg_dump/app_`date +%Y%m%d%H%M%S`.sql.gz`
+
 ### pg_dump和pg_basebackup区别
 pg_dump创建一个逻辑备份，即一系列 SQL 语句，当执行这些语句时，会创建一个逻辑上与原始数据库类似的新数据库.
 
-pg_basebackup创建物理备份，即整个数据库集群的文件的副本.
+pg_basebackup创建物理备份，即**整个数据库集群的文件的副本**而不是单个database.
 
-> pg_dump、pg_dumpall都是是逻辑备份，前者支持多种备份格式，后者只支持sql文本.
+[pg_dump、pg_dumpall](https://www.cnblogs.com/haha029/p/15650047.html)都是是逻辑备份，前者支持多种备份格式，后者只支持sql文本. 因为**pg_dump和pg_dumpall不会产生物理备份， 因此不能用于连续归档方案**.
+
+> pg_basebackup整合了 pg_start_backup和pg_stop_backup命令.
+
+pg_dump:
+```bash
+--- 备份postgres库
+# pg_dump -h 127.0.0.1 -p 5432 -U postgres -f postgres.sql --column-inserts
+
+--- 备份postgres库并tar打包
+# pg_dump -h 127.0.0.1 -p 5432 -U postgres -f postgres.sql.tar -Ft
+ 
+--- 只备份postgres库对象数据
+# pg_dump -U postgres -d postgres -f postgres.sql -Ft --data-only --column-inserts
+ 
+--- 只备份postgres库对象结构
+# pg_dump -U postgres -d postgres -f postgres.sql -Ft --schema-only
+
+--- 导入SQL文件
+# psql -f postgre.sql postgres postgres
+```
+
+pg_dumpall:
+```bash
+--- 备份postgres库，转储数据为带列名的INSERT命令
+# pg_dumpall -d postgres -U postgres -f postgres.sql --column-inserts
+
+--- 备份postges库，转储数据为INSERT命令
+# pg_dumpall -d postgres -U postgres -f postgres.sql --inserts
+ 
+--- 导入数据
+# psql -f postgres.sql
+```
 
 ### pg_start_backup
 pg_start_backup备份方法跟pg_basebackup不同，被称为非排他低级基础备份.
+
+执行基础备份(即全备)最简单方式是使用pg_basebackup, 它使用普通文件或者tar归档创建基础备份. 如果需更多的灵活性, 也可以使用 低水平API pg_start_backup 创建基础备份.
 
 > 非排他：就是备份的时候不影响其他的工作
 
 > 低级基础：就是使用低级API来实现. 像pg_basebackup是全自动的；而pg_start_backup需要你自己指定什么时候开始，什么时候结束，不是全自动的，被称为低级API
 
+> [pg_start_backup/pg_stop_backup src](https://github.com/postgres/postgres/blob/master/src/backend/access/transam/xlogfuncs.c)
+
 pg_start_backup备份流程:
 1. pg_start_backup('label',false,false)
 
 	$PGDATA中记录一个标签文件叫backup_label, 其包含标签名label(需唯一), 以及执行这条指令的启动时间, START WAL LOCATION, CHECKPOINT LOCATION等.
+
+	它会执行一次checkpoint操作.
 
 	参数:
 	1. label：唯一标识这次备份操作的任意字符串
@@ -195,7 +262,7 @@ pg_start_backup备份流程:
 
 	终止备份模式，并且执行一个自动切换到下一个wal段。进行切换的原因是将在备份期间生成的最新wal段文件安排为可归档.
 
-	pg_stop_backup结束时会输出WAL位置, 通过`select pg_xlogfile_name('F/3001A20');`可获取对应的WAL文件.
+	pg_stop_backup结束时会输出WAL位置, 通过`select pg_xlogfile_name('F/3001A20');`可获取对应的WAL文件, **不知pg_stop_backup是否会触发wal归档, 但很多blog会在其后立即执行一次`select pg_switch_wal();`**
 
 这样就完成了一次基础备份. 该基础备份跟pg_basebackup差不多，不过pg_basebackup都封装好了，也不用用操作系统命令进行备份，它自己就全部搞完了.
 
@@ -231,3 +298,9 @@ PostgreSQL 支持指定还原点的位置, 即数据库恢复到什么位置停�
 	这里需要特别注意xid的信息体现在结束时, 而不是分配xid时. 所以恢复到xid=100提交|回滚点, 可能xid=102已经先提交了. 那么包含xid=102的xlog信息会被recovery. 
 4. recovery_target_inclusive
 
+	- 如果在同一个时间点有多个事务回滚或提交，那么recovery_target_inclusive=false则恢复到这个时间点第一个回滚或提交的事务(含)，recovery_target_inclusive=true则恢复到这个时间点最后一个回滚或提交的事务(含)。
+	- 如果时间点上刚好只有1个事务回滚或提交，那么recovery_target_inclusive=true和false一样，恢复将处理到这个事务包含的xlog信息(含)。
+	- 如果时间点没有匹配的事务提交或回滚信息，那么recovery_target_inclusive=true和false一样，恢复将处理到这个时间后的下一个事务回滚或提交的xlog信息(含)。
+
+### pg_waldump
+pg_waldump是PG 用来对 wal日志进行查看.

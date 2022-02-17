@@ -203,6 +203,9 @@ serial key其实是由sequence实现的，当手动给serial列赋值的时候�
 
 `.pgpass`的权限必须是`600`
 
+### the database was initialized with lc_collate "zh_CN.UTF-8:, which is not recognized by setlocale().
+`localedef -f UTF-8 -i zh_CN zh_CN.UTF-8`并再重启postgresql后
+
 ## 模拟操作
 ### 插入可产生约2G wal日志的数据
 ```psql
