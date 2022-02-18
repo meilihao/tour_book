@@ -407,6 +407,75 @@ static关键字总结:
 　　2. 静态方法中不可以使用this或者super关键字
 　　3. java主函数是静态的
 
+Java里静态语句块是优先对象存在，也就是优先于构造方法存在，我们通常用来做只创建一次对象使用，类似于单列模式而且执行的顺序是：父类静态语句块 -> 子类静态语句块 -> 父类构造方法 -> 子类构造方法
+
+```bash
+$ vim TestMethod.java
+
+public class TestMethod extends BaseClass {
+ 
+    static int a;
+ 
+    public TestMethod() {
+        super();
+        System.out.println("constructor of exec");
+    }
+ 
+    static {
+        String a1="12";
+        String a2="22";
+        a=Integer.parseInt(a1)+Integer.parseInt(a2);
+        System.out.println("chilren static block");
+    }
+ 
+    public static void main(String[] args) {
+        System.out.println(TestMethod.a);
+        TestMethod.a=45;
+        new TestMethod();
+        System.out.println(TestMethod.a);
+        new TestMethod();
+        System.out.println(TestMethod.a);
+    }
+ 
+}
+ 
+class BaseClass{
+    
+    static int a;
+    
+    static {
+        String a1="10";
+        String a2="20";
+        a=Integer.parseInt(a1)+Integer.parseInt(a2);
+        System.out.println("baseClass static block");
+        System.out.println(a);
+    }
+    
+    public BaseClass(){
+        System.out.println("Base class constructor of exec");
+        System.out.println(BaseClass.a);
+        BaseClass.a=300;
+        System.out.println(BaseClass.a);
+    }
+}
+$ javac TestMethod.java
+$ java TestMethod
+baseClass static block
+30
+chilren static block
+34
+Base class constructor of exec # 开始new TestMethod()
+30
+300
+constructor of exec
+45
+Base class constructor of exec # 再次new TestMethod(), 是用了同一个父类
+300
+300
+constructor of exec
+45
+```
+
 ### java properties文件加载包含反斜杠
 在java中，利用Properties.load()加载配置文件时，如果配置文件含有"\", 则会将反斜杠作为转义符处理，而不是作为正常字符.
 
@@ -597,6 +666,8 @@ bean实例创建后会利用`@Autowired`, `@Value`进行属性注入, 此时会�
 
 > FactoryBean是一个特殊的接口，实现getObject()达到替换object的目的.
 
+> @Autowired的原理: 在启动spring IoC时，容器自动装载了一个AutowiredAnnotationBeanPostProcessor后置处理器，当容器扫描到@Autowied、@Resource(是CommonAnnotationBeanPostProcessor后置处理器处理的)或@Inject时，就会在IoC容器自动查找需要的bean，并装配给该对象的属性.
+
 ### Spring MVC的web.xml配置详解
 web.xml文件的作用是配置web工程启动,对于一个web工程来说，web.xml可以有也可以没有，如果存在web.xml文件；web工程在启动的时候，web容器(tomcat容器)会去加载web.xml文件，然后按照一定规则配置web.xml文件中的组件.
 
@@ -729,3 +800,52 @@ example:
 
 ### spring xml配置
 - `import resource="applicationContext-tx.xml"/>` : include其他配置
+
+### Reflections 的作用
+Reflections通过扫描classpath，索引元数据，并且允许在运行时查询这些元数据。
+
+获取某个类型的所有子类；比如，有一个父类是TestInterface，可以获取到TestInterface的所有子类
+获取某个注解的所有类型/字段变量，支持注解参数匹配。
+使用正则表达式获取所有匹配的资源文件
+获取特定签名方法
+
+```java
+public class ReflectionTest {
+ public static void main(String[] args) {
+  // 扫包
+  Reflections reflections = new Reflections(new ConfigurationBuilder()
+    .forPackages("com.boothsun.reflections") // 指定路径URL
+    .addScanners(new SubTypesScanner()) // 添加子类扫描工具
+    .addScanners(new FieldAnnotationsScanner()) // 添加 属性注解扫描工具
+    .addScanners(new MethodAnnotationsScanner() ) // 添加 方法注解扫描工具
+    .addScanners(new MethodParameterScanner() ) // 添加方法参数扫描工具
+    );
+
+  // 反射出子类
+  Set<Class<? extends ISayHello>> set = reflections.getSubTypesOf( ISayHello.class ) ;
+  System.out.println("getSubTypesOf:" + set);
+
+  // 反射出带有指定注解的类
+  Set<Class<?>> ss = reflections.getTypesAnnotatedWith( MyAnnotation.class );
+  System.out.println("getTypesAnnotatedWith:" + ss);
+
+  // 获取带有特定注解对应的方法
+  Set<Method> methods = reflections.getMethodsAnnotatedWith( MyMethodAnnotation.class ) ;
+  System.out.println("getMethodsAnnotatedWith:" + methods);
+
+  // 获取带有特定注解对应的字段
+  Set<Field> fields = reflections.getFieldsAnnotatedWith( Autowired.class ) ;
+  System.out.println("getFieldsAnnotatedWith:" + fields);
+
+  // 获取特定参数对应的方法
+  Set<Method> someMethods = reflections.getMethodsMatchParams(long.class, int.class);
+  System.out.println("getMethodsMatchParams:" + someMethods);
+
+  Set<Method> voidMethods = reflections.getMethodsReturn(void.class);
+  System.out.println( "getMethodsReturn:" + voidMethods);
+
+  Set<Method> pathParamMethods =reflections.getMethodsWithAnyParamAnnotated( PathParam.class);
+  System.out.println("getMethodsWithAnyParamAnnotated:" + pathParamMethods);
+ }
+}
+```
