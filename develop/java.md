@@ -848,4 +848,6 @@ public class ReflectionTest {
   System.out.println("getMethodsWithAnyParamAnnotated:" + pathParamMethods);
  }
 }
+
+// method.isAnnotationPresent(GetPayContent.class) // 判断带自定义注解 GetPayContent 的 method
 ```
