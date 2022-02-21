@@ -2108,3 +2108,6 @@ asyncio.Task.all_tasks() is fully moved to asyncio.all_tasks() starting with 3.9
 已检查PYTHONPATH下存在package xxx.
 
 经检查, 当前python脚本的命名是'xxx.py', 与package xxx重名, 导致脚本中的`import xxx`将当前脚本当做package xxx来import, 从而导致出错.
+
+### ModuleNotFoundError: No module named 'PyQt5'
+`apt install python3-pyqt5`

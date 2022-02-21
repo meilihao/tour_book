@@ -98,6 +98,8 @@ DNF配置文件的位置:
 1. 当在 DNF 中排除了某个软件库，那么该操作将会影响到之后所有的操作，不像在 YUM 那样，排除操作只在升级和安装软件时才起作用
 
 # rpm
+ref:
+- [YUM COMMAND CHEAT SHEET ](https://access.redhat.com/sites/default/files/attachments/rh_yum_cheatsheet_1214_jcs_print-1.pdf)
 
 ## examples
 ```bash
@@ -150,6 +152,7 @@ rehat开发的包管理软件, 已被dnf取代.
 # yum groupremove # 软件包组 移除指定的软件包组
 # yum groupinfo # 软件包组 查询指定的软件包组信息
 # yum whatprovides libmysqlclient* # 查找某一包的提供者
+# yum whatprovides '*bin/grep' # 查找某一文件的提供者
 ```
 
 # rpmlint
