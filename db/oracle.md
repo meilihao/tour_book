@@ -125,6 +125,7 @@ cache 50; //缓存
 ref:
 - [Oracle备份的几种方式](https://www.cnblogs.com/lcword/p/11775657.html)
 - [rman备份与恢复](https://zhuanlan.zhihu.com/p/143866731)
+- [Oracle Databases Enterprise Bacula Plugin Quick Guide](https://www.bacula.lat/oracle-databases-enterprise-bacula-plugin-quick-guide)
 - [Database Backup and Recovery User's Guide](https://docs.oracle.com/cd/E11882_01/backup.112/e10642/toc.htm)
 - [Oracle exp/imp数据导入导出工具基本用法](https://www.cnblogs.com/pandachen/p/5935078.html)
 - [expdp impdp 数据库导入导出命令详解](https://blog.51cto.com/shitou118/310033)
