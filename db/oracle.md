@@ -16,11 +16,20 @@ ref:
 
 ## cmd
 ```bash
+# lsnrctl status : 查看服务器端listener进程的状态
 # --- 登录db
 su - oracle
+> sqlplus --不显露密码的登陆方式
+Enter user-name：sys
+Enter password：password as sysdba --以sys用户登陆的话 必须要加上 as sysdba 子句
+> -- 直接登入db
 sqlplus / as sysdba
+> exit
+> -- 先进入sqlplus再登入
+> sqlplus /nolog -- /nolog是不登陆(no login)到数据库服务器的意思. 如果没有/nolog参数，sqlplus会提示输入用户名和密码
+> connect / as sysdba -- 连接db by 用户授权
+> select user from dual; -- 查看当前用户
 > ? -- help
-> conn 切换用户授权
 > help index; -- 命令列表
 > shutdown immediate; -- 停止oracle
 > startup; -- 启动oracle
@@ -29,6 +38,7 @@ sqlplus / as sysdba
 > rename a to b; -- 修改表名
 > show user; -- 查看当前连接用户
 > @a.sql; -- 执行外部sql脚本
+> select name from v$database; -- 获取当前数据库实例
 > select * from all_users; -- 查看所有用户
 > select tablespace_name from user_tablespaces; -- 查询当前用户拥有的所的有表空间
 > select * from database_properties where property_name=’DEFAULT_TEMP_TABLESPACE’; -- 查询默认临时表空间
@@ -42,7 +52,7 @@ datafile 'animal.dbf' size 10M [autoextend on next 10m]; -- 创建表空间(Orac
 > create user csy identified by csy
 default tablespace ANIMAL; -- 创建用户名和密码均是csy的账号
 > grant connect,resource,dba to csy; -- 赋予用户dba权限. Oracle数据库中常用角色:connect,连接角色.基本角色; resource,开发者角色;dba,超级管理员角色
-> grant create session to csy ;
+> grant create session to csy;
 > create table dog
 (
     name varchar(12),
@@ -94,6 +104,7 @@ cache 50; //缓存
 > alter sequence id_seq cache 30; -- 更改序列
 > select sequence_name,increment_by,cache_size from user_sequences; -- 查看序列信息
 > drop sequence id_seq; -- 删除序列
+> show sga -- 查看instance是否已启动
 ```
 
 ## 数据监控em
@@ -110,6 +121,87 @@ cache 50; //缓存
 - clob	大对象,表示大文本数据类型,可存4G
 - blob	大对象,表示二进制数据,可存4G
 
+## 备份/还原
+ref:
+- [Oracle备份的几种方式](https://www.cnblogs.com/lcword/p/11775657.html)
+- [rman备份与恢复](https://zhuanlan.zhihu.com/p/143866731)
+- [Database Backup and Recovery User's Guide](https://docs.oracle.com/cd/E11882_01/backup.112/e10642/toc.htm)
+- [Oracle exp/imp数据导入导出工具基本用法](https://www.cnblogs.com/pandachen/p/5935078.html)
+- [expdp impdp 数据库导入导出命令详解](https://blog.51cto.com/shitou118/310033)
+
+> 备份需要sysdba权限
+
+EXP和IMP是客户端工具程序，它们既可以在客户端使用，也可以在服务端使用.
+EXPDP和IMPDP是服务端的工具程序，他们只能在ORACLE服务端使用，不能在客户端使用.
+IMP只适用于EXP导出的文件，不适用于EXPDP导出文件；IMPDP只适用于EXPDP导出的文件，而不适用于EXP导出文件.
+rman: RMAN可以进行增量备份, **推荐使用**.
+
+备份:
+```bash
+# exp help=y # exp help
+# exp \'sys/xxx as sysdba\' file=db.dmp full=y -- 1.将数据库完全导出. 用操作系统权限认证的oracle sys管理员身份, xxx是任意密码
+# exp csy/csy file=db.dmp full=y -- 1.将数据库完全导出. 用csy账户
+# exp system/manager@orcl file=db.dmp full=y -- 1.将数据库完全导出，设置full选项
+# exp system/manager@orcl file=db.dmp rows=n full=y -- 2、导出数据库结构，不导出数据，设置rows选项
+# exp system/manager@orcl file=db1.dmp,db2.dmp filesize=50M full=y -- 3、当导出数据量较大时，可以分成多个文件导出，设置filesize选项
+# exp system/manager@orcl file=Test_bak.dmp owner=(system,sys) -- 4.将数据库中system用户与sys用户的表导出，设置owner选项
+# exp system/manager@orcl file=Test_bak.dmp tables=(t_result,t_khtime) -- 5.将数据库中的表t_result,t_khtime导出，设置tables选项
+# exp kpuser/kpuser@orcl file=Test_bak.dmp tables=(T_SCORE_RESULT) query=\" where updatedate>to_date('2016-9-1 18:32:00','yyyy-mm-dd hh24:mi:ss')\" -- 6、将数据库中的表T_SCORE_RESULT中updatedate日期字段大于某个值的数据导出，设置query选项
+```
+
+还原:
+```bash
+# imp system/manager@orcl file=Test_bak.dmp ignore=y -- 1、导入dmp文件，如果表已经存在，会报错且不导入已经存在的表，设置ignore选项
+# imp kpuser/kpuser@orclfile=kpuser.dmp tables=(T_SCORE_RESULT) -- 2、导入dmp文件中部分指定的表，设置tables选项
+# -- 3、导入一个或一组指定用户所属的全部表、索引和其他对象，设置fromuser选项
+# imp system/manager@orcl file=kpuser.dmp fromuser=kpuser //kpuser必须存在
+# imp system/manager@orcl file=users.dmp fromuser=(kpuser,kpuser1,test) //kpuser,kpuser1,test用户必须存在
+# -- 4、将数据导入指定的一个或多个用户，设置fromuser和touser选项
+# imp system/manager file=kpuser.dmp fromuser=kpuser touser=kpuser1 //kpuser1必须存在
+# imp system/manager file=users.dmp fromuser=(kpuser,kpuser1) touser=(kpuser2, kpuser3) //kpuser2、kpuser3必须存在
+```
+
+### rman
+> RMAN-SBT是指rman备份到tape.
+
+前提:
+1. `SELECT LOG_MODE FROM SYS.V$DATABASE;`/`archive log list`, db在ARCHIVELOG模式, 默认是NOARCHIVELOG
+
+	启用ARCHIVELOG模式:
+	```
+	> archive log list -- 查看Database Archiving Mode, **推荐**
+	> shutdown -- 关闭db
+	> exit
+	# mkdir -p /mnt/archive
+	# chown oracle:oinstall /mnt/archive 
+	# sqlplus / as sysdba
+	> startup mount -- 以加载方式启动
+	> alter database archivelog; -- 修改归档模式
+	> alter system Set LOG_ARCHIVE_DEST_1='LOCATION=/mnt/archive' -- /mnt/archive 要存在
+	> archive log list -- 检查参数
+	> shutdown immediate -- 关闭db
+	> connect / as sysdba
+	> startup
+	# --- 另一个terminal
+	# rman target / log a.log -- 指定log后, rman日志会输出到a.log而不是terminal
+	> backup database; / backup database format "/home/oracle/%u";
+	```
+
+	> log_archive_dest_1会在`{instance}/dbs/xxx.ora`里
+
+
+备份数据库指定文件:
+1. 获取指定文件的file_id
+
+	- 通过数据字典dba_data_files查询出表空间对应的数据文件及其序号: `Select file_name, file_id, tablespace_name from dba_data_files;`
+	- 查看某个表对应的序号及表空间: `Select file_name, file_id, tablespace_name from dba_data_files where file_id in (select distinct file_id from dba_extents where segment_name='表名');`
+1. 备份
+
+	```
+	# rman target /
+	> backup datafile 2,7 format "/home/oracle/%u"; -- 2,7为要备份文件的file_id
+	```
+
 ## FAQ
 ### sqlplus报`ORA-01034: ORACLE not available`
 出现ORA-01034的原因是多方面的：主要是Oracle当前的服务不可用, 用`startup;`启动即可
@@ -121,14 +213,25 @@ cache 50; //缓存
 
 	通过`stty -a`查看终端设置, 其中会有这样的一个字段`erase = ^?;`表示终端的清除字符的方式是Ctrl+Backspace, 可将它放入`.bashrc`
 
-### sqlplus按方向键不支持显示历史命令
-可安装软件rlwrap回调sqlplus中执行过的命令来解决
+### sqlplus不支持方向键
+可安装软件rlwrap回调sqlplus中执行过的命令来解决.
 
 ```bash
 # dnf install rlwrap
 # vim ~/.bashrc
 alias sqlplus='rlwrap sqlplus'
 ...
+```
+
+自编译:
+```bash
+# dnf install readline-devel
+# wget https://github.com/hanslub42/rlwrap/releases/download/v0.43/rlwrap-0.43.tar.gz
+# tar -xf rlwrap-0.43.tar.gz
+# cd rlwrap-0.43
+# ./configure && make && make install
+# vim ~/.bashrc
+alias sqlplus='rlwrap sqlplus'
 ```
 
 ### mysql和oracle 概念区别
@@ -163,4 +266,68 @@ Oracle中，一个RDMS拥有多个实例(一般只有一个)，一个实例可�
 1：startup nomount （alter database mount; alter database open;）
 2：startup mount （alter database open;）
 3：startup
+```
+
+STARTUP 选项说明：
+- NOMOUNT—开启实例，不加载数据库.允许访问数据库，仅用于创建数据库或重建控制文件
+- MOUNT—开启实例，并加载数据库，但不打开数据库。允许DBA进行操作，但是不允许普通的数据库访问。
+- OPEN—开启实例，加载数据库，打开数据库,等同STARTUP
+- FORCE-在启动或关闭遇到问题时，强制启动实例
+- OPEN RECOVER—在完成完整的备份后启动实例
+
+### db登入方式
+1. `sqlplus / as sysdba` : =`sqlplus sys/xxx as sysdba`(xxx为任意密码).这是以操作系统权限认证的oracle sys管理员登陆，不需要listener进程
+2. `sqlplus sys/oracle` : 非管理员用户登录. 这种连接方式只能连接本机数据库，同样不需要listener进程
+3. `sqlplus scott/oracle@orcl` : 非管理员用户使用tns别名登录. 这种方式需要listener进程处于可用状态, 最普遍的通过网络连接
+3. `sqlplus sys/oracle@orcl as sysdba` : 管理员用户使用tns别名登录. 这种方式需要listener进程处于可用状态
+
+以上连接方式使用sys用户或者其他通过密码文件验证的用户都不需要数据库处于可用状态，操作系统认证也不需要数据库可用，普通用户因为是数据库认证，所以数据库必需处于open状态
+
+> 当给某个用户赋予权限的时候,可以直接对其赋予权限. 也可以先将若干权限形成一个集合体, 再将这个集合体整体赋予该用户. 这里这个权限的集合体就是角色(role), 比如sysdba.
+
+### [print_table 实现 sqlplus 类似 mysql \G 及 psql \x 的功能](https://icode.best/i/31745333641226)
+```sql
+> create or replace procedure print_table( p_query in varchar2 )
+AUTHID CURRENT_USER
+is
+	l_theCursor integer default dbms_sql.open_cursor;
+	l_columnValue varchar2(4000);
+	l_status integer;
+	l_descTbl dbms_sql.desc_tab;
+	l_colCnt number;
+begin
+	execute immediate
+	'alter session set nls_date_format=''yyyy-mm-dd hh24:mi:ss'' ';
+
+	dbms_sql.parse( l_theCursor, p_query, dbms_sql.native );
+	dbms_sql.describe_columns( l_theCursor, l_colCnt, l_descTbl );
+
+	for i in 1 .. l_colCnt loop
+		dbms_sql.define_column(l_theCursor, i, l_columnValue, 4000);
+	end loop;
+
+	l_status := dbms_sql.execute(l_theCursor);
+
+	while ( dbms_sql.fetch_rows(l_theCursor) > 0 ) 
+	loop
+		for i in 1 .. l_colCnt loop
+			dbms_sql.column_value
+			( l_theCursor, i, l_columnValue );
+			dbms_output.put_line
+			( rpad( l_descTbl(i).col_name, 30 )
+			|| ': ' || 
+			l_columnValue );
+		end loop;
+		dbms_output.put_line( '-----------------' );
+	end loop;
+	execute immediate 'alter session set nls_date_format=''dd-MON-rr'' ';
+	
+	exception
+		when others then
+		execute immediate 'alter session set nls_date_format=''dd-MON-rr'' ';
+		raise;
+end;
+/
+> set serveroutput on;
+> exec print_table('select * from v$database'); -- 测试效果
 ```
