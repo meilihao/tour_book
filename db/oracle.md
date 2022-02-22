@@ -17,6 +17,7 @@ ref:
 ## cmd
 ```bash
 # lsnrctl status : 查看服务器端listener进程的状态
+# lsnrctl start : 启动服务器端listener进程, 监听端口是1521
 # --- 登录db
 su - oracle
 > sqlplus --不显露密码的登陆方式

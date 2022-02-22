@@ -10,3 +10,10 @@
 
 ### 删除所有表但不删库的方法
 `SELECT CONCAT('drop table ',table_name,';') FROM information_schema.`TABLES` WHERE table_schema='数据库名';`
+
+### dbeaver缺失驱动
+ref:
+- [如何在无网络的情况下给Dbeaver安装数据库驱动](https://blog.csdn.net/Georgetwo/article/details/112390120)
+
+- [miaridb : mariadb-java-client](https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client)
+- [oracle : mariadb-java-client](https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client)
