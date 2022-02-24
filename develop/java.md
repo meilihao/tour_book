@@ -851,3 +851,26 @@ public class ReflectionTest {
 
 // method.isAnnotationPresent(GetPayContent.class) // 判断带自定义注解 GetPayContent 的 method
 ```
+
+### JPA的persistence.xml
+persistence.xml文件必须定义在classpath路径下的META-INF文件夹中.
+
+JPA是Java Persistence API的简称，中文名Java持久层API，是JDK 5.0注解或XML描述对象－关系表的映射关系，并将运行期的实体对象持久化到数据库中, 通常与hibernate结合使用.
+
+JPA包括以下三个方面的技术：
+1. ORM映射元数据
+
+    JPA支持XML和JDK注解两种元数据的形式，元数据描述对象和表之间的映射关系，框架据此景实体对象持久化到数据库表中
+
+1. API
+
+    用来操作实体对象，执行CRUD操作，框架在后台代替我们完成所有的事情，开发者能够从繁琐的JDBC和SQL代码中解放出来
+
+1. 查询语言
+
+    通过面向对象数据库的查询语言查询数据，避免程序的SQL语句的高度耦合
+
+由org.springframework.orm.jpa.persistenceunit.PersistenceUnitReader载入.
+
+标签:
+- mapping-file : 指定映射文件的位置即声明orm对象位置的xml配置

@@ -3,6 +3,12 @@
 
 libvirt对多种不同的Hypervisor的支持是通过一种基于驱动程序的架构来实现的. libvirt对不同的Hypervisor提供了不同的驱动： 对Xen有Xen的驱动， 对QEMU/KVM有QEMU驱动， 对VMware有VMware驱动. 在libvirt源代码中， 可以很容易找到qemu_driver.c、 xen_driver.c、 xenapi_driver.c、 VMware_driver.c、 vbox_driver.c这样的驱动源码.
 
+
+sdk:
+- libvirt.org/go/libvirt和libvirt.org/go/libvirtxml
+
+   [libvirt.org/libvirt-go已被支持go module的libvirt.org/go/libvirt取代](https://libvirt.org/libvirt-go.html). sdk使用参考[libvirt-go中能够提供的虚机信息](https://blog.csdn.net/zhagzheguo/article/details/100050474)
+
 ## 概念
 - 节点（Node） 
 

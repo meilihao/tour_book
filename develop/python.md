@@ -19,6 +19,8 @@
 
 
 ## 环境
+[virtualenv](https://www.liaoxuefeng.com/wiki/1016959663602400/1019273143120480)用于建立一个隔离的python运行环境, 一个专属于项目的python环境, 比如针对不同的python版本. 因此用virtualenv 来保持一个干净的环境非常有用.
+
 ### 安装
 ```
 $ sudo apt-get install python3.8
