@@ -191,6 +191,45 @@ $ sudo ninja -C build install
 > libvirt 6.3.0编译html docs时会报错
 
 ## FAQ
+### libvirt5.6.0源码并编译安装
+```bash
+# 1. 安装edk2
+wget https://www.kraxel.org/repos/firmware.repo -O /etc/yum.repos.d/firmware.repo
+yum -y install edk2.git-aarch64
+
+或
+dnf install dnf-plugins-core
+dnf config-manager --add-repo https://www.kraxel.org/repos/firmware.repo
+dnf install edk2.git-ovmf-x64
+
+# 1. 安装依赖包
+yum -y install libxml2-devel readline-devel ncurses-devel libtasn1-devel gnutls-devel libattr-devel libblkid-devel augeas systemd-devel libpciaccess-devel yajl-devel sanlock-devel libpcap-devel libnl3-devel libselinux-devel dnsmasq radvd cyrus-sasl-devel libacl-devel parted-devel device-mapper-devel xfsprogs-devel librados2-devel librbd1-devel glusterfs-api-devel glusterfs-devel numactl-devel libcap-ng-devel fuse-devel netcf-devel libcurl-devel audit-libs-devel systemtap-sdt-devel nfs-utils dbus-devel scrub numad rpm-build git
+
+# 1. 下载源码并安装
+wget https://libvirt.org/sources/libvirt-5.6.0-1.fc30.src.rpm
+rpm -i libvirt-5.6.0-1.fc30.src.rpm
+
+# 1. 生成rpm包，如果编译失败，可以重试
+cd /root/rpmbuild/SPECS/
+rpmbuild -ba libvirt.spec
+
+# 1. 安装rpm包
+cd /root/rpmbuild/RPMS/aarch64/
+yum -y install *.rpm
+
+# 1. 修改配置
+vim /etc/libvirt/qemu.conf
+
+#784行添加以下代码
+nvram = ["/usr/share/edk2.git/aarch64/QEMU_EFI-pflash.raw:/usr/share/edk2.git/aarch64/vars-template-pflash.raw"]
+
+# 1. 关闭SELinux并重启服务
+# 重启libvirtd服务
+systemctl restart libvirtd
+# 关闭SELinux
+setenforce 0 # 避免不能启动虚拟机
+```
+
 ### `failed to connect to the hypervisor` & `failed to connect socket to '/var/run/libvirt/libvirt-sock': No such file or directory`
 原因: libvirt服务未启动，找不到libvirt-sock.
 
@@ -285,6 +324,44 @@ Ubuntu16.04.6+飞腾主板+libvirt 6.0.0, systemd里没有报错日志, 也没�
 ### `pip install libvirt-python`报`Perhaps you should add the directory containing `libvirt.pc' to the PKG_CONFIG_PATH environment variable`和`Package 'libvirt', required by 'virtual:world', not found`
 `dnf install libvirt libvirt-devel`
 
+### virt-install报`cannot access storage file`
+```bash
+$ sudo vim /etc/libvirt/qemu.conf
+user = "root"
+group = "root"
+$ sudo systemctl restart libvirtd
+```
+
+### `virsh undefine xxx`报`cannot undefine domain with nvram`
+`virsh dumpxml 25 | grep nvram`报`<nvram>/var/lib/libvirt/qemu/nvram/centos8.0_VARS.fd</nvram>`
+
+解决方法: `virsh undefine xxx --nvram`
+
+报错源码: qemuDomainUndefineFlags()
+
+### `virsh undefine xxx`报`cannot undefine transient domain`
+之前创建过同名的domain, 此时要先`virsh destroy xxx`再`virsh undefine xxx`
+
+解决方法: `virsh undefine xxx --nvram`
+
+### `virsh insall`报`unsupported configuration: ACPI requires UEFI on this architecture`
+[aarch64 KVM只支持UEFI BIOS，编译源码时未安装edk2, 无法识别Firmware文件](https://support.huaweicloud.com/trouble-kunpengcpfs/kunpengkvm_09_0006.html)
+
+解决方法:
+1. 使用uefi
+1. 使用`virsh insall --features acpi=off`, 禁用acpi
+
+   有用seabios aarch64, 但经测试还是报该错误
+
+### `virsh insall`报`Couldn't find kernel for install tree`
+不是使用`--location /home/me/Downloads/ubuntu-18.10-desktop-amd64.iso`, 而要采用`--cdrom /home/me/Downloads/ubuntu-18.10-desktop-amd64.iso`
+
+原因是找不到文件: install/vmlinuz, install/initrd.gz 
+
+### virt-install uefi + cdrom
+`--boot uefi --boot cdrom --cdrom xxx.iso`
+
+
 ## virtsh
 virsh 属于 libvirt 的命令行工具, 与virt-manager类似, libvirt 是目前使用最为广泛的对 KVM 虚拟机进行管理的工具和 API, 它还可管理 VMware, VirtualBox, Hyper-V等.
 
@@ -300,7 +377,7 @@ ref:
 - [<<KVM实战>>的4.2 virsh]
 - [QEMU中的命令行参数及其monitor中的命令， 在virsh中的对应关系](http://wiki.libvirt.org/page/QEMUSwitchToLibvirt) 
 
-如下命令启动虚拟机： `virsh create <name of virtual machine>`
+如下命令启动虚拟机： `virsh create <name of virtual machine>` : 通过`virsh create <vmname>.xml`创建的虚拟机不会持久化，关机后会消失
 启动虚拟机： `virsh start <name>`
 列出所有虚拟机 (不管是否运行)： `virsh list --all`, `--all`包括没运行的vm, 则只输出运行中的vm
 正常关闭 guest ： `virsh shutdown <virtual machine (name | id | uuid)>`
@@ -315,6 +392,7 @@ ref:
 删除vm的配置文件: `virsh undifine <name>`
 根据配置文件定义vm: `virsh define <file.xml>`
 列出全部 virsh 可用命令： `virsh help`
+help: `virt-install <参数> ?`
 
     ```conf
     # virsh help
@@ -323,7 +401,7 @@ ref:
      Domain Management (help keyword 'domain'):
         attach-device                  从一个XML文件附加装置
         attach-disk                    附加磁盘设备
-        attach-interface               获得网络界面
+        attach-interface               获得网络设备. 添加网卡:virsh attach-interface vm-yaohai --type bridge --source br0 --model virtio --config; 删除网卡(by mac): virsh detach-interface vm-yaohai --type bridge --mac 52:54:00:61:4c:f3 --config
         autostart                      自动开始一个域
         blkdeviotune                   设定或者查询块设备 I/O 调节参数。
         blkiotune                      获取或者数值 blkio 参数
@@ -418,7 +496,7 @@ ref:
         vcpuinfo                       详细的域 vcpu 信息
         vcpupin                        控制或者查询域 vcpu 亲和性
         emulatorpin                    控制火车查询域模拟器亲和性
-        vncdisplay                     vnc 显示
+        vncdisplay                     查询vnc连接信息
         guestvcpus                     query or modify state of vcpu in the guest (via agent)
         setvcpu                        attach/detach vcpu or groups of threads
         domblkthreshold                set the threshold for block-threshold event for a given block device or it's backing chain element
@@ -426,12 +504,12 @@ ref:
      Domain Monitoring (help keyword 'monitor'):
         domblkerror                    在块设备中显示错误
         domblkinfo                     域块设备大小信息
-        domblklist                     列出所有域块
+        domblklist <name>              列出所有域块
         domblkstat                     获得域设备块状态
         domcontrol                     域控制接口状态
         domif-getlink                  获取虚拟接口链接状态
         domifaddr                      Get network interfaces' addresses for a running domain
-        domiflist                      列出所有域虚拟接口
+        domiflist <name>               列出所有域虚拟接口
         domifstat                      获得域网络接口状态
         dominfo                        域信息
         dommemstat                     获取域的内存统计
@@ -491,16 +569,16 @@ ref:
         nwfilter-binding-list          list network filter bindings
 
      Networking (help keyword 'network'):
-        net-autostart                  自动开始网络
+        net-autostart                  自启动网络
         net-create                     从一个 XML 文件创建一个网络
         net-define                     define an inactive persistent virtual network or modify an existing persistent one from an XML file
         net-destroy                    销毁（停止）网络
         net-dhcp-leases                print lease info for a given network
         net-dumpxml                    XML 中的网络信息
-        net-edit                       为网络编辑 XML 配置
+        net-edit                       为网络编辑 XML 配置.  `virsh net-edit default`
         net-event                      Network Events
         net-info                       网络信息
-        net-list                       列出网络
+        net-list                       列出网络. 获取default配置: `cat /etc/libvirt/qemu/networks/default.xml`
         net-name                       把一个网络UUID 转换为网络名
         net-start                      开始一个(以前定义的)不活跃的网络
         net-undefine                   undefine a persistent network
@@ -588,8 +666,12 @@ ref:
         connect                        连接（重新连接）到 hypervisor
     ```
 
+其他:
+virt-clone -o Demo-kylin-v10 -n kylin-1 -f /home/kvm/kylin-1.qcow2 : # 克隆Demo-kylin-v10, 虚拟机名：kylin-1, 虚拟机路径：/home/kvm/kylin-1.qcow2
+
 创建vm:
 ```bash
+# --- virsh 5.5
 qemu-img create -f qcow2 centos_kvm1.qcow2 16G
 virt-install \
 --virt-type=kvm \
@@ -601,47 +683,97 @@ virt-install \
 --disk path=/srv/kvm/centos_kvm1.qcow2,size=16,format=qcow2 \
 --graphics vnc,password=kvm,listen=::,port=5911 \
 --network bridge=virbr0 \
---autostart \
---force
+--autostart
 ```
+
+> 生成的xml在`/etc/libvirt/qemu/<name>.xml`
 
 安装成功后使用任意一个可以访问 KVM 宿主机的带有桌面的设备上的 VNC viewer 进入 `<vm宿主机ip>:5911`, 输入密码 `kvm` 就可以进入虚拟机, 然后继续安装了.
 
 install 常用参数说明展开目录:
-```conf
-–name指定虚拟机名称
-–memory分配内存大小.
-–vcpus分配CPU核心数，最大与实体机CPU核心数相同
-–disk指定虚拟机镜像，size指定分配大小单位为G.
-–network网络类型，此处用的是默认，一般用的应该是bridge桥接.
-–accelerate加速
-–cdrom指定安装镜像iso
-–vnc启用VNC远程管理，一般安装系统都要启用.
-–vncport指定VNC监控端口，默认端口为5900，端口不能重复.
-–vnclisten指定VNC绑定IP，默认绑定127.0.0.1，这里改为0.0.0.0
-–os-type=linux,windows
-–os-variant=rhel6
+- 一般选项
 
---name      指定虚拟机名称
---ram       虚拟机内存大小，以 MB 为单位
---vcpus     分配CPU核心数，最大与实体机CPU核心数相同
-–-vnc       启用VNC远程管理，一般安装系统都要启用.
-–-vncport   指定VNC监控端口，默认端口为5900，端口不能重复.
-–-vnclisten  指定VNC绑定IP，默认绑定127.0.0.1，这里改为0.0.0.0
---network   虚拟机网络配置
-  # 其中子选项，bridge=br0 指定桥接网卡的名称.
+   - name : 指定虚拟机名称
+   - memory: 分配内存大小, 单位是MB
+   - vcpus : 分配CPU核心数，最大与实体机CPU核心数相同
+   - cpu=CPU：CPU模式及特性，如coreduo等；可以使用`qemu-system-x86_64 -cpu ?`来获取支持的CPU模式
+   - virt-type : hypervisor类型, 可使用`virsh capabilities`获取
+   - os-variant=rhel6, 可用`osinfo-query os`获取
+   - machine : machine类型, 可用`qemu-system-x86_64 -machine help`获取
+- 安装方式
 
-–os-type=linux,windows
-–os-variant=rhel7.2
+   - cdrom=xxx.iso : 指定安装镜像iso
+   - location : 安装源URL, 多用于网络安装, 支持FTP、HTTP及NFS等, 但也支持本地路径, 如`ftp://172.16.0.1/pub`, `/xxx/x.iso/(mounted的iso目录)`
+   - --boot  cdrom,hd,network：指定引导次序, 可用`virt-insall --boot ?`查看
+   - --boot kernel=KERNEL,initrd=INITRD,kernel_args=”console=/dev/ttyS0”：指定启动系统的内核及initrd文件
+   - pxe : 基于PXE完成安装
+   - --import : 跳过os安装过程, 用现有磁盘镜像来构建vm, 常用`--disk`联用
+   - --boot uefi : uefi启动. 估计是设置了`--boot loader=xxx.fd`, 与virt-manager 创建vm-`customize configuration before install`-overview-hypervisor details中的fireware相同.
 
---disk 指定虚拟机的磁盘存储位置
-  # size，初始磁盘大小，以 GB 为单位.
+      前提: `dnf install edk2-ovmf/apt install ovmf`
 
---location 指定安装介质路径，如光盘镜像的文件路径.
---graphics 图形化显示配置
-  # 全新安装虚拟机过程中可能会有很多交互操作，比如设置语言，初始化 root 密码等等.
-  # graphics 选项的作用就是配置图形化的交互方式，可以使用 vnc（一种远程桌面软件）进行链接.
-  # 我们这列使用命令行的方式安装，所以这里要设置为 none，但要通过 --extra-args 选项指定终端信息，
-  # 这样才能将安装过程中的交互信息输出到当前控制台.
---extra-args 根据不同的安装方式设置不同的额外选项
-```
+      验证: vm启动后显示uefi log(tianocore), 再进入uefi shell, 且grup界面出现"System setup"选项
+   - --boot /usr/share/seabios/biso.bin
+
+      前提: `apt install seabios`
+- 网络配置
+
+   - network OPTIONS: 网络配置
+
+      - default : 使用默认network配置, 即bridge桥接
+      - bridge=br0 : 接至名为“NAME”的网络指定桥接网卡的名称
+      - NETWORK=NAME : 连接至名为`NAME`的网络
+
+      选项:
+      - model: netdev model, 可用`qemu-system-x86_64 -net nic,model=?`获取
+      - mac=52:54:00:01:02:03 : 指定mac, 对于 QEMU 或 KVM 虚拟机, 它必须是`52:54:00`
+- 存储配置
+
+   - disk : 指定虚拟机的磁盘存储位置
+     
+      - size : 磁盘大小，以 GB 为单位.
+      - format：磁盘映像格式，如raw、qcow2、vmdk等
+      - none: 没有磁盘, 常用于livecd
+      - bus：磁盘总结类型，其值可以为ide、scsi、usb、virtio或xen
+      - perms：访问权限，如rw、ro或sh（共享的可读写），默认为rw
+      - cache：缓存模型，其值有none、writethrouth（缓存读）及writeback（缓存读写）
+      - sparse：磁盘映像使用稀疏格式，即不立即分配指定大小的空间
+      - boot_order: 多个磁盘用于安装时guest时的尝试引导的顺序, 越小优先
+- 图形配置
+
+   - graphics TYPE,opt1=val1,opt2=val2 : 图形化显示配置
+     # 全新安装虚拟机过程中可能会有很多交互操作，比如设置语言，初始化 root 密码等等.
+     # graphics 选项的作用就是配置图形化的交互方式，可以使用 vnc（一种远程桌面软件）进行链接.
+     # 我们这列使用命令行的方式安装，所以这里要设置为 none，但要通过 --extra-args 选项指定终端信息，
+     # 这样才能将安装过程中的交互信息输出到当前控制台.
+     
+     TYPE：指定显示类型，可以为vnc、sdl、spice或none等，默认为vnc`
+
+     - vnc启用VNC远程管理，一般安装系统都要启用.
+
+         - port : 指定VNC监控端口，默认端口为5900，端口不能重复.
+         - listen : 指定VNC绑定IP，默认绑定127.0.0.1，这里改为0.0.0.0
+         - password: TYPE为vnc或spice时，为远程访问监听的服务进指定认证密码
+
+         例如: `--graphics vnc,password=123456,port=5910`
+
+- 其他
+
+   - extra-args : 根据不同的安装方式设置不同的额外选项
+
+      比如kickstart安装参数: `--location https://mirrors.aliyun.com/centos/8-stream/BaseOS/x86_64/os/ --initrd-inject /path/to/ks.cfg  --extra-args="ks=file:/ks.cfg console=tty0 console=ttyS0,115200n8"`. `net.ifnames=0 biosdevname=0`是内核参数,将网卡设备名固定为eth0..eth1等
+   - autostart : 指定虚拟机是否在物理启动后自动启动
+   - print-xml : 如果虚拟机不需要安装过程(--import、--boot)，则显示生成的XML而不是创建此虚拟机. 默认情况下，此选项仍会创建磁盘映像
+   - --dry-run：执行创建虚拟机的整个过程，但不真正创建虚拟机、改变主机上的设备配置信息及将其创建的需求通知给libvirt
+   - --debug：显示debug信息
+   - --connect=CONNCT选项来指定连接至一个非默认的hypervisor
+      
+      - `qemu:///system` : If running on a bare metal kernel as root (needed for KVM installs)
+      - `qemu:///session` : If running on a bare metal kernel as non-root
+   - --metadata
+
+      - uuid : 虚拟机的唯一编号. 如果没有指定，将生成一个随机UUID
+   - --sound
+
+      - none : 没有声卡
+   - noautoconsole: 不自动连接到guest console. 即不阻塞virt-install

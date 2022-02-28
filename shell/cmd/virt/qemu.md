@@ -396,3 +396,8 @@ qemu窗口-视图-勾选"显示标签页"
 
 ### 查询qemu vm的默认选项
 `virt-install --os-variant <os>`, 参数os是`osinfo-query os`输出的"Short ID".
+
+### [windows virtio驱动](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.96/)
+
+### UEFI启动 花屏
+UEFI启动需要使用qxl驱动, 即`-vga qxl`
