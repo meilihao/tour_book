@@ -712,7 +712,7 @@ install 常用参数说明展开目录:
 
       前提: `dnf install edk2-ovmf/apt install ovmf`
 
-      验证: vm启动后显示uefi log(tianocore), 再进入uefi shell, 且grup界面出现"System setup"选项
+      验证: vm启动后显示uefi log(tianocore)
    - --boot /usr/share/seabios/biso.bin
 
       前提: `apt install seabios`
