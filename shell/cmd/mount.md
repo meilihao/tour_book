@@ -46,6 +46,9 @@
 # mount  /dev/cdrom /mnt/cdrom #挂载光盘
 # mount -v /export/sdc_share
 mount: /srv/dev-disk-by-path-pci-0000-00-10.0-scsi-0-0-2-0-part1/test/ bound on /export/sdc_share.
+mount -o loop -t squashfs squashfs.img /a/
+mount -o loop CentOS-7-x86_64-LiveGNOME-2003.iso mnt/
+mount -t iso9660 ./CentOS-7-x86_64-Minimal-1511.iso /tmp/CentOS7
 ```
 
 # umount
