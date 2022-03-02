@@ -97,3 +97,82 @@ func main() {
 	wg.Wait()
 }
 ```
+
+### 并发控制+数据/错误处理
+```go
+package main
+
+import (
+	"fmt"
+	"sync"
+	"sync/atomic"
+	"time"
+)
+
+func main() {
+	var err error
+	ls := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13} // 可触发end flag
+	//ls := []int{1, 2, 3, 4, 5, 6, 7, 8, 9} // 没足够数量触发end flag
+	var flag int32
+	errCh := make(chan error)
+	dataCh := make(chan int)
+	ch := make(chan struct{}, 3) // 并发控制
+	doCh := make(chan int, 2)    // 一个处理err, 一个处理data. 可用WaitGroup代替
+	wg := sync.WaitGroup{}
+
+	// 先有receiver, 避免all groutines locks
+	go func() {
+		for e := range errCh {
+			if err == nil {
+				err = e
+			}
+			fmt.Println("get err:", e)
+		}
+		doCh <- 1
+	}()
+
+	go func() {
+		for i := range dataCh {
+			fmt.Println("get data:", i)
+		}
+
+		doCh <- 1
+	}()
+
+	for i := range ls {
+		if atomic.LoadInt32(&flag) > 0 {
+			fmt.Println("---end flag")
+			break
+		}
+
+		//fmt.Println("doing:", i)
+		ch <- struct{}{}
+		wg.Add(1)
+
+		go func(i int) {
+			defer wg.Done()
+			fmt.Println("in:", i)
+
+			time.Sleep(time.Second)
+			if i < 6 {
+				dataCh <- i
+			} else {
+				atomic.AddInt32(&flag, 1)
+				errCh <- fmt.Errorf("send err: %d", i)
+			}
+			fmt.Println("out:", i)
+
+			<-ch
+		}(i)
+	}
+
+	wg.Wait()
+	close(errCh)
+	close(ch)
+	close(dataCh)
+	<-doCh
+	<-doCh
+	close(doCh)
+	fmt.Println(err)
+}
+```
