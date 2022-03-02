@@ -486,17 +486,27 @@ nqn.2014-08.org.nvmexpress:uuid:75953f3b-77fe-4e03-bf3c-09d5a156fbcd
 ### target属性
 - [alua_access_state](https://www.kite.com/python/docs/rtslib_fb.ALUATargetPortGroup.alua_access_state) : ALUA state. 参考[多路径ALUA技术如何优化I/O处理](https://www.cnblogs.com/pipci/p/11431183.html)
 
-### target修改Vendor名称
+### target修改Vendor/Model名称
 [scsi: target: add device vendor_id configfs attribute](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=54a6f3f6a43cf5a5ad0421e4440a4c7095e7a223), 需要kernel>=5.0
 
-修改方法: `echo "12345678" /sys/kernel/target/core/$backstore/$name/wwn/vendor_id`, 应在backstore加入target lun前设置, 因为target export后不允许设置, 设置报错时相应log会在syslog里.
+修改方法:
+- `echo "12345678" /sys/kernel/target/core/$backstore/$name/wwn/vendor_id`
+- `echo "mydisk" /sys/kernel/target/core/$backstore/$name/wwn/product_id`
 
-> vendor_id: 长度是[1~INQUIRY_VENDOR_IDENTIFIER_LEN=8](https://yhbt.net/lore/all/20181119210636.22979-4-ddiss@suse.de/T/)
+应在backstore加入target lun前设置, 因为target export后不允许设置, 设置报错时相应log会在syslog里.
+
+验证方法: 在initiator端挂载target后用`lsblk -S`查看输出的VENDOR和MODEL列.
+
+> vendor_id: 长度是[0~INQUIRY_VENDOR_LEN=8](https://yhbt.net/lore/all/20181119210636.22979-4-ddiss@suse.de/T/); product_id: 长度是[0~INQUIRY_MODEL_LEN=16]
+
+### vpd_unit_serial
+`/sys/kernel/config/target/core/$backstore/$name/wwn/vpd_unit_serial`用于initiator识别LUN, 因此它在reboot和failover中应维持不变.
 
 # tgtadm
 参考:
 - [github.com/longhorn/go-iscsi-helper](https://github.com/longhorn/go-iscsi-helper/blob/master/iscsi/target.go)
 - [Linux上配置使用iSCSI详细说明](https://www.cnblogs.com/f-ck-need-u/p/9067906.html)
+- [TCMU学习笔记](https://blog.shunzi.tech/post/tcmu/)
 
 > tgtadm和tgt-admin都是管理和配置target的工具，它们作用是一样的，只不过tgtadm是命令行下的工具，而tgt-admin是根据配置文件/etc/tgt/targets.conf调用tgtadm来实现.
 
