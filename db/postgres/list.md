@@ -13,6 +13,7 @@
 
 ## ha
 - [pacemaker+drbd+postgres](https://www.insight-ltd.co.jp/tech_blog/postgresql/440/)
+- [PolarDB for PostgreSQL高可用原理](https://developer.aliyun.com/article/789048)
 
 ## 发行版
 - [Pigsty 开箱即用的 PostgreSQL 发行版](https://www.oschina.net/p/pigsty)/[Pigsty 近况与 v1.4 前瞻](https://www.oschina.net/news/184665)/[Vonng/pigsty](https://github.com/Vonng/pigsty)
