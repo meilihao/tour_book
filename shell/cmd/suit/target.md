@@ -486,6 +486,13 @@ nqn.2014-08.org.nvmexpress:uuid:75953f3b-77fe-4e03-bf3c-09d5a156fbcd
 ### target属性
 - [alua_access_state](https://www.kite.com/python/docs/rtslib_fb.ALUATargetPortGroup.alua_access_state) : ALUA state. 参考[多路径ALUA技术如何优化I/O处理](https://www.cnblogs.com/pipci/p/11431183.html)
 
+### target修改Vendor名称
+[scsi: target: add device vendor_id configfs attribute](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=54a6f3f6a43cf5a5ad0421e4440a4c7095e7a223), 需要kernel>=5.0
+
+修改方法: `echo "12345678" /sys/kernel/target/core/$backstore/$name/wwn/vendor_id`, 应在backstore加入target lun前设置, 因为target export后不允许设置, 设置报错时相应log会在syslog里.
+
+> vendor_id: 长度是[1~INQUIRY_VENDOR_IDENTIFIER_LEN=8](https://yhbt.net/lore/all/20181119210636.22979-4-ddiss@suse.de/T/)
+
 # tgtadm
 参考:
 - [github.com/longhorn/go-iscsi-helper](https://github.com/longhorn/go-iscsi-helper/blob/master/iscsi/target.go)
