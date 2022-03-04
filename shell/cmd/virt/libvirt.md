@@ -1,4 +1,7 @@
 # libvirt
+ref:
+- [libvirt 源码分析 - virsh](https://winddoing.github.io/post/dec26e6d.html)
+
 目前使用最广泛的对kvm进行管理的工具和应用程序接口, 它也支持xen, vmware, virtualbox, hyper-v等平台虚拟化, 以及openvz, lxc等容器虚拟化.
 
 libvirt对多种不同的Hypervisor的支持是通过一种基于驱动程序的架构来实现的. libvirt对不同的Hypervisor提供了不同的驱动： 对Xen有Xen的驱动， 对QEMU/KVM有QEMU驱动， 对VMware有VMware驱动. 在libvirt源代码中， 可以很容易找到qemu_driver.c、 xen_driver.c、 xenapi_driver.c、 VMware_driver.c、 vbox_driver.c这样的驱动源码.
