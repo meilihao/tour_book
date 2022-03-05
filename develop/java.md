@@ -863,6 +863,7 @@ example:
 - id : bean在spring容器中的唯一id
 - name : 等同id
 - class : bean的实现类
+- depends-on : 表示一个Bean的实例化依靠另一个Bean先实例化
 
 ### [`<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer>`](https://blog.csdn.net/qyf_5445/article/details/8211136)
 通过可将bean.xml的设定(bean的`<property>`)动态覆盖到`.properties`文件中(类似于同时使用多个ini), 而`.properties`文件可以作为自定义需求动态设定bean.
