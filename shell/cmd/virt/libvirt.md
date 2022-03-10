@@ -1,6 +1,7 @@
 # libvirt
 ref:
 - [libvirt 源码分析 - virsh](https://winddoing.github.io/post/dec26e6d.html)
+- [virsh list所有vm state及其转换](https://docs.openeuler.org/zh/docs/20.03_LTS_SP3/docs/Virtualization/%E7%AE%A1%E7%90%86%E8%99%9A%E6%8B%9F%E6%9C%BA.html)
 
 目前使用最广泛的对kvm进行管理的工具和应用程序接口, 它也支持xen, vmware, virtualbox, hyper-v等平台虚拟化, 以及openvz, lxc等容器虚拟化.
 
@@ -359,11 +360,41 @@ $ sudo systemctl restart libvirtd
 ### `virsh insall`报`Couldn't find kernel for install tree`
 不是使用`--location /home/me/Downloads/ubuntu-18.10-desktop-amd64.iso`, 而要采用`--cdrom /home/me/Downloads/ubuntu-18.10-desktop-amd64.iso`
 
-原因是找不到文件: install/vmlinuz, install/initrd.gz 
+原因是找不到文件: install/vmlinuz, install/initrd.gz
 
 ### virt-install uefi + cdrom
-`--boot uefi --boot cdrom --cdrom xxx.iso`
+`--boot uefi --boot cdrom --cdrom xxx.iso`, 仅virt-install时有效, vm restart后进入uefi shell.
 
+原因是vm xml里的cdrom缺source标签, 即仅在virt-install时使用了iso:
+```xml
+<disk type='file' device='cdrom'>
+  <driver name='qemu' type='raw'/>
+  <source file='/tmp/SLES-11-DVD-i586-GM-DVD1.iso'/>
+  <target dev='sda' bus='scsi'/>
+  <readonly/>
+  <address type='drive' controller='0' bus='1' unit='0'/>
+</disk>
+```
+
+推测它的操作可能是:
+```bash
+# virsh attach-disk <GuestName> /tmp/SLES-11-DVD-i586-GM-DVD1.iso sda --type cdrom --mode readonly # 模拟最初的cdrom配置, 有iso信息
+# cat update-device.xml
+<disk type='file' device='cdrom'>
+  <driver name='qemu' type='raw'/>
+  <target dev='sda' bus='scsi'/>
+  <readonly/>
+  <address type='drive' controller='0' bus='0' target='0' unit='0'/>
+</disk>
+# virsh update-device <GuestName> update-device.xml # 删除了source标签
+```
+
+### Guest has not initialized the display (yet) 
+- [qemu machine i440FX 仅支持 BIOS ，需更改成Q35， Q35 同时支持 BIOS 和 UEFI](https://blog.csdn.net/m0_47541842/article/details/113521732)
+- iso里os的arch与qemu使用的arch不一致
+
+## uefi shell
+- exit : 进入qemu machine(virt-4.0)的类似bios界面的字符uefi界面.
 
 ## virtsh
 virsh 属于 libvirt 的命令行工具, 与virt-manager类似, libvirt 是目前使用最为广泛的对 KVM 虚拟机进行管理的工具和 API, 它还可管理 VMware, VirtualBox, Hyper-V等.
@@ -379,6 +410,7 @@ ref:
 - `man virsh`
 - [<<KVM实战>>的4.2 virsh]
 - [QEMU中的命令行参数及其monitor中的命令， 在virsh中的对应关系](http://wiki.libvirt.org/page/QEMUSwitchToLibvirt) 
+- [热迁移虚拟机](https://docs.openeuler.org/zh/docs/20.03_LTS_SP3/docs/Virtualization/%E7%83%AD%E8%BF%81%E7%A7%BB%E8%99%9A%E6%8B%9F%E6%9C%BA.html)
 
 如下命令启动虚拟机： `virsh create <name of virtual machine>` : 通过`virsh create <vmname>.xml`创建的虚拟机不会持久化，关机后会消失
 启动虚拟机： `virsh start <name>`
@@ -419,7 +451,7 @@ help: `virt-install <参数> ?`
         create                         从一个 XML 文件创建一个域
         define                         从一个 XML 文件定义（但不开始）一个域
         desc                           显示或者设定域描述或者标题
-        destroy                        销毁（停止）域
+        destroy                        强制关闭域
         detach-device                  从一个 XML 文件分离设备
         detach-device-alias            detach device from an alias
         detach-disk                    分离磁盘设备
@@ -684,8 +716,9 @@ virt-install \
 --memory=1024 \
 --cdrom=/srv/kvm/CentOS-7-x86_64-Minimal-1810.iso \
 --disk path=/srv/kvm/centos_kvm1.qcow2,size=16,format=qcow2 \
---graphics vnc,password=kvm,listen=::,port=5911 \
+--graphics vnc,password=kvm,listen=0.0.0.0,port=5911 \
 --network bridge=virbr0 \
+--boot uefi \
 --autostart
 ```
 

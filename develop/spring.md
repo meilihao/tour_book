@@ -48,3 +48,30 @@ private static class MyBean {
     }
 }
 ```
+
+## bean
+### 属性
+- scope
+
+    - Singleton
+
+        这也是Spring默认的scope，表示Spring容器只创建一个bean的实例，Spring在创建第一次后会缓存起来，之后不再创建，就是设计模式中的单例模式。
+
+    - Prototype
+
+        代表线程每次调用这个bean都新创建一个实例。
+
+    - Request
+
+        表示每个request作用域内的请求只创建一个实例。
+
+    - Session
+
+        表示每个session作用域内的请求只创建一个实例。
+
+    - GlobalSession
+
+        这个只在porlet的web应用程序中才有意义，它映射到porlet的global范围的session，如果普通的web应用使用了这个scope，容器会把它作为普通的session作用域的scope创建
+- name
+
+    默认使用bean id作为name, 没有时再使用bean name

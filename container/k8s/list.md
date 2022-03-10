@@ -15,6 +15,7 @@
 - [virtual-kubelet 是一个开源的社区主导型项目，是Kubernetes kubelet的一种实现](https://luanlengli.github.io/2020/11/10/kubernetes%E5%9F%BA%E4%BA%8Evirtual-kubelet%E5%AE%9E%E7%8E%B0%E5%BC%B9%E6%80%A7Pod.html)
 
     它伪装成kubelet，与Kubernetes集群API通信, 实现Kubernetes API向阿里云的ECI、AWS的Fargate等serverless平台扩展.
+- [OpenELB及其与 MetalLB 的对比](https://kubesphere.io/zh/blogs/openelb-joins-cncf-sandbox-project/)
 
 ## ha
 - [[k8s源码分析][kube-scheduler]scheduler之高可用及原理](https://www.jianshu.com/p/e30addc18560)
