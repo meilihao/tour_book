@@ -293,6 +293,14 @@ cancel jobid=xxx yes
 enable jobid=xxx yes
 disable jobid=xxx yes
 
+# ---- restore
+restore # 开始进入交互式restore流程
+1 # 选择最近20个job
+3 # 允许使用指定的jobid
+cwd is: / # 进入bvfs选择文件,
+mark <file> # 选中文件, 被选中文件的前面会出现`*`. `unmark <file>`取消选中
+done # 完成选中
+
 # --- estimate : 对某次任务进行评估. 它会连接到客户端，并输出这次任务的fileset 中 文件数,和这次备份任务所占的空间
 estimate job=t3_full listing client=t3-fd  #估算下这个备份有多少文件,需要多大容量. 作业任务t3_full,客户端t3-fd
 # --- delete删除备份

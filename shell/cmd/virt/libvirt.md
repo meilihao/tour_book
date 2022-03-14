@@ -365,7 +365,7 @@ $ sudo systemctl restart libvirtd
 ### virt-install uefi + cdrom
 `--boot uefi --boot cdrom --cdrom xxx.iso`, 仅virt-install时有效, vm restart后进入uefi shell.
 
-原因是vm xml里的cdrom缺source标签, 即仅在virt-install时使用了iso:
+原因是vm xml里的cdrom缺source标签, 通过为virt-install添加`--debug`打印vm xml可见仅在virt-install时使用了iso, 关闭vm后xml里的source被删除:
 ```xml
 <disk type='file' device='cdrom'>
   <driver name='qemu' type='raw'/>
@@ -394,7 +394,7 @@ $ sudo systemctl restart libvirtd
 - iso里os的arch与qemu使用的arch不一致
 
 ## uefi shell
-- exit : 进入qemu machine(virt-4.0)的类似bios界面的字符uefi界面.
+- exit : 进入qemu machine(virt-4.0)的类似bios界面的字符uefi firmware settings界面.
 
 ## virtsh
 virsh 属于 libvirt 的命令行工具, 与virt-manager类似, libvirt 是目前使用最为广泛的对 KVM 虚拟机进行管理的工具和 API, 它还可管理 VMware, VirtualBox, Hyper-V等.

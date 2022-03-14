@@ -35,6 +35,8 @@ ssh root@192.168.16.40 -t "cd /proc/cpuinfo"
 ssh root@192.168.16.40 -t "ls -lL /home/ubuntu | awk '{print \$9}'" # 简单命令时推荐, 此时需要转义否则结果会与预期不符.
 ssh root@192.168.16.40 'bash -s' < a.sh # 复杂命令时, 推荐
 ssh root@192.168.16.40 bash -c "ls -lL /home/ubuntu | awk '{print \$9}'" # 此时的执行结果不正确, 因此不能使用`bash -c "xxx"`的形式
+ssh aliyun "nohup sleep 10 &" # 使用nohup也会卡10s, 推测是输出会被写入ssh conn导致
+ssh aliyun "nohup sleep 10 >/dev/null 2>&1 &" # 不卡
 ```
 
 ## FAQ
