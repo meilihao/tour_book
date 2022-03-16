@@ -116,7 +116,9 @@ class Resource(object):
 `class xxxModel(sa.Model)`
 
 ### 获取middlewared.deb
-根据[scale-build/conf/sources.list](https://github.com/truenas/scale-build/blob/master/conf/sources.list)找到[middlewared.deb](https://apt.tn.ixsystems.com/apt-direct/angelfish/22.02-RC.2/angelfish/pool/main/m/middlewared/)
+根据[scale-build/conf/sources.list](https://github.com/truenas/scale-build/blob/master/conf/sources.list)找到[middlewared.deb](https://apt.tn.ixsystems.com/apt-direct/angelfish/{22.02-RC.2,nightlies}/angelfish/pool/main/m/middlewared/)
+
+> middlewared发布RELEASE后会删除了上述url中的`22.02/angelfish`路径即没法下到RELEASE版deb.
 
 配置vscode阅读middlewared.deb提取源码:
 ```bash
@@ -149,6 +151,46 @@ $ cat .vscode/settings.json
 
     middlewared options:
     - [`--trace-malloc`](https://jira.ixsystems.com/browse/NAS-110712)
+
+
+### TrueNAS-SCALE-22.02.0.iso里提取middlewared
+> iso/live下的squashfs里不包含middlewared
+
+用ncdu统计iso文件大小, 在逐个排查, 最终定位在`TrueNAS-SCALE.update`.
+
+
+```bash
+# binwalk TrueNAS-SCALE.update 
+
+DECIMAL       HEXADECIMAL     DESCRIPTION
+--------------------------------------------------------------------------------
+0             0x0             Squashfs filesystem, little endian, version 4.0, compression:gzip, size: 1369983003 bytes, 6 inodes, blocksize: 131072 bytes, created: 2022-02-18 16:15:16
+# mount -t squashfs -o loop  TrueNAS-SCALE.update  /mnt/squashfs
+# cd /mnt/squashfs
+# tree .
+.
+├── manifest.json
+├── rootfs.squashfs
+└── truenas_install
+    ├── __init__.py
+    └── __main__.py
+
+1 directory, 4 files
+# cat manifest.json |jq .
+{
+  "date": "2022-02-18T16:15:15.940514",
+  "version": "22.02.RELEASE",
+  "size": 5450135961,
+  "checksums": {
+    "rootfs.squashfs": "c1fdaf7032c2c2605e2c9d96e06aba086e06a643",
+    "truenas_install/__main__.py": "f6eebffdce4cb8da52ade2bd16b3e9613f8c1048",
+    "truenas_install/__init__.py": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+  },
+  "kernel_version": "5.10.93+truenas"
+}
+# mkdir /mnt/squashfs2
+# mount -t squashfs -o loop  rootfs.squashfs  /mnt/squashfs2 # 经分析rootfs.squashfs是已安装好middlewared的镜像
+```
 
 
 ## FAQ

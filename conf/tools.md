@@ -36,6 +36,14 @@ $ sudo apt purge lxqt-* liblxqt*
 
 > 查看系统当前支持的桌面环境 : `/usr/share/xsessions`
 
+KDE Plasma Desktop environment:`sudo apt install kubuntu-desktop`
+
+当前支持的X11 session在`/usr/share/xesssions`.
+当前支持的Wayland session在`/usr/share/wayland-sessions`.
+当前正在使用的显示管理器: `cat /etc/X11/default-display-manager`.
+设置默认显示管理器: `sudo dpkg-reconfigure <sddm/gdm3/lightdm>`
+进入桌面自动打开应用: `~/.config/autostart/*.desktop`
+
 ## 主题
 
 ### 字体

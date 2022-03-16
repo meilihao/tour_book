@@ -345,3 +345,15 @@ grub2-mkconfig -o /boot/grub2/grub.cfg
 `mount | grep cgroup`是否出现cgroup2, 有则使用了cgroup2; 出现cgroup则使用了cgroup v1
 
 > 在kernel 4.5中, cgroup v2声称已经可以用于生产环境了, 但它所支持的功能还很有限(v2是v1实现的子集).
+
+### kde的baloo文件提取器总是崩溃
+解决方法: 
+- `sudo balooctl disable`(已测试)
+- 清理文件(未测试)
+
+    ```bash
+    # rm -rf ~/.config/baloo*
+    # rm -rf ~/.local/share/baloo/*
+    ```
+
+> `balooctl status`

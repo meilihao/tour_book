@@ -136,8 +136,11 @@ libc-l10n: /usr/share/locale/zh_CN/LC_MESSAGES/libc.mo
 
 也可从其他机器的拷贝/usr/share/locale/zh_CN, 再将其LC_MESSAGES清空并替换为libc-l10n包里的LC_MESSAGES即可.
 
-### `locale`输出
-：
+### 修改默认locale
+```bash
+$ sudo dpkg-reconfigure locales
+```
 
-1、(LC_CTYPE)
-6、信息主要是提示信息,错误信息,状态信息,标题,标签,按钮和菜单等(LC_MESSAGES)
+手动编辑的方法:
+1. 编辑 /etc/locale.gen 文件，会看到一行一个 Locale，只需把需要启用的 Locale 前的注释取消即可。
+2. 运行 locale-gen 命令生成 Locale 即可

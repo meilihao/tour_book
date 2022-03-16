@@ -19,4 +19,5 @@
 
 ## 工具
 - [linux命令查询](https://wangchujiang.com/linux-command/)
+- [linux命令](https://wangchujiang.com/linux-command/hot.html)
 - [log color - ANSI escape code](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors)
