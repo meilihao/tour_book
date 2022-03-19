@@ -2244,6 +2244,9 @@ ref:
 `print('\n'.join(('%s:%s' % item for item in dict1.items())))`  # 每行一对key和value，中间是分号
 
 ### `pyrasite-shell <pid>`卡住
+ref:
+- [python内存泄露诊断过程记录pyrasite](https://www.cnblogs.com/shengulong/p/8044132.html)
+
 解决方法:
 1. 安装依赖
 
@@ -2272,3 +2275,69 @@ asyncio.Task.all_tasks() is fully moved to asyncio.all_tasks() starting with 3.9
 
 ### ModuleNotFoundError: No module named 'PyQt5'
 `apt install python3-pyqt5`
+
+### 使用linux下gdb来调试python程序
+前提条件:
+1. 确保gdb版本>=7.0
+2. 安装python-debuginfo包
+
+    apt install python<3.8>-dbg
+
+    > centos需先执行`yum install yum-utils && debuginfo-install glibc`再安装gdb和python-debuginfo
+
+    其他方式安装python-debuginfo:
+    ```bash
+    # debuginfo-install python # for python2.7
+    # debuginfo-install python3 libgcc # for python3
+    ```
+
+假设python进程是1000:
+1. 执行`gdb -p 1000`
+2. 载入[libpython : 找对应python版本的](https://github.com/python/cpython/blob/main/Tools/gdb/libpython.py)
+
+    如果gdb是redhat或fedora等厂商修改过的，会有--python选项，使用此选项即可指定gdb启动时载入的Python扩展脚本: `gdb --python /path/to/libpython .py -p 1000`
+
+    安装的是GNU的gdb，就需要打开gdb后手动载入libpython.py脚本:
+    ```gdb
+    (gdb) python
+    >import sys
+    >sys.path.insert(0, '/path/to/libpython.py' )
+    >import libpython
+    >end
+    ```
+
+    网上也有其他载入libpython方式:
+    ```bash
+    $ gdb python <PID>
+    (gdb) source /usr/lib/debug/usr/lib64/libpython2.7.so.1.0.debug-gdb.py # from python2.7
+    (gdb) source /usr/lib/debug/usr/lib64/libpython3.6dm.so.1.0-3.6.8-18.el7.x86_64.debug-gdb.py # python3
+    ```
+3. 开始调试
+
+    使用py-bt命令打印当前线程的Python traceback了, 其他命令:
+    - py-print : 打印变量
+    - py-locals : 打印所有本地变量
+    - py-bt  : 当前Py调用栈
+    - py-list  : 当前py代码位置
+    - py-up : 查看上层调用方的信息
+    - py-down : 返回之前的栈
+    - etc
+
+    命令详细可打开libpython.py查看
+
+    常用其他gdb命令:
+    ```
+    bt    # 当前C调用栈
+    info thread   # 线程信息
+    info threads  # 所有线程信息
+    thread <id>   # 切换到某个线程
+    thread apply all py-list  # 查看所有线程的py代码位置
+    ctrl-c  # 中断
+    ```
+
+    为了不影响运行中的进程，可以通过生成 core file 的方式来保存进程的当前信息:
+    ```bash
+    (gdb) generate-core-file
+    (gdb) quit
+    $ gdb python core.6489
+    ```

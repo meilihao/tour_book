@@ -88,11 +88,14 @@ class Resource(object):
 添加log埋点:
 - restful api : `src/middlewared/middlewared/restful.py#Resource.do`中的`result = await self.middleware.call(methodname, *method_args, **method_kwargs)`前添加`self.middleware.logger.info("--- r call: {} {} {}".format(methodname, method_args, method_kwargs))`
 
-    或在`src/middlewared/middlewared/main.py#Middleware.call`中的开头添加`self.logger.info("--- r call: {}".format(locals()))`, 好处是不漏掉`middleware.call`嵌套调用, **推荐**
+    或在`src/middlewared/middlewared/main.py#Middleware.call`中的开头添加`self.logger.info("--- r call: {}\n".format(locals()))`, 好处是不漏掉`middleware.call`嵌套调用, **推荐**
 
 - websocket api : `src/middlewared/middlewared/main.py#Application.on_message`中的`serviceobj, methodobj = self.middleware._method_lookup(message['method'])`前添加`self.logger.info("--- w call: {} {}".format(message['method'], message.get('params') or []))`
 
 - 可在`middlewared.py#Middleware.call()`里为打印result.
+
+
+> log位置: /var/log/middlewared.log
 
 ### middlewared处理http逻辑
 在`src/middlewared/middlewared/main.py#Middleware.__initialize`
