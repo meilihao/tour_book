@@ -576,6 +576,9 @@ Python支持指定默认值, 给形参指定默认值时，等号两边不要有
 
 python 使用 lambda 来创建匿名函数, 格式:`lambda [arg1 [,arg2,.....argn]]:expression`.
 
+### async/await
+async和await是针对coroutine的新语法, 从python 3.5开始.
+
 ## 类
 ```python
 class Dog(): # 在Python中，类名的首字母应大写, 这个类定义中的括号是空的.
@@ -824,6 +827,162 @@ b.funca()
 # 22
 # function b : bbb
 # (override)function a : aaa
+```
+
+### metaclass
+metaclass允许创建类或者修改类.
+
+当传入关键字参数metaclass时，魔术就生效了，它指示Python解释器在创建MyList时，要通过ListMetaclass.__new__()来创建，在此，开发者可以修改类的定义，比如加上新的方法，然后返回修改后的定义.
+
+`__new__()`方法接收到的参数依次是：
+- 当前准备创建的类的对象
+- 类的名字
+- 类继承的父类集合
+- 类的方法集合
+
+```python
+# metaclass是类的模板，所以必须从`type`类型派生：
+class ListMetaclass(type):
+    def __new__(cls, name, bases, attrs):
+        attrs['add'] = lambda self, value: self.append(value)
+        return type.__new__(cls, name, bases, attrs)
+
+class MyList(list, metaclass=ListMetaclass):
+    pass
+```
+
+
+truenas scale example:
+```python
+class ServiceBase(type):
+    """
+    Metaclass of all services
+
+    This metaclass instantiates a `_config` attribute in the service instance
+    from options provided in a Config class, e.g.
+
+    class MyService(Service):
+
+        class Meta:
+            namespace = 'foo'
+            private = False
+
+    Currently the following options are allowed:
+      - datastore: name of the datastore mainly used in the service
+      - datastore_extend: datastore `extend` option used in common `query` method
+      - datastore_prefix: datastore `prefix` option used in helper methods
+      - service: system service `name` option used by `SystemServiceService`
+      - service_model: system service datastore model option used by `SystemServiceService` (`service` if used if not provided)
+      - service_verb: verb to be used on update (default to `reload`)
+      - namespace: namespace identifier of the service
+      - namespace_alias: another namespace identifier of the service, mostly used to rename and
+                         slowly deprecate old name.
+      - private: whether or not the service is deemed private
+      - verbose_name: human-friendly singular name for the service
+      - thread_pool: thread pool to use for threaded methods
+      - process_pool: process pool to run service methods
+      - cli_namespace: replace namespace identifier for CLI
+      - cli_private: if the service is not private, this flags whether or not the service is visible in the CLI
+    """
+
+    def __new__(cls, name, bases, attrs):
+        print("---1---", cls)
+        print("---2---", name)
+        print("---3---", bases)
+        print("---4---", attrs)
+        
+        super_new = super(ServiceBase, cls).__new__
+        if name == 'Service' and bases == ():
+            print("---Service---")
+            return super_new(cls, name, bases, attrs)
+
+        config = attrs.pop('Config', None)
+        klass = super_new(cls, name, bases, attrs)
+
+        if config:
+            klass._config_specified = {k: v for k, v in config.__dict__.items() if not k.startswith('_')}
+        else:
+            klass._config_specified = {}
+
+        print("---5:_config_specified---", klass._config_specified)
+
+        klass._config = service_config(klass, klass._config_specified)
+
+        print("---6:_config---", klass._config.__dict__)
+        return klass
+
+
+def service_config(klass, config):
+    namespace = klass.__name__
+    if namespace.endswith('Service'):
+        namespace = namespace[:-7]
+    namespace = namespace.lower()
+
+    config_attrs = {
+        'datastore': None,
+        'datastore_prefix': '',
+        'datastore_extend': None,
+        'datastore_extend_context': None,
+        'datastore_primary_key': 'id',
+        'datastore_primary_key_type': 'integer',
+        'event_register': True,
+        'event_send': True,
+        'service': None,
+        'service_model': None,
+        'service_verb': 'reload',
+        'service_verb_sync': True,
+        'namespace': namespace,
+        'namespace_alias': None,
+        'private': False,
+        'thread_pool': None,
+        'process_pool': None,
+        'cli_namespace': None,
+        'cli_private': False,
+        'cli_description': None,
+        'verbose_name': klass.__name__.replace('Service', ''),
+    }
+    config_attrs.update({
+        k: v
+        for k, v in list(config.items())
+        if not k.startswith('_')
+    })
+
+    return type('Config', (), config_attrs)
+
+
+class Service(object, metaclass=ServiceBase):
+    """
+    Generic service abstract class
+
+    This is meant for services that do not follow any standard.
+    """
+    def __init__(self):
+        print("Init Service")
+
+class CoreService(Service):
+
+    class Config:
+        cli_namespace = 'system.core'
+
+c = CoreService()
+```
+
+执行:
+```bash
+# python3.9 p.py 
+---1--- <class '__main__.ServiceBase'>
+---2--- Service
+---3--- (<class 'object'>,)
+---4--- {'__module__': '__main__', '__qualname__': 'Service', '__doc__': '\n    Generic service abstract class\n\n    This is meant for services that do not follow any standard.\n    ', '__init__': <function Service.__init__ at 0x7f0b3a03a790>}
+---5:_config_specified--- {}
+---6:_config--- {'datastore': None, 'datastore_prefix': '', 'datastore_extend': None, 'datastore_extend_context': None, 'datastore_primary_key': 'id', 'datastore_primary_key_type': 'integer', 'event_register': True, 'event_send': True, 'service': None, 'service_model': None, 'service_verb': 'reload', 'service_verb_sync': True, 'namespace': '', 'namespace_alias': None, 'private': False, 'thread_pool': None, 'process_pool': None, 'cli_namespace': None, 'cli_private': False, 'cli_description': None, 'verbose_name': '', '__module__': '__main__', '__dict__': <attribute '__dict__' of 'Config' objects>, '__weakref__': <attribute '__weakref__' of 'Config' objects>, '__doc__': None}
+---1--- <class '__main__.ServiceBase'>
+---2--- CoreService
+---3--- (<class '__main__.Service'>,)
+---4--- {'__module__': '__main__', '__qualname__': 'CoreService', 'Config': <class '__main__.CoreService.Config'>}
+---5:_config_specified--- {'cli_namespace': 'system.core'}
+---6:_config--- {'datastore': None, 'datastore_prefix': '', 'datastore_extend': None, 'datastore_extend_context': None, 'datastore_primary_key': 'id', 'datastore_primary_key_type': 'integer', 'event_register': True, 'event_send': True, 'service': None, 'service_model': None, 'service_verb': 'reload', 'service_verb_sync': True, 'namespace': 'core', 'namespace_alias': None, 'private': False, 'thread_pool': None, 'process_pool': None, 'cli_namespace': 'system.core', 'cli_private': False, 'cli_description': None, 'verbose_name': 'Core', '__module__': '__main__', '__dict__': <attribute '__dict__' of 'Config' objects>, '__weakref__': <attribute '__weakref__' of 'Config' objects>, '__doc__': None}
+Init Service
 ```
 
 ### 单例模式

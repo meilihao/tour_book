@@ -172,6 +172,25 @@ Egress Classifier 中会用到很多 qdisc. 默认情况下只有一个：pfifo_
 
 以上画的是单网卡的情况。在多网卡的情况下，每个网卡都有自己的 ingress 和 egress hooks.
 
+
+### TC 对最对高速度的控制
+
+	Rate: 速率限度
+	ceil: 指定了一个类可以用的最大带宽, 用来限制类可以借用多少带宽. 缺省的 ceil 是和速率一样
+	
+	这个特性对于 ISP 是很有用的, 因为他们一般限制被服务的用户的总量即使其他用户没有请求服务. **根类是不允许被借用的, 所以没有指定 ceil**
+
+	注: ceil 的数值应该至少和它所在的类的速率一样高, 也就是说 ceil 应该至少和它的任何一个子类一样高
+
+- Burst 突发
+
+	网络硬件只能在一个时间发送一个包这仅仅取决于一个硬件的速率. 链路共享软件可以利用这个能力动态产生多个连接运行在不同的速度. 所以速率和 ceil 不是一个即时度量只是一个在一个时间里发送包的平均值. 实际的情况是怎样使一个流量很小的类在某个时间类以最大的速率提供给其他类. burst 和 cburst 参数控制多少数据可以以硬件最大的速度不费力的发送给需要的其他类.
+
+	如果 cburst 小于一个理论上的数据包他形成的突发不会超过 ceil 速率, 同样的方法 TBF 的最高速率也是这样.
+	你可能会问, 为什么需要 bursts . 因为它可以很容易的提高向应速度在一个很拥挤的链路上.比如 WWW 流量是突发的. 你访问主页. 突发的获得并阅读. 在空闲的时间 burst 将再"charge"一次.
+	
+	注: burst 和 cburst 至少要和其子类的值一样大.
+
 ## qdisc
 - 每个接口都有一个 egress "root qdisc"。默认情况下，这个 root qdisc 就是前面提到的 classless pfifo_fast qdisc.
 
@@ -273,6 +292,7 @@ tc可以使用以下命令对QDisc、类和过滤器进行操作：
 
 ### example
 ref:
+- [LINUX TC(TRAFFIC CONTROL) 简介](https://www.eumz.com/2020-02/1726.html)
 - [TC(Traffic Control)命令—linux自带高级流控](https://cloud.tencent.com/developer/article/1409664)
 
 ```bash
@@ -303,13 +323,13 @@ tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip sport 22 flowi
 #清空原有规则
 tc qdisc del dev eth0 root
 
-#创建根序列. 默认使用1的class
+#创建根序列. `default 1`是htb特有的队列参数,表示所有未分类的流量都将分配给类别`1:1`
 tc qdisc add dev eth0 root handle 1: htb default 1
 
 #创建一个主分类绑定所有带宽资源（20M）
 tc class add dev eth0 parent 1:0 classid 1:1 htb rate 20Mbit burst 15k
 
-#创建子分类. ceil是一个类最大能得到的带宽值. `classid1:10`表示创建一个标识为1:11的类别
+#创建子分类. ceil是一个类最大能得到的带宽值. `classid1:10`表示创建一个标识为1:10的类别
 tc class add dev eth0 parent 1:1 classid 1:10 htb rate 20Mbit ceil 10Mbit burst 15k
 tc class add dev eth0 parent 1:1 classid 1:20 htb rate 20Mbit ceil 20Mbit burst 15k
 
@@ -317,9 +337,21 @@ tc class add dev eth0 parent 1:1 classid 1:20 htb rate 20Mbit ceil 20Mbit burst 
 tc qdisc add dev eth0 parent 1:10 handle 10: sfq perturb 10
 tc qdisc add dev eth0 parent 1:20 handle 20: sfq perturb 10
 
-#创建过滤器. 在过滤器中加入prio，指定规则的优先级(prio 越小，优先级越高), 以避免内网ip被限速
+#创建过滤器. 在过滤器中加入prio，指定规则的优先级(prio 越小，优先级越高), 以避免内网ip被限速. `protocol ip`表示该filter应该检查报文分组的协议字段. `match ip dst 0.0.0.0/0`表示匹配目标网段, 其他的还有`match ip dport 80 oxffff`表示匹配目标端口(该字段与Oxffff进行与操作的结果是80). `flowid 1:10`表示把匹配到的数据流分配给类别`1:10`
 #对所有ip限速
 tc filter add dev eth0 protocol ip parent 1:0 prio 2 u32 match ip dst 0.0.0.0/0 flowid 1:10
 #对内网ip放行
 tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dst 12.0.0.0/8 flowid 1:20
+
+
+# --- 三个数据流WWW、E-mail和Telnet， 其中的Telnet独立分配20Mbit/s的带宽。另一方面，WWW 和SMTP各自分配40Mbit/s的带宽。同时，它们又是共享的关系，即它们可以互相借用带宽
+# 为根队列1创建两个根类别，即1:1和1:2，其中1:1对应Telnet数据流，1:2对应80Mbit的数据流。然后，在1:2中，创建两个子类别1:21和1:22，分别对应WWW和E-mail数据流。由于类别1:21和1:22是类别1:2的子类别，因此他们可以共享分配的80Mbit带宽。同时，又确保当需要时，自己的带宽至少有40Mbit
+tc qdisc add dev eth0 root handle 1: htb default 21
+tc class add dev eth0 partent 1: classid 1:1 htb rate 20mbit ceil 20mbit
+tc class add dev eth0 parent 1: classid 1:2 htb rate 80mbit ceil 80mbit
+tc class add dev eth0 parent 1: classid 1:21 htb rate 40mbit ceil 20mbit
+tc class add dev eth0 parent 1:2 classid 1:22 htb rate 40mbit ceil 80mbit
+tc filter add dev eth0 protocol parent 10 prio 1 u32 match ip dport 80 0xffff flowid 1:21
+tc filter add dev eth0 protocol parent 1:0 prio 1 u32 match ip dport 25 0xffff flowid 1:22
+tc filter add dev eth0 protocol parent 1:0 prio 1 u32 match ip dport 23 0xffff flowid 1:1
 ```

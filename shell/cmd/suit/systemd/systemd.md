@@ -11,6 +11,7 @@
 - [systemd for Administrators Part I ~ XI](http://0pointer.de/blog/projects/systemd-for-admins-1.html)
 - [SysVinit vs Systemd Cheatsheet](https://fedoraproject.org/wiki/SysVinit_to_Systemd_Cheatsheet)
 - [Understanding and administering systemd](https://docs.fedoraproject.org/en-US/quick-docs/understanding-and-administering-systemd/index.html)
+- [Resource Management Guide - 资源管理](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/7/html/resource_management_guide/index)
 
 ### systemd 与 System V init 的区别以及作用
 |System V init 运行级别|systemd 目标名称|作用|
@@ -105,6 +106,9 @@ WantedBy=multi-user.target
 > 事实上，systemd在运行时并不使用此小节. 只有 systemctl 的 enable 与 disable 命令在启用/停用单元时才会使用此小节.
 
 ### `[Service]`
+ref:
+- [systemd.service 中文手册](http://www.jinbuguo.com/systemd/systemd.service.html)
+
 [Service]区块用来 Service 的配置，只有 Service 类型的 Unit 才有这个区块。它的主要字段如下:
 - Type：定义启动时的进程行为。它有以下几种值。
 - Type=simple：默认值，执行ExecStart指定的命令，启动主进程
@@ -132,6 +136,8 @@ WantedBy=multi-user.target
 	```conf
 	Environment="ETCD_CA_FILE=/path/to/CA.pem" "ETCD_CERT_FILE=/path/to/server.crt"
 	```
+- TimeoutStartSec: 设置该服务允许的最大启动时长。 如果守护进程未能在限定的时长内发出"启动完毕"的信号，那么该服务将被视为启动失败，并会被关闭. 如果一个 Type=notify 服务发送了 "EXTEND_TIMEOUT_USEC=…" 信号， 那么允许的启动时长将会在 TimeoutStartSec= 基础上继续延长指定的时长.
+- RestartPreventExitStatus: 当符合某些退出状态时不要进行重启, 比如`123 SIGTERM`(123是return code)
 
 > [Unit 配置文件的完整字段清单](https://www.freedesktop.org/software/systemd/man/systemd.unit.html)
 > 所有的启动设置之前，都可以加上一个连词号（-），表示"抑制错误"，即发生错误的时候，不影响其他命令的执行。比如，EnvironmentFile=-/etc/sysconfig/sshd（注意等号后面的那个连词号），就表示即使/etc/sysconfig/sshd文件不存在，也不会抛出错误.
@@ -252,7 +258,13 @@ $ sudo systemctl rescue
 查看资源的消耗状态
 
 ### systemd-cgls
-查看cgroup层次结构（以及组成单元的详细信息）
+查看cgroup层次结构（以及组成单元的详细信息）. 可用于追踪父子进程关系(即使exec时设置了setsid)
+
+或使用`systemctl status httpd.service`里显示的`CGroup`属性
+
+`systemd-cgls memory`可顺便显示memory control信息
+
+`systemctl show httpd`会显示ControlGroup信息
 
 ### systemd-analyze
 systemd-analyze命令用于查看启动耗时

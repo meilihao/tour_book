@@ -1338,3 +1338,6 @@ env: php-fpm 7.2
 
 ### bconsole执行`status client=bareos-fd`报`Probing client protocol... (result will be saved until config reload)`
 看`/var/log/bareos/bareos.log`提示`Unable to authenticate with File daemon at "localhost:9102"`, 是dir中client的配置的Password字段错误, 用`/etc/bareos/bareos-fd.d/director/bareos-dir.conf`中Password替换即可.
+
+### bareos-tray-monitor的开机自启
+`cat /etc/xdg/autostart/bareos-tray-monitor.desktop`

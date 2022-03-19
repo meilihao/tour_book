@@ -12,7 +12,7 @@ journald是systemd独有的日志系统，替换了sysVinit中的syslog守护进
 1. 最近一次关机记录
 
     ```bash
-    $ sudo journalctl -rb -1
+    $ sudo journalctl -rb -1 # `-1` is from `journalctl --list-boots`
     $ sudo vim /etc/systemd/system.conf
     #DefaultTimeoutStopSec=90s # 关机的默认等待时间通常设置为 90 秒. 启用该选项, 在这个时间之后，os会尝试强制停止服务
     ```

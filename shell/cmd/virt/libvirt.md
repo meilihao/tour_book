@@ -393,6 +393,8 @@ $ sudo systemctl restart libvirtd
 - [qemu machine i440FX 仅支持 BIOS ，需更改成Q35， Q35 同时支持 BIOS 和 UEFI](https://blog.csdn.net/m0_47541842/article/details/113521732)
 - iso里os的arch与qemu使用的arch不一致
 
+### [vm 磁盘扩容](https://opengers.github.io/openstack/openstack-instance-disk-resize-and-convert/)
+
 ## uefi shell
 - exit : 进入qemu machine(virt-4.0)的类似bios界面的字符uefi firmware settings界面.
 

@@ -1,13 +1,13 @@
 # truenas scale
-version: 21.04-ALPHA.1
+version: 22.02
 
-> 22.02-RC.2至少需要python 3.9, 推荐系统自带, 否则需要处理很多python相关依赖, 很耗时且可能根本无法处理(比如debian.org bullseye下载的python3.9-minimal有libc版本要求)
+> 22.02至少需要python 3.9, 推荐系统自带, 否则需要处理很多python相关依赖, 很耗时且可能根本无法处理(比如debian.org bullseye下载的python3.9-minimal有libc版本要求)
 
 ## zfs
-zfs pool挂在在`/mnt`下.
+zfs pool挂载在`/mnt`下.
 
 ## 使用
-truenas的systemd服务是`middlewared.service`, 程序入口是`/usr/bin/middlewared`(真实入口是`/usr/lib/python3/dist-packages/middlewared/main.py#main()`), 具体代码在`/usr/lib/python3/dist-packages/middlewared`和`/usr/local/lib/middlewared_truenas`.
+truenas的systemd服务是`middlewared.service`, 程序入口是`/usr/bin/middlewared`(真实入口是`/usr/lib/python3/dist-packages/middlewared/main.py#main()`), 具体代码在`/usr/lib/python3/dist-packages/middlewared`.
 
 middlewared设置的主要参数:
 - `--debug-level=TRACE` : 使用TRACE log level
@@ -21,7 +21,7 @@ middlewared设置的主要参数:
 
 > 设置ip和gateway并重启后即可使用webui
 
-> 使用ssh前需要在webui-System Setting-Services中打开ssh服务, truenas ssh默认禁止root登录, 修改勾选其配置`Log in as Root with Password`即可.
+> 使用ssh前需要在`webui->System Setting->Services`中打开ssh服务, truenas ssh默认禁止root登录, 修改勾选其配置`Log in as Root with Password`即可.
 
 > 访问`localhost/api/docs`即可获取api docs(有cdn资源依赖); 访问`localhost/api/v2.0`即可获取openapi json文档, 访问`localhost/api/docs/restful`即可获取已加载openapi json的swagger ui.
 
@@ -33,12 +33,16 @@ middlewared设置的主要参数:
 ## 源码
 - [trunas scale构建系统](https://github.com/truenas/scale-build)
 - [truenas/middleware - truenas source](https://github.com/truenas/middleware)
-- [truenas scale api](https://www.truenas.com/docs/core/api/)
+- [truenas scale api](https://www.truenas.com/docs/scale/api/)
 
 ## 源码剖析
 middlewared doc: `src/middlewared/middlewared/docs/index.rst`
 
 ### api调用
+rest api到ws api的映射: `/device/get_info` -> `device.get_info()`, 实现是`DeviceService(Service)`的`async def get_info(self, _type)`, 即逻辑实现均是`XXXService(Service)`的`yyy`方法.
+
+没在代码里找打api文档, 推测它可能是具体api实现上的`@accepts()/@returns()`生成的.
+
 webui通过websocket api进行调用, api req由`src/middlewared/middlewared/main.py#Application.on_message`中的`if message['msg'] == 'method'`逻辑处理.
 
 rest api req处理逻辑由`src/middlewared/middlewared/main.py#Middleware.__initialize()`中的`restful_api.register_resources()`设置, 具体在`Resource(self, self.middleware, ...)`.
@@ -94,10 +98,10 @@ class Resource(object):
 在`src/middlewared/middlewared/main.py#Middleware.__initialize`
 
 ### 加载plugins
-根据`src/middlewared/middlewared/main.py#Middleware.overlay_dirs`, 跳转可得, 是通过`src/middlewared/middlewared/utils/plugins.py#LoadPluginsMixin`来加载的:
+入口在`src/middlewared/middlewared/main.py#Middleware.__initialize`的`setup_funcs = await self.__plugins_load()`->跳转可得, 是通过`src/middlewared/middlewared/utils/plugins.py#LoadPluginsMixin`的`_load_plugins`来加载的:
 1. 获得plugins_dirs, plugins_dirs=(main_plugins_dir + Middleware.overlay_dirs)下的plugins目录
 
-    plugins下`.py`结尾的文件即是plugin的入口  
+    plugins下`.py`结尾的文件或以`base/linux`结尾的目录即是plugin的入口  
 1. 通过load_modules()加载, 并放入services变量
 
     `load_modules()`原理: 递归遍历文件或目录, 找出匹配的mod, 再用`importlib.import_module`导入即可.    
@@ -110,7 +114,7 @@ class Resource(object):
 1. 最后也调到了`src/middlewared/middlewared/plugins/enclosure_/ses_enclosure_linux.py#EnclosureService.get_ses_enclosures()`
 
 ### `src/middlewared/middlewared/service.py#CRUDService.query()`中的`self._config`是什么?
-通过`grep -r "\._config = "`查找, 发现CRUDService父类定义`class Service(object, metaclass=ServiceBase)`中的ServiceBase.__new__()设置了`_config`, 其实就是CRUDService子类如DiskService的嵌套类`class Config`.
+通过`grep -r "\._config = "`查找, 发现CRUDService父类定义`class Service(object, metaclass=ServiceBase)`中的ServiceBase.__new__()设置了`_config`, 其实就是CRUDService子类如DiskService的嵌套类`class Config`(但经过metaclass修改).
 
 ### table定义
 `class xxxModel(sa.Model)`
@@ -122,6 +126,8 @@ class Resource(object):
 
 配置vscode阅读middlewared.deb提取源码:
 ```bash
+$ cat .env
+PYTHONPATH=./usr/lib/python3/dist-packages:/home/chen/.local/lib/python3.9/site-packages:/usr/lib/python3/dist-packages
 $ cat .vscode/settings.json 
 {
     "python.autoComplete.extraPaths": [
@@ -152,6 +158,30 @@ $ cat .vscode/settings.json
     middlewared options:
     - [`--trace-malloc`](https://jira.ixsystems.com/browse/NAS-110712)
 
+
+os提取版middlewared的vscode配置(**推荐, 毕竟TrueNAS-SCALE-22.02.0.iso里的镜像已弄好依赖**):
+1. 将middlewared.deb解压到/opt/mark/test/truenas_deb, 并删除`/opt/mark/test/truenas_deb/usr/lib/python3/dist-packages/middlewared*`
+1. 将iso里的TrueNAS-SCALE.update挂载到/mnt/squashfs, 再将/mnt/squashfs/rootfs.squashfs挂载到/mnt/squashfs2
+1. 将`/mnt/squashfs2/usr/lib/python3/dist-packages/middlewared*`拷贝到`/opt/mark/test/truenas_deb/usr/lib/python3/dist-packages`
+1. 配置/opt/mark/test/truenas_deb/usr/lib/python3/dist-packages/middlewared
+
+    ```bash
+    $ cat .env
+    PYTHONPATH=/opt/mark/test/truenas_deb/usr/lib/python3/dist-packages:/mnt/squashfs2/usr/lib/python3/dist-packages:/usr/lib/python3/dist-packages
+    $ cat .vscode/settings.json 
+    {
+        "python.autoComplete.extraPaths": [
+            "/opt/mark/test/truenas_deb/usr/lib/python3/dist-packages",
+            "/mnt/squashfs2/usr/lib/python3/dist-packages",
+            "/usr/lib/python3/dist-packages"
+        ],
+        "python.analysis.extraPaths": [
+            "/opt/mark/test/truenas_deb/usr/lib/python3/dist-packages",
+            "/mnt/squashfs2/usr/lib/python3/dist-packages",
+            "/usr/lib/python3/dist-packages"
+        ]
+    }
+    ```
 
 ### TrueNAS-SCALE-22.02.0.iso里提取middlewared
 > iso/live下的squashfs里不包含middlewared
@@ -191,6 +221,16 @@ DECIMAL       HEXADECIMAL     DESCRIPTION
 # mkdir /mnt/squashfs2
 # mount -t squashfs -o loop  rootfs.squashfs  /mnt/squashfs2 # 经分析rootfs.squashfs是已安装好middlewared的镜像
 ```
+
+### TrueNAS-SCALE-22.02.0.iso安装原理
+见[scale-build/conf/cd-files/](https://github.com/truenas/scale-build/tree/TS-22.02.0.1/conf/cd-files)
+
+推测:
+1. 进入live os后由systemd通过`lib/systemd/system/multi-user.target.wants`即`lib/systemd/system/mount-cd.service`挂载iso到`/cdrom`
+1. 之后由`root/.bash_profile`调用live os里的[`/sbin/truenas-install`](https://github.com/truenas/truenas-installer/blob/TS-22.02.0.1/usr/sbin/truenas-install)执行安装
+
+    1. `mount /cdrom/TrueNAS-SCALE.update /mnt -t squashfs -o loop`
+    1. `(cd /mnt && echo "$json" | python3 -m truenas_install)`即执行`/mnt/truenas_install`里的代码
 
 
 ## FAQ
