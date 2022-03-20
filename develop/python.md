@@ -2281,7 +2281,7 @@ asyncio.Task.all_tasks() is fully moved to asyncio.all_tasks() starting with 3.9
 1. 确保gdb版本>=7.0
 2. 安装python-debuginfo包
 
-    apt install python<3.8>-dbg
+    apt install python<3.8>-dbg/python3-dbg
 
     > centos需先执行`yum install yum-utils && debuginfo-install glibc`再安装gdb和python-debuginfo
 
@@ -2292,7 +2292,7 @@ asyncio.Task.all_tasks() is fully moved to asyncio.all_tasks() starting with 3.9
     ```
 
 假设python进程是1000:
-1. 执行`gdb -p 1000`
+1. 执行`gdb -p 1000`(需手动载入libpython)/`gdb python 1000`(已安装libpython, 自动载入)
 2. 载入[libpython : 找对应python版本的](https://github.com/python/cpython/blob/main/Tools/gdb/libpython.py)
 
     如果gdb是redhat或fedora等厂商修改过的，会有--python选项，使用此选项即可指定gdb启动时载入的Python扩展脚本: `gdb --python /path/to/libpython .py -p 1000`
