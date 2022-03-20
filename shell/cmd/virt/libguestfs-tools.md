@@ -11,6 +11,9 @@ libguestfs的一些工具用于Windows客户机镜像的操作时， 需要先�
 
 virt-inspector探测image信息.
 
+## 场景
+整机保护(保护系统盘+若干数据盘)中修改fstab, grub, ip等.
+
 ## libguestfs原理
 ref:
 - [libguestfs详解](https://www.hanbaoying.com/2017/02/26/libguestfs.html)

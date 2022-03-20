@@ -96,6 +96,11 @@ systemd-ask-password-conso
 
 1. 刷新systemd的配置
         # systemctl daemon-reload
+
+1. 列出所有slice
+
+       `systemctl -t slice`
+
 ### 使用Systemctl控制并管理服务
 1. 列出所有服务（包括启用的和禁用的）
        # systemctl list-unit-files --type=service

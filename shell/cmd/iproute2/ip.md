@@ -194,3 +194,6 @@ $ ip route add default via 60.30.128.1 dev eth1 src 60.30.128.15 table cnc
 $ ip rule add from 60.30.128.15 table cnc
 # --- 以上就基本配置好了电信和联通的多线原路返回路由
 ```
+
+### `ip route`配置gateway时报`Nexthop has invalid gateway`
+解决方法: 先给网卡配上ip再配置gateway即可.

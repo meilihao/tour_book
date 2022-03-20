@@ -488,3 +488,5 @@ d:=&Msg{
 	Data: MarshalAny("test")
 }
 ```
+
+### [Golang 解析xml文件标签带冒号( : )解决方案 - 即带xml命名空间](https://blog.csdn.net/qq_24210767/article/details/102829205)

@@ -29,7 +29,7 @@ unset DBUS_SESSION_BUS_ADDRESS
 export GTK_IM_MODULE="fcitx"
 export QT_IM_MODULE="fcitx"
 export XMODIFIERS="@im=fcitx"
-exec startxfce4
+exec startxfce4 # kubuntu使用/usr/share/xsessions/plasma.desktop里的`startplasma-x11`
 EOF
 $ chmod +x ~/.vnc/xstartup
 $ vncserver -geometry 1852x900

@@ -576,6 +576,9 @@ Python支持指定默认值, 给形参指定默认值时，等号两边不要有
 
 python 使用 lambda 来创建匿名函数, 格式:`lambda [arg1 [,arg2,.....argn]]:expression`.
 
+### async/await
+async和await是针对coroutine的新语法, 从python 3.5开始.
+
 ## 类
 ```python
 class Dog(): # 在Python中，类名的首字母应大写, 这个类定义中的括号是空的.
@@ -824,6 +827,162 @@ b.funca()
 # 22
 # function b : bbb
 # (override)function a : aaa
+```
+
+### metaclass
+metaclass允许创建类或者修改类.
+
+当传入关键字参数metaclass时，魔术就生效了，它指示Python解释器在创建MyList时，要通过ListMetaclass.__new__()来创建，在此，开发者可以修改类的定义，比如加上新的方法，然后返回修改后的定义.
+
+`__new__()`方法接收到的参数依次是：
+- 当前准备创建的类的对象
+- 类的名字
+- 类继承的父类集合
+- 类的方法集合
+
+```python
+# metaclass是类的模板，所以必须从`type`类型派生：
+class ListMetaclass(type):
+    def __new__(cls, name, bases, attrs):
+        attrs['add'] = lambda self, value: self.append(value)
+        return type.__new__(cls, name, bases, attrs)
+
+class MyList(list, metaclass=ListMetaclass):
+    pass
+```
+
+
+truenas scale example:
+```python
+class ServiceBase(type):
+    """
+    Metaclass of all services
+
+    This metaclass instantiates a `_config` attribute in the service instance
+    from options provided in a Config class, e.g.
+
+    class MyService(Service):
+
+        class Meta:
+            namespace = 'foo'
+            private = False
+
+    Currently the following options are allowed:
+      - datastore: name of the datastore mainly used in the service
+      - datastore_extend: datastore `extend` option used in common `query` method
+      - datastore_prefix: datastore `prefix` option used in helper methods
+      - service: system service `name` option used by `SystemServiceService`
+      - service_model: system service datastore model option used by `SystemServiceService` (`service` if used if not provided)
+      - service_verb: verb to be used on update (default to `reload`)
+      - namespace: namespace identifier of the service
+      - namespace_alias: another namespace identifier of the service, mostly used to rename and
+                         slowly deprecate old name.
+      - private: whether or not the service is deemed private
+      - verbose_name: human-friendly singular name for the service
+      - thread_pool: thread pool to use for threaded methods
+      - process_pool: process pool to run service methods
+      - cli_namespace: replace namespace identifier for CLI
+      - cli_private: if the service is not private, this flags whether or not the service is visible in the CLI
+    """
+
+    def __new__(cls, name, bases, attrs):
+        print("---1---", cls)
+        print("---2---", name)
+        print("---3---", bases)
+        print("---4---", attrs)
+        
+        super_new = super(ServiceBase, cls).__new__
+        if name == 'Service' and bases == ():
+            print("---Service---")
+            return super_new(cls, name, bases, attrs)
+
+        config = attrs.pop('Config', None)
+        klass = super_new(cls, name, bases, attrs)
+
+        if config:
+            klass._config_specified = {k: v for k, v in config.__dict__.items() if not k.startswith('_')}
+        else:
+            klass._config_specified = {}
+
+        print("---5:_config_specified---", klass._config_specified)
+
+        klass._config = service_config(klass, klass._config_specified)
+
+        print("---6:_config---", klass._config.__dict__)
+        return klass
+
+
+def service_config(klass, config):
+    namespace = klass.__name__
+    if namespace.endswith('Service'):
+        namespace = namespace[:-7]
+    namespace = namespace.lower()
+
+    config_attrs = {
+        'datastore': None,
+        'datastore_prefix': '',
+        'datastore_extend': None,
+        'datastore_extend_context': None,
+        'datastore_primary_key': 'id',
+        'datastore_primary_key_type': 'integer',
+        'event_register': True,
+        'event_send': True,
+        'service': None,
+        'service_model': None,
+        'service_verb': 'reload',
+        'service_verb_sync': True,
+        'namespace': namespace,
+        'namespace_alias': None,
+        'private': False,
+        'thread_pool': None,
+        'process_pool': None,
+        'cli_namespace': None,
+        'cli_private': False,
+        'cli_description': None,
+        'verbose_name': klass.__name__.replace('Service', ''),
+    }
+    config_attrs.update({
+        k: v
+        for k, v in list(config.items())
+        if not k.startswith('_')
+    })
+
+    return type('Config', (), config_attrs)
+
+
+class Service(object, metaclass=ServiceBase):
+    """
+    Generic service abstract class
+
+    This is meant for services that do not follow any standard.
+    """
+    def __init__(self):
+        print("Init Service")
+
+class CoreService(Service):
+
+    class Config:
+        cli_namespace = 'system.core'
+
+c = CoreService()
+```
+
+执行:
+```bash
+# python3.9 p.py 
+---1--- <class '__main__.ServiceBase'>
+---2--- Service
+---3--- (<class 'object'>,)
+---4--- {'__module__': '__main__', '__qualname__': 'Service', '__doc__': '\n    Generic service abstract class\n\n    This is meant for services that do not follow any standard.\n    ', '__init__': <function Service.__init__ at 0x7f0b3a03a790>}
+---5:_config_specified--- {}
+---6:_config--- {'datastore': None, 'datastore_prefix': '', 'datastore_extend': None, 'datastore_extend_context': None, 'datastore_primary_key': 'id', 'datastore_primary_key_type': 'integer', 'event_register': True, 'event_send': True, 'service': None, 'service_model': None, 'service_verb': 'reload', 'service_verb_sync': True, 'namespace': '', 'namespace_alias': None, 'private': False, 'thread_pool': None, 'process_pool': None, 'cli_namespace': None, 'cli_private': False, 'cli_description': None, 'verbose_name': '', '__module__': '__main__', '__dict__': <attribute '__dict__' of 'Config' objects>, '__weakref__': <attribute '__weakref__' of 'Config' objects>, '__doc__': None}
+---1--- <class '__main__.ServiceBase'>
+---2--- CoreService
+---3--- (<class '__main__.Service'>,)
+---4--- {'__module__': '__main__', '__qualname__': 'CoreService', 'Config': <class '__main__.CoreService.Config'>}
+---5:_config_specified--- {'cli_namespace': 'system.core'}
+---6:_config--- {'datastore': None, 'datastore_prefix': '', 'datastore_extend': None, 'datastore_extend_context': None, 'datastore_primary_key': 'id', 'datastore_primary_key_type': 'integer', 'event_register': True, 'event_send': True, 'service': None, 'service_model': None, 'service_verb': 'reload', 'service_verb_sync': True, 'namespace': 'core', 'namespace_alias': None, 'private': False, 'thread_pool': None, 'process_pool': None, 'cli_namespace': 'system.core', 'cli_private': False, 'cli_description': None, 'verbose_name': 'Core', '__module__': '__main__', '__dict__': <attribute '__dict__' of 'Config' objects>, '__weakref__': <attribute '__weakref__' of 'Config' objects>, '__doc__': None}
+Init Service
 ```
 
 ### 单例模式
@@ -2085,6 +2244,9 @@ ref:
 `print('\n'.join(('%s:%s' % item for item in dict1.items())))`  # 每行一对key和value，中间是分号
 
 ### `pyrasite-shell <pid>`卡住
+ref:
+- [python内存泄露诊断过程记录pyrasite](https://www.cnblogs.com/shengulong/p/8044132.html)
+
 解决方法:
 1. 安装依赖
 
@@ -2113,3 +2275,69 @@ asyncio.Task.all_tasks() is fully moved to asyncio.all_tasks() starting with 3.9
 
 ### ModuleNotFoundError: No module named 'PyQt5'
 `apt install python3-pyqt5`
+
+### 使用linux下gdb来调试python程序
+前提条件:
+1. 确保gdb版本>=7.0
+2. 安装python-debuginfo包
+
+    apt install python<3.8>-dbg
+
+    > centos需先执行`yum install yum-utils && debuginfo-install glibc`再安装gdb和python-debuginfo
+
+    其他方式安装python-debuginfo:
+    ```bash
+    # debuginfo-install python # for python2.7
+    # debuginfo-install python3 libgcc # for python3
+    ```
+
+假设python进程是1000:
+1. 执行`gdb -p 1000`
+2. 载入[libpython : 找对应python版本的](https://github.com/python/cpython/blob/main/Tools/gdb/libpython.py)
+
+    如果gdb是redhat或fedora等厂商修改过的，会有--python选项，使用此选项即可指定gdb启动时载入的Python扩展脚本: `gdb --python /path/to/libpython .py -p 1000`
+
+    安装的是GNU的gdb，就需要打开gdb后手动载入libpython.py脚本:
+    ```gdb
+    (gdb) python
+    >import sys
+    >sys.path.insert(0, '/path/to/libpython.py' )
+    >import libpython
+    >end
+    ```
+
+    网上也有其他载入libpython方式:
+    ```bash
+    $ gdb python <PID>
+    (gdb) source /usr/lib/debug/usr/lib64/libpython2.7.so.1.0.debug-gdb.py # from python2.7
+    (gdb) source /usr/lib/debug/usr/lib64/libpython3.6dm.so.1.0-3.6.8-18.el7.x86_64.debug-gdb.py # python3
+    ```
+3. 开始调试
+
+    使用py-bt命令打印当前线程的Python traceback了, 其他命令:
+    - py-print : 打印变量
+    - py-locals : 打印所有本地变量
+    - py-bt  : 当前Py调用栈
+    - py-list  : 当前py代码位置
+    - py-up : 查看上层调用方的信息
+    - py-down : 返回之前的栈
+    - etc
+
+    命令详细可打开libpython.py查看
+
+    常用其他gdb命令:
+    ```
+    bt    # 当前C调用栈
+    info thread   # 线程信息
+    info threads  # 所有线程信息
+    thread <id>   # 切换到某个线程
+    thread apply all py-list  # 查看所有线程的py代码位置
+    ctrl-c  # 中断
+    ```
+
+    为了不影响运行中的进程，可以通过生成 core file 的方式来保存进程的当前信息:
+    ```bash
+    (gdb) generate-core-file
+    (gdb) quit
+    $ gdb python core.6489
+    ```

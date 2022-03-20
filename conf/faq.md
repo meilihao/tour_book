@@ -67,9 +67,9 @@ $ sudo apt install google-chrome-stable
 
 ## linux登录后应用自启动
 ```sh
-$ ~/.c/autostart pwd
+$ pwd
 /home/chen/.config/autostart
-$ ~/.c/autostart cat Zoiper5.desktop
+$ cat Zoiper5.desktop
 [Desktop Entry]
 Encoding=UTF-8
 Name=Zoiper5
@@ -78,7 +78,7 @@ Exec=/home/chen/opt/Zoiper5/zoiper
 Terminal=false
 Icon=
 Type=Application
-$ ~/.c/autostart cat alarm-clock-applet.desktop
+$ cat alarm-clock-applet.desktop
 [Desktop Entry]
 Name=Alarm Clock
 Name[zh_CN]=闹钟
@@ -91,6 +91,10 @@ Type=Application
 Categories=GNOME;GTK;Utility;
 X-Ubuntu-Gettext-Domain=alarm-clock
 ```
+
+[XDG Autostart 规范](https://specifications.freedesktop.org/autostart-spec/autostart-spec-latest.html):
+针对所有用户: `/etc/xdg/autostart/*.desktop`
+针对某用户: `/home/<user>/.config/autostart/*.desktop`
 
 ## [deepin apt 系统更新异常以及高版本软件降级保护](https://wiki.deepin.org/wiki/%E7%B3%BB%E7%BB%9F%E6%9B%B4%E6%96%B0%E5%BC%82%E5%B8%B8%E4%BB%A5%E5%8F%8A%E9%AB%98%E7%89%88%E6%9C%AC%E8%BD%AF%E4%BB%B6%E9%99%8D%E7%BA%A7%E4%BF%9D%E6%8A%A4)
 调整位置: /etc/apt/preferences.d/deepin 文件.
