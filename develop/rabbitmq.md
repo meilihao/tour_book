@@ -11,6 +11,10 @@
 1. 定时任务
 1. 流量削峰
 
+## 高可用
+ref:
+- [RabbitMQ集群架构模式](https://www.52interview.com/book/14/159)
+
 ## 架构
 ![RabbitMQ 流程](/misc/img/develop/435188-20180605151314266-1010797270.png)
 

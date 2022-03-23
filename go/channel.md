@@ -1,7 +1,7 @@
 # channel
 参考:
 - [总结了才知道，原来channel有这么多用法！](https://segmentfault.com/a/1190000017958702)
-- [今日头条Go建千亿级微服务的实践](http://blog.itpub.net/69946034/viewspace-2670129/)
+- [**今日头条Go建千亿级微服务的实践**](https://mp.weixin.qq.com/s?__biz=MjM5MDE0Mjc4MA==&mid=2650996069&idx=1&sn=63e7f5d5f91f9d84f1c3278426f6edf6)
 
 
 ## 并发控制
