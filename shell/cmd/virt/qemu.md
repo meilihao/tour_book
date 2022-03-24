@@ -2,6 +2,11 @@
 参考:
 - [Linux 虚拟化入门（一）Qemu，KVM，Virsh 概念指南](https://blog.frytea.com/archives/539/)
 - [QEMU/KVM磁盘在线备份](https://cloud.tencent.com/developer/article/1468103)
+- [OpenStack Virtual Machine Image Guide 之 Create images manually - 包括win+virtio](https://docs.openstack.org/image-guide/index.html)
+- [openstack 构建自己的云主机镜像](https://www.programminghunter.com/article/88541281593/)
+- [制作 OpenStack Linux 镜像 - 每天5分钟玩转 OpenStack](https://developer.aliyun.com/article/463345)
+- [如何构建OpenStack镜像](https://www.jingh.top/2016/05/28/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BAOpenStack%E9%95%9C%E5%83%8F/)
+- [DIB(disk image builder)是OpenStack TripleO项目的子项目，专门用于构建OpenStack镜像](https://www.jingh.top/2016/05/28/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BAOpenStack%E9%95%9C%E5%83%8F/)
 
 Qemu是一个广泛使用的开源计算机仿真器和虚拟机.
 

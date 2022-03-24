@@ -270,3 +270,11 @@ train内容可结合`https://update.freenas.org/scale`获取.
 
 ### apt install python3-zettarepl报`SyntaxError: invalid syntax`
 因为安装python3-zettarepl.deb里的脚本会用到py3clean, py3compile, 而它们是python3.7的, 无法处理zettarepl里用的python3.9语法.
+
+### middlewared (worker)
+`systemctl status middlewared`显示的`middlewared (worker)`进程代码在`worker.py#worker_init`
+
+修改`main.py#__init_procpool`里的max_workers=1便于gdb调试
+
+### 没找到`self.middleware.call('vm.device.query')}`
+实际走入了`class VMDeviceService(CRUDService)`中CRUDService的query()方法.
