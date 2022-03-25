@@ -121,3 +121,30 @@ openssl: /usr/lib/x86_64-linux-gnu/libcrypto.so.1.1: version `OPENSSL_1_1_1' not
 阅读官方repo的[INSTALL](https://github.com/openssl/openssl/blob/master/INSTALL),上面有关于perl的要求,具体在[NOTES.PERL](https://github.com/openssl/openssl/blob/master/NOTES.PERL)里.
 
 ### [openssl rsa/pkey(查看私钥、从私钥中提取公钥、查看公钥)](https://www.cnblogs.com/wyzhou/p/9738964.html)
+### rsa验签(public key加密/private key解密)
+```bash
+openssl genrsa -out mykey
+openssl rsa -in mykey -pubout -out mykey.pub
+openssl rand -hex 64 -out myfile # Generate the random password file 
+md5sum myfile | openssl rsautl -inkey mykey -sign > checksum.signed
+openssl rsautl -inkey mykey.pub -pubin -in checksum.signed
+```
+
+或者(实际与上面一样, 就是参数有点小变化):
+```bash
+openssl rsautl -sign -in file -inkey mykey -out sig # Sign some data using a private key. 实际就是加密file, sig是加密后的文件
+hexdump -C sig
+openssl rsautl -verify -in sig -inkey mykey.pub -pubin # Recover the signed data. 实际就是解密sig. `-inkey`是公钥时需用`-pubin`指明
+openssl rsautl -verify -in sig -inkey mykey.pub -pubin -raw -hexdump # Examine the raw signed data. 输出是PKCS#1格式
+```
+
+### rsa+aes加密文件
+largefile.pdf是原始文件, largefile.pdf.enc是加密后的文件
+
+```bash
+openssl rand -hex 64 -out key.bin
+openssl enc -aes-256-cbc -salt -in largefile.pdf -out largefile.pdf.enc -pass file:./bin.key
+openssl rsautl -encrypt -inkey publickey.pem -pubin -in key.bin -out key.bin.enc # 加密aes key
+openssl rsautl -decrypt -inkey privatekey.pem -in key.bin.enc -out key.bin # 解出aes key
+openssl enc -d -aes-256-cbc -in largefile.pdf.enc -out largefile.pdf -pass file:./bin.key # 解密文件
+```
