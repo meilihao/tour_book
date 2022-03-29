@@ -20,6 +20,9 @@
 - Go
 - Rust
 - vscode-proto3
+- Clang-Format : format proto3 using by google
+
+	`apt install clang-format`
 
 源码标签:
 - Bookmarks

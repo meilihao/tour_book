@@ -23,7 +23,7 @@ $ dmesg | grep -i zfs
 zfs有两个工具: zpool和zfs. zpool用于维护zfs pools, zfs负责维护zfs filesystems.
 
 > zfs可充当卷管理器
-> zfs已实现零管理, 通过zfs daemon(zed,zfs Event Daemon)实现, 因此无需将pool信息写入`/etc/fstab`, pool配置在`/etc/zfs/zpool.cache`里(可通过`zpool get "all" <pool>`找到`zpool.cache`的位置).
+> zfs已实现零管理, 通过zfs daemon(zed,zfs Event Daemon, zfs事件守护进程, 将监听任何zfs生成的kernel event, 配置在`/etc/zfs/zed.d/zed.rc`)实现, 因此无需将pool信息写入`/etc/fstab`, pool配置在`/etc/zfs/zpool.cache`里(可通过`zpool get "all" <pool>`找到`zpool.cache`的位置).
 > zfs pool使用zfs_vdev_scheduler来调度io.
 > zdb 是zpool的调试工具.
 > zgenhostid : generate and store a hostid in /etc/hostid
@@ -53,6 +53,15 @@ thin: zfs支持thin provisioning,
 1. 使用相同大小的磁盘以便在各个设备之间平衡 I/O
 1. pool最小为8G.
 1. [重删和压缩比较消耗资源, 特别是重删, 要求20G RAM/T, 我们(共40G RAM)碰到过原先200M/s的速度开了重删和压缩后变成20M/s](https://constantin.glez.de/2011/07/27/zfs-to-dedupe-or-not-dedupe/).
+1. 使用超过80%后建议扩容否则可能遭遇性能问题
+1. 任一fs均可使用全部的可用空间, 限制方法是设置reservation(预留) and quota(配额).
+1. 压缩推荐使用lz4(速度)和zstd(压缩比).
+
+	```bash
+	# zpool set feature@lz4_compress=enabled data
+	# zfs set compression=lz4 data/datafs
+	# zfs get compressratio data/datafs
+	```
 
 ### zfs虚拟设备(zfs vdevs)
 参考:
@@ -73,6 +82,10 @@ thin: zfs支持thin provisioning,
 
 	Mirror > Stripe
 	RAIDZ3 > RAIDZ2 > RAIDZ1 > Stripe
+
+	推荐:
+	- raidz: 3<=2n+1<=11
+	- raidz2: 4<=2n+2<=12
 - Hot Spare : 用于**热备** zfs 的软件 raid, 当正在使用的磁盘发生故障后，Spare磁盘将马上代替此故障盘.
 - Cache : 用于2级自适应的**读缓存**的设备 (zfs L2ARC), 提供在 memory 和 disk的缓冲层, 用于改善静态数据的随机读写性能
 
@@ -92,6 +105,7 @@ zfs支持分层组织filesystem, 每个filesystem仅有一个父级, 而且支�
 > 如果pool没有配置log device, pool会自行为ZIL预留空间.
 > raid-z配置无法附加其他磁盘; 无法分离磁盘, 但将磁盘替换为备用磁盘或需要分离备用磁盘时除外; 无法移除除log device或cache device外的device
 > 创建pool时, 不能使用其他pool的组件(vdev, 文件系统或卷), 否则会造成死锁.
+> dataset 可以是 ZFS 池、文件系统、快照、卷和克隆. 它是可以存储和检索数据的 ZFS层.
 
 ```sh
 $ sudo zpool create pool-test /dev/sdb /dev/sdc /dev/sdd # 创建了一个零冗余的RAID-0存储池, zfs 会在`/`中创建一个目录,目录名是pool name 
@@ -108,12 +122,13 @@ $ sudo zpool import -d /dev/disk/by-uuid
 $ sudo zpool import -F <poolname> -d /dev/disk/by-uuid # `-F`强制导入, 可解决突然断电导致的pool数据损坏(在truenas scale上碰到多次该损坏而导致系统启动进入Initramfs的问题)
 $ sudo zpool create <pool> mirror <device-id-1> <device-id-m1> mirror <device-id-2> <device-id-m2> # 创建RAID10
 $ sudo zpool add <pool> log mirror <device-id-1> <device-id-2> # 添加 SLOG
-$ sudo zpool add <pool> spare devices # 添加热备, 大小应>=max(pool's vdev),且无法移除当前正在使用的热备. 移除用`zpool remove`
+$ sudo zpool add <pool> -f spare /dev/sdf # 添加热备, 大小应>=max(pool's vdev),且无法移除当前正在使用的热备. 移除用`zpool remove`
 $ sudo zpool add <pool> cache <device-id> # 添加L2ARC
 $ sudo zpool iostat -v <pool> N # 每隔N秒输出一次pool的io状态. 第一次输出的数值可能较大, 因为那是`(pool_imported_total_count-0)/(time.now - pool_imported_at)`, 第二次开始才是`(pool_imported_total_count-lasttime_total_count)/(time.now-lasttime)`
 $ sudo zpool iostat <pool> <vdev> # pool中vdev的iostate
 # sudo zpool iostat -vly 1 1
 $ sudo zpool remove <pool> mirror-1 # 移除mirror/不在使用的热备
+$ sudo zpool remove <pool> /dev/sdf
 $ sudo zpool attach <pool> <existing-device> <new-device> # 将新设备追加到已有vdev
 $ sudo zpool detach  # 分离设备, 对象必须是mirror中的设备/raidz中已由其他物理设备或备用设备替换的设备
 $ sudo zpool split <pool> <new-pool> [device] # 拆分pool, 仅适用mirror设备, 通过`-R`可指定新池的挂载点
@@ -133,6 +148,7 @@ $ blkid /dev/sdg # 检查盘是否被zfs使用过
 /dev/sdg: LABEL="t" ... TYPE="zfs_member" # t是pool name, zpool destroy后该信息还保留.
 $ zpool set cachefile=/etc/zfs/zpool.cache tank # 强制更新pool.cache
 $ zpool set cachefile = / etc / zfs / zpool.cache # 适用于故障转移配置(高可用)的设置, 此时必须由高可用软件显示import pool
+$ zpool events [-v] # 获取zpool事件. `-v`, 更详细.
 ```
 
 pool status:
@@ -163,6 +179,8 @@ mirror/raidz设备不能从pool中删除, 但可增删不活动的hot spares(热
 
 > `blockdev --getpbsz /dev/sdXY`获取扇区大小, zfs默认是512, 与设备扇区不一致会导致性能下降, 比如具有4KB扇区大小的高级格式磁盘, 此时zfs会将ashift更改为12(2^12=4096). zfs默认ashift=0, 由其根据扇区大小决定ashift的具体值. 更改[ashift](https://github.com/zfsonlinux/zfs/wiki/faq#advanced-format-disks)选项的唯一方法是重新创建池. `zdb -U /data/zfs/zpool.cache | grep ashift`可查看ashift default的具体值.
 
+> ashift仅在创建pool或添加新vdev时使用(此时仅针对新vdev). `zpool get all <pool>`可查询ashift, 可用`smartctl -a /dev/sdb`查看`sector size`
+
 ### zpool scrub
 只要读取数据或zfs遇到错误，`zpool scrub`就会在可能的情况下进行静默修复.
 
@@ -173,6 +191,8 @@ $ zpool scrub -s <pool> # 取消正在运行的检修
 
 > 建议是每周/月检修一次.
 > 替换磁盘而同步数据很耗时, 替换间执行`zpool scrub`有利于替换设备运行正常且数据写入正确.
+
+resilvering 是替换磁盘后重建冗余组的过程. 它是一个低优先级的操作系统进程, 在一个存储系统非常繁忙时需要更多时间.
 
 ## zfs
 ```sh
@@ -196,6 +216,7 @@ $ sudo zfs create [-s] -V 5gb system1/vol # 创建5g大小的卷(创建卷时，
 $ sudo zfs get mountpoint mypool
 $ zfs list -o space # 显示used属性
 $ zfs get checksum tank/ws
+$ zfs list -t all -o space 显示所有space属性(AVAIL USED USEDSNAP USEDDS REFRESERV USEDCHILD)
 ```
 
 zfs list的属性可参考[freebsd zfs#Native Properties](https://www.freebsd.org/cgi/man.cgi?zfs(8)), `man zfs`与实际zfs包含的功能不一致, 有缺失, 比如`createtxg`, 部分属性说明:
@@ -234,6 +255,8 @@ RDBMS倾向于实现自己的缓存算法，通常类似于zfs自己的ARC. 因�
 
 ### zfs snapshot
 zfs snapshot（快照）是 zfs 文件系统或卷的**只读**拷贝(即无法修改属性). 可以用于保存 zfs 文件系统的特定时刻的状态，在以后可以用于恢复该快照，并回滚到备份时的状态.
+
+创建一个快照意味着记录文件系统 vnode 并跟踪它们.
 
 > snap直接占用pool, 不使用后备存储.
 > 快照放在对应fs的`.zfs/snapshot`目录里.
@@ -332,15 +355,24 @@ $ sudo zfs set copies=3 mypool/projects
 ```
 
 ### zfs Deduplication，文件去重
-zfs dedup 将丢弃重复数据块，并以到现有数据块的引用来替代. 这将节约磁盘空间，这**需要大量的内存**. 内存中的去重记录表需要消耗大约 ~320 bytes/block. 表格尺寸越大，写入时就会越慢.
+zfs dedup 将丢弃重复数据块，并以到现有数据块的引用来替代. 这将节约磁盘空间，这**需要大量的内存和cpu**. 内存中的去重记录表DDT (deduplication tables)需要消耗大约 ~320 bytes/block. 表格尺寸越大，写入时就会越慢.
 
 ```
 $ sudo zfs set dedup=on mypool/projects # 启用去重
 ```
 
-**dedup**只对开启后的新数据块有效.
+每当数据写入时, zfs都会将其与已记录的块比较, 如果存在相同, 则它不会写入物理数据, 反而会添加一些元信息代替写入, 从而节省很多和大量的磁盘空间.
+
+一旦开启重删, 即使关闭它, import pool时DDT还是会被载入内存. 解决方法: 
+1. 备份数据, 重新创建pool(此时不开重删)再恢复数据
+2. 将数据挪到没有重删的pool上
+
+`zpool list`的`DEDUP`列显示`1.00x`表示没有重删.
+
+**dedup**只对开启后的新数据块有效. 根据经验: **不推荐使用, 不如用压缩**
 
 ## [属性](https://openzfs.github.io/openzfs-docs/man/7/zfsprops.7.html)
+- avali: 文件系统中的可用空间
 - used : 只读属性，表明此数据集及其所有后代占用的磁盘空间量.
 	
 	可根据此数据集的配额和预留空间来检查该值. 使用的磁盘空间不包括数据集的预留空间，但会考虑任何后代数据集的预留空间. 数据集占用其父级的磁盘空间量以及以递归方式销毁该数据集时所释放的磁盘空间量应为其使用空间和预留空间的较大者.
@@ -352,13 +384,13 @@ $ sudo zfs set dedup=on mypool/projects # 启用去重
 	- usedbychildren(usedchild) : 只读属性，用于标识此数据集的后代占用的磁盘空间量；如果所有数据集后代都被销毁，将释放该空间
 	- usedbydataset(usedds) : 只读属性(已用空间)，用于标识数据集本身占用的磁盘空间量；如果在先销毁所有快照并删除所有 refreservation 预留空间后销毁数据集，将释放该空间.
 	- usedbyrefreservation(refreserv) : 只读属性，用于标识针对数据集设置的 refreservation 占用的磁盘空间量；如果删除 refreservation，将释放该空间
-	- usedbysnapshots(usedsnap) : 只读属性，用于标识数据集的快照占用的磁盘空间量. 特别是，如果此数据集的所有快照都被销毁，将释放该磁盘空间. 请注意，此值不是简单的快照 used 属性总和，因为多个快照可以共享空间
+	- usedbysnapshots(usedsnap) : 只读属性，用于标识数据集的快照占用的磁盘空间量. 特别是，如果此数据集的所有快照都被销毁，将释放该磁盘空间. 请注意，此值不是简单的快照已用空间的总和，因为多个快照可能引用了相同的块
 - quota : 限制**数据集及其后代**可占用的磁盘空间量. 一旦达到该容量后，不管存储池的可用空间有多大，都无法再将数据写入该数据集.
 
-	该属性可对已使用的磁盘空间量强制实施硬限制，包括后代（含文件系统和快照）占用的所有空间. 对已有配额的数据集的后代设置配额不会覆盖祖先的配额，但会施加额外的限制. **不能对卷设置配额**，因为 volsize 属性可用作隐式配额.
+	该属性可对已使用的磁盘空间量强制实施硬限制，**包括后代（含文件系统和快照）占用的所有空间**. 对已有配额的数据集的后代设置配额不会覆盖祖先的配额，但会施加额外的限制. **不能对卷设置配额**，因为 volsize 属性可用作隐式配额.
 - refquota : 限制该数据集可以使用的磁盘空间量, 该限制不包括后代所占用的磁盘空间
-- reservation : 预留空间, 从池中分配的保证可供数据集使用的磁盘空间. 预留空间受存储池中的可用空间容量限制.
-- refreservation :  预留空间来保证用于数据集的磁盘空间，该空间不包括快照和克隆使用的磁盘空间. 此预留空间计算在父数据集的使用空间内，并会针对父数据集的配额和预留空间进行计数.
+- reservation : 预留空间, 从池中分配的保证可供数据集**及其后代**使用的磁盘空间. 预留空间受存储池中的可用空间容量限制.
+- refreservation :  预留空间来保证用于**该数据集**的磁盘空间，该空间不包括快照和克隆使用的磁盘空间. 此预留空间计算在父数据集的使用空间内，并会针对父数据集的配额和预留空间进行计数.
 
 	如果 usedbydataset 空间低于此值，则认为数据集正在使用 refreservation 指定的空间量(也是数据集的初始大小是refreservation). usedbyrefreservation 数字表示该额外空间，并添加到数据集占用的总 used 空间，继而占用父数据集的用量、配额和预留空间. 它会随实际使用而减少(但也可能不变), 这将通过确保提前预留用于未来写操作的空间，防止数据集过度承载池资源
 - referenced : 此数据集可访问的数据量，这些数据可以与池中其他数据集共享，也可以不与其他数据集共享. 创建快照或克隆时，首先会引用与创建时所基于的文件系统或快照相同的空间量，因为其内容相同.
@@ -376,6 +408,12 @@ $ sudo zfs set dedup=on mypool/projects # 启用去重
 如果对 tank/home 数据集设置了quota，则 tank/home 及其所有后代使用的总磁盘空间量不能超过该配额.
 如果对 tank/home 数据集设置了refquota，则 tank/home 磁盘空间量不能超过该配额, 但不包括后代所占用的空间, 比如其快照/clone.
 
+```bash
+# zfs set quota=1.5G data/engineering
+# zfs set refquota=1G data/engineering
+# zfs set reservation=800M data/engineering
+```
+
 ### reservation
 如果 tank/home 指定了预留空间，则 tank/home 及其所有后代都会使用该预留空间. 预留空间计入父文件系统的已用磁盘空间, 并计入父文件系统的配额和预留空间.
 
@@ -390,6 +428,8 @@ $ sudo zfs set dedup=on mypool/projects # 启用去重
 # zfs set acltype=posixacl rpool/fs1
 # zfs set aclinherit=passthrough rpool/fs1 # 当前openzfs 的 aclinherit属性不支持posixacl
 ```
+
+**acl针对的是目录**
 
 nfs配置见[develop/nas.md](/develop/nas.md)
 

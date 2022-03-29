@@ -37,3 +37,5 @@ SCTP是一个支持数据流的可靠的传输层协议，而且在WebRTC上已�
 
 ### quic实现在user space
 目前已知的所有QUIC实现都位于用户空间，这使它能得到更快速的迭代（相较于内核空间中的实现）.
+
+### [验证站点是否启用HTTP3](https://http3check.net/)

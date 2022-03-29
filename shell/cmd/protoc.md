@@ -62,3 +62,12 @@ func (g *Generator) generateInternalStructFields(mc *msgCtx, topLevelFields []to
 ```
 
 在`XXX_...`后追加`xorm:"-" or gorm:"-"`即可.
+
+## FAQ
+### gogo 插件区别
+gofast: 速度优先，但此方式不支持其它 gogoprotobuf 的扩展选项.
+
+gogofast、gogofaster、gogoslick: 更快的速度、会生成更多的代码:
+- gogofast类似gofast，但是会引入 gogoprotobuf 库
+- gogofaster类似gogofast，但是不会产生XXX_unrecognized类的指针字段，可以减少垃圾回收时间
+- gogoslick类似gogofaster，但是会增加一些额外的string、gostring和equal method等

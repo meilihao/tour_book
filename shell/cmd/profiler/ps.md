@@ -49,6 +49,8 @@
     # ps -eLo ruser,pid,ppid,lwp,psr,args | awk '{if($5==3) print $0}' # 显示运行在cpu id=3上的线程
     # ps aux | awk 'NR>0 {$6=int($5/1024)"M";}{ print;}' | column -t # 查看进程rss内存(MB)
     # ps aux | awk '{mem += $6} END {print mem/1024/1024}'
+    # ps -f --ppid 2 -p 2 # 查找2的子进程
+    # ps -ef | grep "\[.*\]" # 查找内核进程
 
 ## 扩展
 

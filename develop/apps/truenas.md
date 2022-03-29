@@ -119,6 +119,22 @@ class Resource(object):
 ### `src/middlewared/middlewared/service.py#CRUDService.query()`中的`self._config`是什么?
 通过`grep -r "\._config = "`查找, 发现CRUDService父类定义`class Service(object, metaclass=ServiceBase)`中的ServiceBase.__new__()设置了`_config`, 其实就是CRUDService子类如DiskService的嵌套类`class Config`(但经过metaclass修改).
 
+以DiskService的`class Config`举例:
+```python
+class DiskService(CRUDService):
+
+    class Config:
+        datastore = 'storage.disk' # db name storage_disk
+        datastore_prefix = 'disk_'
+        datastore_extend = 'disk.disk_extend' # DiskService.disk_extend方法
+        datastore_extend_context = 'disk.disk_extend_context' # DiskService.disk_extend_context方法
+        datastore_primary_key = 'identifier'
+        datastore_primary_key_type = 'string'
+        event_register = False
+        event_send = False
+        cli_namespace = 'storage.disk'
+```
+
 ### table定义
 `class xxxModel(sa.Model)`
 
