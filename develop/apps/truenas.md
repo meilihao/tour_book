@@ -38,6 +38,35 @@ middlewared设置的主要参数:
 ## 源码剖析
 middlewared doc: `src/middlewared/middlewared/docs/index.rst`
 
+- jobs是在memory中的`self.jobs = JobsQueue(self)`
+- event_register是注册event的入口
+- `/core/get_services`: 返回所有服务信息, 包括`config`
+- `/core/get_methods`:
+
+    example:
+
+    ```json
+    {
+        "service": "core",
+        "cli":"false"
+    }
+    ```
+- `self.middleware.call('pool.scrub.scrub', BOOT_POOL_NAME)`是PoolScrubService的namespace
+
+    ```py
+    class PoolScrubService(CRUDService):
+
+    class Config:
+        datastore = 'storage.scrub'
+        datastore_extend = 'pool.scrub.pool_scrub_extend'
+        datastore_prefix = 'scrub_'
+        namespace = 'pool.scrub'
+        cli_namespace = 'storage.scrub'
+    ```
+
+### 远程调试
+见api文档的`/core/debug`接口
+
 ### api调用
 rest api到ws api的映射: `/device/get_info` -> `device.get_info()`, 实现是`DeviceService(Service)`的`async def get_info(self, _type)`, 即逻辑实现均是`XXXService(Service)`的`yyy`方法.
 
@@ -294,3 +323,15 @@ train内容可结合`https://update.freenas.org/scale`获取.
 
 ### 没找到`self.middleware.call('vm.device.query')}`
 实际走入了`class VMDeviceService(CRUDService)`中CRUDService的query()方法.
+
+
+### [构建`github.com/truenas/py-libzfs`, 运行`./configure`报`A working zfs header is required`](https://github.com/truenas/py-libzfs/issues/107)
+`./configure --prefix=/usr`
+
+### [构建`github.com/truenas/py-libzfs`, 运行`sudo make install`报`No module named 'Cython'`]
+env: Ubuntu 20.04
+
+`apt install cython`仍旧报错, `pip3 install cython`后正常
+
+### [构建`github.com/truenas/py-libzfs`, 运行`libzfs.c:6:10: fatal error: Python.h: No such file or directory`]
+`apt install python3-dev`

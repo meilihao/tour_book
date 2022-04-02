@@ -502,6 +502,9 @@ nqn.2014-08.org.nvmexpress:uuid:75953f3b-77fe-4e03-bf3c-09d5a156fbcd
 ### vpd_unit_serial
 `/sys/kernel/config/target/core/$backstore/$name/wwn/vpd_unit_serial`用于initiator识别LUN, 因此它在reboot和failover中应维持不变.
 
+### iscsid日志
+`iscsid -d<N:0~8>`
+
 # tgtadm
 参考:
 - [github.com/longhorn/go-iscsi-helper](https://github.com/longhorn/go-iscsi-helper/blob/master/iscsi/target.go)

@@ -62,6 +62,10 @@ func main() {
 dot -Tpng -o a.png a.dot
 ```
 
+### gpt
+- [github.com/diskfs/go-diskfs](https://github.com/diskfs/go-diskfs)
+- [github.com/rekby/gpt](https://github.com/rekby/gpt)
+
 ## 压缩binary
 - [使用 upx 压缩 go build 打包的可执行文件](https://abelsu7.top/2019/10/24/go-build-compress-using-upx/)
 

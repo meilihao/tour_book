@@ -181,6 +181,7 @@ top 支持显示一个定位信息，可以看到自己现在处于第几行，�
 ```bash
 # top -bn 1 # 完成显示(不分屏)top信息1次
 # top -d 2 -n 1 -b # 输出重定向
+# top -p <pid> # 显示进程所在cpu, 适合排查numa下cpu问题
 ```
 
 ## FAQ
@@ -191,6 +192,9 @@ top 支持显示一个定位信息，可以看到自己现在处于第几行，�
 - 按内存占用率排序: `shift + m`
 - 按CPU占用时间排序: `shift + t`
 - 按PID排序: `shift + n`
+
+### 显示线程
+`shift + h`
 
 ### 等式
 不一定有等式 CODE + DATA = RES 成立，但一定成立等式 ANON(在堆上分配的内存) = RES - SHR 及不等式 ANON <= DATA (vm_physic) <= DATA. 如果观察到程序稳定运行时 RES - SHR 不断增长，则可能预示着程序存在内存泄漏现象

@@ -129,6 +129,7 @@ $ pip install pip-20.x.tar.gz # 升级pip
 $ pip install setuptools== # 查询可用的软件版本
 $ pip show setuptools # 查看setuptools信息
 $ pip3 show -f pycryptodome # 显示pycryptodome包的文件
+$ python3.9 -m pip3 install cython # 为指定版本的python安装包
 ```
 
 > pip配置查找: `python -m  pip config list -v`

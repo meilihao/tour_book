@@ -10,3 +10,17 @@ sudo vim /etc/sysctl.conf
 fs.inotify.max_user_watches=524288
 sudo sysctl -p
 ```
+
+### vscode-proto3报`Import "xxx.proto" was not found or had errors`
+在项目的`.vscode/settings.json`配置:
+```json
+{
+    "protoc": {
+        "options": [
+            "--proto_path=${workspaceRoot}/pkg/types"
+        ]
+    }
+}
+```
+
+即添加相应proto_path即可.

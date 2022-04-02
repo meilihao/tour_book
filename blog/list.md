@@ -150,3 +150,10 @@
 
 ## os
 - [从无盘启动看Linux启动原理](https://zhuanlan.zhihu.com/p/270269074)
+
+## storage
+- [如何基于.NET Core构建分布式文件存储系统？- FastDFS](https://www.tuicool.com/articles/Qrma2my)
+
+## im
+- [深度剖析「圈组」消息系统设计 | 「圈组」技术系列文章](https://mp.weixin.qq.com/s?__biz=MzI1NTMwNDg3MQ==&mid=2247490738&idx=1&sn=bb70ea5548dba07c21b51532c1a4ad87)
+- [openim](https://github.com/OpenIMSDK)

@@ -3,6 +3,7 @@
 - [gPT fdisk](https://wiki.archlinux.org/index.php/GPT_fdisk_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87))
 - [Partitioning (简体中文)](https://wiki.archlinux.org/index.php/Partitioning_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87))
 - [C语言读取GPT分区信息](https://blog.csdn.net/qq_37734256/article/details/88384750)
+- [使用 sgdisk 管理分区](https://linux.cn/article-10771-1.html)
 
 gdisk是支持gpt的分区工具.
 
@@ -145,7 +146,7 @@ sgdisk命令解析：
 1. `sgdisk -n 1:2048:4095 -c 1:"BIOS Boot Partition" -t 1:ef02 /dev/nbd0`
 1. `sgdisk -n 0:0:+1M -t 0:ef02 -c 0:"bios_boot" /dev/nbd0`
 
-- `1:2048:4095`: 1, 分区编号; 2048, 起始扇区; 4095, 结束扇区
+- `1:2048:4095`: 1, 分区编号(从1开始); 2048, 起始扇区; 4095, 结束扇区
 - `0:0:+1M`: 0, 分区编号sgdisk自动计算; 0, 起始扇区sgdisk自动计算; +1M, 该分区大小
 - `-t 0:ef02`: 0, 前面自动生成的分区号, ef02是分区类型
 - `-c 0:"bios_boot"`: 0, 前面自动生成的分区号, bios_boot是该分区的name

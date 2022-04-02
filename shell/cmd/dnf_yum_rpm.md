@@ -125,7 +125,7 @@ ref:
 # rpm -ivh filename.rpm # 安装软件
 # rpm -ivh 源码包名*.src.rpm # 安装至 ~/rpmbuild 目录
 # rpm -Uvh filename.rpm # 升级软件, `-U`表示升级
-# rpm -e filename.rpm [--nodeps] # 卸载软件
+# rpm -e [--nodeps] [-vvh --test] appname # 卸载软件. `--nodeps`表示不卸载依赖; `--test`=dry run; `-vvh`=detail log
 # rpm -i --nodeps xxx.rpm # `--nodeps`安装时不检查依赖
 # rpm --reinstall xxx.rpm # 重复安装 from rpm v4.12.0
 # rpm -q --provides openssl-libs | grep libcrypto.so.10 # 查看openssl-libs中的libcrypto.so.10版本

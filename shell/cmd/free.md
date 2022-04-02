@@ -52,3 +52,16 @@ $ watch -n 3 -d free
 buffers是指用来给**块设备**做的缓冲大小，它只记录文件系统的**metadata以及 追踪瞬时页面(tracking in-flight pages)**.
 
 cached是用来给**文件内容**做缓冲
+
+## FAQ
+### used已接近最大可用内存，但各进程常驻内存(RES)远比used要小
+1. [在VMWare虚拟机平台上，宿主机可以通过一个叫Balloon driver(vmware_balloon module)的驱动程序模拟客户机linux内部的进程占用内存，被占用的内存实际上是被宿主机调度到其他客户机去了](https://segmentfault.com/a/1190000022518282)。
+但这种驱动程序模拟的客户机进程在linux上的内存动态分配并没有被linux内核统计进来，于是造成了上述问题的现象.
+
+    > linux没有统计进来的alloc_pages分配的内存
+1. zfs使用
+    
+    `rmmod zfs`内存占用爆降, 且zpool每export一个pool降3G内存.
+
+### 用户进程占用内存
+/proc/meminfo统计的是系统全局的内存使用状况，单个进程的情况要看/proc/<pid>/下的smaps等等

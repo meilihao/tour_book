@@ -294,6 +294,14 @@ $ guestfish --rw -a centos6.5-minimal.qcow2 # 进入qcow2直接修改即可, 与
 
 1. qemu-nbd
 
+## noVNC
+ref:
+- [NoVNC远程连接](https://www.jianshu.com/p/0f3b351a156c)
+
+noVNC是一个 HTML5 VNC 客户端，采用 HTML 5 WebSockets, Canvas 和 JavaScript 实现，noVNC 被普遍用在各大云计算、虚拟机控制面板中，比如 OpenStack Dashboard 和 OpenNebula Sunstone 都用的是 noVNC.
+
+noVNC采用WebSockets实现，但是目前大多数VNC服务器都不支持 WebSockets，所以noVNC是不能直接连接 VNC 服务器的，需要一个代理来做WebSockets和TCP sockets之间的转换. 这个代理在noVNC的目录里，叫做websockify.
+
 ## FAQ
 ### qemu编译依赖
 ```

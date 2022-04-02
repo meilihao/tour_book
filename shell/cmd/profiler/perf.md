@@ -11,6 +11,8 @@ Children/Self: 如果在record时收集了调用链, 则Overhead可以在Childre
 ### 软中断ksoftirqd/n 占用CPU 过高排查
 ref:
 - [性能分析（5）- 软中断导致 CPU 使用率过高的案例](https://cloud.tencent.com/developer/article/1678685)
+- [Redis 高负载下的中断优化](https://tech.meituan.com/2018/03/16/redis-high-concurrency-optimization.html)
+- [Linux性能优化实践：CPU问题排查](https://www.modb.pro/db/172608)
 
 ```bash
 # perf top # 全局查看
@@ -19,6 +21,8 @@ ref:
 # perf record -a -g -p 9 -- sleep 30 # 9为高ksoftirqd的pid
 # perf report
 # perf record -C 1 -e cpu-clock -g sleep 10 # 记录10s中cpu0的性能数据
+# perf report --sort=comm --stdio # 展示perf.data
+# perf report -i perf.data --show-cpu-utilization --show-nr-samples --max-stack 0 -d "[kernel.kallsyms]" --percent-limit 1 --stdio # 分析perf.data
 ```
 
 > 部分平台上perf会引起奇怪的crash。使用 -e cpu-clock 参数可以避免这个问题.
@@ -62,3 +66,12 @@ ref:
 ```bash
 echo 8 > /proc/irq/96/smp_affinity # //8=2^3, 表示绑定到cpu3
 ```
+
+## FAQ
+### perf top输出
+实时显示占用cpu时钟最多的函数或指令
+
+输出列
+- Overhead: 被采样到占比
+- Shared Object: 指令所在位置
+- Symbol: 函数名, 当名称未知时用16进制地址表示
