@@ -34,10 +34,6 @@ make install
 # bash: /usr/local/bin/rar: cannot execute binary file
 ```
 
-- 归档文件管理器解压zip中文乱码
-
-	通过unzip命令解压，指定字符集`unzip -O CP936 xxx.zip` (用GBK, GB18030也可以)
-
 #### 开机启动项管理
 
 - sysv-rc-conf : for ubuntu

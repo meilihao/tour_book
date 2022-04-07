@@ -48,6 +48,7 @@ ulimit [OPTIONS] [LIMIT]
     startup.sh:
     ```
     ulimit -s 512
+    ulimit -n 65536
     ```
 
 1. 对多个用户或用户组进行限制
@@ -66,6 +67,12 @@ ulimit [OPTIONS] [LIMIT]
 1. 对系统全局的进程进行限制
 
     /etc/sysctl.conf
+
+    体现:
+    ```bash
+    # cat /proc/sys/fs/file-max
+    # cat /proc/sys/fs/file-nr
+    ```
 
 
 ### ulimit 配置文件: limits.conf

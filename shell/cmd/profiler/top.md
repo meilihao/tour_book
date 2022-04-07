@@ -110,6 +110,8 @@ top 支持显示一个定位信息，可以看到自己现在处于第几行，�
 - nMin: Minor Page Faults. 该 task 遇到的 Minor Page Faults 的数量. Minor Page Fault 是指不需要通过访问 swap 分区或者硬盘来处理的缺页异常，简单的说，没用到磁盘 I/O.
 - vMj: Major Faults delta. 上次 top 刷新数据依赖的 Major Page Faults 增加数量
 - vMn: Minor Faults delta. 上次 top 刷新数据依赖的 Minor Page Faults 增加数量
+- P : cpu id
+- NU : numa id
 
 ## 选项
 - -b : batch模式, 重定向不乱码. 分屏显示输出信息, 即每次刷新算一屏
@@ -181,7 +183,8 @@ top 支持显示一个定位信息，可以看到自己现在处于第几行，�
 ```bash
 # top -bn 1 # 完成显示(不分屏)top信息1次
 # top -d 2 -n 1 -b # 输出重定向
-# top -p <pid> # 显示进程所在cpu, 适合排查numa下cpu问题
+# top -p <pid> # 仅显示指定进程, 适合排查numa下cpu问题, 再通过F选择P和NU列即可
+# top -H -p <pid> # 显示指定进程的线程
 ```
 
 ## FAQ

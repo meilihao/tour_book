@@ -26,6 +26,7 @@
     - ruser ： 运行进程的用户
     - args : 运行的命令及其参数
     - psr: cpu id
+- -T : 显示线程
 - u : 以用户为主的格式来显示程序状况
 - -U <用户名/Uid> : 列出属于该用户的程序的状况(不含参数)
 - -u : 同`-U`
@@ -52,6 +53,8 @@
     # ps aux | awk '{mem += $6} END {print mem/1024/1024}'
     # ps -f --ppid 2 -p 2 # 查找2的子进程
     # ps -ef | grep "\[.*\]" # 查找内核进程
+    # ps -o pid,psr,comm -p <pid> # 进程/线程目前分配到的 （在“PSR”列）CPU ID
+    # ps -T -p <pid> 显示指定进程的线程
 
 ## 扩展
 

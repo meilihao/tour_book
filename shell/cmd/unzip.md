@@ -13,3 +13,7 @@
 ```bash
 # unzip -o test.zip -d /tmp
 ```
+
+## FAQ
+### 解压zip中文乱码
+解压时指定字符集`unzip -O CP936 xxx.zip` (用GBK, GB18030也可以)

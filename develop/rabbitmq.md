@@ -236,3 +236,28 @@ rabbitmq从3.3.0开始禁止使用guest/guest权限通过除localhost外的访�
 ### 执行`rabbitmq-plugins enable rabbitmq_management`报`cannot_read_enabled_plugins_file /etc/rabbitmq/enabled_plugins eacces`
 因为`/etc/rabbitmq/enabled_plugins`的权限是`-rw-------`, 执行
 `umask 0022; rabbitmq-plugins enable rabbitmq_management`即可, 执行后权限变为`-rw-r--r--`
+
+### 空闲rabbitmq环境ksoftirpd cpu很高
+ref:
+- [RabbitMQ high CPU usage on idle VM](https://github.com/helm/charts/issues/3855#issuecomment-478529100)
+- [RabbitMQ CPU 占用过高优化](https://blog.csdn.net/u010657094/article/details/106392113)
+- [RabbitMQ: error_logger process high CPU usages](https://stackoverflow.com/questions/61939930/rabbitmq-error-logger-process-high-cpu-usages)
+- [Erlang Scheduler Details and Why It Matters](https://hamidreza-s.github.io/erlang/scheduling/real-time/preemptive/migration/2016/02/09/erlang-scheduler-details.html)
+
+```
+Hi, I've found another reason why RabbitMQ can have noticeable CPU usage when in idle or under a light load. RabbitMQ is running on Erlang and it is using its scheduling capabilities. To schedule a process Erlang is using scheduler threads and its number by default depends on a number of logical cores. And this is a problem when running in docker/kubernetes because RabbitMQ will think it has more resources than it actually has. In our case, a RabbitMQ node is running on a server with 40 cores but we are limiting it only to have 1 core in Kubernetes. Erlang will run 40 scheduler threads that are constantly context switching which generates the cpu usage. When I set the number of scheduler threads to 1 the CPU usage dropped from 23 % to 3 %.
+You can check how many scheduler threads you are using with rabbitmqctl status:
+
+$ rabbitmqctl status
+...
+{erlang_version,
+     "Erlang/OTP 20 [erts-9.3.3.3] [source] [64-bit] [smp:40:40] [ds:40:40:10] [async-threads:640] [hipe] [kernel-poll:true]\n"},
+...
+numbers after smp are the number of threads. For more info see Erlang scheduler details. You can set the value using environment variable:
+
+RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS="+S 1:1"
+```
+
+解决方法: `echo "SERVER_ADDITIONAL_ERL_ARGS=\"+S 1:1\"" | tee -a /etc/rabbitmq/rabbitmq-env.conf`, 之后通过`rabbitmqctl status`检查`[smp:<N>:<N>]`的效果(期望是`[smp:1:1]`).
+
+> 顺便调大file limit, 太小也会导致问题: `ulimit -n 65536`

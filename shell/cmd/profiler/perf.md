@@ -4,6 +4,10 @@
 - [利用perf剖析Linux应用程序](https://blog.gmem.cc/perf)
 - [Linux性能优化实战学习笔记：第四十九讲](https://www.cnblogs.com/luoahong/p/11577395.html)
 
+## 选项
+- -g : 开启调用关系分析
+- -p : 指定pid
+
 ## perf report
 Children/Self: 如果在record时收集了调用链, 则Overhead可以在Children、Self两个列中显示. Children显示子代函数的样本计数、Self显示函数自己的样本计数.
 
@@ -13,6 +17,7 @@ ref:
 - [性能分析（5）- 软中断导致 CPU 使用率过高的案例](https://cloud.tencent.com/developer/article/1678685)
 - [Redis 高负载下的中断优化](https://tech.meituan.com/2018/03/16/redis-high-concurrency-optimization.html)
 - [Linux性能优化实践：CPU问题排查](https://www.modb.pro/db/172608)
+- [泰山200上出现多个ksoftirqd的进程，而且CPU时间占用率100%](https://bbs.huaweicloud.com/forum/thread-67261-1-1.html)
 
 ```bash
 # perf top # 全局查看
@@ -25,7 +30,7 @@ ref:
 # perf report -i perf.data --show-cpu-utilization --show-nr-samples --max-stack 0 -d "[kernel.kallsyms]" --percent-limit 1 --stdio # 分析perf.data
 ```
 
-> 部分平台上perf会引起奇怪的crash。使用 -e cpu-clock 参数可以避免这个问题.
+> 部分平台上perf会引起奇怪的crash. 使用`-e cpu-clock`可以避免这个问题.
 
 显示前4个cpu的软中断情况: `watch -d "/bin/cat /proc/softirqs | /usr/bin/awk 'NR == 1{printf \"%-15s %-15s %-15s %-15s %-15s\n\",\" \",\$1,\$2,\$3,\$4}; NR > 1{printf \"%-15s %-15s %-15s %-15s %-15s\n\",\$1,\$2,\$3,\$4,\$5}'"`
 
@@ -36,6 +41,8 @@ ref:
 - br_handle_frame ，表明网络包经过了网桥（br 表示 bridge）
 - br_nf_pre_routing ，表明在网桥上执行了 netfilter 的 PREROUTING（nf 表示netfilter），而我们已经知道 PREROUTING 主要用来执行 DNAT，所以可以猜测这里有 DNAT 发生
 - br_pass_frame_up，表明网桥处理后，再交给桥接的其他桥接网卡进一步处理。比如，在新的网卡上接收网络包、执行 netfilter 过滤规则等等
+
+> 针对网络中断导致ksoftirqd高cpu: 可用down网卡来确定
 
 ### 火焰图
 - 轴表示采样数和采样比例。**一个函数占用的横轴越宽，就代表它的执行时间越长**. 同一层的多个函数，则是按照字母来排序.
@@ -73,5 +80,6 @@ echo 8 > /proc/irq/96/smp_affinity # //8=2^3, 表示绑定到cpu3
 
 输出列
 - Overhead: 被采样到占比
-- Shared Object: 指令所在位置
+- Shared: 是该函数或指令所在的动态共享对象（Dynamic Shared Object）, 如内核、进程名、动态链接库名、内核模块名等
+- Object: 动态共享对象的类型, 比如`[.]`表示用户空间的可执行程序、或者动态链接库, 而`[k]`则表示内核空间
 - Symbol: 函数名, 当名称未知时用16进制地址表示
