@@ -138,7 +138,7 @@ dpkg-buildpackage的构建目录结构
 
 ### 删除`dpkg -l`显示状态为的"rc"包
 ```bash
-# --- 方法1
+# --- 方法1, since ubuntu 20.04, 推荐
 apt purge '~c'
 
 # --- 方法2
