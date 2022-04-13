@@ -12,6 +12,7 @@
 - [SysVinit vs Systemd Cheatsheet](https://fedoraproject.org/wiki/SysVinit_to_Systemd_Cheatsheet)
 - [Understanding and administering systemd](https://docs.fedoraproject.org/en-US/quick-docs/understanding-and-administering-systemd/index.html)
 - [Resource Management Guide - 资源管理](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/7/html/resource_management_guide/index)
+- [Linux 启动性能分析](https://linux.cn/article-14462-1.html)
 
 ### systemd 与 System V init 的区别以及作用
 |System V init 运行级别|systemd 目标名称|作用|

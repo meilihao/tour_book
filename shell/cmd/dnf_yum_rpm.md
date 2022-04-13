@@ -131,6 +131,7 @@ ref:
 # rpm -q --provides openssl-libs | grep libcrypto.so.10 # 查看openssl-libs中的libcrypto.so.10版本
 # rpm -qp --scripts ./packagecloud-test-1.1-1.x86_64.rpm # 查看preinstall 和 postinstall scripts
 # rpm -q --scripts <pkg> # 查看已安装的pkg的rpm scripts
+# rpm -e --test centos-release  # 检查谁依赖了这个包
 ```
 
 # yum
@@ -377,3 +378,12 @@ yum clean all
 1. 修改/etc/dnf/dnf.conf 
 
     将`clean_requirements_on_remove=True`改为`clean_requirements_on_remove=False`
+
+### 安装spec文件的deps
+```bash
+yum-builddep my-package.spec
+yum-builddep my-package.src.rpm
+
+dnf builddep my-package.spec
+dnf builddep my-package.src.rpm
+```

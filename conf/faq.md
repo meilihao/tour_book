@@ -41,6 +41,13 @@ secure.gravatar.com          gravatar.lug.ustc.edu.cn
 
 单用户默认启用网络: `systemctl start NetworkManager`
 
+## android清除密码
+前提: 已root
+
+1. 下载adb工具, 比如adb1.0.32.zip
+2. 执行`adb shell`, 强制手机打开usb调试模式
+3. 执行`rm password.key`, 再`reboot`
+
 ## [fish添加环境变量](https://github.com/fish-shell/fish-shell/issues/527)
 将相应的fish配置文件放入`/home/chen/.config/fish/conf.d`即可, fish的`conf.d`类似于nginx的`conf.d`.
 

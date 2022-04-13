@@ -685,3 +685,26 @@ options zfs zfs_arc_max=<memory_size_in_bytes>
 ```
 
 > `echo $((5*2**30))`=`python3 -c "print(5*2**30)"`=`5368709120`
+
+### arcstat
+```
+arcstat 1
+arcstat -o /tmp/a.log 2 10
+arcstat -s "," -o /tmp/a.log 2 10
+arcstat -v
+arcstat -f time,hit%,dh%,ph%,mh% 1
+```
+
+### 清理cache
+```
+# sync # 设置/proc/sys/vm/drop_caches的前提, 清理dirty object即`/proc/meminfo`中的Dirty.
+# echo 3 > /proc/sys/vm/drop_caches
+# echo 1 > /proc/sys/vm/drop_caches # 会忽略arc
+```
+
+/proc/sys/vm/drop_caches, 见`man proc`:
+- 1: 清理page cache. 影响free中的buffer和cached, 进而影响了used和free
+- 2: 清理dentry和inode. 影响free中的buffer
+- 3: = 1 + 2
+
+[zfs_arc_min是0时, Linux buffer/cache可能会将 ARC 从内存中逐出, 因此推荐设置zfs_arc_min.](https://serverfault.com/questions/857350/zfs-arc-cache-and-linux-buffer-cache-contention-ubuntu-16-04)
