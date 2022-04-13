@@ -25,6 +25,15 @@
 	rv = remote -v
 	gl = config --global -l
 	se = !git rev-list --all | xargs git grep -F
+[color "diff"]
+	meta = white reverse
+	frag = cyan reverse
+	old = red reverse
+	new = green reverse
+[url "git@github.com:"]
+	insteadOf = git://github.com/
+[url "https://github.com/"]
+	insteadOf = git://github.com/
 ```
 
 ### prompt/提示
