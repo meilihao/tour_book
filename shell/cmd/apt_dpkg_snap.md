@@ -138,6 +138,13 @@ dpkg-buildpackage的构建目录结构
 
 ### 删除`dpkg -l`显示状态为的"rc"包
 ```bash
+# --- 方法1
+apt purge '~c'
+
+# --- 方法2
+dpkg -l |grep "^rc" |cut -d " " -f 3|sudo xargs dpkg --purge
+
+# --- 方法3
 aptitude search ~c # list the residual packages
 sudo aptitude purge ~c # purge them
 ```
