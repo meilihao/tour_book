@@ -22,7 +22,7 @@ DNF配置文件的位置:
 # dnf history undo 3 # 执行与指定历史ID执行的所有操作相反的操作
 # dnf history rollback 7 # 撤消在历史ID之后执行的所有操作
 
-# dnf --showduplicates list $pkgname # 显示软件的多版本列表
+# dnf --showduplicates list [available] $pkgname # 显示软件的多版本列表
 # dnf list # 列出用户系统上的所有来自软件库的可用软件包和所有已经安装在系统上的软件包
 # dnf list installed # 已安装包的列表
 # dnf list available # 列出来自所有可用软件库的可供安装的软件包
@@ -132,9 +132,10 @@ ref:
 # rpm -qp --scripts ./packagecloud-test-1.1-1.x86_64.rpm # 查看preinstall 和 postinstall scripts
 # rpm -q --scripts <pkg> # 查看已安装的pkg的rpm scripts
 # rpm -e --test centos-release  # 检查谁依赖了这个包
-# repoquery -i php-intl # repoquery from yum-utils. 获取包信息, 包括来源repo. `-i`,已安装
+# repoquery -i php-intl # repoquery from yum-utils. 获取包信息, 包括来源repo. `-i`,展示详情
 # yum/dnf list installed | grep @epel # 已安装包的来源repo
 # dnf repo-pkgs <repoid> list installed # 同上
+# createrepo /root/rpmbuild/RPMS/aarch64 # 创建repo
 ```
 
 # yum

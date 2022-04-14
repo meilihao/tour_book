@@ -410,3 +410,10 @@ git show <commit> --name-only # 对merge无效
 git show <commit> --name-status # 对merge无效
 git show 6db185d0118853b9382f6550b3741f13557450a1 --stat --pretty="%b"
 ```
+
+### 迁移repo
+```bash
+git remote add new_origin xxx
+git push -u new_origin --all
+git push -u new_origin --tags
+```
