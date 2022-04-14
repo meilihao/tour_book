@@ -1,4 +1,7 @@
 # etcd
+ref:
+- [etcd、Zookeeper和Consul性能对比](https://my.oschina.net/u/588516/blog/5512628)
+
 etcd 应用场景包括但不限于分布式数据库、服务注册与发现 、 分布式锁 、 分布式消息队列 、 分布式系统选主等.
 
 etcd server 默认使用 2380 端口监听集群中其他 server 的请求.
