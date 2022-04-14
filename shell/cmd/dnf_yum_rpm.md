@@ -131,6 +131,9 @@ ref:
 # rpm -q --provides openssl-libs | grep libcrypto.so.10 # 查看openssl-libs中的libcrypto.so.10版本
 # rpm -qp --scripts ./packagecloud-test-1.1-1.x86_64.rpm # 查看preinstall 和 postinstall scripts
 # rpm -q --scripts <pkg> # 查看已安装的pkg的rpm scripts
+# repoquery -i php-intl # repoquery from yum-utils. 获取包信息, 包括来源repo. `-i`,已安装
+# yum/dnf list installed | grep @epel # 已安装包的来源repo
+# dnf repo-pkgs <repoid> list installed # 同上
 ```
 
 # yum
@@ -377,3 +380,28 @@ yum clean all
 1. 修改/etc/dnf/dnf.conf 
 
     将`clean_requirements_on_remove=True`改为`clean_requirements_on_remove=False`
+
+### oracle linux 7存在两套repo, 包不能混用
+from [Oracle Linux 7 Repositories](https://yum.oracle.com/oracle-linux-7.html)
+
+1. latest: 发行版
+
+```
+[ol7_optional_latest]
+name=Oracle Linux $releasever Optional Latest ($basearch)
+baseurl=http://yum.oracle.com/repo/OracleLinux/OL7/optional/latest/$basearch/
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
+gpgcheck=1
+enabled=1
+```
+
+2. developer: 技术预览版
+
+```
+[ol7_optional_developer]
+name=Oracle Linux $releasever Optional developer ($basearch)
+baseurl=http://yum.oracle.com/repo/OracleLinux/OL7/optional/developer/$basearch/
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
+gpgcheck=1
+enabled=1
+```

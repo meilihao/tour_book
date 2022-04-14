@@ -414,3 +414,11 @@ qemu窗口-视图-勾选"显示标签页"
 
 ### UEFI启动 花屏
 UEFI启动需要使用qxl驱动, 即`-vga qxl`
+
+### 桌面虚拟化
+ref:
+- [华为桌面云解决方案](https://blog.51cto.com/u_15162069/2768919)
+
+SPICE (Simple Protocol for Independent Computing Environments) 是一个用于虚拟化环境中的通讯协定, 此协议透过网络来连结到虚拟化平台上之虚拟机器桌面. SPICE client的实现有Virt-viewer.
+
+相较于通过浏览器连接(HTML5, 比如noVNC) 或其他VNC client, SPICE不仅支持虚拟机器音源输出且拥有较佳的影像显示.

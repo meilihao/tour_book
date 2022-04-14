@@ -1,3 +1,6 @@
+## base
+- [30个实用SQL语句，玩转PostgreSQL](https://mp.weixin.qq.com/s?__biz=Mzg3MjA5OTkzMw==&mid=2247484562&idx=1&sn=6774d5e3131fbc74a4f2ed9df03ca5fd)
+
 ## 进阶
 - [PostgreSQL黑科技大集会](https://yq.aliyun.com/articles/2727)
 - [PostgreSQL on Linux 最佳部署手册](http://mp.weixin.qq.com/s/FR65pyRmpEFFVvoJ28uBUg)
