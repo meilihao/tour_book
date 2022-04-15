@@ -29,7 +29,31 @@ Bareos 由 bacula fork而來.
 ## 编译
 参考:
 - [Configure (cmake) build settings](https://docs.bareos.org/DeveloperGuide/BuildAndTestBareos/systemtests.html)
+### v21.1.2
+env: oracle linux 7.9
 
+前提: 根据FAQ安装gcc9
+
+```bash
+# --- 准备环境
+yum install cmake3 # 在repo `ol7_developer_EPEL`
+ls -s /usr/bin/cmake3 /usr/bin/cmake
+yum install redhat-lsb redhat-release jannson-devel # jannson-devel在repo `ol7_optional_latest`需启用
+yum-builddep bareos.spec --define "centos_version 790"
+yum-builddep python-bareos.spec --define "centos_version 790"
+# --- 开始构建
+cd /root/rpmbuild/SPECS
+# spec文件来源于[官方](http://download.bareos.org/bareos/release/21/RHEL_7/src/)
+# 修正:
+# - `droplet 0`, droplet已不在维护
+# - `# BuildRequires: lsb-release`, 没有lsb-release包. 查看Ubuntu 20.04的该包, 其提供了命令lsb_release, 但它已在oracle linux的redhat-lsb-core包里. 
+rpmbuild -bb bareos.spec --define "centos_version 790"
+rpmbuild -bb python-bareos.spec --define "centos_version 790"
+cp -r ../RPMS/noarch/* ../RPMS/x86_64
+ll ../RPMS/x86_64 # 所需rpms
+```
+
+### v20.0.3
 env: Ubuntu 20.04
 
 ```bash
