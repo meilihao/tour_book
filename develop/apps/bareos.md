@@ -1341,3 +1341,18 @@ env: php-fpm 7.2
 
 ### bareos-tray-monitor的开机自启
 `cat /etc/xdg/autostart/bareos-tray-monitor.desktop`
+
+### oracle linux 7.9构建bareos 21.1.2报`Target xxx requires the language dialect "CXX17"`
+gcc版本不够.
+
+```bash
+yum install centos-release-scl -y
+yum install devtoolset-9 -y
+
+# 临时覆盖系统原有的gcc引用
+scl enable devtoolset-9 bash
+gcc --version
+
+# 永久
+echo "source /opt/rh/devtoolset-9/enable" >>/etc/profile
+```

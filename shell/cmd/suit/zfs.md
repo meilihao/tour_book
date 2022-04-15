@@ -10,6 +10,7 @@
 - [OpenZFS开源文件系统2.0+：持久化L2ARC读缓存、ZIL写缓存提速](https://zhuanlan.zhihu.com/p/338227098)
 - [ZFS──瑞士军刀般的文件系统](https://www.eaimty.com/2020/02/zfs-file-system.html)
 - [ZFS 分层架构设计](https://farseerfc.me/zhs/zfs-layered-architecture-design.html)
+- [zfs share(nas)](https://wiki.debian.org/ZFS#File_Sharing)
 
 ```sh
 # ubuntu 18.04
@@ -63,6 +64,7 @@ thin: zfs支持thin provisioning,
 	# zfs set compression=lz4 data/datafs
 	# zfs get compressratio data/datafs
 	```
+1. [zfs内存需求](https://www.truenas.com/docs/scale/introduction/scalehardwareguide/#memory-sizing)
 
 ### zfs虚拟设备(zfs vdevs)
 参考:
@@ -708,3 +710,9 @@ arcstat -f time,hit%,dh%,ph%,mh% 1
 - 3: = 1 + 2
 
 [zfs_arc_min是0时, Linux buffer/cache可能会将 ARC 从内存中逐出, 因此推荐设置zfs_arc_min.](https://serverfault.com/questions/857350/zfs-arc-cache-and-linux-buffer-cache-contention-ubuntu-16-04)
+
+### arcstat数据来源
+`/proc/spl/kstat/zfs/arcstats`, **arc使用的memory算入`free`的`used`**
+
+### zfs使用内存
+`cat /proc/spl/kmem/slab |awk '{a+=$3}END{print a}'`, **这部分memory不包括arc, 仅是zfs objects**

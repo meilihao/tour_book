@@ -1,6 +1,6 @@
 # targetcli
 参考:
-- [Managing storage devices#Getting started with iSCSI](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/managing_storage_devices/getting-started-with-iscsi_managing-storage-devices)
+- [管理存储设备 - 第 7 章 iSCSI入门](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/8/html/managing_storage_devices/getting-started-with-iscsi_managing-storage-devices)
 - [FC 和iSCSI的使用差异](https://www.huaweicloud.com/articles/57a2047190a7768914f2a0040d3da26f.html)
 - [NVMe over Fabric - nvmetcli(nvme target)](https://documentation.suse.com/zh-cn/sles/12-SP4/html/SLES-all/cha-nvmeof.html#sec-nvmeof-host-configuration)
 - [Configuring iSCSI Initiator(优化)](https://spdk.io/doc/iscsi.html)
