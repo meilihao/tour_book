@@ -20,3 +20,15 @@ alias clang++="clang++-11"
 
 ### Could NOT find LuaJIT (missing: LUAJIT_LIBRARIES LUAJIT_INCLUDE_DIR)
 `apt install luajit libluajit-5.1-dev`
+
+### XXX_FOUND
+ref:
+- [Cmake之深入理解find_package()的用法](https://zhuanlan.zhihu.com/p/97369704)
+
+为了方便在项目中引入外部依赖包，cmake官方预定义了许多寻找依赖包的Module，在path_to_your_cmake/share/cmake-<version>/Modules目录下。每个以Find<LibaryName>.cmake命名的文件都可以找到一个包。我们也可以在官方文档中查看到哪些库官方已经定义好了，可以直接使用find_package函数进行引用官方文档：[Find Modules](https://cmake.org/cmake/help/latest/manual/cmake-modules.7.html).
+
+## cmake编译
+```bash
+cd <source> (CMakeLists.txt 所在目录)
+cmake .
+```

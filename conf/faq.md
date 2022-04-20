@@ -197,5 +197,22 @@ google-chrome-stable --proxy-server="socks5://127.0.0.1:1080" // 需梯子
 1. SwitchyOmega中添加规则`*.googleapis.com`(**推荐**)
 
 
-### do-release-upgrade下载新版包时意外中断(即开始安装新版包前)后, 重新执行时报`请在升级前安装您的发行版所有可用更新`
+### `do-release-upgrade -d`升级下载新版包时意外中断(即开始安装新版包前)后, 重新执行时报`请在升级前安装您的发行版所有可用更新`
 将`/etc/apt/sources.list`(新版源)替换回`/etc/apt/sources.list.distUpgrade`(旧版源), 重新执行`do-release-upgrade`
+
+### 用`do-release-upgrade`将ubuntukylin 20.04升级到22.04问题
+1. 部分应用没有标题栏, 即使有标题栏的应用的其最大化按钮也失效; 点击窗口无法获取输入焦点; 点击窗口后无法前置
+
+    在`apt dist-upgrade`时发现`kylin-nm ukui-control-center`没有升级(kylin-nm依赖ukui-control-center), `apt upgrade ukui-control-center`时提示缺`libkylin-chkname1`和`ukui-biometric-manager`, 其中`ukui-biometric-manager`没有, `libkylin-chkname1`安装成功, 重启后这些问题消失.
+1. 无法设置背景
+
+    log显示`ukui-control-ce`有段错误
+
+根源: 在ubuntukylin 22.04未发布情况(即源还未更新, 部分依赖不完整甚至错误)下进行了升级, 比如[ukui-biometric-manager_1.0.3-1_amd64.deb](https://archive.ubuntukylin.com/ubuntukylin/pool/main/u/ukui-biometric-manager/ukui-biometric-manager_1.0.3-1_amd64.deb)是依赖libopencv4.2, 而实际上ubuntu 22.04的源里libopencv已是`4.5`
+
+> 预计ubuntukylin 22.04在4.22发布, 升级日期是4.20
+
+### 安装搜狗linux输入法后只有繁体
+修改"设置-常用-默认状态"也没用.
+
+解决: 输入法工具栏右击再点击"简繁切换"即可.

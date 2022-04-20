@@ -36,6 +36,7 @@ debian,ubuntu等发行版的包管理.
 ## example
 ```
 $ sudo dpkg -i --force-bad-verify  acl_2.2.52-3_amd64.deb # 跳过签名验证, `--ignore-depends=<x1>,<x2>`忽略依赖
+$ dpkg -r kylin-nm # 卸载包
 $ dpkg -S file # 这个文件属于哪个已安装软件包
 $ dpkg -L package # 列出软件包中的所有文件
 $ dpkg -s package # 列出软件包中的描述信息
@@ -192,3 +193,22 @@ debuild默认构建deb需要gpg签名, 通过`man debuild`可用`debuild -i -us 
 ### 构建deb后没找到deb
 1. deb在当前目录的上一层
 1. 指定了构建目录, 比如liburing在`/tmp/release/<os>/liburing`
+
+### 修改dpkg依赖
+1. 安装前
+
+    ```bash
+    $ dpkg-deb -x krb5-config_2.3kord_all.deb krb-tmp
+    $ dpkg-deb --control krb5-config_2.3kord_all.deb krb-tmp/DEBIAN
+    $ vim krb-tmp/DEBIAN/control 
+    $ dpkg -b krb-tmp llala.deb
+    dpkg-deb: building package 'krb5-config' in 'llala.deb'.
+    ```
+2. 安装后
+
+    `sudo vim /var/lib/dpkg/status`后修改Depends行即可
+
+### [Virtual Package(虚拟包)](https://www.debian.org/doc/manuals/debian-faq/pkg-basics.en.html#virtual)
+
+### 依赖所需版本
+`ukui-biometric-manager : 依赖: libopencv-core4.2 (>= 4.2.0+dfsg) 但无法安装它`, 其中`>= 4.2.0+dfsg`是指`>=4.2.0 && <4.3.0`, 其实名称`libopencv-core4.2`中的`4.2`就是提示, 只允许是`4.2.x`

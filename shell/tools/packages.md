@@ -10,6 +10,7 @@
 - rpm
 
     - [rpmfind](https://rpmfind.net/)
+- [repology.org/projects](https://repology.org/projects/)
 
 ### 构建源
 - [CentOS 的 SRPM](http://mirror.centos.org/)
