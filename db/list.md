@@ -20,3 +20,7 @@
 
 ## 其他
 - [记一次微信数据库解密过程](https://www.freebuf.com/articles/endpoint/195107.html), 也可参考[ppwwyyxx/wechat-dump(**推荐**)](https://github.com/ppwwyyxx/wechat-dump)
+
+## next db
+### OceanBase
+- [蚂蚁金服庆涛：OceanBase支撑2135亿成交额背后的技术原理](https://blog.51cto.com/u_14164343/2344929)

@@ -693,7 +693,7 @@ lvs的ip负载均衡是通过ipvs实现的, 具体机制分3种:
     IP TUN模式值是对包重新包装了一层，realserver解析后的包的IP仍然是VIP，所以也需要在realserver上绑定VIP
 - 四种模式的性能比较
     
-    DR模式、IP TUN模式都是在包进入的时候经过LVS，在包返回的时候直接返回给client；所以二者的性能比NAT高
+    DR模式、IP TUN模式都是在包进入的时候经过LVS，在包返回的时候直接返回给client, 但是NAT模式时Real Server回复的报文也会经过Director Server地址重写, 所以二者的性能比NAT高.
     但TUN模式更加复杂，所以性能不如DR
     FULLNAT模式不仅更换目的IP还更换了源IP，所以性能比NAT下降10%
     性能比较：DR>TUN>NAT>FULLNAT

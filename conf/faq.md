@@ -195,3 +195,7 @@ google-chrome-stable --proxy-server="socks5://127.0.0.1:1080" // 需梯子
 和 SwitchyOmega 有关, 解决方法:
 1. 同步时直接将其直接切换到proxy模式
 1. SwitchyOmega中添加规则`*.googleapis.com`(**推荐**)
+
+
+### do-release-upgrade下载新版包时意外中断(即开始安装新版包前)后, 重新执行时报`请在升级前安装您的发行版所有可用更新`
+将`/etc/apt/sources.list`(新版源)替换回`/etc/apt/sources.list.distUpgrade`(旧版源), 重新执行`do-release-upgrade`

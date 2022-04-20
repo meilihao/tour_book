@@ -1,6 +1,8 @@
 # etcd
 ref:
 - [etcd、Zookeeper和Consul性能对比](https://my.oschina.net/u/588516/blog/5512628)
+- [一篇文章带你搞懂 etcd 3.5 的核心特性](https://cloud.tencent.com/developer/article/1836291)
+- [多维度解析etcd，一个比zookeeper更加优秀的键值对存储系统](https://www.cnblogs.com/traditional/p/9445930.html)
 
 etcd 应用场景包括但不限于分布式数据库、服务注册与发现 、 分布式锁 、 分布式消息队列 、 分布式系统选主等.
 
@@ -15,19 +17,15 @@ etcd选项:
 - 成员标记
     - --name : 指定member名称
     - --data-dir : 数据目录的路径, 默认是`${name}.etcd`
-    - --listen-client-urls : etcd server 向客户端暴露的通信地址列表
-    - --listen-peer-urls : etcd server 向其他 member 暴露的通信地址列表
+    - --listen-client-urls : etcd server 向客户端暴露的通信地址列表, 允许多个url地址
+    - --listen-peer-urls : 用于cluster内部节点间通信的url地址. 每个节点可监听多个url地址, cluster内部通过这些url地址进行数据交互, 比如leader选举, message消息传递, 快照传输等.
 - 集群标记
 
-    - --advertise-client-urls : 列出这个成员的客户端URL, 通告给集群中的其他成员. 
-
-        用途: etcd server 之间是可以重定向请求的,比如, Follower 节点可将client的写请求重定向给 Leader 节点.
-    - --initial-advertise-peer-urls : 列出member的peer urls 以便通告给集群的其他成员
-    - --initial-cluster : 指定集群各节点所谓的 advertised peer URLs
-    
-        它们需要与 etcd 集群对应节点的`--initial-advertise-peer-urls`配置值相匹配
-    - --initial-cluster-token : 在启动期间用于 etcd 集群的初始化集群的标识
-    - --initial-cluster-state : 初始化集群状态("new" or "existing"). 
+    - --advertise-client-urls : 建议client使用的url地址
+    - --initial-advertise-peer-urls : 建议用于cluster内部节点间通信的url地址, 节点间将以该值进行通信
+    - --initial-cluster : 指定集群各节点所谓的 advertised peer URLs, 即etcd 集群对应节点的`--initial-advertise-peer-urls`配置值的合集
+    - --initial-cluster-token : cluster的唯一标识
+    - --initial-cluster-state : 初始化集群状态("new" or "existing")的标识
     
         在初始化静态(initial static)或者 DNS 启动 (DNS bootstrapping) 期间为所有成员设置为 new. 如果这个选项被设置为 existing , etcd 将试图加入已有的集群.
 
@@ -136,3 +134,45 @@ ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster # 集群名称
 ETCD_INITIAL_CLUSTER="etcd1=https://192.168.18.3:2380,etcd2=https://192.168.18.4:2380,etcd3=https://192.168.18.5:2380" # 集群各节点的endpoint列表
 ETCD_INITIAL_CLUSTER_STATE=new # new, 初始集群状态; existing,集群已存在时使用
 ```
+
+## 数据模型
+etcd支持多版本, 且提供了可靠的watcher机制, 通过向一个key添加watcher, 同时指定一个历史版本, 从该版本开始的所有事件都会触发该wather.
+
+为了缓解压力, etcd会定期进行压缩, 清理旧数据.
+
+etcd维护了一个全局自增的版本号, 为每次事务分配了一个全局唯一的版本号(main revision), 事务中每个操作也有唯一编号(sub revision), 通过这两部分可以确定一个唯一的value值.
+
+每个key会对应多个generation, 当key首创时, 会同时创建一个与之关联的generation实例, 当key被修改时, 会将对应的版本记录到generation中, 当key被删除时, 会向generation中添加tombstone, 并创建新的generation, 再向新generation写入后续的版本信息.
+
+查询时, 先在内存索引中找到指定的key, 找到其所有版本号, 再根据指定的版本号到boltdb中查找value. 如果指定的版本号已被压缩删除, 则无法再查询到该版本的value.
+
+在etcd v3中, boltdb的key=main revision + sub revision
+
+## 代码结构(v3.5.3)
+有3个组件:
+- etcd
+
+    etcd服务程序
+
+    入口: server/main.go
+- etcdctl
+
+    操作etcd的工具
+
+    入口: etcdctl/main.go
+- etcdutl
+
+    在etcd 3.5开始, etcd 将一些直接操作 etcd 存储文件的管理命令单独独立成了 etcdutl 工具, 它包括快照备份、快照重建、碎片整理功能.
+
+    入口: etcdutl/main.go
+
+
+具体代码结构:
+- raft ： raft协议的核心实现, 其中只实现了基本的raft协议, 未提供实现网络层相关内容.
+
+## 运行
+etcd支持单机和cluster两种模式.
+
+etcd运行时默认会监听两个端口:
+- 2379 : 用于与client交互
+- 2380 : 用于与peer交互, 主要是传输raft协议相关的消息

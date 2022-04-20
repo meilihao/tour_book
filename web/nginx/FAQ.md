@@ -335,7 +335,7 @@ server {
                 #fastcgi_pass 127.0.0.1:9000;
 
                 # php7-fpm:
-                fastcgi_pass unix:/var/run/php/php-fpm.sock;
+                fastcgi_pass unix:/var/run/php/php-fpm.sock; # config `/etc/php-fpm.d/www.conf`'s `listen`
 
                 # APPLICATION_ENV:  set to 'development' or 'production'
                 #fastcgi_param APPLICATION_ENV development;
@@ -359,3 +359,9 @@ nginx+php原理:
 1. 当需要处理php请求时，nginx的worker进程会将请求移交给php-fpm的worker进程进行处理，也就是最开头所说的nginx调用了php，其实严格得讲是nginx间接调用php.
 
 > [PHP Notice: compact(): Undefined variable: extras in src\Helper\HeadLink.php](https://github.com/zendframework/zend-view/pull/170/files)
+
+### nginx访问php-fpm报"Permission denied"
+```bash
+# vim /etc/php-fpm.d/www.conf
+listen.acl_users = apache,nginx # listen.owner=listen.group=nobody. 默认不允许nginx用户(nginx)访问
+```

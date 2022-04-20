@@ -261,3 +261,5 @@ RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS="+S 1:1"
 解决方法: `echo "SERVER_ADDITIONAL_ERL_ARGS=\"+S 1:1\"" | tee -a /etc/rabbitmq/rabbitmq-env.conf`, 之后通过`rabbitmqctl status`检查`[smp:<N>:<N>]`的效果(期望是`[smp:1:1]`).
 
 > 顺便调大file limit, 太小也会导致问题: `ulimit -n 65536`
+
+修改后在Ubuntu kernel 4.4上仍会出现.

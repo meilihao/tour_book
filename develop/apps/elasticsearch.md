@@ -1,6 +1,7 @@
 # Elasticsearch
 
 - [安装文档](https://www.elastic.co/guide/en/elasticsearch/reference/current/install-elasticsearch.html)
+- [2万字详解，吃透 ES](https://www.tuicool.com/articles/NFjEfeZ)
 
 ## Error
 ### Cannot allocate memory
