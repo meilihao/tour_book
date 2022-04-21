@@ -26,6 +26,8 @@ $ rustc --version
 ## 安装rls
 `rustup component add rls rust-analysis rust-src`
 
+修改rustup默认安装位置, 配置RUSTUP_HOME(默认`~/.rustup`, 保存工具链和配置文件)和CARGO_HOME(默认`~/.cargo`,保存cargo的cache)即可.
+
 ## 常用命令
 - `rustc -V` : rust version
 - 使用 rustc -h : rustc 的基本用法
