@@ -33,3 +33,6 @@ $ sudo apt update
 $ sudo apt install ubuntudde-dde
 $ sudo reboot
 ```
+
+## releases
+- [ubuntu](https://wiki.ubuntu.com/Releases)
