@@ -133,6 +133,26 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-kylin
 # yum makecache # 会报`cannot download repodata/repomd.xml`， 因此不能省略createrepo的步骤.
 ```
 
+oracle linux 7.9 x86启用vmware插件:
+1. 根据[官方文档](https://docs.bareos.org/bareos-21/TasksAndConcepts/Plugins.html#vmware-plugin)提供的[vmware vddk](https://code.vmware.com/web/sdk/7.0/vddk)地址, 注册并获取vddk
+1. 配置vddk, 配置方法源自`/usr/include/jansson.h`和`core/cmake/BareosFindAllLibraries.cmake`
+
+    ```bash
+    tar -xf VMware-vix-disklib-7.0.3-19513565.x86_64.tar.gz
+    cd vmware-vix-disklib-distrib
+    cp include/* /usr/include
+    mkdir -p /usr/lib/VMware-vix-disklib
+    cp -r lib64/* /usr/lib/VMware-vix-disklib
+    ```
+
+    再将VMware-vix-disklib-7.0.3-19513565.x86_64.tar.gz删减到仅保留其中的lib64目录, 并重命名为VMware-vix-disklib-7.0.3-19513565.only_redistributable_libs.x86_64.tar.gz, 最后放入`rpmbuild/SOURCES`
+1. 编译bareos并开启vmware配置
+
+    `rpmbuild -bb bareos.spec --define "rhel_version 790" --define "vmware 1"`
+1. 从[官方bareos-vmware-vix-disklib-7.0.1_16860560-1.el7_9.src.rpm](https://download.bareos.org/bareos/release/21/RHEL_7/src/bareos-vmware-vix-disklib-7.0.1_16860560-1.el7_9.src.rpm)提取bareos-vmware-vix-disklib.spec, 并修改其VMware-vix-disklib到相应版本, 再编译即可
+
+    其实就是将vmware官方提供的so打包成rpm
+
 ## 概念
 - volume : Bareos将在其上写入备份数据的单个物理磁带（或可能是单个文件）
 - pool : 定义接收备份数据的多个volume（磁带或文件）组成的逻辑组
