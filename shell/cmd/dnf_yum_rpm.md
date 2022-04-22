@@ -145,7 +145,7 @@ rehat开发的包管理软件, 已被dnf取代.
 ```bash
 # yum repolist all # 列出所有仓库
 # yum list all # 列出仓库中所有软件包
-# yum info # 软件包名称 查看软件包信息
+# yum info [--showduplicates]  # 软件包名称 查看软件包信息, `--showduplicates`显示软件多版本
 # yum install # 软件包名称 安装软件包
 # yum reinstall # 软件包名称 重新安装软件包
 # yum update # 软件包名称 升级软件包
