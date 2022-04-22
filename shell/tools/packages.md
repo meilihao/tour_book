@@ -36,3 +36,12 @@ $ sudo reboot
 
 ## releases
 - [ubuntu](https://wiki.ubuntu.com/Releases)
+
+## 大版本升级
+- ubuntukylin
+
+    ```bash
+    $ sudo apt update
+    $ sudo apt upgrade
+    $ sudo do-release-upgrade --allow-third-party -d
+    ```
