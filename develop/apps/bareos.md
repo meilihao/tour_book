@@ -1407,6 +1407,8 @@ bareos-fd的client/myself.conf是`Plugin Names = "python"`, 而vmware plugin`bar
 
 ### [bareos备份vmware](https://docs.bareos.org/TasksAndConcepts/Plugins.html#vmware-plugin)
 1. 先用`vmware_cbt_tool.py`将要备份的 VM 启用 CBT（更改块跟踪）
+
+    没开启并备份时joblog会报`No snapshot was taken, skipping snapshot removal`
 2. 其他的参考文档
 
 ### bareos vmware备份的vm不还原到vmware
