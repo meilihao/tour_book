@@ -212,3 +212,20 @@ debuild默认构建deb需要gpg签名, 通过`man debuild`可用`debuild -i -us 
 
 ### 依赖所需版本
 `ukui-biometric-manager : 依赖: libopencv-core4.2 (>= 4.2.0+dfsg) 但无法安装它`, 其中`>= 4.2.0+dfsg`是指`>=4.2.0 && <4.3.0`, 其实名称`libopencv-core4.2`中的`4.2`就是提示, 只允许是`4.2.x`
+
+### apt-key添加key报`apt-key is deprecated. Manage keyring files in trusted.gpg.d instead`
+```bash
+# apt-key list # 查看key
+Warning: apt-key is deprecated. Manage keyring files in trusted.gpg.d instead (see apt-key(8)).
+/etc/apt/trusted.gpg
+--------------------
+pub   rsa4096 2017-05-08 [SCEA]
+      1EDD E2CD FC02 5D17 F6DA  9EC0 ADAE 6AD2 8A8F 901A
+uid           [ 未知 ] Sublime HQ Pty Ltd <support@sublimetext.com>
+sub   rsa4096 2017-05-08 [S]
+...
+# sudo apt-key del 1EDDE2CDFC025D17F6DA9EC0ADAE6AD28A8F901A
+# wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg |gpg --dearmor |sudo tee /usr/share/keyrings/sublimehq-pub.gpg
+# vim /etc/apt/sources.list.d/sublime-text.list 
+deb [arch=amd64 signed-by=/usr/share/keyrings/sublimehq-pub.gpg] https://download.sublimetext.com/ apt/stable/
+```

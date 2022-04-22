@@ -23,10 +23,23 @@ $ rustc --version
 参考:
 - [Rust 版本管理工具: rustup](https://github.com/rustcc/RustPrimer/blob/master/install/rustup.md)
 
+rust有stable和nightly两个版本, 默认版本可通过`rustup show`查看.
+
+修改rustup默认安装位置, 配置RUSTUP_HOME(默认`~/.rustup`, 保存工具链和配置文件)和CARGO_HOME(默认`~/.cargo`,保存cargo的cache)即可. 卸载rust用`rustup self uninstall`.
+
 ## 安装rls
 `rustup component add rls rust-analysis rust-src`
 
-修改rustup默认安装位置, 配置RUSTUP_HOME(默认`~/.rustup`, 保存工具链和配置文件)和CARGO_HOME(默认`~/.cargo`,保存cargo的cache)即可.
+## toolchians(工具链)
+- rustc : 编译器
+- cargo : 项目管理工具
+- rustup : 管理工具
+
+	- `rustup toolchain list` : 查看支持的toolchian
+	- `rustup default <stable|nightly>` : 切换rust版本
+- rustdoc : 文档工具
+- rustfmt : 格式化工具
+- rust-gdb : 调试工具
 
 ## 常用命令
 - `rustc -V` : rust version

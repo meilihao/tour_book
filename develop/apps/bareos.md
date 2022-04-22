@@ -1,6 +1,7 @@
 # bareos
 参考:
 - [备份/恢复系统BAREOS的安装、设置和使用（二）](https://blog.csdn.net/laotou1963/article/details/82711776)
+- [OSBConf 2015 | Backup of VMware snapshots with Bareos by Philipp Storz & Stephan Dühr](https://www.youtube.com/watch?v=pDNhfK9MO0g)
 
 Bareos 由 bacula fork而來.
 
@@ -463,7 +464,7 @@ python3 plugin启用方法:
     FileDaemon {                          
         Name = client-fd
         ...
-        Plugin Names = "python3"
+        Plugin Names = "python3" # 其实就是用于指定bareos plugins目录下的`xxx-fd.so`
         Plugin Directory = /usr/lib/bareos/plugins
     }
     ```
@@ -1296,7 +1297,7 @@ BVFS（Bareos虚拟文件系统）提供了一个API来浏览目录中的备份�
 1. 为`DirectorConsoleJson.call()`添加打印即可, 比如`pprint(command)`
 
 ### log
-使用`-d 500`参数, 可打印详细日志
+使用`-d 500 -v`参数, 可打印详细日志
 
 bareos-dird log在`/var/log/bareos/bareos.log`
 bareos-fd log在systemd.
@@ -1400,3 +1401,43 @@ gcc --version
 # 永久
 echo "source /opt/rh/devtoolset-9/enable" >>/etc/profile
 ```
+
+### bareos 21.1.2执行备份vmware vm报`Fatal error: filed/fd_plugins.cc:670 PluginSave: Command plugin "python:module_path=..." requested, but is not loaded`
+bareos-fd的client/myself.conf是`Plugin Names = "python"`, 而vmware plugin`bareos-fd-vmware.py`是python3, 因此将其改为`Plugin Names = "python3"`即可.
+
+### [bareos备份vmware](https://docs.bareos.org/TasksAndConcepts/Plugins.html#vmware-plugin)
+1. 先用`vmware_cbt_tool.py`将要备份的 VM 启用 CBT（更改块跟踪）
+2. 其他的参考文档
+
+### bareos vmware备份的vm不还原到vmware
+ref:
+- [Restore VmWare VM by bareos](http://www.voleg.info/bareos-restore-vmware.html)
+- [Backup VM ESXi using Bareos](https://sudonull.com/post/76101-VM-ESXi-backup-using-Bareos-SIM-Networks-Blog)
+
+还原时默认会被还原到原有vm位置并覆盖它的存储, 前提时该vm已关键.
+
+还原成文件的方法: `run ... pluginoptions=python:localvmdk=yes`.
+
+> 通过bconsole手动还原时选择修改restore job的"Plugin Options"为`python:localvmdk=yes`.
+
+### bareos vmware不能同一时刻多个client备份同一台vm
+
+### bareos vmware如何避免还原时需到vmware环境下使用vmkfstools转换格式(未完成)
+ref:
+- [KVM虚拟机迁移到VMWare ESXi](https://blog.csdn.net/avatar_2009/article/details/117769202)
+- [通过qemu-img工具转换镜像格式](https://support.huaweicloud.com/bestpractice-ims/ims_bp_0030.html)
+- [Virtual Disk Types](https://vdc-repo.vmware.com/vmwb-repository/dcr-public/6335f27c-c6e9-4804-95b0-ea9449958403/c7798a8b-4c73-41d9-84e8-db5453de7b17/doc/vddkDataStruct.5.3.html)
+
+```bash
+# qemu-img info centos6.9-64bit.vmdk # centos6.9-64bit.vmdk是bareos还原vm到本地时的文件
+...
+    create type: monolithicSparse
+...
+# vim -R <bareos src>/core/src/vmware/vadp_dumper/bareos_vadp_dumper.cc # 有vmfs_thin, 修改BareosFdPluginVMware.py启用`bareos_vadp_dumper_opts["dump"] = "-S -D -M -t vmfs_thin "`, 经测试后无效果.
+```
+
+在 ESX/ESXi 主机上, VMDK 文件的子格式类型为 VMFS_FLAT 或 VMFS_THIN(适合放在nfs上), `qemu-img convert`不支持这两种格式.
+
+> ESXi 格式的虚拟磁盘由两个单独的文件组成: 一个数据文件和一个磁盘描述符文件.
+
+> VMware Workstation 和 VMware ESXi 的 VMware 虚拟磁盘格式是另一回事. VMware Workstation 格式的虚拟磁盘具有内置于单个 VMDK 文件中的磁盘描述符.

@@ -212,6 +212,8 @@ google-chrome-stable --proxy-server="socks5://127.0.0.1:1080" // 需梯子
 
 > 预计ubuntukylin 22.04在4.22发布, 升级日期是4.20
 
+部分mirrors没有xxx-partner源, 比如清华源, aliyun mirror有jammy-partner但未与官方及时同步. 观察到华为源`https://mirrors.huaweicloud.com/ubuntukylin`比较及时.
+
 ### 安装搜狗linux输入法后只有繁体
 修改"设置-常用-默认状态"也没用.
 

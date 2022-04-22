@@ -1,5 +1,10 @@
 # rust
 
+## 解题和example
+- [github.com/QMHTMY/RustBook](https://github.com/QMHTMY/RustBook)
+- [Rust算法题解](https://github.com/rustlang-cn/rust-algos)
+- [数据结构和算法](https://www.hackertouch.com/data-structures-and-algorithms.html)
+
 ## 教程
 - [微软开放的Rust视频教程](https://www.youtube.com/playlist?list=PLlrxD0HtieHjbTjrchBwOVks_sr8EVW1x)
 - [微软开放的Rust图文教程](https://docs.microsoft.com/zh-cn/learn/paths/rust-first-steps/?WT.mc_id=academic-29077-cxa)
