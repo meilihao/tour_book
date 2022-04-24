@@ -45,3 +45,26 @@ $ sudo reboot
     $ sudo apt upgrade
     $ sudo do-release-upgrade --allow-third-party -d
     ```
+
+## FAQ
+### do-release-upgrade 离线升级
+env: 有apt repo proxy(且支持ubuntu jammy, 比如`nexus repository manager`是可以限制代理的Ubuntu版本的), 但无法访问changelogs.ubuntu.com
+
+do-release-upgrade 会读取文件 /etc/update-manager/meta-release 以查找发布信息的meta
+
+离线升级方法, 这里以20.04->22.04举例:
+1. `do-release-upgrade -d`
+
+    报无法获取`https://changelogs.ubuntu.com/meta-release-lts-development`, 将其手动下载到内网并保存到`/etc/update-manager/meta-release-lts-development`
+
+
+    推测生效位置:
+    ```bash
+    # vim /usr/lib/ubuntu-release-upgrader/check-new-release
+    m = MetaReleaseCore(useDevelopmentRelease=options.devel_release,
+                      useProposed=options.proposed_release)
+    # this will timeout eventually
+    m.downloaded.wait()
+    ```
+1. 修改`/etc/update-manager/meta-release`将`URI_LTS = https://changelogs.ubuntu.com/meta-release-lts`改为`URI_LTS = file:///etc/update-manager/meta-release-lts`
+1. 再次执行`do-release-upgrade -d`即可
