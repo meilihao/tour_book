@@ -229,3 +229,9 @@ sub   rsa4096 2017-05-08 [S]
 # vim /etc/apt/sources.list.d/sublime-text.list 
 deb [arch=amd64 signed-by=/usr/share/keyrings/sublimehq-pub.gpg] https://download.sublimetext.com/ apt/stable/
 ```
+
+### apt update NO_PUBKEY
+```bash
+gpg --keyserver keyserver.ubuntu.com --recv-key 9C949F2093F565FF
+gpg -a --export  9C949F2093F565FF | sudo apt-key add -
+```

@@ -29,6 +29,16 @@ $ sudo apt install lxde lxde-common
 $ sudo apt install xfce4
 ```
 
+安装Ubuntukylin:
+```sh
+$ sudo apt install ubuntukylin-desktop
+```
+
+安装gnome:
+```bash
+apt install ubuntu-gnome-desktop
+```
+
 卸载lxqt:
 ```sh
 $ sudo apt purge lxqt-* liblxqt*

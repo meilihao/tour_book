@@ -151,3 +151,15 @@ cat << EOF > /etc/modprobe.d/nbd.conf
 options nbd nbds_max=512
 EOF
 ```
+
+### 卸载dkms module
+```bash
+# dkms status
+rtl8812AU, 4.3.14, 4.4.0-45-generic, x86_64: installed
+rtl8812AU, 4.3.14, 4.4.0-47-generic, x86_64: installed
+# dkms remove rtl8812AU/4.3.14 --all # 指定module version
+# dkms uninstall -k 4.4.0-45-generic rtl8812AU # 移除指定kernel的
+```
+
+src残留:
+1. `/usr/src`

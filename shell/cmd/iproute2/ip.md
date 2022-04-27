@@ -197,3 +197,15 @@ $ ip rule add from 60.30.128.15 table cnc
 
 ### `ip route`配置gateway时报`Nexthop has invalid gateway`
 解决方法: 先给网卡配上ip再配置gateway即可.
+
+### 使用udev重命名网卡(**不推荐修改**)
+**通过添加kernel参数`net.ifnames=0 biosdevname=0`的方式可能不成功**
+
+这里通过修改udev:
+```bash
+# vim /etc/udev/rules.d/70-persistent-net.rules
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="00:0c:29:30:be:cd", ATTR{type}=="1", KERNEL=="eth*", NAME="eth0"
+# mv /etc/sysconfig/network-scripts/ifcfg-ens192 /etc/sysconfig/network-scripts/ifcfg-eth0
+# vim /etc/sysconfig/network-scripts/ifcfg-eth0 # 将内容里的ens192替换为eth0
+# reboot
+```

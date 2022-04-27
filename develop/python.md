@@ -2277,6 +2277,16 @@ asyncio.Task.all_tasks() is fully moved to asyncio.all_tasks() starting with 3.9
 ### ModuleNotFoundError: No module named 'PyQt5'
 `apt install python3-pyqt5`
 
+### `pip install -r prod.txt`报`Cannot uninstall 'pyparsing'. It is a distutils installed project and thus we cannot accurately determine which files belong to it which would lead to only a partial uninstall.`
+os已有rpm安装的`pyparsing 2.0.3`
+
+解决方法:
+`pip install --ignore-installed pyparsing==2.1.0`
+
+### `pip install pyvmomi`报`'extras_require' must be a dictionary whose values are strings or lists of strings containing valid project/version requirement specifiers`
+编译pyvmomi的setuptools太旧, 解决方法: `pip install --upgrade setuptools`
+
+
 ### 使用linux下gdb来调试python程序
 **gdb调试Python没有pdb那么方便, 主要是没法直接给python代码打断点**
 

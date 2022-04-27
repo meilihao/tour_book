@@ -88,6 +88,8 @@ $ vncserver -kill :* # 关闭全部vnc display
 
 ### vnc viewer连接灰/黑屏幕
 1. 检查`~/.vnc/xstartup`是否有执行权限
+
+	对应的session exec即`/usr/share/xsessions/*.desktop`的`Exec`属性
 1. 运行vncserver, 查看vncserver输出的log, 通常是dbus-launch出了问题
 
 	比如~/.vnc/ubuntu-18:1.log提示"/usr/local/bin/dbus-launch: /lib/x86_64-linux-gnu/libdbus-1.so.3: version `LIBDBUS_PRIVATE_1.10.6' not found (required by /usr/local/bin/dbus-launch)".
