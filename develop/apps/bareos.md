@@ -99,10 +99,10 @@ deb [trusted=yes] file:///root/bareos-apt/ ./ # 放在第一行， 优先使用.
 # cp bareos-Release-20.0.3.tar.gz SOURCES/bareos-20.0.3.tar.gz
 # cp bareos-Release-20.0.3/core/platforms/packaging/bareos.spec SPECS/bareos.spec # 或使用官方[src.rpm里的spec](https://download.bareos.org/bareos/release/20/CentOS_7/src/).
 # --- set bareos compile platform, 见[core/platforms](https://github.com/bareos/bareos/tree/master/core/platforms), 这里应该参照centos把platform指定为redhat
-# vim SOURCES/bareos-20.0.3.tar.gz # 先解压bareos-20.0.3.tar.gz再编辑再重新打包, 会在执行`pmbuild -bb bareos.spec`时因为解压处理软连接问题而报错
+# vim SOURCES/bareos-20.0.3.tar.gz # 先解压bareos-20.0.3.tar.gz再编辑再重新打包, 会在执行`rpmbuild -bb bareos.spec`时因为解压处理软连接问题而报错
 # 修改:
 #     - core/cmake/distname.sh: CentOS) -> CentOS|Kylin)
-#     - core/cmake/BareosGetDistInfo.cmake: COMMAND ${CMAKE_CURRENT_LIST_DIR}/distname.sh -> COMMAND bash ${CMAKE_CURRENT_LIST_DIR}/distname.sh # 因为vim编辑distname.sh后丢失可执行权限
+#     - core/cmake/BareosGetDistInfo.cmake: COMMAND ${CMAKE_CURRENT_LIST_DIR}/distname.sh -> COMMAND bash ${CMAKE_CURRENT_LIST_DIR}/distname.sh # 因为vim编辑distname.sh后丢失可执行权限; **通过压缩软件打开bareos-20.0.3.tar.gz,再用编辑器编辑,保存时可自动借助压缩软件重新打包功能使得不丢失权限**
 # vim SPECS/bareos.spec
 # 修正: Version: 20.0.3; Release: 3%{?dist}; user/group: bareos-> root
 #      build_qt_monitor 0, build_sqlite3 0; build_mysql 0; systemd_support 1; droplet 0 (kylin没有droplet, 但bareos repo包含了libdroplet的源码)

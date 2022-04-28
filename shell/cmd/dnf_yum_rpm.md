@@ -416,3 +416,10 @@ yum-builddep my-package.src.rpm
 dnf builddep my-package.spec
 dnf builddep my-package.src.rpm
 ```
+
+### `yum-builddep`时报`cannot install both readline-7 or readline-8`
+> 当前系统已安装readline-8
+
+错误提示中没找到具体包冲突, 推测yum-builddep找到了两个版本的readline-devel, 但不知如何选择导致报错.
+
+直接安装readline-devel即可.

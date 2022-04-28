@@ -209,3 +209,13 @@ SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="00:0c:29:30:be:c
 # vim /etc/sysconfig/network-scripts/ifcfg-eth0 # 将内容里的ens192替换为eth0
 # reboot
 ```
+
+
+### Oracle linux 7.9网络配置
+gateway: /etc/sysconfig/network
+ip: /etc/sysconfig/network-scripts/ifcfg-xxx # 这里的GATEWAY会被忽略, 因此最好时删除它
+
+
+### net device online要求
+1. 已插入网线且链路ok
+2. ifup xxx
