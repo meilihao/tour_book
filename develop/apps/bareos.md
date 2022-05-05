@@ -188,6 +188,7 @@ systemctl restart bareos-sd
 systemctl restart bareos-fd
 
 bareos-dir -t -f -d 500 -v # 测试bareos-dir是否正常, 包括与pg的连接
+bareos-sd -t -f -d 500 -v
 bareos-fd -t -f -d 500 -v
 bareos-dbcheck -B # 作用同上, 显示db的连接信息
 
@@ -272,7 +273,7 @@ exit
 * show fileset[=xxx]
 * list clients
 * list pools
-* list volumes
+* list volumes [pool=xxx]
 * list jobs
 * llist jobs # 更详细的`list jobs`
 * .jobs # 更精简的`list jobs`, 只有job name
@@ -280,7 +281,7 @@ exit
 * configure add client name=client2-fd address=192.168.0.2 password=secret # 注册client, 需要重启bareos-dir
 * setdebug client=bareos-fd level=200 # [测试client](https://docs.bareos.org/TasksAndConcepts/TheWindowsVersionOfBareos.html#enable-debuggging)
 * configure add job name=client2-job client=client2-fd jobdefs=DefaultJob # 添加job
-* restore # 选择文件的命令在[restore-command](https://docs.bareos.org/TasksAndConcepts/TheRestoreCommand.html#restore-command), 被选中的文件名前带`*`
+* restore # 常用选项3来还原指定id. 选择文件的命令在[restore-command](https://docs.bareos.org/TasksAndConcepts/TheRestoreCommand.html#restore-command)即`mark (xxx|*)`, 被选中的文件名前会带`*`
 
 # --- cancel
 * cancle all # 取消所有job
@@ -512,7 +513,7 @@ fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
     # HDD 存储设备
     Device {
       Name = FileStorage                  # 设备名称
-      Media Type = File                   # 类型, bareos是基于文件的备份/恢复系统, 类型永远是文件
+      Media Type = File                   # 媒体类型, [必须唯一, 否则还原时可能找不到备份所使用的pool](https://bugs.bareos.org/view.php?id=835)
       Archive Device = /bareos/hdd        # Ubuntu下的备份文件目录（或mount point）
       LabelMedia = yes;                   # lets Bareos label unlabeled media
       Random Access = yes;                # 可随机读写
@@ -525,7 +526,7 @@ fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
     # 磁带存储设备
     Device {
       Name = TapeStorage                  # 设备名称
-      Media Type = File                   # 类型, bareos是基于文件的备份/恢复系统, 类型永远是文件
+      Media Type = File2
       Archive Device = /bareos/tape       # Ubuntu下的mount point
       LabelMedia = yes;                   # lets Bareos label unlabeled media
       Random Access = no;                 # 不能随机读写
@@ -980,7 +981,7 @@ fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
       # operatorcommand = "/usr/bin/bsmtp -h localhost -f \"\(Bareos\) \<%r\>\" -s \"Bareos: Intervention needed for %j\" %r"
       # mailcommand = "/usr/bin/bsmtp -h localhost -f \"\(Bareos\) \<%r\>\" -s \"Bareos: %t %e of %c %l\" %r"
       operator = root@localhost = mount                                 # 执行operatorcommand命令, 用户：root@localhost, 操作：mount
-      mail = root@localhost = all, !skipped, !saved, !audit             # 执行mailcommand, 用户：root@localhost, 操作：所有（除skipped, saved和audit）
+      mail = root@localhost = all, !skipped, !saved, !audit             # 执行mailcommand, 用户：root@localhost, 操作：所有（除skipped, saved和audit）, **注释该行即可取消发送email**
       console = all, !skipped, !saved, !audit                           # 所有操作, 除skipped, saved和audit
       append = "/var/log/bareos/bareos.log" = all, !skipped, !saved, !audit  # 所有操作, 除skipped, saved和audit
       catalog = all, !skipped, !saved, !audit                           # 所有操作, 除skipped, saved和audit
@@ -1288,9 +1289,9 @@ BVFS（Bareos虚拟文件系统）提供了一个API来浏览目录中的备份�
 
 执行`grep -r getJobs`, 在`src/Job/Model/JobModel.php`中找到它, 看其实现基本可推断是基于bsock, 通过`$bsock->send_command()->send()`逆推, 在`src/Job/Controller/JobController.php`中找到`$this->bsock=$this->getServiceLocator()->get('director')`.
 
-在`/usr/share/bareos-webui`执行`grep -r "send_command" |grep -v "bsock"`, 在`vender/Bareos/library/Bareos/BSock/BareosBSock.php`找到其实现(需考虑send_command有参数列表). 在找到它的上层函数send(), 发现它是操作`fwrite($this->socket,...)`, 找到socket定义: [`stream_socket_client()`](https://php.golaravel.com/function.stream-socket-client.html).
+在`/usr/share/bareos-webui`执行`grep -r "send_command" |grep -v "bsock"`, 在`vendor/Bareos/library/Bareos/BSock/BareosBSock.php`找到其实现(需考虑send_command有参数列表). 在找到它的上层函数send(), 发现它是操作`fwrite($this->socket,...)`, 找到socket定义: [`stream_socket_client()`](https://php.golaravel.com/function.stream-socket-client.html).
 
-截获bareos cmd: 在BareosBSock.php的send()开头添加打印语句:`error_log("[". date("Y-m-d H:i:s", time()) ."] : $cmd \n", 3, "/tmp/bareos_cmd.log");`.
+截获bareos cmd: 在BareosBSock.php的send()开头添加打印语句:`error_log("[". date("Y-m-d H:i:s", time()) ."] : $msg \n", 3, "/tmp/bareos_cmd.log");`.
 
 ### bareos python sdk截获cmd
 1. 根据bareos-restapi.py的`current_user.jsonDirector.call()`找到`self.jsonDirector = bareos.bsock.DirectorConsoleJson`

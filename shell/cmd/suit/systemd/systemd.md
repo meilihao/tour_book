@@ -139,6 +139,7 @@ ref:
 	```
 - TimeoutStartSec: 设置该服务允许的最大启动时长。 如果守护进程未能在限定的时长内发出"启动完毕"的信号，那么该服务将被视为启动失败，并会被关闭. 如果一个 Type=notify 服务发送了 "EXTEND_TIMEOUT_USEC=…" 信号， 那么允许的启动时长将会在 TimeoutStartSec= 基础上继续延长指定的时长.
 - RestartPreventExitStatus: 当符合某些退出状态时不要进行重启, 比如`123 SIGTERM`(123是return code)
+- PrivateTmp : 私有tmp, 比如php-fpm配置它后会有一个`/tmp/systemd-private-xxx-php-fpm.service-yyy/tmp`目录
 
 > [Unit 配置文件的完整字段清单](https://www.freedesktop.org/software/systemd/man/systemd.unit.html)
 > 所有的启动设置之前，都可以加上一个连词号（-），表示"抑制错误"，即发生错误的时候，不影响其他命令的执行。比如，EnvironmentFile=-/etc/sysconfig/sshd（注意等号后面的那个连词号），就表示即使/etc/sysconfig/sshd文件不存在，也不会抛出错误.
