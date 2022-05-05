@@ -36,7 +36,7 @@ DNF配置文件的位置:
 # dnf remove --duplicates # 删除重复软件包的旧版本
 # dnf downgrade acpid # 回滚某个特定软件的版本
 # dnf autoremove # 去除不要的孤立(不再被其他包依赖)依赖包
-# dnf provides /bin/bash # 查找某一文件的提供者
+# dnf provides /bin/bash # 查找某一文件的提供者, 也可是qmake-qt5之类的文件名即不是路径
 # dnf whatprovides "/usr/bin/qemu-kvm" # 查找某一文件的提供者
 # dnf whatprovides libmysqlclient* # 查找某一包的提供者
 # dnf install /path/to/file.rpm
@@ -80,6 +80,7 @@ DNF配置文件的位置:
 # dnf repolist disabled # 列出系统上禁用的仓库
 # dnf –enablerepo=epel install phpmyadmin # 从特定的软件包库安装特定的软件
 # dnf repoquery htop # 在启用的存储库中搜索给定的程序包并显示信息, 等效于`rpm -q`
+# dnf repoquery --list qt5-qtbase-devel # 列出该软件包提供的所有文件
 # dnf -qy module disable postgresql # Disable the built-in PostgreSQL module. Module：是代表着一组通常一起安装的RPM包, 一个典型的module包含应用，依赖库，文档库，帮助组件等.
 ```
 
