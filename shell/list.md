@@ -21,3 +21,6 @@
 - [linux命令查询](https://wangchujiang.com/linux-command/)
 - [linux命令](https://wangchujiang.com/linux-command/hot.html)
 - [log color - ANSI escape code](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors)
+
+## example
+- [**zstack install**](https://gitee.com/zstackio/zstack-utility/blob/master/installation/install.sh)

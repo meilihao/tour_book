@@ -416,6 +416,8 @@ yum-builddep my-package.src.rpm
 
 dnf builddep my-package.spec
 dnf builddep my-package.src.rpm
+
+rpmbuild --rebuild xx.src.rpm # build src.rpm
 ```
 
 ### `yum-builddep`时报`cannot install both readline-7 or readline-8`

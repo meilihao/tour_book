@@ -208,6 +208,14 @@ debuild默认构建deb需要gpg签名, 通过`man debuild`可用`debuild -i -us 
 
     `sudo vim /var/lib/dpkg/status`后修改Depends行即可
 
+### 手动清理软件
+```bash
+# dpkg -L icaclient # 罗列文件
+# vim /var/lib/dpkg/status # 清理掉icaclient
+# sudo dpkg --configure -a
+# 清理罗列的icaclient文件
+```
+
 ### [Virtual Package(虚拟包)](https://www.debian.org/doc/manuals/debian-faq/pkg-basics.en.html#virtual)
 
 ### 依赖所需版本

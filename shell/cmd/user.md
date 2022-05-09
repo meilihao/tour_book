@@ -82,3 +82,8 @@ $ id -nG chen # 获取用户的支持组
 ### 用户名限制
 - [by systemd]https://systemd.io/USER_NAMES/)
 - see useradd/groupadd
+
+### 删除用户报`userdel: user xxx is currently used by process 4655`
+因为有进程在占用着用户, 导致无法删除，解决办法就是用`ps -u +用户名`找出占用的进程, kill掉之后在执行删除命令.
+
+或**推荐**使用`systemctl stop user@<uid>`一步到位.

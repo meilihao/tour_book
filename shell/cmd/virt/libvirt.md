@@ -389,6 +389,11 @@ $ sudo systemctl restart libvirtd
 # virsh update-device <GuestName> update-device.xml # 删除了source标签
 ```
 
+### windows在kvm上鼠标不同步
+添加有且仅添加一个usb鼠标: `<input type="tablet" bus="usb">`.
+
+> 添加多个usb鼠标windows可能会蓝屏
+
 ### Guest has not initialized the display (yet) 
 - [qemu machine i440FX 仅支持 BIOS ，需更改成Q35， Q35 同时支持 BIOS 和 UEFI](https://blog.csdn.net/m0_47541842/article/details/113521732)
 - iso里os的arch与qemu使用的arch不一致
@@ -530,9 +535,9 @@ help: `virt-install <参数> ?`
         undefine                       取消定义一个域
         update-device                  从 XML 文件中关系设备
         vcpucount                      域 vcpu 计数
-        vcpuinfo                       详细的域 vcpu 信息
-        vcpupin                        控制或者查询域 vcpu 亲和性
-        emulatorpin                    控制火车查询域模拟器亲和性
+        vcpuinfo                       详细的域 vcpu 信息. 一个vm默认只能使用同一颗物理cpu的逻辑核.
+        vcpupin                        控制或者查询域 vcpu 亲和性. `vcpupin 21 0 28`: 强制vcpu0绑定到物理逻辑核28.
+        emulatorpin                    控制或查询域模拟器亲和性, 即vm可使用host的哪些逻辑cpu. `emulatorpin 21 26-32 --live`: 强制让vm只能在部分物理逻辑核之间调度
         vncdisplay                     查询vnc连接信息
         guestvcpus                     query or modify state of vcpu in the guest (via agent)
         setvcpu                        attach/detach vcpu or groups of threads
@@ -741,6 +746,8 @@ install 常用参数说明展开目录:
 - 安装方式
 
    - cdrom=xxx.iso : 指定安装镜像iso
+
+      第一次挂载的光驱, 重启后自动消失是针对linux的功能(其实就是将`xml <source>属性的file置空`); windows安装需要多次重启, 因此不会自动消失
    - location : 安装源URL, 多用于网络安装, 支持FTP、HTTP及NFS等, 但也支持本地路径, 如`ftp://172.16.0.1/pub`, `/xxx/x.iso/(mounted的iso目录)`
    - --boot  cdrom,hd,network：指定引导次序, 可用`virt-insall --boot ?`查看
    - --boot kernel=KERNEL,initrd=INITRD,kernel_args=”console=/dev/ttyS0”：指定启动系统的内核及initrd文件

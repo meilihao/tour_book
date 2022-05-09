@@ -10,11 +10,15 @@
 - rpm
 
     - [rpmfind](https://rpmfind.net/)
+
+        能获取到`src.rpm`
 - [repology.org/projects](https://repology.org/projects/)
 
 ### 构建源
 - [CentOS 的 SRPM](http://mirror.centos.org/)
 - [Fedora Package Sources](https://src.fedoraproject.org/)
+
+    点击每个项目主页的`Stable version`的列表链接或`Builds Status`的链接即可在里面找到`src.rpm`
 - [Arch Package, arch官方repo](https://www.archlinux.org/packages/)
 - [aur.archlinux.org - AUR=Arch User Repository, 创建 AUR 的初衷是方便用户维护和分享新软件包，并由官方定期从中挑选软件包进入 community 仓库](https://aur.archlinux.org/packages/)
 

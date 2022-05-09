@@ -513,7 +513,7 @@ fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
     # HDD 存储设备
     Device {
       Name = FileStorage                  # 设备名称
-      Media Type = File                   # 媒体类型, [必须唯一, 否则还原时可能找不到备份所使用的pool](https://bugs.bareos.org/view.php?id=835)
+      Media Type = File                   # 媒体类型, [必须唯一, 否则还原时可能找不到备份所使用的pool](https://bugs.bareos.org/view.php?id=1455)
       Archive Device = /bareos/hdd        # Ubuntu下的备份文件目录（或mount point）
       LabelMedia = yes;                   # lets Bareos label unlabeled media
       Random Access = yes;                # 可随机读写
