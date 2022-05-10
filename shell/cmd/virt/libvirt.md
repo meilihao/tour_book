@@ -498,7 +498,25 @@ help: `virt-install <参数> ?`
         managedsave-edit               edit XML for a domain's managed save state file
         managedsave-dumpxml            Domain information of managed save state file in XML
         managedsave-define             redefine the XML for a domain's managed save state file
-        memtune                        获取或者数值内存参数
+        memtune                        获取或者数值内存参数(KB)
+                                             - hard_limit : 最大可用mem
+                                             - soft_limit : 竞争时的mem
+                                             - swap_hard_limit : 最大内存加swap
+                                             - min_guarantee : 最低保证给vm使用的内存
+
+                                             生效方法:
+                                             - `--config` : 写入xml, 重启vm生效
+                                             - `--live` : 影响正在运行的vm, vm停止后, 效果消失, **默认**
+                                             - `--current` : 影响停止和正在运行的vm, 如果vm运行, vm停止后效果消失
+
+                                             examples:
+                                             - `virsh memtune c7 --hard-limit 9437184 --config` : 最大限制在9G, 重启vm生效
+
+
+                                             限制host将swap分配给vm:
+                                             ```xml
+                                             <memoryBacking><locked/></memoryBacking> # 设置locked时必须有hard_limit
+                                             ```
         perf                           Get or set perf event
         metadata                       show or set domain's custom XML metadata
         migrate                        将域迁移到另一个主机中

@@ -6,3 +6,5 @@ tools:
 - bonnie++ : 测试硬盘驱动器性能/文件系统性能
 - netpref : 测试网络各个方面的性能
 
+	可用`pmstat -p ALL`查看cpu
+
