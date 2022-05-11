@@ -10,6 +10,8 @@ guestfish主要包含以下工具：
 	guestmount -a t.img -m /dev/sda1 --ro /mnt # 以只读方式将镜像挂到/mnt	
 - guestumount : 卸载镜像目录
 - virt-alignment-scan : 镜像块对齐扫描, 检查镜像分区是否块对齐
+
+	virt-alignment-scan -a xxx.qcow2	
 - virt-builder : 快速镜像创建
 - virt-cat : 显示镜像中文件内容
 
@@ -50,11 +52,14 @@ guestfish主要包含以下工具：
 - virt-p2v-make-disk : 创建物理机转虚拟机ISO光盘
 - virt-p2v-make-kickstart : 创建物理机转虚拟机kickstart文件
 - virt-rescue:进去虚拟机救援模式
+
+	virt-rescue --suggest -d fedora15 # 进入救援模式
 - virt-resize : 虚拟机分区大小修改
 
 	virt-resize --expand /dev/sda2 olddisk newdisk
 	virt-resize --resize /dev/sda1=+200M --expand /dev/sda2 olddisk newdisk # 将boot分区增加200M, 剩下空间给/dev/sda2
 	virt-resize --expand /dev/sda2 --LV-expand /dev/vg_guest/lv_root olddisk newdisk # lv扩展
+	virt-resize --align-first always --expand /dev/vda1 kuai-no-vda kuai-no-vda-2-yes # 调整镜像并强制块对齐
 - virt-convert : 转换vm镜像格式
 
 	virt-convert -i raw -o qcow2 old.img new.qcow2
@@ -128,5 +133,3 @@ ntfsfix -b -d /dev/mapper/loop0p1 # `-b -d`清除ntfs的检查标志信息
 kpartx -dv /dev/loop0 # 分离镜像映射
 losetup -d /dev/loop0
 ```
-
-2. guestfish

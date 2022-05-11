@@ -10,3 +10,8 @@
 $ mpstat -P ALL
 $ mpstat -P 0 1 2 # 在cpu 0上每个1s采样一次, 共采样2次
 ```
+
+分析:
+1. `iowait`高: 磁盘i/o存在瓶颈
+1. idle高但系统响应慢: cpu可能在等待内存, 可尝试添加内存
+1. idle低于10: cpu处理能力弱, 升级cpu

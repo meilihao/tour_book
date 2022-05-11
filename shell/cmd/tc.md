@@ -10,7 +10,7 @@ TC 是linux自带的模块，可以用来控制网速, from `yum install iproute
 
 tc/qdisc 是 Cilium/eBPF 依赖的最重要的网络基础设施之一.
 
-Linux 流量控制方法: 控发不控收(因linux 对接收队列的控制不够好), 所以只能对产生瓶颈网卡处的发包速率进行控制, 具体是通过队列 (queueing discipline)来实现控制网络的收发速度.
+Linux 流量控制方法: **控发不控收**(因linux 对接收队列的控制不够好), 所以只能对产生瓶颈网卡处的发包速率进行控制, 具体是通过队列 (queueing discipline)来实现控制网络的收发速度.
 
 在 linux 中,TC 有二种控制方法 CBQ(Class Based Queueing，基于类的排队) 和 HTB(Hierarchical Token Bucket，层级令牌桶). HTB 是设计用来替换 CBQ 的. 它是一个层次式的过滤框架.
 
