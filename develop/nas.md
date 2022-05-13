@@ -1078,3 +1078,11 @@ ldap passwd sync = yes
 $ smbpasswd -w 123456	# 存储用于连接 LDAP 服务的bind password, 非常重要, 不能遗漏
 
 ```
+
+## other nas
+### 群辉
+ref:
+- [新一代 NAS 操作系统：群晖 DSM 7.0 深度体验](https://sspai.com/post/64374)
+- [A-Journey-into-Synology-NAS-系列——群晖NAS介绍](https://www.wangan.com/p/7fygf74cb236fd68)
+
+DSM在[这里](https://www.synology.com/zh-tw/support/download/VirtualDSM?version=7.1)下载, 

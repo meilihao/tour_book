@@ -2768,3 +2768,9 @@ NAME                                  READY   STATUS    RESTARTS   AGE   IP     
 coredns-677d9c57f-tdnd4               1/1     Running   0          10m   10.187.1.24     172.31.159.21   <none>           <none>
 coredns-677d9c57f-x274j               1/1     Running   0          10m   10.187.4.24     172.31.159.22   <none>           <none>
 ```
+
+### `kubectl get pod -A`报`Unable to connect to the server: x509: certificate signed by unknown authority (possibly because of “crypto/rsa: verification error” while trying to verify candidate authority certificate “kubernetes”)`
+`~/.kube/conf`残留
+
+解决方法:
+`cp -f /etc/kubernetes/admin.conf $HOME/.kube`

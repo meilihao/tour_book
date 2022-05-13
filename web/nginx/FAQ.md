@@ -45,6 +45,20 @@ fetch('/topics/' + id, {
 原因: 此时chrome产生的请求行(`patch /topics/2016060000000007 HTTP/1.1`)的方法是小写,会被nginx拒绝;
 而奇怪的是,如果是`method: 'post'`,chrome生成的请求行的方法又会自动转成大写.
 
+### http跳转https
+```bash
+server {
+    listen 80;
+    server_name openhello.com;
+
+    location / {
+        return 301 https://$server_name$request_uri;
+    }
+}
+```
+
+当server_name是`_`时使用`return 301 https://$host$request_uri;`
+
 ### threads_pthread.c:(.text+0x16)：对‘pthread_atfork’未定义的引用
 nginx: 1.13.5
 在自编译指定openssl时碰到:

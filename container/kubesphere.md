@@ -7,11 +7,11 @@
 
 ## 部署
 ```bash
-# all-in-one部署, kk v1.1.1, [k8s支持版本](https://github.com/kubesphere/kubekey/blob/release-1.1/docs/kubernetes-versions.md)
+# all-in-one部署, kk v2.1.0, [k8s支持版本](https://github.com/kubesphere/kubekey/blob/v2.1.0/docs/kubernetes-versions.md)
 $ sudo apt install socat ipset conntrack ipvsadm
-$ sudo KKZONE=cn kk create config --with-kubernetes v1.20.6 --with-kubesphere v3.1.1 -f my.yaml
+$ sudo KKZONE=cn kk create config --container-manager containerd --with-kubernetes v1.24.0 --with-kubesphere v3.2.1 -f my.yaml
 $ cat my.yaml # 使用`kk create cluster -f`部署时的配置文件
-apiVersion: kubekey.kubesphere.io/v1alpha1
+apiVersion: kubekey.kubesphere.io/v1alpha2
 kind: Cluster
 metadata:
   name: sample
@@ -26,22 +26,32 @@ spec:
     worker:
     - chen-aliyun
   controlPlaneEndpoint:
+    ## Internal loadbalancer for apiservers 
+    # internalLoadbalancer: haproxy
+
     domain: lb.kubesphere.local
     address: ""
     port: 6443
   kubernetes:
-    version: v1.20.6
-    imageRepo: kubesphere
+    version: v1.24.0
     clusterName: cluster.local
-    containerManager: containerd
+    autoRenewCerts: true
+  etcd:
+    type: kubekey
   network:
     plugin: cilium
     kubePodsCIDR: 10.233.64.0/18
     kubeServiceCIDR: 10.233.0.0/18
+    ## multus support. https://github.com/k8snetworkplumbingwg/multus-cni
+    multusCNI:
+      enabled: false
   registry:
+    privateRegistry: ""
+    namespaceOverride: ""
     registryMirrors: []
     insecureRegistries: []
   addons: []
+
 
 
 ---
@@ -51,74 +61,133 @@ metadata:
   name: ks-installer
   namespace: kubesphere-system
   labels:
-    version: v3.1.1
+    version: v3.2.1
 spec:
   persistence:
-    storageClass: ""       
+    storageClass: ""
   authentication:
     jwtSecret: ""
   zone: ""
-  local_registry: ""        
+  local_registry: ""
+  namespace_override: ""
+  # dev_tag: ""
   etcd:
-    monitoring: false      
-    endpointIps: localhost  
-    port: 2379             
+    monitoring: true
+    endpointIps: localhost
+    port: 2379
     tlsEnable: true
   common:
+    core:
+      console:
+        enableMultiLogin: true
+        port: 30880
+        type: NodePort
+    # apiserver:
+    #  resources: {}
+    # controllerManager:
+    #  resources: {}
     redis:
       enabled: false
-    redisVolumSize: 2Gi 
+      volumeSize: 2Gi
     openldap:
       enabled: false
-    openldapVolumeSize: 2Gi  
-    minioVolumeSize: 20Gi
+      volumeSize: 2Gi
+    minio:
+      volumeSize: 20Gi
     monitoring:
+      # type: external
       endpoint: http://prometheus-operated.kubesphere-monitoring-system.svc:9090
-    es:  
-      elasticsearchMasterVolumeSize: 4Gi   
-      elasticsearchDataVolumeSize: 20Gi   
-      logMaxAge: 7          
+      GPUMonitoring:
+        enabled: false
+    gpu:
+      kinds:         
+      - resourceName: "nvidia.com/gpu"
+        resourceType: "GPU"
+        default: true
+    es:
+      # master:
+      #   volumeSize: 4Gi
+      #   replicas: 1
+      #   resources: {}
+      # data:
+      #   volumeSize: 20Gi
+      #   replicas: 1
+      #   resources: {}
+      logMaxAge: 7
       elkPrefix: logstash
       basicAuth:
         enabled: false
         username: ""
         password: ""
-      externalElasticsearchUrl: ""
-      externalElasticsearchPort: ""  
-  console:
-    enableMultiLogin: true 
-    port: 30880
-  alerting:       
+      externalElasticsearchHost: ""
+      externalElasticsearchPort: ""
+  alerting:
     enabled: false
     # thanosruler:
     #   replicas: 1
     #   resources: {}
-  auditing:    
+  auditing:
     enabled: false
-  devops:           
+    # operator:
+    #   resources: {}
+    # webhook:
+    #   resources: {}
+  devops:
     enabled: false
-    jenkinsMemoryLim: 2Gi     
-    jenkinsMemoryReq: 1500Mi 
-    jenkinsVolumeSize: 8Gi   
-    jenkinsJavaOpts_Xms: 512m  
+    jenkinsMemoryLim: 2Gi
+    jenkinsMemoryReq: 1500Mi
+    jenkinsVolumeSize: 8Gi
+    jenkinsJavaOpts_Xms: 512m
     jenkinsJavaOpts_Xmx: 512m
     jenkinsJavaOpts_MaxRAM: 2g
-  events:          
+  events:
     enabled: false
-    ruler:
-      enabled: true
-      replicas: 2
-  logging:         
+    # operator:
+    #   resources: {}
+    # exporter:
+    #   resources: {}
+    # ruler:
+    #   enabled: true
+    #   replicas: 2
+    #   resources: {}
+  logging:
     enabled: false
+    containerruntime: docker
     logsidecar:
       enabled: true
       replicas: 2
-  metrics_server:             
+      # resources: {}
+  metrics_server:
     enabled: false
   monitoring:
     storageClass: ""
-    prometheusMemoryRequest: 400Mi  
-    prometheusVolumeSize: 20Gi  
+    # kube_rbac_proxy:
+    #   resources: {}
+    # kube_state_metrics:
+    #   resources: {}
+    # prometheus:
+    #   replicas: 1
+    #   volumeSize: 20Gi
+    #   resources: {}
+    #   operator:
+    #     resources: {}
+    #   adapter:
+    #     resources: {}
+    # node_exporter:
+    #   resources: {}
+    # alertmanager:
+    #   replicas: 1
+    #   resources: {}
+    # notification_manager:
+    #   resources: {}
+    #   operator:
+    #     resources: {}
+    #   proxy:
+    #     resources: {}
+    gpu:
+      nvidia_dcgm_exporter:
+        enabled: false
+        # resources: {}
   multicluster:
     clusterRole: none 
   network:
@@ -131,10 +200,10 @@ spec:
   openpitrix:
     store:
       enabled: false
-  servicemesh:    
-    enabled: false  
-  kubeedge:
+  servicemesh:
     enabled: false
+  kubeedge:
+    enabled: false   
     cloudCore:
       nodeSelector: {"node-role.kubernetes.io/worker": ""}
       tolerations: []
@@ -144,8 +213,8 @@ spec:
       cloudstreamPort: "10003"
       tunnelPort: "10004"
       cloudHub:
-        advertiseAddress: 
-          - ""           
+        advertiseAddress:
+          - ""
         nodeLimit: "100"
       service:
         cloudhubNodePort: "30000"

@@ -13,6 +13,8 @@ sdk:
 
    [libvirt.org/libvirt-go已被支持go module的libvirt.org/go/libvirt取代](https://libvirt.org/libvirt-go.html). sdk使用参考[libvirt-go中能够提供的虚机信息](https://blog.csdn.net/zhagzheguo/article/details/100050474)
 
+安装: `sudo apt install qemu-system-x86 libvirt-daemon libvirt-daemon-system virtinst libvirt-clients bridge-utils`
+
 ## 概念
 - 节点（Node） 
 
@@ -51,12 +53,21 @@ CPU。 当然不同的Hypervisor上对这些热插拔的支持程度有所不同
    1. 应用程序编程接口库
 
       应用程序接口是为其他虚拟机管理工具（ 如virsh、virt-manager等） 提供虚拟机管理的程序库支持
+
    2. 一个守护进程（ libvirtd）
 
       libvirtd守护进程负责执行对节点上的域的管理工作， 在用各种工具对虚拟机进行管理时， 这个守护进程一定要处于运行状态中. 而且这个守护进程可以分为两种： 一种是root权限的libvirtd， 其权限较大， 可以完成所有支持的管理工作； 一种是普通用户权限的libvirtd， 只能完成比较受限的管理工作.
-   3. 一个默认命令行管理工具（ virsh）
+
+      ```bash
+      apt install libvirt-daemon libvirt-daemon-system # libvirtd.service is in libvirt-daemon-system
+      ```
+   3. 一个默认命令行管理工具（virsh）
 
       virsh是libvirt项目中默认的对虚拟机管理的一个命令行工具
+
+      ```bash
+      apt install libvirt-clients # for virsh
+      ```
 
 ## arch
 libvirt API大致可划分为如下8个部分:
@@ -119,7 +130,7 @@ libvirt API大致可划分为如下8个部分:
    libvirt还提供了一系列函数用于数据流的传输
 
 ## news
-- [从v6.0.0开始libvirt-python.spec仅支持python3](https://github.com/libvirt/libvirt-python/commit/b22e4f2441078aec048b9503fde2b45e78710ce1)
+- [从v6.0.0开始libvirt-python.spec仅支持python3, 不再支持python2](https://github.com/libvirt/libvirt-python/commit/b22e4f2441078aec048b9503fde2b45e78710ce1)
 
 ## 安装与配置
 安装方法: `dnf install libvirt`
@@ -761,6 +772,7 @@ install 常用参数说明展开目录:
    - virt-type : hypervisor类型, 可使用`virsh capabilities`获取
    - os-variant=rhel6, 可用`osinfo-query os`获取
    - machine : machine类型, 可用`qemu-system-x86_64 -machine help`获取
+   - soundhw: 声卡类型, 可用`qemu-system-x86_64 -soundhw help`获取
 - 安装方式
 
    - cdrom=xxx.iso : 指定安装镜像iso

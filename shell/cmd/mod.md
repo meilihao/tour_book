@@ -36,6 +36,7 @@ depmod会遍历文件/lib/modules/`uname -r`/modules.dep解析模块依赖关系
 - vermagic
 
     加载模块时, 将vermagic检查值中的字符串是否匹配, 如果它们不匹配, 将得到一个错误, 内核将拒绝加载该模块. modprobe可以通过使用--force标志来克服这一点. 当然, 这些检查是为了保护kernel, 因此使用此选项很危险.
+- depends : 依赖的mod
 
 ### example
 ```bash

@@ -22,7 +22,7 @@ locale 定义文件一般位于 /usr/share/i18n/locales 目录中, 不用担心,
 
 相关系统文件：
 - 在文件/usr/share/i18n/SUPPORTED : 列出了当前系统支持的所有locale与字符集的名字, 是`/usr/share/i18n/locales`和`/usr/share/i18n/charmaps`的组合结果
-- 在目录/var/lib/locales/supported.d/下，列出了当前系统已经生成的所有locale的名字
+- 在目录/var/lib/locales/supported.d/下，列出了当前系统已经生成的所有locale的名字, 即已支持的locale
 - 在目录/usr/lib/locale/<locale_name>/LC_*，用locale-gen编译出的locale文件
 - 在文件/usr/lib/locale/locale-archive中，包含了很多本地已经生成的locale的具体内容，因此这个文件往往很大. 使用命令localedef管理这一文件. 使用locale-gen命令编译出来的locale内容默认写入该文件中
 - 在文件/etc/default/locale中，可以手动配置locale环境变量，LC_CTYPE之类
@@ -144,3 +144,6 @@ $ sudo dpkg-reconfigure locales
 手动编辑的方法:
 1. 编辑 /etc/locale.gen 文件，会看到一行一个 Locale，只需把需要启用的 Locale 前的注释取消即可。
 2. 运行 locale-gen 命令生成 Locale 即可
+
+### 清除无用的locale
+[`apt install localepurge`](https://sleeplessbeastie.eu/2018/09/03/how-to-remove-useless-localizations/)
