@@ -24,10 +24,11 @@ DNF配置文件的位置:
 
 # dnf --showduplicates list [available] $pkgname # 显示软件的多版本列表
 # dnf list # 列出用户系统上的所有来自软件库的可用软件包和所有已经安装在系统上的软件包
+# dnf list | grep mariadb # 也支持显示多版本
 # dnf list installed # 已安装包的列表
 # dnf list available # 列出来自所有可用软件库的可供安装的软件包
 # dnf search httpd # 查找包
-# dnf install httpd # 安装包
+# dnf install [--assumeno] httpd # 安装包, `--assumeno`类似dryrun
 # dnf reinstall httpd # 重装包
 # dnf download httpd # 下载包, 但不安装
 # dnf download --source httpd # 下载src.rpm
@@ -144,6 +145,7 @@ rehat开发的包管理软件, 已被dnf取代.
 
 ## examples
 ```bash
+# yum deplist httpd # 列出依赖
 # yum repolist all # 列出所有仓库
 # yum list all # 列出仓库中所有软件包
 # yum info [--showduplicates]  # 软件包名称 查看软件包信息, `--showduplicates`显示软件多版本

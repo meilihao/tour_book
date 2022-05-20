@@ -30,6 +30,47 @@ apt install intltool
 python3 setup.py install [--force]
 ```
 
+## 源码
+入口在`virt-manager`, 入口是`virtmanager.runcli()`
+
+vscode配置:
+```bash
+# cat ~/.vscode/setting
+{
+    "python.autoComplete.extraPaths": [
+        "/usr/share/virt-manager",
+        "/usr/lib/python3/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/usr/share/virt-manager",
+        "/usr/lib/python3/dist-packages"
+    ]
+}
+```
+
+logger打印文件和行数, virt-manger使用了`virtinst`的`logger.py`, 修改方法即在`log = logging.getLogger("virtinst")`前加入:
+```python
+logging.basicConfig(format='%(asctime)s.%(msecs)03d [%(levelname)s] [%(pathname)s:%(lineno)d] %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+```
+
+获取日志`virt-manager --debug 2>&1 |tee -a vm.log`
+
+通过日志, virt-manager创建vm最后一步的`Finish`按钮调用的是`createvm.py#_finish_clicked()`, 它通过`installer.set_install_defaults(guest)`+`installer.start_install(guest, meter=meter)`来创建guest xml.
+
+具体生成xml逻辑在`virtinst/install/install.py#start_install()`:
+1. 先通过`self._build_xml()`生成xml骨架, 比如没有具体的pci controller设备的vm xml.
+1. 通过`self._create_guest()`将骨架xml提交给libvirtd, 由它填充细节并返回完整xml.
+
+其他工具生成vm xml的方法类似上述的`start_install`, 先骨架后由libvirt补全:
+- webvirtcloud
+
+    调用入口在`instances/views.py`的`create_instance()`
+
+    拼接骨架xml方法在`vrtManager/create.py#create_instance()`, 在其中最后是通过调用lib `libvirt`的`defineXML()`生成具体xml.
+- truenas
+
+    入口`middlewared/plugins/vm/vms.py#do_create()`在`await self.middleware.run_in_thread(self._add, vm_id)`, 调用链是`_add() -> _add_with_vm_data() -> VMSupervisor.__init__ -> update_domain()->__define_domain()->construct_xml()->get_domain_children()`, 具体拼接骨架xml和调用`libvirt`的`defineXML()`都在`__define_domain`里.
+
 ## FAQ
 参考:
 - [How to compile virt-manager on Debian or Ubuntu](https://www.xmodulo.com/compile-virt-manager-debian-ubuntu.html)
@@ -109,3 +150,21 @@ ref:
 1. 源宿主机和目的宿主机的网络通畅并且打开了对应的端口
 1. 源宿主机和目的宿主机必须有相同的网络配置， 否则可能出现动态迁移之后客户机的网络不能正常工作的情况
 1. 如果客户机使用了和源宿主机建立桥接的方式获得网络， 那么只能在同一个局域网（LAN） 中进行迁移， 否则客户机在迁移后， 其网络将无法正常工作
+
+### virt-manager创建vm后连接到图形控制台时报`Error opening SPICE console: Namespace SpiceClientGtk not available`
+`apt install gir1.2-spiceclientgtk-3.0`
+
+### virt-install创建vm报`不能为架构 'x86_64' 找到任何 UEFI 二进制路径`
+`apt install ovmf`
+`yum install edk2-ovmf`
+
+### 创建vm时如何选择firmware
+在创建vm的`Create a new virtual machine`选择`Customize configuration before install`, 它允许在install前配置vm更多细节.
+
+### 启动vm报`child reported (status=125): unable to open /mnt/nfs/xxx.iso: Read-only file system`
+/mnt/nfs是nfs的挂载点.
+
+libvirt的限制, 将iso拷贝到本地, 再使用其本地路径即可.
+
+### 创建vm报`'spicevmc' is not a valid cha driver name`
+是[qemu报错](https://gitlab.com/qemu-project/qemu/-/issues/488).

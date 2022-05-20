@@ -401,7 +401,7 @@ $ sudo systemctl restart libvirtd
 ```
 
 ### windows在kvm上鼠标不同步
-添加有且仅添加一个usb鼠标: `<input type="tablet" bus="usb">`.
+添加有且仅添加一个usb/virtio(**推荐使用usb**)鼠标: `<input type="tablet" bus="usb">`. x64环境 ps2 mouse和keyboard是默认设备无法替换为usb或virtio总线. 已在centos 7上验证.
 
 > 添加多个usb鼠标windows可能会蓝屏
 
@@ -429,6 +429,7 @@ ref:
 - [<<KVM实战>>的4.2 virsh]
 - [QEMU中的命令行参数及其monitor中的命令， 在virsh中的对应关系](http://wiki.libvirt.org/page/QEMUSwitchToLibvirt) 
 - [热迁移虚拟机](https://docs.openeuler.org/zh/docs/20.03_LTS_SP3/docs/Virtualization/%E7%83%AD%E8%BF%81%E7%A7%BB%E8%99%9A%E6%8B%9F%E6%9C%BA.html)
+- [centos7上使用virt-install命令创建kvm虚拟机](https://blog.51cto.com/u_11555417/2341874)
 
 如下命令启动虚拟机： `virsh create <name of virtual machine>` : 通过`virsh create <vmname>.xml`创建的虚拟机不会持久化，关机后会消失
 启动虚拟机： `virsh start <name>`
@@ -468,6 +469,7 @@ help: `virt-install <参数> ?`
         cpu-stats                      显示域 cpu 统计数据
         create                         从一个 XML 文件创建一个域
         define                         从一个 XML 文件定义（但不开始）一个域
+             virsh define xxx/foo.xml : reload xml. 手动删除foo.xml里的ps2设备, reload时会被重新添加. `virsh edit也无法删除ps2设备`
         desc                           显示或者设定域描述或者标题
         destroy                        强制关闭域
         detach-device                  从一个 XML 文件分离设备
@@ -596,6 +598,9 @@ help: `virt-install <参数> ?`
         cpu-compare                    使用 XML 文件中描述的 CPU 与主机 CPU 进行对比
         cpu-models                     CPU models
         domcapabilities                domain capabilities
+
+         virsh domcapabilities --machine q35
+         virsh domcapabilities --machine q35 | xmllint --xpath '/domainCapabilities/os' -
         freecell                       NUMA可用内存
         freepages                      NUMA free pages
         hostname                       打印管理程序主机名
@@ -737,6 +742,11 @@ help: `virt-install <参数> ?`
         connect                        连接（重新连接）到 hypervisor
     ```
 
+virt-xml(需关机操作):
+```
+virt-xml testguest --remove-device --disk target=vdb
+```
+
 其他:
 virt-clone -o Demo-kylin-v10 -n kylin-1 -f /home/kvm/kylin-1.qcow2 : # 克隆Demo-kylin-v10, 虚拟机名：kylin-1, 虚拟机路径：/home/kvm/kylin-1.qcow2
 
@@ -838,9 +848,11 @@ install 常用参数说明展开目录:
 
       比如kickstart安装参数: `--location https://mirrors.aliyun.com/centos/8-stream/BaseOS/x86_64/os/ --initrd-inject /path/to/ks.cfg  --extra-args="ks=file:/ks.cfg console=tty0 console=ttyS0,115200n8"`. `net.ifnames=0 biosdevname=0`是内核参数,将网卡设备名固定为eth0..eth1等
    - autostart : 指定虚拟机是否在物理启动后自动启动
+
+      其实就是在`/etc/libvirt/qemu/autostart`下创建执行该vm xml的软连接
    - print-xml : 如果虚拟机不需要安装过程(--import、--boot)，则显示生成的XML而不是创建此虚拟机. 默认情况下，此选项仍会创建磁盘映像
    - --dry-run：执行创建虚拟机的整个过程，但不真正创建虚拟机、改变主机上的设备配置信息及将其创建的需求通知给libvirt
-   - --debug：显示debug信息
+   - **`--debug`**：显示debug信息
    - --connect=CONNCT选项来指定连接至一个非默认的hypervisor
       
       - `qemu:///system` : If running on a bare metal kernel as root (needed for KVM installs)

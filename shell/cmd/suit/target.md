@@ -211,7 +211,7 @@ discovery.sendtargets.auth.username_in = OutUser
 discovery.sendtargets.auth.password_in = OutPassword
  
 systemctl restart iscsi
-systemctl restart iscsid # 重启 iscsi和iscsid 服务
+systemctl restart iscsid # 重启 iscsi和iscsid 服务. 修改
 ```
 
 在 tpg 下置客户端 iscsiadm CHAP 双向认证:
@@ -230,7 +230,7 @@ node.session.auth.username_in = OutAuthUser
 node.session.auth.password_in = OutAuthPassword
  
 systemctl restart iscsi
-systemctl restart iscsid # 重启 iscsi和iscsid 服务
+systemctl restart iscsid # 重启 iscsi和iscsid 服务. 修改initiator iqn需要重启iscsid
 ```
 
 > 在targetcli 2.1.fb48(deepin 20.2-kernel 5.12)/2.1.51(ubuntu 20.04-kernel 5.4)上实践发现配置/etc/iscsi/iscsid.conf的normal chap后, `sudo iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.chen-aliyun.x8664:sn.186dcf05e59b |grep auth`仍为空. 但针对某个target设置normal认证(见iscsiadm example)是生效的.
@@ -275,9 +275,9 @@ backstores分类:
 > [open-iscsi's git repo](https://github.com/open-iscsi/open-iscsi)
 
 ```bash
-# 查询iSCSI 客户端的唯一标识iqn
+# 查询iSCSI 客户端的唯一标识iqn. iqn命名规范: `最长223个字符，不能使用大写字母，可以使用的字符是：字母（a～z）、数字（0～9）、点（.）、冒号（:）和连字符（-）`
 # vim /etc/iscsi/initiatorname.iscsi
-InitiatorName=iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client # 编辑 iSCSI 客户端中的 initiator 名称文件,写入服务端的访问控制列表名称
+InitiatorName=iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client # 编辑 iSCSI 客户端中的 initiator 名称文件,写入服务端的访问控制列表名称. 初始由/usr/sbin/iscsi-iname生成
 # systemctl restart iscsid
 # systemctl enable iscsid
 ```

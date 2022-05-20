@@ -215,6 +215,7 @@ resilvering 是替换磁盘后重建冗余组的过程. 它是一个低优先级
 
 ## zfs
 ```sh
+$ zfs list -t all -r <dataset>
 $ sudo zfs list # 显示系统上pools/filesystems的列表, `-r`递归显示fs及其子fs, `-o`指定要显示的属性,比如space(空间使用); `-t`指定显示的类型, 比如filesystem, volume, share, snapshot.`-H`表示脚本模式: 不输出表头并用单个tab分隔各列; `-p`:精确显示数值; `-d`: 与`-r`连用,限制递归深度; `-s`按指定列升序排序; `-S`:与`-s`类似, 但以降序排序.
 $ sudo zfs get [ all | property[,property]...] <pool> # 获取pool的参数. `-s`指定要显示的source类型; `-H`输出信息去掉标题, 并用tab代替空格来分隔
 $ sudo zfs set atime = off <pool> # 设置pool参数
@@ -312,6 +313,8 @@ $ sudo zfs diff  [-FHt] <snapshot> [snapshot|filesystem] # 显示差异
 # 克隆 mypool/projects，首先创建一个 snapshot 然后 clone
 $ sudo zfs snapshot mypool/projects@snap1
 $ sudo zfs clone mypool/projects@snap1 mypool/projects-clone
+$ zfs get origin mypool/projects-clone # 获取origin snap
+$ zfs get all mypool/projects@snap1 # clones字段显示基于它创建的clone, 该snap没有clone时可能没有该属性
 $ sudo destroy mypool/projects-clone # 销毁clone
 ```
 
@@ -338,6 +341,8 @@ $ sudo zfs send -i system1/dana@snap2 system1/dana@snap3 | ssh sys2 zfs recv -F 
 - 将取消挂载文件系统和所有后代文件系统
 - 文件系统在接收期间不可访问
 - 目标系统上不得存在名称与要接收的源文件系统相同的文件系统. 如果文件系统名称在目标系统上已存在，请先重命名文件系统.
+
+> [zfs send/receive过程中中止可能产生隐藏的clone(`zfs list`不可见, 但`zfs list <clone_dataset>`可见)](https://www.reddit.com/r/zfs/comments/h7suck/how_do_you_list_hidden_clones_eg_filesystemrecv/), 命名是`<dataset>/%recv`, 可`zfs destroy`
 
 #### zfs resume
 参考:

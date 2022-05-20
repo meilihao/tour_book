@@ -1789,6 +1789,7 @@ targetPort 是Pod上的端口.
 - `kubectl api-versions` # 查看api version支持的资源版本
 - `kubectl rollout history deployment ${deployment_name} [--revision=2]` # 查看revision历史记录/指定历史版本
 - `kubectl rollout undo deployment ${deployment_name} --to-revision=${num}` # 回滚到指定revison版本
+- kubeadm certs check-expiration : [从kubernetes 1.15版本开始，kubeadm提供了检查全部证书到期日的命令](https://github.com/eip-work/kuboard-press/pull/317/files)
 
 ## Dynamic Admission Control/Initializer
 当一个 Pod 或者任何一个 API 对象被提交给 APIServer 之后，总有一些“初始化”性质的工作需要在它们被 Kubernetes 项目正式处理之前进行, 而这个“初始化”操作的实现，借助的是一个叫作 Admission 的功能. Kubernetes 项目为我们额外提供了一种“热插拔”式的 Admission 机制，它就是 Dynamic Admission Control，也叫作：Initializer. 典型案例就是Istio 项目.

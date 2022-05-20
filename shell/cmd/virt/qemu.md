@@ -79,7 +79,7 @@ $ ln -sf /usr/bin/qemu-system-x86_64 /usr/libexec/qemu-kvm
     - -cdrom 添加 fedora 的安装镜像
 
     iso安装完成后重起虚拟机便会从硬盘 ( test-vm-1.qcow2 ) 启动.
-- qemu-img：创建虚拟机镜像文件的工具
+- qemu-img：创建虚拟机镜像文件的工具(`apt install qemu-utils`)
 
     虚拟机镜像用来模拟虚拟机的硬盘，在启动虚拟机之前需要创建镜像文件. 镜像文件创建完成后，可使用 qemu-system-x86 来启动x86 架构的虚拟机.
 
@@ -422,3 +422,21 @@ ref:
 SPICE (Simple Protocol for Independent Computing Environments) 是一个用于虚拟化环境中的通讯协定, 此协议透过网络来连结到虚拟化平台上之虚拟机器桌面. SPICE client的实现有Virt-viewer.
 
 相较于通过浏览器连接(HTML5, 比如noVNC) 或其他VNC client, SPICE不仅支持虚拟机器音源输出且拥有较佳的影像显示.
+
+### QEMU 支持直接引导Linux内核(vmlinuz，initrd，bzImage)，非常方便适用于内核调试
+```bash
+qemu-system-x86_64 -kernel bzImage -initrd initrd.img \
+                  -append "root=/dev/sda1 init=/bin/bash" \
+                  -hda rootfs.img
+```
+选项:
+ - -kernel : 提供内核镜像,bzImage
+ - -initrd : 提供initramfs
+ - -append : 提供内核参数，指引rootfs所在分区，指引init命令路径
+ - -hda : 提供rootfs根文件系统
+
+区别于下列方式，其中rootfs.img包括了 grub + MBR + 多磁盘分区 + rootfs ,启动过程基本与传统PC启动过程无异.
+
+qemu-system-x86_64 -m 512M -drive format=raw,file=rootfs.img
+
+该种引导方式，内核模块和initramfs都包括在rootfs.img中的某个分区的文件系统中

@@ -22,3 +22,10 @@
 - [关于kube-controller-manager以及kube-scheduler的HA实现方式](https://w564791.gitbooks.io/kubernetes_gitbook/content/concept/leader-election.html)
 - [谈谈k8s的leader选举--分布式资源锁](https://blog.csdn.net/weixin_39961559/article/details/81877056)
 - [Kubernetes 源码剖析之 Leader 选举](https://wemp.app/posts/8ca1c89e-856e-4e37-bd20-5f34b43ddc40)
+
+## dashboard
+- [kuboard](https://kuboard.cn/install/v3/install-in-k8s.html)
+
+## 部署工具
+- kubekey
+- sealos
