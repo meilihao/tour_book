@@ -407,7 +407,9 @@ $ sudo systemctl restart libvirtd
 ### windows在kvm上鼠标不同步(飘)
 现象: 出现两个鼠标, 且无法重合.
 
-添加有且仅添加一个usb/virtio(**推荐使用usb, 在xp下virtio还是有漂移**)设备: `<input type="tablet" bus="usb">`. x64环境下, ps2的mouse和keyboard都是默认设备且无法替换为usb/virtio总线或删除. 已在centos 7上验证.
+添加有且仅添加一个usb/virtio(**推荐使用usb, 在xp下virtio还是有漂移**)设备: `<input type="tablet" bus="usb">`. x64环境下, ps2的mouse和keyboard都是默认设备且无法替换为usb/virtio总线或删除, 已在centos 7上验证.
+
+修正后效果: 鼠标移动过程中, 可能出现残影的现象, 但停止移动后会立即重合.
 
 > 添加多个usb鼠标windows可能会蓝屏
 
