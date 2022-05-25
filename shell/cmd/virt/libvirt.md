@@ -330,6 +330,10 @@ centos KVM对UEFI的支持包如下:
 - 64位的arm处理器需要edk2.git-aarch64
 - x86-64处理器需要edk2.git-ovmf-x64
 
+OVMF_CODE是bootloader的镜像文件，而OVMF_VARS则是保存OVMF_CODE中变量的文件. 在UEFI启动页面可以设置一些参数. 而这些参数的保存则需要OVMF_VARS文件, 它们配合使用: vm可以共享OVMF_CODE, 但使用自己的OVMF_VARS(通常放在`/var/lib/libvirt/nvram`或`/etc/libvirt/qemu/nvram`), vm xml相关配置可参考[这里](https://libvirt.org/formatdomain.html#bios-bootloader).
+
+支持安全启动的UEFI，需要开启secure=’yes’ ，不过并不是所有的machine都支持，目前只支持q35系列，且需在feature中需要添加SMM.
+
 ### libvirtd.service自动退出
 Ubuntu16.04.6+飞腾主板+libvirt 6.0.0, systemd里没有报错日志, 也没有crash.
 
@@ -400,16 +404,38 @@ $ sudo systemctl restart libvirtd
 # virsh update-device <GuestName> update-device.xml # 删除了source标签
 ```
 
-### windows在kvm上鼠标不同步
-添加有且仅添加一个usb/virtio(**推荐使用usb**)鼠标: `<input type="tablet" bus="usb">`. x64环境 ps2 mouse和keyboard是默认设备无法替换为usb或virtio总线. 已在centos 7上验证.
+### windows在kvm上鼠标不同步(飘)
+现象: 出现两个鼠标, 且无法重合.
+
+添加有且仅添加一个usb/virtio(**推荐使用usb, 在xp下virtio还是有漂移**)设备: `<input type="tablet" bus="usb">`. x64环境下, ps2的mouse和keyboard都是默认设备且无法替换为usb/virtio总线或删除. 已在centos 7上验证.
 
 > 添加多个usb鼠标windows可能会蓝屏
+
+> 试过两个ps设备+一个usb鼠标, 但还是飘.
 
 ### Guest has not initialized the display (yet) 
 - [qemu machine i440FX 仅支持 BIOS ，需更改成Q35， Q35 同时支持 BIOS 和 UEFI](https://blog.csdn.net/m0_47541842/article/details/113521732)
 - iso里os的arch与qemu使用的arch不一致
 
 ### [vm 磁盘扩容](https://opengers.github.io/openstack/openstack-instance-disk-resize-and-convert/)
+
+### 修改vm xml磁盘的bus而修改target.dev时`virsh define`会报`Found duplicate dirve address for disk with target name 'hdb'`
+将原先vdb 的bus从virtio改为ide, 报了该错, 将vdb改为hdc后正常.
+
+### 运行非root使用virsh
+```bash
+sudo su root
+usermod -a -G libvirt <userName>
+exit
+
+vim ~/.bashrc # 添加如下内容
+export LIBVIRT_DEFAULT_URI="qemu:///system"
+source ~/.bashrc
+```
+
+selinux环境需在虚拟机XML配置文件中的domain根元素中添加如下内容, 使qemu-system-x86_64进程可以访问磁盘镜像文件: `<seclabel type='dynamic' model='dac' relabel='yes'>`
+
+> seclabel元素允许控制安全驱动程序的操作.
 
 ## uefi shell
 - exit : 进入qemu machine(virt-4.0)的类似bios界面的字符uefi firmware settings界面.
@@ -455,6 +481,8 @@ help: `virt-install <参数> ?`
      Domain Management (help keyword 'domain'):
         attach-device                  从一个XML文件附加装置
         attach-disk                    附加磁盘设备
+
+         virsh attach-disk 361way /data1/kvm.img vdc
         attach-interface               获得网络设备. 添加网卡:virsh attach-interface vm-yaohai --type bridge --source br0 --model virtio --config; 删除网卡(by mac): virsh detach-interface vm-yaohai --type bridge --mac 52:54:00:61:4c:f3 --config
         autostart                      自动开始一个域
         blkdeviotune                   设定或者查询块设备 I/O 调节参数。
@@ -563,7 +591,7 @@ help: `virt-install <参数> ?`
         start                          开始一个（以前定义的）非活跃的域
         suspend                        挂起一个域
         ttyconsole                     tty 控制台
-        undefine                       取消定义一个域
+        undefine                       取消定义一个域, 若虚拟机启动时使用了nvram文件，销毁该虚拟机需要指定nvram的处理策略: keep-nvram/nvram, 其他nvram是销毁 
         update-device                  从 XML 文件中关系设备
         vcpucount                      域 vcpu 计数
         vcpuinfo                       详细的域 vcpu 信息. 一个vm默认只能使用同一颗物理cpu的逻辑核.
@@ -780,7 +808,7 @@ install 常用参数说明展开目录:
    - vcpus : 分配CPU核心数，最大与实体机CPU核心数相同
    - cpu=CPU：CPU模式及特性，如coreduo等；可以使用`qemu-system-x86_64 -cpu ?`来获取支持的CPU模式
    - virt-type : hypervisor类型, 可使用`virsh capabilities`获取
-   - os-variant=rhel6, 可用`osinfo-query os`获取
+   - os-variant=rhel6, 可用`osinfo-query os`获取, 信息来源于`/usr/share/osinfo`
    - machine : machine类型, 可用`qemu-system-x86_64 -machine help`获取
    - soundhw: 声卡类型, 可用`qemu-system-x86_64 -soundhw help`获取
 - 安装方式
@@ -841,6 +869,12 @@ install 常用参数说明展开目录:
          - password: TYPE为vnc或spice时，为远程访问监听的服务进指定认证密码
 
          例如: `--graphics vnc,password=123456,port=5910`
+   - [video](https://wiki.archlinux.org/title/QEMU_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)#%E5%9B%BE%E5%BD%A2)
+
+      - cirrus : 必应使用
+      - none : 等于没有vga卡, 无法通过`-vnc`访问它. 与使用`-nographic`不同, `-nographic`会让QEMU模拟VGA卡且只是关闭了SDL输出
+      - virtio : 一个基于virgl的3D并行虚拟化图形驱动
+      - qxl : 一个支持2D的并行虚拟化图形驱动 
 
 - 其他
 
@@ -864,3 +898,35 @@ install 常用参数说明展开目录:
 
       - none : 没有声卡
    - noautoconsole: 不自动连接到guest console. 即不阻塞virt-install
+
+## [vm生命周期及状态转换](https://docs.openeuler.org/zh/docs/22.03_LTS/docs/Virtualization/%E7%AE%A1%E7%90%86%E8%99%9A%E6%8B%9F%E6%9C%BA.html)
+虚拟机主要有如下几种状态：
+
+- 未定义（undefined）：虚拟机未定义或未创建，即libvirt认为该虚拟机不存在
+- 关闭状态（shut off）：虚拟机已经被定义但未运行，或者虚拟机被终止
+- 运行中（running）：虚拟机处于运行状态
+- 暂停（paused）：虚拟机运行被挂起，其运行状态被临时保存在内存中，可以恢复到运行状态
+- 保存（saved）：与暂停（paused）状态类似，其运行状态被保存在持久性存储介质中，可以恢复到运行状态
+- 崩溃（crashed）：通常是由于内部错误导致虚拟机崩溃，不可恢复到运行状态
+
+![状态转换](https://docs.openeuler.org/zh/docs/22.03_LTS/docs/Virtualization/figures/status-transition-diagram.png)
+
+在同一个主机上，每个domain具有唯一标识，通过虚拟机名称Name、UUID、Id表示:
+- Name : 虚拟机名称
+- UUID : 通用唯一识别码
+- Id : 虚拟机运行标识, 关闭状态的虚拟机无此标识
+
+## 网络
+KVM虚拟化支持Linux网桥、Open vSwitch网桥等多种类型的网桥. 数据传输路径为`虚拟机 -> 虚拟网卡设备 -> Linux网桥或Open vSwitch网桥 -> 物理网卡`.
+
+搭建linux bridge:
+```bash
+yum install bridge-utils
+brctl addbr br0
+brctl addif br0 eth0 # 将物理网卡eth0绑定到Linux网桥
+ifconfig eth0 0.0.0.0 # eth0与网桥连接后，不再需要IP地址，将eth0的IP设置为0.0.0.0
+dhclient br0 / ifconfig br0 192.168.1.2 netmask 255.255.255.0 # 设置br0的IP地址. 如果有DHCP服务器，可以通过dhclient设置动态IP地址; 
+如果没有DHCP服务器，给br0配置静态IP
+```
+
+搭建open vswitch bridge见[这里](https://docs.openeuler.org/zh/docs/22.03_LTS/docs/Virtualization/%E5%87%86%E5%A4%87%E4%BD%BF%E7%94%A8%E7%8E%AF%E5%A2%83.html).

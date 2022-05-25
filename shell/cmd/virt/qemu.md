@@ -20,7 +20,7 @@ $ qemu- + <tab> 查看支持的arch
 $ qemu-system-x86_64 -boot menu=on,splash-time=15000 # 查看seabios version
 ```
 
-> qemu-x86_64: 仅仅模拟CPU, 即运行某种架构的程序; qemu-system-x86_64: 模拟整个PC, 即运行某种架构系统的vm
+> qemu-x86_64: 仅仅模拟CPU, 即运行某种架构的程序; qemu-system-x86_64: 模拟整个PC即全系统模拟模式 (full-system emulation), 即运行某种架构系统的vm
 > 在qemu新版本(比如2.8.1)中已经将qemu-kvm模块完全合并到qemu中去. 因此当需要使用专kvm特性时候，只需要qemu-system-x86_64 启动命令中增加`–enable-kvm`参数即可.
 
 编译选项:
@@ -440,3 +440,19 @@ qemu-system-x86_64 -kernel bzImage -initrd initrd.img \
 qemu-system-x86_64 -m 512M -drive format=raw,file=rootfs.img
 
 该种引导方式，内核模块和initramfs都包括在rootfs.img中的某个分区的文件系统中
+
+### aarch64启动方式
+[在 AArch64 架构上启动 VM 有两种方式](https://that.guru/blog/uefi-secure-boot-in-libvirt/)：
+1. UEFI
+2. 内核+initrd
+
+一般除了调试没人会选择第二种, 因此它可等同于仅支持uefi.
+
+libvirt 5.3 引入了对 QEMU 自 QEMU 2.9 提供的固件自动选择功能的支持. 此 QEMU 功能依赖于固件 JSON 文件(`/usr/share/qemu/firmware` from `edk2-ovmf`), 这些文件描述了每个固件文件的用途以及如何描述它.
+
+`virsh domcapabilities --machine pc-q35-5.1 | xmllint --xpath '/domainCapabilities/os' -`看查看machine支持的uefi固件.
+
+### hostdev与direct区别
+hostdev为vm提供对 PCI 设备的直接访问, 缺点是无法模拟不同的设备类型. 因此, vm必须有一个可用的驱动程序，该驱动程序与管理程序提供的硬件类型相匹配.
+
+direct并部署真的direct, 它依赖于管理程序配置的网络接口来提供与客户操作系统的连接. 它允许 KVM 本地模拟一些常见的网络接口类型，这些类型通常存在于大多数当前和旧版操作系统中.

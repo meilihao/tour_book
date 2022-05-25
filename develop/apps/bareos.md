@@ -1102,6 +1102,13 @@ fileset中备份文件路径错误.
 
 > 出问题时安装是使用默认参数(即错误参数), 安装完成后修正`C:\Program Files\Bareos\defaultconfigs\bareos-fd.d\director`下的`*.conf`并重启`Bareos File Backup Service`进行配置的.
 
+### `status client=xxx` bareos.log报`Network error during CRAM MD5 with 192.168.0.130\nUnable to authenticate with File daemon at "192.168.0.130:9102"`, client端报:`TLS negotiation failed`, `error:1408F119:SSL routines:ssl3_get_record:decryption failed or bad record mac`
+client在win10上.
+
+已尝试重装client, 或重新配置client的director-dir.conf, 均无效.
+
+这个错误的原因是openssl 在对收到的包做完整性校验时发现收到的报数据不对. 调查时需要从两端同时抓取wireshrk包分析，看到底哪里将数据破坏掉了.
+
 ### 修改Director邮件发送命令
 参考:
 - [备份/恢复系统BAREOS的安装、设置和使用（四）](https://blog.csdn.net/laotou1963/article/details/82939355)

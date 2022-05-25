@@ -13,6 +13,8 @@ guestfish主要包含以下工具：
 
 	virt-alignment-scan -a xxx.qcow2	
 - virt-builder : 快速镜像创建
+		
+	可轻松快速地构建供本地或云使用的各种虚拟机镜像
 - virt-cat : 显示镜像中文件内容
 
 	virt-cat -a t.qcow2 /root/anaconda-ks.cfg
@@ -133,3 +135,6 @@ ntfsfix -b -d /dev/mapper/loop0p1 # `-b -d`清除ntfs的检查标志信息
 kpartx -dv /dev/loop0 # 分离镜像映射
 losetup -d /dev/loop0
 ```
+
+### 拷贝到disk
+`guestfish add /dev/xxx : run : mount /dev/sda1 : copy-in /root/a.cfg /root : ls /root`

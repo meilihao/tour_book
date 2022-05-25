@@ -167,4 +167,77 @@ ref:
 libvirt的限制, 将iso拷贝到本地, 再使用其本地路径即可.
 
 ### 创建vm报`'spicevmc' is not a valid cha driver name`
-是[qemu报错](https://gitlab.com/qemu-project/qemu/-/issues/488).
+是[qemu报错](https://gitlab.com/qemu-project/qemu/-/issues/488), qemu未构建spicevmc设备
+
+### win10 vm启用virtio
+vm配置:
+- cdrom: sata
+- disk/nic: virtio
+
+
+**安装系统时加载virtio disk驱动可直接在virtio盘上安装os, 进入系统后可用iso里的`virtio-win-gt-x<arch>.exe(最新版仅支持win8/win server 2012及以上)`可一次性安装全部剩余virtio驱动**
+
+> iso文件列表在`data/info.json`, 里面还能找到xp相关的virtio驱动.
+
+> `virtio-win-gt-x<arch>.exe`从0.1.173-2开始出现且支持xp, 但安装其中的RHEV Agent时出现了失败, 选择不安装其中的`RHEV/SPICE Agent`(两个都要不选)其余的都能正常安装.
+
+> virt-manager可在vm启动的情况下, 更换cdrom里的iso
+
+virtio disk启用步骤:
+1. 初始`windows安装程序`的磁盘列表为空, 选择下方的`加载驱动程序`->`浏览`
+1. 选择第二个cdrom上的virtio-win-0.1.127.iso->选中`amd/w10`目录->选中要安装的驱动`Red Hat VirtIO SCSI controller (E:\amd64\w10\viostor.inf)`
+1. 点`下一步`, 等待完成后, 磁盘列表会出现virtio磁盘.
+
+> 设备管理器标志: 磁盘驱动器里有`Red Hat VirtIO SCSI Disk Device`, 存储控制器里出现`Red Hat VirtIO SCSI controller`
+
+virtio-win-0.1.127.iso内容:
+- amd64: scsi和scsi blk驱动的合集
+- NetKVM : Virtio网络驱动
+- viostor : Virtio块驱动
+- vioscsi : Virtio SCSI驱动
+- vioserial : virtio 串口驱动
+- viorng : Virtio RNG驱动
+- Balloon : Virtio 内存气球驱动
+- qxl : 用于Windows 7及之前版本的QXL显卡驱动. (virtio-win-0.1.103-1和之后版本会创建)
+- qxldod : 用于Windows 8及之后版本的QXL显卡驱动. (virtio-win-0.1.103-2和之后版本会创建)
+- pvpanic : QEMU pvpanic 设备驱动 (virtio-win-0.1.103-2和之后版本会创建)
+- guest-agent : QEMU Guest Agent 32bit 和 64bit 安装包
+- qemupciserial : QEMU PCI 串口设备驱动
+- qemufwcfg : qemu fwcfg设备驱动
+
+virtio nic启用:
+1. `设备管理器->其他设备->以太网控制器`, 右键选中`更新驱动程序`,选中`E:\NetKVM\w10\amd64`, 下一步即可
+1. 驱动安装完成后, `设备管理器->网络适配器`里会出现`Red Hat VirtIO Ethernet Adapter`
+
+其他virtio驱动对应:
+1. `设备管理器->其他设备->PCI简单通讯控制器` -> `E:\vioserial\w10\amd64`
+
+### virt-manager安装windows蓝屏
+os: xp
+
+蓝屏:
+- 0X000000A5
+
+    是ACPI的问题. 蓝屏原因是你电脑BIOS采用的ACPI规范版本太高了(qemu machine是q35), 而Windows XP系统内置的ACPI驱动最高仅能支持到ACPI 2.0规范, 将machine换为pc即可.
+- 0X0000007B
+
+    因为配置了sata/virtio盘, xp默认没有相关驱动, 需使用ide. 此时nic和显卡是virtio无影响.
+
+    > xp刚启动按f6支持从**软盘**`--disk path=/tmp/virtio-win-0.1.96_x86.vfd,device=floppy`加载第三方驱动, 比如virtio-win-0.1.96_x86.vfd已包含virtio disk驱动, [从`0.1.196`开始vfd消失](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.196-1/), 因此推荐先使用sata安装os后再安装virtio驱动并关机, 最后修改disk bus即可.
+
+    xp启用virtio方法:
+    1. 用ide安装os成功后关机
+    2. 添加virtio盘, 开机并用iso安装相关设备驱动
+    3. 在`计算机管理->磁盘管理`将新virtio盘初始化并新建分区成功表示virtio blk加载成功, 再关机
+    4. 将原先ide盘配置成virtio盘即可(即修改`vm xml`后再`virsh define xxx.xml`).
+
+    经验证: xp安装os成功后(已安装virio blk)的系统盘不能从ide转为virtio, 推测是os启动时没有加载virtio驱动(可能需要类似update-grub2的操作), 但新增virtio disk是可以的.
+
+    > win查看系统信息`systeminfo`, 在存在virtio设备且未安装virtio驱动时该命令可能闪退(在xp上遇到),
+
+    设备驱动映射(`设备管理器->其他设备`):
+    1. 以太网控制器: e:\NetKVM\xp\86
+    1. scsi控制器 : viostor(xp只支持virtio blk), e:\viostor\xp\86
+    1. PCI简单通讯控制器 : E:\vioserial\xp\x86`
+
+    **用`硬件更新向导`的`不要搜索`项(搜索即使指定正确位置也没有结果), 并强制安装驱动**
