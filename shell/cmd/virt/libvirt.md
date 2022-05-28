@@ -330,7 +330,7 @@ centos KVM对UEFI的支持包如下:
 - 64位的arm处理器需要edk2.git-aarch64
 - x86-64处理器需要edk2.git-ovmf-x64
 
-OVMF_CODE是bootloader的镜像文件，而OVMF_VARS则是保存OVMF_CODE中变量的文件. 在UEFI启动页面可以设置一些参数. 而这些参数的保存则需要OVMF_VARS文件, 它们配合使用: vm可以共享OVMF_CODE, 但使用自己的OVMF_VARS(通常放在`/var/lib/libvirt/nvram`或`/etc/libvirt/qemu/nvram`), vm xml相关配置可参考[这里](https://libvirt.org/formatdomain.html#bios-bootloader).
+OVMF_CODE是bootloader的镜像文件，而OVMF_VARS则是保存OVMF_CODE中变量的文件. 在UEFI启动页面可以设置一些参数. 而这些参数的保存则需要OVMF_VARS文件, 它们配合使用: vm可以共享OVMF_CODE, 但使用自己的OVMF_VARS(通常放在`/var/lib/libvirt/qemu/nvram`或`/etc/libvirt/qemu/nvram`), vm xml相关配置可参考[这里](https://libvirt.org/formatdomain.html#bios-bootloader).
 
 支持安全启动的UEFI，需要开启secure=’yes’ ，不过并不是所有的machine都支持，目前只支持q35系列，且需在feature中需要添加SMM.
 

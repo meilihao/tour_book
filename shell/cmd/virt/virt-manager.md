@@ -241,3 +241,21 @@ os: xp
     1. PCI简单通讯控制器 : E:\vioserial\xp\x86`
 
     **用`硬件更新向导`的`不要搜索`项(搜索即使指定正确位置也没有结果), 并强制安装驱动**
+
+### kernel是否支持virtio
+ref:
+- [安装virtio驱动](https://help.aliyun.com/document_detail/62423.htm)
+- [Linux 系统检查 Virtio 驱动](https://intl.cloud.tencent.com/zh/document/product/213/9929)
+
+执行`grep -i virtio /boot/config-$(uname -r)`, 有三种情况:
+- 如果返回结果中CONFIG_VIRTIO_BLK 参数和CONFIG_VIRTIO_NET 参数取值为 m
+
+    ```bash
+    # lsinitrd /boot/initramfs-$(uname -r).img | grep virtio # CentOS 6/CentOS 7/CentOS 8/RedHat 6/RedHat 7 操作系统
+    # lsinitramfs /boot/initrd.img-$(uname -r) | grep virtio # Debian/Ubuntu 操作系统
+    ```
+- 如果在返回结果中CONFIG_VIRTIO_BLK 参数和CONFIG_VIRTIO_NET 参数取值为 y，表示kernel内置了 Virtio 驱动
+- 如果在返回结果中没有CONFIG_VIRTIO_BLK 参数和CONFIG_VIRTIO_NET 参数的信息，表示该操作系统不支持virtio
+
+### vm在线加盘后重启未生效
+关机再开机即可生效.

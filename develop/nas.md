@@ -1082,7 +1082,244 @@ $ smbpasswd -w 123456	# 存储用于连接 LDAP 服务的bind password, 非常�
 ## other nas
 ### 群辉
 ref:
+- [黑群DSM7.X引导文件（2022年5月5日更新）](https://wp.gxnas.com/11849.html)
+- [黑群晖DSM6.24和DSM7.x测试版](https://dl.gxnas.com:1443/?dir=/%E9%BB%91%E7%BE%A4%E6%99%96/%E9%BB%91%E7%BE%A4%E6%99%96DSM6.24%E5%92%8CDSM7.x%E6%B5%8B%E8%AF%95%E7%89%88)
+- [私人定制专属的RedPill-DSM7.X引导文件并添加扩展驱动（编译DSM7.X引导教程）](https://wp.gxnas.com/11358.html)
+- [RedPill Loader Builder](https://github.com/RedPill-TTG/redpill-load)
+- [tinycore-redpill](https://github.com/pocopico/tinycore-redpill)
 - [新一代 NAS 操作系统：群晖 DSM 7.0 深度体验](https://sspai.com/post/64374)
 - [A-Journey-into-Synology-NAS-系列——群晖NAS介绍](https://www.wangan.com/p/7fygf74cb236fd68)
+- [群晖系统Synology DSM安装ipkg包管理](https://cloud.tencent.com/developer/article/1405675), [包来源](http://ipkg.nslu2-linux.org/feeds/optware/syno-i686/cross/unstable/)
 
-DSM在[这里](https://www.synology.com/zh-tw/support/download/VirtualDSM?version=7.1)下载, 
+DSM在[这里](https://www.synology.com/zh-tw/support/download/VirtualDSM?version=7.1)下载, DSM是管理套件, 需要先安装系统, 在用它升级.
+
+这里直接使用了已安装最新DSM 7.1.0-42661的[image](https://1-199-159-230.d.123pan.cn:30443/123-198/3bf2b54a/1811707646-0/3bf2b54afb88f8bb74bc3cc6ba9d7cc6?filename=DS3617xs_7.1.0-42661%EF%BC%88%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%89%88%E5%BC%95%E5%AF%BC%EF%BC%89.img&s=bfcaf3bbaa589b42aa61ce6d5ccc4313&t=1653791889&v=1&d=14440b59), 参考资料在[这里](https://wp.gxnas.com/11089.html).
+
+步骤:
+1. 创建vm
+
+	DS3617xs_7.1.0-42661.img作为系统盘, DS3617xs.qcow2作为数据盘.
+
+	**数据盘应大于等于32G(32G已测试)**:
+	- 4G已测试, 后面安装群辉系统时会报"格式化失败"
+	- 16G已测试, 创建存储池(raid type:basic)时, "修改分配的大小"的值无法通过校验
+
+	> 第一块数据盘的部分可能被用于安装DSM, 因此其实际可用大小会小于盘大小.
+
+	```xml
+	<domain type="kvm">
+	  <name>DS3617xs</name>
+	  <uuid>9f6e0f72-bd3b-4910-85a8-6c2d2b1a254d</uuid>
+	  <metadata>
+	    <libosinfo:libosinfo xmlns:libosinfo="http://libosinfo.org/xmlns/libvirt/domain/1.0">
+	      <libosinfo:os id="http://debian.org/debian/10"/>
+	    </libosinfo:libosinfo>
+	  </metadata>
+	  <memory unit="KiB">1048576</memory>
+	  <currentMemory unit="KiB">1048576</currentMemory>
+	  <vcpu placement="static">2</vcpu>
+	  <os>
+	    <type arch="x86_64" machine="pc-q35-6.2">hvm</type>
+	    <loader readonly="yes" type="pflash">/usr/share/OVMF/OVMF_CODE_4M.fd</loader>
+	    <nvram>/var/lib/libvirt/qemu/nvram/DS3617xs_VARS.fd</nvram>
+	    <boot dev="hd"/>
+	  </os>
+	  <features>
+	    <acpi/>
+	    <apic/>
+	    <vmport state="off"/>
+	  </features>
+	  <cpu mode="host-passthrough" check="none" migratable="on"/>
+	  <clock offset="utc">
+	    <timer name="rtc" tickpolicy="catchup"/>
+	    <timer name="pit" tickpolicy="delay"/>
+	    <timer name="hpet" present="no"/>
+	  </clock>
+	  <on_poweroff>destroy</on_poweroff>
+	  <on_reboot>restart</on_reboot>
+	  <on_crash>destroy</on_crash>
+	  <pm>
+	    <suspend-to-mem enabled="no"/>
+	    <suspend-to-disk enabled="no"/>
+	  </pm>
+	  <devices>
+	    <emulator>/usr/bin/qemu-system-x86_64</emulator>
+	    <disk type="file" device="disk">
+	      <driver name="qemu" type="raw"/>
+	      <source file="/opt/mark/DS3617xs_7.1.0-42661.img"/>
+	      <target dev="sda" bus="sata"/>
+	      <address type="drive" controller="0" bus="0" target="0" unit="0"/>
+	    </disk>
+	    <disk type="file" device="disk">
+	      <driver name="qemu" type="qcow2" discard="unmap"/>
+	      <source file="/var/lib/libvirt/images/DS3617xs.qcow2"/>
+	      <target dev="sdb" bus="sata"/>
+	      <address type="drive" controller="0" bus="0" target="0" unit="1"/>
+	    </disk>
+	    <controller type="usb" index="0" model="qemu-xhci" ports="15">
+	      <address type="pci" domain="0x0000" bus="0x02" slot="0x00" function="0x0"/>
+	    </controller>
+	    <controller type="pci" index="0" model="pcie-root"/>
+	    <controller type="pci" index="1" model="pcie-root-port">
+	      <model name="pcie-root-port"/>
+	      <target chassis="1" port="0x10"/>
+	      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x0" multifunction="on"/>
+	    </controller>
+	    <controller type="pci" index="2" model="pcie-root-port">
+	      <model name="pcie-root-port"/>
+	      <target chassis="2" port="0x11"/>
+	      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x1"/>
+	    </controller>
+	    <controller type="pci" index="3" model="pcie-root-port">
+	      <model name="pcie-root-port"/>
+	      <target chassis="3" port="0x12"/>
+	      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x2"/>
+	    </controller>
+	    <controller type="pci" index="4" model="pcie-root-port">
+	      <model name="pcie-root-port"/>
+	      <target chassis="4" port="0x13"/>
+	      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x3"/>
+	    </controller>
+	    <controller type="pci" index="5" model="pcie-root-port">
+	      <model name="pcie-root-port"/>
+	      <target chassis="5" port="0x14"/>
+	      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x4"/>
+	    </controller>
+	    <controller type="pci" index="6" model="pcie-root-port">
+	      <model name="pcie-root-port"/>
+	      <target chassis="6" port="0x15"/>
+	      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x5"/>
+	    </controller>
+	    <controller type="pci" index="7" model="pcie-root-port">
+	      <model name="pcie-root-port"/>
+	      <target chassis="7" port="0x16"/>
+	      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x6"/>
+	    </controller>
+	    <controller type="pci" index="8" model="pcie-root-port">
+	      <model name="pcie-root-port"/>
+	      <target chassis="8" port="0x17"/>
+	      <address type="pci" domain="0x0000" bus="0x00" slot="0x02" function="0x7"/>
+	    </controller>
+	    <controller type="pci" index="9" model="pcie-root-port">
+	      <model name="pcie-root-port"/>
+	      <target chassis="9" port="0x18"/>
+	      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x0" multifunction="on"/>
+	    </controller>
+	    <controller type="pci" index="10" model="pcie-root-port">
+	      <model name="pcie-root-port"/>
+	      <target chassis="10" port="0x19"/>
+	      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x1"/>
+	    </controller>
+	    <controller type="pci" index="11" model="pcie-root-port">
+	      <model name="pcie-root-port"/>
+	      <target chassis="11" port="0x1a"/>
+	      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x2"/>
+	    </controller>
+	    <controller type="pci" index="12" model="pcie-root-port">
+	      <model name="pcie-root-port"/>
+	      <target chassis="12" port="0x1b"/>
+	      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x3"/>
+	    </controller>
+	    <controller type="pci" index="13" model="pcie-root-port">
+	      <model name="pcie-root-port"/>
+	      <target chassis="13" port="0x1c"/>
+	      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x4"/>
+	    </controller>
+	    <controller type="pci" index="14" model="pcie-root-port">
+	      <model name="pcie-root-port"/>
+	      <target chassis="14" port="0x1d"/>
+	      <address type="pci" domain="0x0000" bus="0x00" slot="0x03" function="0x5"/>
+	    </controller>
+	    <controller type="scsi" index="0" model="virtio-scsi">
+	      <address type="pci" domain="0x0000" bus="0x03" slot="0x00" function="0x0"/>
+	    </controller>
+	    <controller type="sata" index="0">
+	      <address type="pci" domain="0x0000" bus="0x00" slot="0x1f" function="0x2"/>
+	    </controller>
+	    <controller type="virtio-serial" index="0">
+	      <address type="pci" domain="0x0000" bus="0x04" slot="0x00" function="0x0"/>
+	    </controller>
+	    <interface type="network">
+	      <mac address="52:54:00:d4:72:77"/>
+	      <source network="default"/>
+	      <model type="e1000e"/>
+	      <address type="pci" domain="0x0000" bus="0x01" slot="0x00" function="0x0"/>
+	    </interface>
+	    <serial type="pty">
+	      <target type="isa-serial" port="0">
+	        <model name="isa-serial"/>
+	      </target>
+	    </serial>
+	    <console type="pty">
+	      <target type="serial" port="0"/>
+	    </console>
+	    <channel type="unix">
+	      <target type="virtio" name="org.qemu.guest_agent.0"/>
+	      <address type="virtio-serial" controller="0" bus="0" port="1"/>
+	    </channel>
+	    <channel type="spicevmc">
+	      <target type="virtio" name="com.redhat.spice.0"/>
+	      <address type="virtio-serial" controller="0" bus="0" port="2"/>
+	    </channel>
+	    <input type="tablet" bus="usb">
+	      <address type="usb" bus="0" port="1"/>
+	    </input>
+	    <input type="mouse" bus="ps2"/>
+	    <input type="keyboard" bus="ps2"/>
+	    <graphics type="spice" autoport="yes">
+	      <listen type="address"/>
+	      <image compression="off"/>
+	    </graphics>
+	    <sound model="ich9">
+	      <address type="pci" domain="0x0000" bus="0x00" slot="0x1b" function="0x0"/>
+	    </sound>
+	    <audio id="1" type="spice"/>
+	    <video>
+	      <model type="qxl" ram="65536" vram="65536" vgamem="16384" heads="1" primary="yes"/>
+	      <address type="pci" domain="0x0000" bus="0x00" slot="0x01" function="0x0"/>
+	    </video>
+	    <memballoon model="virtio">
+	      <address type="pci" domain="0x0000" bus="0x05" slot="0x00" function="0x0"/>
+	    </memballoon>
+	    <rng model="virtio">
+	      <backend model="random">/dev/urandom</backend>
+	      <address type="pci" domain="0x0000" bus="0x06" slot="0x00" function="0x0"/>
+	    </rng>
+	  </devices>
+	</domain>
+	```
+
+1. 并[设置SataPortMap和DiskIdxMap](https://wp.gxnas.com/11876.html)
+
+	**不设置SataPortMap和DiskIdxMap, 可能群辉web部署网页会提示找不到硬盘**
+
+	设置SataPortMap和DiskIdxMap:
+	1. 下载[tinycore-redpill-uefi.v0.4.6.img.gz](https://github.com/pocopico/tinycore-redpill), 并解压得到tinycore-redpill-uefi.v0.4.6.img
+	1. 先将vm xml里的DS3617xs_7.1.0-42661.img替换为tinycore-redpill-uefi.v0.4.6.img, 并启动vm
+	1. 在vm的terminal里执行`./rploader.sh satamap now`, 获得SataPortMap和DiskIdxMap参数
+1. 修改DS3617xs_7.1.0-42661.img的SataPortMap和DiskIdxMap参数
+
+	```bash
+	losetup -f # 获得可用的loop设备
+	losetup -P /dev/loop1 DS3617xs_7.1.0-42661.img
+	mkdir /mnt/t
+	mount  /dev/loop1p1 /mnt/t
+	vim /mnt/t/boot/grub/grub.cfg # 修改SATA启动项的配置即可
+	losetup -d /dev/loop1
+	```
+
+	将vm xml里的tinycore-redpill-uefi.v0.4.6.img重新替换为DS3617xs_7.1.0-42661.img
+1. 启动vm, 选择`(SATA, Verbose)`引导项
+1. 桌面显示`Starting kernel with SATA boot`, 这里会停比较久, 千万不要以为卡住了
+1. 在浏览器访问`http://find.synology.com/`, 通过它可搜索局域网内的群辉设备, 找到后会跳转到该设备的web部署网页上
+
+	等待的时间根据不同的硬件性能决定，有些性能好的机器一般3-5分钟之内可以搜索出来，性能不好的机器有可能20分钟以上才能搜索出来.
+
+	这里建议关闭防火墙, 否则可能无法扫出群辉设备.
+1. 按照提示一步步即可. 安装完成系统会自动重启，此时会显示一个10分钟的倒计时，重启等待的时间由硬件性能决定（正常等待1-10分钟）
+
+	中间需要下载DSM_DS3617xs_42661.pat用于更新.
+
+	其他设置:
+	1. 跳过创建Synology账号
+	1. "设备分析"页不勾选, 直接提交

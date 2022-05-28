@@ -1,5 +1,6 @@
 # lvm
 参考:
+- [Red Hat Enterprise Linux 7 逻辑卷管理器管理](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/7/pdf/logical_volume_manager_administration/red_hat_enterprise_linux-7-logical_volume_manager_administration-zh-cn.pdf)
 - [LVM的基本概念和部署](http://xintq.net/2014/07/30/LVM%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5%E5%92%8C%E9%83%A8%E7%BD%B2/)
 
 ## 描述
@@ -104,6 +105,9 @@ lvm会以`/dev/<vg>/<lv>`形式生成块设备的软连接, 这与zvol类似.
 ### 从lv名称中获取vg名称
 lv名称的第一个`-`前的字符为vg名称
 
+
+> 如果lv和vg名称里出现了`-`, `/dev/mapper`映射时会被转为`--`
+
 ### 修复软raid with lvm
 起因是公司一台做了raid5(不知是硬件raid还是软raid)的服务器系统出现了问题,不能进入系统但又需要取出数据. 当时想到的办法是将硬盘卸下, 放到其他机器进行读取.
 
@@ -142,3 +146,16 @@ mdN(N为数字)是mdadm创建的软raid.
 ...
 # vgrename $UUID /dev/$OldName #重命名回vg name,防止对应raid的系统不能启动
 ```
+
+### `pvcreate /dev/sdb`报`Device /dev/sdb excluded by a filter`
+原因是sdb已经有了分区表
+
+### vg/lv名称出现`-`的处理方法
+**如果vg/lv名称带`-`, 用`""`包裹, vg/lv命名不能以"-"开头, 但允许用`-`结尾**.
+
+> `The valid characters for VG and LV names are: a-z A-Z 0-9 + _ . -` is from `man lvm`
+
+lvm `/dev/mapper`下这类路径的还原vg/lv的方法:
+1. 将`--`替换为`|`
+1. 将`-`替换为`/`
+1. 将`|`替换为`-`

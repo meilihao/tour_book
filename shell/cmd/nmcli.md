@@ -1,4 +1,7 @@
 # nmcli
+ref:
+- [Managing IP Networking](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/networking_guide/part-managing_ip_networking#doc-wrapper)
+
 RHEL 和 CentOS 系统默认使用 NetworkManager 来提供网络服务，这是一种动态管理网
 络配置的守护进程，能够让网络设备保持连接状态. 其使用 nmcli 命令来管理 Network 
 Manager 服务. 即nmcli 是一款基于命令行的网络配置工具.
@@ -21,6 +24,7 @@ nmtui是nmcli的terminal gui. nm-connection-editor是gui.
 # nmcli connection add con-name company ifname eno16777736 autoconnect no type ethernet ip4 192.168.10.10/24 gw4 192.168.10.1 # autoconnect no 参数设置该网络会话默认不被自动激活，以及用 ip4 及 gw4 参数手动指定网络的 IP 地址
 # nmcli connection add con-name house type ethernet ifname eno16777736 # 从外部 DHCP 服务器自动获得 IP 地址，因此不需要进行手动指定
 # nmcli connection up house # 回家启用 house网络会话，网卡就能自动通过 DHCP 获取到 IP 地址
+nmcli -p dev # 查看设备状态
 ```
 
 ## bonding
