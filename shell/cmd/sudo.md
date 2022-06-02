@@ -20,3 +20,11 @@ sudo 命令具有如下功能：
 ```bash
 $ sudo KKZONE=cn env # sudo 传入env
 ```
+
+## FAQ
+### 添加sudo
+```sh
+# visudo # 添加`%sudo	ALL=(ALL:ALL) ALL`, 即属于sudo用户组的用户均可使用sudo命令
+```
+
+`tidb ALL=(ALL) NOPASSWD:ALL`表示使用sudo命令时无需密码.

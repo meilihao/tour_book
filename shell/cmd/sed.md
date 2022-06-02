@@ -44,6 +44,7 @@ sed内置命令N的作用: 不会清空模式空间(pattern space)内容, 并且
 
 ## 例
 ```
+$ sed -i 's/^#\s*StrictHostKeyChecking.*$/    StrictHostKeyChecking no/' /etc/ssh/ssh_config # 整行替换
 $ sed -n '3,7 p' data # 打印3~7行
 $ sed -n '/linux/I p' data # 查找指定字符串
 $ sed -i "s:/static:/blog/static:" `grep /static -rl ./` # 检索当前目录下的文件,将其包含的字符串"/static"替换为"/blog/static".

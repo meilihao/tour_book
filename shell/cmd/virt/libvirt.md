@@ -13,7 +13,7 @@ sdk:
 
    [libvirt.org/libvirt-go已被支持go module的libvirt.org/go/libvirt取代](https://libvirt.org/libvirt-go.html). sdk使用参考[libvirt-go中能够提供的虚机信息](https://blog.csdn.net/zhagzheguo/article/details/100050474)
 
-安装: `sudo apt install qemu-system-x86 libvirt-daemon libvirt-daemon-system virtinst libvirt-clients bridge-utils`
+安装: `sudo apt install qemu-system-x86 virt-manager libvirt-daemon libvirt-daemon-system virtinst libvirt-clients bridge-utils`
 
 ## 概念
 - 节点（Node） 
@@ -416,8 +416,13 @@ $ sudo systemctl restart libvirtd
 > 试过两个ps设备+一个usb鼠标, 但还是飘.
 
 ### Guest has not initialized the display (yet) 
-- [qemu machine i440FX 仅支持 BIOS ，需更改成Q35， Q35 同时支持 BIOS 和 UEFI](https://blog.csdn.net/m0_47541842/article/details/113521732)
+- [qemu machine i440FX 仅支持 BIOS ，需更改成q35, q35 同时支持 BIOS 和 UEFI](https://blog.csdn.net/m0_47541842/article/details/113521732)
 - iso里os的arch与qemu使用的arch不一致
+
+或用`virt-manager --debug`调试.
+
+### `unsupported configuration: spice graphics are not supported with this QEMU`
+qemu构建时没有选中spice.
 
 ### [vm 磁盘扩容](https://opengers.github.io/openstack/openstack-instance-disk-resize-and-convert/)
 
@@ -482,7 +487,7 @@ help: `virt-install <参数> ?`
 
      Domain Management (help keyword 'domain'):
         attach-device                  从一个XML文件附加装置
-        attach-disk                    附加磁盘设备
+        attach-disk                    附加磁盘设备. 即时生效，但系统重启后新硬盘会消失. 永久方法: 修改vm xml.
 
          virsh attach-disk 361way /data1/kvm.img vdc
         attach-interface               获得网络设备. 添加网卡:virsh attach-interface vm-yaohai --type bridge --source br0 --model virtio --config; 删除网卡(by mac): virsh detach-interface vm-yaohai --type bridge --mac 52:54:00:61:4c:f3 --config
@@ -697,6 +702,8 @@ help: `virt-install <参数> ?`
         nodedev-detach                 将节点设备与其设备驱动程序分离
         nodedev-dumpxml                XML 中的节点设备详情
         nodedev-list                   这台主机中中的枚举设备
+
+         输出可作`--host-device`参数
         nodedev-reattach               重新将节点设备附加到他的设备驱动程序中
         nodedev-reset                  重置节点设备
         nodedev-event                  Node Device Events
@@ -775,6 +782,7 @@ help: `virt-install <参数> ?`
 virt-xml(需关机操作):
 ```
 virt-xml testguest --remove-device --disk target=vdb
+virt-xml --build-xml --disk virt-xml --build-xml --disk /mnt/1.qcow2,target=vdb # test option
 ```
 
 其他:
@@ -810,7 +818,7 @@ install 常用参数说明展开目录:
    - vcpus : 分配CPU核心数，最大与实体机CPU核心数相同
    - cpu=CPU：CPU模式及特性，如coreduo等；可以使用`qemu-system-x86_64 -cpu ?`来获取支持的CPU模式
    - virt-type : hypervisor类型, 可使用`virsh capabilities`获取
-   - os-variant=rhel6, 可用`osinfo-query os`获取, 信息来源于`/usr/share/osinfo`
+   - os-variant=rhel6, 可用`osinfo-query os`获取, 信息来源于`/usr/share/osinfo`, 较新的os xml(比如`/usr/share/osinfo/os/centos.org/centos-stream-9.xml`)包含了支持的设备列表`<devices>`标签
    - machine : machine类型, 可用`qemu-system-x86_64 -machine help`获取
    - soundhw: 声卡类型, 可用`qemu-system-x86_64 -soundhw help`获取
 - 安装方式

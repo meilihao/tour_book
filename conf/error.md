@@ -492,15 +492,6 @@ dmesg提示`EXT4-fs error (device sda2): ext4_lookup:1601: inode #8288969: comm 
 #### firefox清除HSTS缓存
 1. 首选项 - 隐私与安全 - 清除历史数据, 选择合适的时间段+数据tab的两个选项.
 
-### gem install 报错`unable to convert xxx to US-ASCII for xxx, skipping`
-```
-# gem install ffi -v 1.9.10
-# unable to convert "\xE2" to UTF-8 in conversion from ASCII-8BIT to UTF-8 to US-ASCII for lib/ffi/library.rb, skipping
-# gem install fpm -v 1.3.3
-# unable to convert U+91CE from UTF-8 to US-ASCII for lib/backports/tools/normalize.rb, skipping
-# gem install ffi -v 1.9.10 --no-rdoc --no-ri # gem install生成文档时报错, 不生成文档即可.
-```
-
 ### 'aclocal-1.15' is missing on your system
 Ubuntu19.10使用的是aclocal-1.16.
 

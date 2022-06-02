@@ -95,7 +95,7 @@ $ ln -sf /usr/bin/qemu-system-x86_64 /usr/libexec/qemu-kvm
 
     > QED 的开发已被放弃, 建议使用qcow2.
 
-    `qemu-img convert -p -c -f raw -O qcow2 vm500G.raw /path/new-vm500G.qcow2`:
+    `qemu-img convert -p -c -f raw -O qcow2 vm500G.raw /path/new-vm500G.qcow2`, vm500G.raw其实也可以是/dev/sda:
     - -p : 显示转换进度
 
     `qemu-img check [-f fmt] filename`: 对磁盘镜像文件进行一致性检查， 查找镜像文件中的错误.
@@ -220,6 +220,7 @@ $ ln -sf /usr/bin/qemu-system-x86_64 /usr/libexec/qemu-kvm
 - -S : 启动时cpu仅加电, 但不继续执行, 相当于将断点打在CPU加电后要执行的第一条指令处，也就是BIOS程序的第一条指令. 必须在qemu monitor输入`c`才能继续. 未使用`-monitor`时, 按`Ctrl+Alt+2`可进入qemu的monitor界面,`Ctrl+Alt+1`回到qemu
 - -serial stdio : redirects the virtual serial port to the host's terminal input/output, 丢失early boot信息即加电到出现终端登入界面间的信息.
 - smp <N> : 为对称多处理器结构分配N个vCPU
+- -device : 要模拟的设备, help可获取qemu支持模拟的设备列表
 - -monitor
 
     tcp – raw tcp sockets, **推荐**.

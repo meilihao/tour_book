@@ -71,6 +71,9 @@ logging.basicConfig(format='%(asctime)s.%(msecs)03d [%(levelname)s] [%(pathname)
 
     入口`middlewared/plugins/vm/vms.py#do_create()`在`await self.middleware.run_in_thread(self._add, vm_id)`, 调用链是`_add() -> _add_with_vm_data() -> VMSupervisor.__init__ -> update_domain()->__define_domain()->construct_xml()->get_domain_children()`, 具体拼接骨架xml和调用`libvirt`的`defineXML()`都在`__define_domain`里.
 
+### 部分逻辑说明
+- virtManager/vmmAddHardware.py : "添加硬件"按钮
+
 ## FAQ
 参考:
 - [How to compile virt-manager on Debian or Ubuntu](https://www.xmodulo.com/compile-virt-manager-debian-ubuntu.html)
@@ -259,3 +262,8 @@ ref:
 
 ### vm在线加盘后重启未生效
 关机再开机即可生效.
+
+### kylinv10 kvm iso安装无法进入安装界面而是停在uefi shell
+出现这个UEFI SHELL, 说明系统在加载时出了问题，找不到efi启动文件.
+
+创建vm时osvariant选择kylin v10, 而不是选中centos 7.

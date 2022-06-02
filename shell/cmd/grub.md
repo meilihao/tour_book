@@ -62,3 +62,6 @@ sudo rm -rf /usr/share/plymouth
 sudo plymouth --quit
 systemctl status plymouth-poweroff.service
 ```
+
+### 安装boot loader
+grup2-install

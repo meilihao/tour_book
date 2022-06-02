@@ -50,6 +50,23 @@ python解析器:
     $ alias python='/usr/bin/python3.8'
     ```
 
+### pip离线部署
+```bash
+pip download -d ./packages pandas
+pip download -d ./packages -r requirements_full.txt
+
+pip install --no-index --find-links=./packages pandas
+pip install --no-index --find-links=./packages -r requirements.txt
+```
+
+> 其中`--no-index`代表忽视pip 忽视默认的依赖包索引, 即忽略已安装的包, 而是仅从`--find-links`获取; `--find-links`代表从指定的目录寻下找离线包
+
+[`pip install --download`已被废弃](https://github.com/pypa/pip/pull/3085), `pip download`后安装可能会报错, 可将依赖分批次进行安装, 尽可能避免该问题.
+
+原因是pip download不会考虑pip installed的包, 或者是因为pip download没有满足依赖的包它就重新下载了.
+
+有些包下载时就会检查依赖关系, 因为后一个包依赖前一个包, 而前一个包还没有安装, 此时会报错, 因此它们离线部署时必须下一个安装一个, 比如PasteDeploy和PasteScript
+
 ### style
 [git hook, 脚本是Python3的, 需要注意pycodestyle的路径, 这里是`args = ['/home/ubuntu/.local/lib/python2.7/site-packages/pycodestyle.py']`](https://github.com/cbrueffer/pep8-git-hook/blob/master/pre-commit)
 
@@ -130,6 +147,7 @@ $ pip install setuptools== # 查询可用的软件版本
 $ pip show setuptools # 查看setuptools信息
 $ pip3 show -f pycryptodome # 显示pycryptodome包的文件
 $ python3.9 -m pip3 install cython # 为指定版本的python安装包
+$ pipdeptree # 显示依赖树
 ```
 
 > pip配置查找: `python -m  pip config list -v`
@@ -2286,6 +2304,25 @@ os已有rpm安装的`pyparsing 2.0.3`
 ### `pip install pyvmomi`报`'extras_require' must be a dictionary whose values are strings or lists of strings containing valid project/version requirement specifiers`
 编译pyvmomi的setuptools太旧, 解决方法: `pip install --upgrade setuptools`
 
+### `pip download -r req.txt`报`rsa requires Python '>=3.5, < 4' but the running Python is 2.7.16`
+
+之前已通过`pip install rsa=3.4.2`, 当req.txt没有rsa=3.4.2时, oauth2client==4.0.0去拉取了rsa最新的4.0版本, 该版本需要python3.
+
+解决方法: 将rsa=3.4.2加入到req.txt即可.
+
+### `pip donwnload scipy==1.2.2 statsmodels==0.5.0`报`Command "python setup.py egg_info"`
+
+需要先下载scipy并安装后才能安装statsmodels, 可能是scipy需要编译的缘故???.
+
+### pip install报`Could not find a version that satisfies the requirement wheel (from version:)`
+
+源或网络问题, 切换到国内源或多尝试几次. 网上也有提示说是先升级pip到最新, 可以获取更精准的日志.
+
+也可能是setuptool的版本不够导致.
+
+`pip install psutil`正常. 但`pip download`+`pip install`/`requirements.txt`+`pip download`+`pip install`一起安装`wrapt和psutils`就报错, 但先安装wrapt再安装psutils又是好的, 已检查psutils没有依赖, py真是一门神奇的语言.
+
+pip安装的某个软件版本不对(我这里是过高)也会报该错, 但pip没有提示哪个组件的版本有问题, 怀疑是使用了多个requirements.txt, pip计算出来的版本有差异导致该问题.
 
 ### 使用linux下gdb来调试python程序
 **gdb调试Python没有pdb那么方便, 主要是没法直接给python代码打断点**

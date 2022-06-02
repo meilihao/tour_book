@@ -428,3 +428,28 @@ rpmbuild --rebuild xx.src.rpm # build src.rpm
 错误提示中没找到具体包冲突, 推测yum-builddep找到了两个版本的readline-devel, 但不知如何选择导致报错.
 
 直接安装readline-devel即可.
+
+### 用yum cache制作离线源
+```
+cat << EOF >> /etc/yum.conf
+cachedir=/var/cache/yum/$basearch/$releasever
+keepcache=1   #修改此参数为 1 ，代表打开缓存
+debuglevel=2
+logfile=/var/log/yum.log
+EOF
+```
+
+其他方法, 参考[制作离线yum源](https://www.wanpeng.life/1903.html):
+```bash
+mkdir -p yum_cache
+yumdownloader --resolve --destdir=yum_cache docker
+createrepo yum_cache
+cat <<EOF>> /etc/yum.repos.d/docker.repo
+[docker-local]
+name=dokcer-ce
+baseurl=file:///root/yum_cache
+gpgcheck=0
+enabled=1
+EOF
+yum repolist
+```

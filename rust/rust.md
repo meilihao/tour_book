@@ -390,7 +390,10 @@ trait借鉴了Haskell的Typeclass, 是rust实现零成本抽象的基石, 其机
 
 rust支持trait的默认实现: 有时为 trait 中的某些或全部方法提供默认的行为，而不是在每个类型的每个实现中都定义自己的行为是很有用的, 但明确定义该方法可覆盖其默认实现.
 
+> Clone 宏让数据结构可以被复制，而 Copy 则让数据结构可以在参数传递的时候自动按字节拷贝
+
 ```rust
+//  #[derive(Debug)] 为数据结构实现了 Debug trait，提供了 debug 能力，这样可以通过  {:?}，用  println! 打印出来
 // `<T: Debug>`表示有trait限定(trait bound)的泛型, 即只有实现了Debug trait的类型才适用. 只有实现了Debug trait的类型才拥有使用`{:?}`格式化打印的行为
 fn match_opton<T: Debug>(o: Option<T>) {
     match o {
@@ -684,6 +687,11 @@ String ：to_string() 可以将字符串字面量转换为String
 
 #### 哪些未实现 Copy trait
 - Box<T>
+
+## 类型
+Rust 支持类型推导，在编译器能够推导类型的情况下，变量类型一般可以省略，但常量（const）和静态变量（static）必须声明类型.
+
+Rust 函数参数的类型和返回值的类型都必须显式定义，如果没有返回值可以省略，返回 unit。函数内部如果提前返回，需要用 return 关键字，否则最后一个表达式就是其返回值。如果最后一个表达式后添加了; 分号，隐含其返回值为 unit.
 
 ### 标量(scalar)数据类型
 rust有四种标量数据类型(即基本数据类型, 表示只能存储单个值的类型):

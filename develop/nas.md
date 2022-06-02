@@ -1106,6 +1106,8 @@ DSM在[这里](https://www.synology.com/zh-tw/support/download/VirtualDSM?versio
 
 	> 第一块数据盘的部分可能被用于安装DSM, 因此其实际可用大小会小于盘大小.
 
+	推荐使用2个网卡, 因为Synology High Availability需要至少两个网口.
+
 	```xml
 	<domain type="kvm">
 	  <name>DS3617xs</name>
@@ -1115,9 +1117,9 @@ DSM在[这里](https://www.synology.com/zh-tw/support/download/VirtualDSM?versio
 	      <libosinfo:os id="http://debian.org/debian/10"/>
 	    </libosinfo:libosinfo>
 	  </metadata>
-	  <memory unit="KiB">1048576</memory>
-	  <currentMemory unit="KiB">1048576</currentMemory>
-	  <vcpu placement="static">2</vcpu>
+	  <memory unit="KiB">2097152</memory>
+	  <currentMemory unit="KiB">1638400</currentMemory>
+	  <vcpu placement="static">3</vcpu>
 	  <os>
 	    <type arch="x86_64" machine="pc-q35-6.2">hvm</type>
 	    <loader readonly="yes" type="pflash">/usr/share/OVMF/OVMF_CODE_4M.fd</loader>
@@ -1153,8 +1155,8 @@ DSM在[这里](https://www.synology.com/zh-tw/support/download/VirtualDSM?versio
 	    <disk type="file" device="disk">
 	      <driver name="qemu" type="qcow2" discard="unmap"/>
 	      <source file="/var/lib/libvirt/images/DS3617xs.qcow2"/>
-	      <target dev="sdb" bus="sata"/>
-	      <address type="drive" controller="0" bus="0" target="0" unit="1"/>
+	      <target dev="sdc" bus="sata"/>
+	      <address type="drive" controller="0" bus="0" target="0" unit="2"/>
 	    </disk>
 	    <controller type="usb" index="0" model="qemu-xhci" ports="15">
 	      <address type="pci" domain="0x0000" bus="0x02" slot="0x00" function="0x0"/>
@@ -1244,6 +1246,12 @@ DSM在[这里](https://www.synology.com/zh-tw/support/download/VirtualDSM?versio
 	      <source network="default"/>
 	      <model type="e1000e"/>
 	      <address type="pci" domain="0x0000" bus="0x01" slot="0x00" function="0x0"/>
+	    </interface>
+	    <interface type="network">
+	      <mac address="52:54:00:86:71:23"/>
+	      <source network="default"/>
+	      <model type="e1000e"/>
+	      <address type="pci" domain="0x0000" bus="0x07" slot="0x00" function="0x0"/>
 	    </interface>
 	    <serial type="pty">
 	      <target type="isa-serial" port="0">
