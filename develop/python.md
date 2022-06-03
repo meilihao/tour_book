@@ -54,11 +54,15 @@ python解析器:
 
 ### pip离线部署
 ```bash
+# --- **`pandas` 和`-r requirements_full.txt` 不要混用, 否则可能会因计算出的依赖版本不同导致未知错误**
 pip download -d ./packages pandas
 pip download -d ./packages -r requirements_full.txt
 
 pip install --no-index --find-links=./packages pandas
 pip install --no-index --find-links=./packages -r requirements.txt
+
+pip freeze > requirements.txt
+pip download -r requirements.txt -d /packs -i http://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com
 ```
 
 > 其中`--no-index`代表忽视pip 忽视默认的依赖包索引, 即忽略已安装的包, 而是仅从`--find-links`获取; `--find-links`代表从指定的目录寻下找离线包

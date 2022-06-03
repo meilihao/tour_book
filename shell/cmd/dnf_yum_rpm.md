@@ -453,3 +453,5 @@ enabled=1
 EOF
 yum repolist
 ```
+
+安装单个工具: `yum install -y iotop --downloaddir=/root/centos-repo`

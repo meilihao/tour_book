@@ -243,3 +243,12 @@ deb [arch=amd64 signed-by=/usr/share/keyrings/sublimehq-pub.gpg] https://downloa
 gpg --keyserver keyserver.ubuntu.com --recv-key 9C949F2093F565FF
 gpg -a --export  9C949F2093F565FF | sudo apt-key add -
 ```
+
+### 离线部署
+```bash
+创建存放目录：mkdir -p /home/ubuntu/packs；
+安装软件包dpkg-dev:apt-get install dpkg-dev
+拷贝dep包至存放目录：sudo cp -r /var/cache/apt/archives/* /home/ubuntu/packs；
+进入packs目录下，生成包的依赖信息：dpkg-scanpackages packs /dev/null |gzip > packs/Packages.gz
+制作iso包：mkisofs -r -o /home/ubuntu/ubuntu-16.04.5-amd64.iso /home/ubunut/packs
+```
