@@ -32,7 +32,7 @@ $ curl https://bootstrap.pypa.io/get-pip.py --output get-pip.py
 $ sudo python2 get-pip.py
 ```
 
-`pip install wheel`后安装依赖时也会构建出相应的whl包.
+`pip install wheel`后安装依赖时也会构建出相应的whl包, 此时[`pip install --no-cache-dir`](https://stackoverflow.com/questions/35169608/when-does-pip-install-build-a-wheel)可禁用构建whl包.
 
 > [pip安装, 未测试](https://pip.pypa.io/en/stable/installing/)
 
