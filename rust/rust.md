@@ -381,6 +381,10 @@ unsafe块: rust编译器将内存安全交由开发者自行负责.
 
 泛型允许开发者编写一些在使用时才制定类型的代码. rust编译器会在编译期间自动为具体类型生成实现代码, 即采用单态化（monomorphization）实现.
 
+在 Rust 里, 数据的行为通过 trait 来定义. 一般用 impl  关键字为数据结构实现 trait, 但 Rust 贴心地提供了派生宏（derive macro）, 可以大大简化一些标准接口的定义. 比如`#[derive(Debug)]` 为数据结构实现了 Debug trait, 提供了 debug 能力，这样可以通过`{:?}`, 用`println!`打印出来.
+
+> Clone 让数据结构可以被复制，而 Copy 则让数据结构可以在参数传递的时候自动按字节拷贝.
+
 trait 告诉 Rust 编译器某个特定类型拥有可能与其他类型共享的功能. 可以通过 trait 以一种抽象的方式定义共享的行为. 可以使用 trait bounds 指定泛型是任何拥有特定行为的类型.
 
 trait借鉴了Haskell的Typeclass, 是rust实现零成本抽象的基石, 其机制如下:
@@ -393,7 +397,6 @@ rust支持trait的默认实现: 有时为 trait 中的某些或全部方法提�
 > Clone 宏让数据结构可以被复制，而 Copy 则让数据结构可以在参数传递的时候自动按字节拷贝
 
 ```rust
-//  #[derive(Debug)] 为数据结构实现了 Debug trait，提供了 debug 能力，这样可以通过  {:?}，用  println! 打印出来
 // `<T: Debug>`表示有trait限定(trait bound)的泛型, 即只有实现了Debug trait的类型才适用. 只有实现了Debug trait的类型才拥有使用`{:?}`格式化打印的行为
 fn match_opton<T: Debug>(o: Option<T>) {
     match o {
@@ -691,7 +694,7 @@ String ：to_string() 可以将字符串字面量转换为String
 ## 类型
 Rust 支持类型推导，在编译器能够推导类型的情况下，变量类型一般可以省略，但常量（const）和静态变量（static）必须声明类型.
 
-Rust 函数参数的类型和返回值的类型都必须显式定义，如果没有返回值可以省略，返回 unit。函数内部如果提前返回，需要用 return 关键字，否则最后一个表达式就是其返回值。如果最后一个表达式后添加了; 分号，隐含其返回值为 unit.
+Rust 函数参数的类型和返回值的类型都必须显式定义, 如果没有返回值可以省略, 返回`unit即空元组`. 函数内部如果提前返回, 需要用 return 关键字, 否则最后一个表达式就是其返回值. 如果最后一个表达式后添加了`;`, 隐含其返回值为 unit.
 
 ### 标量(scalar)数据类型
 rust有四种标量数据类型(即基本数据类型, 表示只能存储单个值的类型):
@@ -891,7 +894,7 @@ rust提供5种复合类型:
     1. 元组结构体(tuple-like struct)
 
         没有字段名称, 仅有类型. 比如`struct Color(i32, i32, i32);`
-        当一个元组结构体只有一个字段时, 称为New Type模式. 因为它把一种类型封装成了新类型.
+        当一个元组结构体只有一个字段时, 比如`struct UserId(u64);`, 称为New Type模式. 因为它把一种类型封装成了新类型.
     1. 单元结构体(unit-like struct)
 
         没有任何字段的结构体, 比如`strcut Empty{}`.

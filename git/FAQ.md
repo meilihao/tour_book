@@ -417,3 +417,6 @@ git remote add new_origin xxx
 git push -u new_origin --all
 git push -u new_origin --tags
 ```
+
+### [`git push`报`shallow update not allowed`](https://stackoverflow.com/questions/28983842/remote-rejected-shallow-update-not-allowed-after-changing-git-remote-url)
+解决方法: `git fetch --unshallow origin && git push`
