@@ -1,4 +1,7 @@
 # tools
+## error
+- [errgroup]()
+
 ## print struct
 - [github.com/davecgh/go-spew， **推荐**](github.com/davecgh/go-spew)
 
