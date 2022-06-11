@@ -40,6 +40,7 @@ rust有stable和nightly两个版本, 默认版本可通过`rustup show`查看.
 - rustdoc : 文档工具
 - rustfmt : 格式化工具
 - rust-gdb : 调试工具
+- rust-lldb: 调试工具
 
 ## 常用命令
 - `rustc -V` : rust version
@@ -61,6 +62,13 @@ rustup component add rust-src
 ## tool
 参考:
 - [将 Vim 设置为 Rust IDE](https://linux.cn/article-12530-1.html)
+
+### rls
+```bash
+rustup component add rls --toolchain 
+rustup component add rust-analysis --toolchain 
+rustup component add rust-src --toolchain
+```
 
 ### sublime3插件
 ```

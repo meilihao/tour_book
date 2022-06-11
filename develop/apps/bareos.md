@@ -336,7 +336,7 @@ include fastcgi_params;
 1. bareos director配置bareos-dir
 ```bash
 $ bconsole
-* configure add client name=client2-fd address=192.168.0.2 password=secret # 注册client, 会创建`/etc/bareos/bareos-dir.d/client/client2-fd.conf`和`/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf`(bareos-fd访问bareos-dir的授权, **如果其中不包含Address-<dir_ip>时请添加**)
+* configure add client name=client2-fd address=192.168.0.2 password=secret [TlsRequire=yes] # 注册client, 会创建`/etc/bareos/bareos-dir.d/client/client2-fd.conf`和`/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf`(bareos-fd访问bareos-dir的授权, **如果其中不包含Address-<dir_ip>时请添加**)
 reload # 不能丢
 exit
 ```
@@ -358,21 +358,24 @@ exit
         需要设置的参数:
         - Client Name: bconsole注册clients时的名称, 最好是clients os的hostname
         - Director Name: 不修改
-        - Password: dareos-server:/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf中的Password
+        - Password: dareos-server:/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf中的Password即`[md5]xxx`
         - Network Address: 注册client时本机的ip
         - Client Monitor Password: 用/etc/bareos/bareos-dir.d/console/bareos-mon.conf文件中的Password
+
 1. 测试client by bconsole
 
   ```bash
   status client=client2-fd
   ```
 
+  如果无法链接到windows的bareos client上(windows日志里均是提示tls相关错误), 先卸载该client, 卸载时必须选择**不保留配置**, 再重新安装并配置入正确的参数即可.
+
 ## bconsole cmd
 ```bash
 * reload # 重载配置
 * status client # 测试client connection
 * status storage
-* show client
+* show client=l130 [verbose]
 * show fileset[=xxx]
 * list clients
 * list pools

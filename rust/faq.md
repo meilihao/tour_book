@@ -1,4 +1,4 @@
-faq
+## FAQ
 
 ### vscode无法跳转报`Couldn't start client Rust Language Server`
 vscode 菜单栏 -> File -> Preferences -> Settings, 在编辑器右上角选择`Open Settings(JSON)`按钮, 在settiong.json中追加:

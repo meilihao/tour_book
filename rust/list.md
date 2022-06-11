@@ -12,3 +12,4 @@
 
 ## book
 - rust权威指南 = [Rust 程序设计语言](https://kaisery.github.io/trpl-zh-cn/title-page.html)
+- [Rust 版本指南(中文版)](https://rustwiki.org/zh-CN/edition-guide/)

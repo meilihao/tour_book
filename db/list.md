@@ -24,3 +24,6 @@
 ## next db
 ### OceanBase
 - [蚂蚁金服庆涛：OceanBase支撑2135亿成交额背后的技术原理](https://blog.51cto.com/u_14164343/2344929)
+
+### badger
+- [KV 存储引擎 - Badger源码分析](https://www.modb.pro/db/124963)

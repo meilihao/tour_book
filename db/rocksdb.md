@@ -10,6 +10,8 @@ RocksDB是一个嵌入式的K-V（任意字节流）存储. 所有的数据在�
 
 > rocksdb支持Direct IO, 以绕过系统Page Cache，通过应用内存从存储设置中直接进行IO读写操作.
 
+> rocksdb版本定义在`include/rocksdb/version.h`, history在`HISTORY.md`.
+
 ![](/misc/img/develop/4304640-891400b1777c999d.png)
 
 ## 编译
@@ -301,8 +303,8 @@ uint32_t Extend(uint32_t crc, const char* buf, size_t size) {
 不推荐, 曾尝试过一个下午, 但还是不行.
 
 ### go driver
-- [tecbot/gorocksdb](https://github.com/tecbot/gorocksdb), most using
-- [linxGnu/grocksdb](https://github.com/linxGnu/grocksdb), follow rocksdb latest
+- [linxGnu/grocksdb](https://github.com/linxGnu/grocksdb), follow rocksdb latest, **推荐**
+- [tecbot/gorocksdb](https://github.com/tecbot/gorocksdb), most using, **许久每更新, 不推荐**
 
     编译出的程序没法链接librocksdb.so时, 可参考[/go/cgo.md].
 
