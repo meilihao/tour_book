@@ -4,7 +4,7 @@
 
 列出所有的pci设备即连接到 PCI 总线的所有设备, 比如主板, 声卡, 显卡, 网卡和usb接口设备等.
 
-> lspci is from [pciutils](http://mj.ucw.cz/sw/pciutils/)
+> lspci is from [pciutils](http://mj.ucw.cz/sw/pciutils/), 对应命令还有setpci(用于读写PCIe配置寄存器).
 
 ## 选项
 
@@ -22,9 +22,9 @@
         - bus number, 8bits 2^8, 至多可可接 256 个bus(0 to ff)
         - device number, 5bits 2^5, 至多可接 32 个device(0 to 1f) 
         - function number, 3bits 2^3, 至多每种设备可有 8 种功能(0 to 7)
-    - 0200 : class 0200 表示是 Network controller
-    - 14e4 : vendor ID 14e4 製造廠商 Broadcom Corporation
-    - 165a : device ID 1659 產品名稱 NetXtreme BCM5721 Gigabit Ethernet PCI Express
+    - 0200 : class 0200 表示是 Network controller. class id(即`pci_dev->class`) from[PCIE Configuration Space – Class Code即pci code and id assignment specification](https://blog.ladsai.com/pci-configuration-space-class-code.html)
+    - 14e4 : vendor ID 14e4 产商 Broadcom Corporation
+    - 165a : device ID 1659 产品名称 NetXtreme BCM5721 Gigabit Ethernet PCI Express
 - -nn ： 显示供应商和设备ID
 - -m : 以机器可读格式输出信息, 还可用`-mm`, `-vmm`
 - -Q : 使用 DNS 查询中央数据库, 需要联网

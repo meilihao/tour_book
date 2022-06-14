@@ -104,6 +104,23 @@ $ dpkg-scanpackages . | gzip -9c > Packages.gz #  制作本地软件源
 - [Debian 新维护者手册](https://www.debian.org/doc/manuals/maint-guide/)
 
 ## snap
+```bash
+snap list --all
+snap remove gtk-common-themes 123 # 删除disabled的版本
+snap set system refresh.retain=2 # 保留最近的两个版本, 这已是默认设置
+bash -c 'rm -rf /var/lib/snapd/cache/*' # 清理cache
+
+# --- 推荐使用clean-snap.sh
+vim clean-snap.sh
+#!/bin/bash
+# Removes old revisions of snaps
+# CLOSE ALL SNAPS BEFORE RUNNING THIS
+set -eu
+snap list --all | awk '/disabled/{print $1, $3}' |
+    while read snapname revision; do
+        snap remove "$snapname" --revision="$revision"
+    done
+```
 
 ## FAQ
 ### dpkg-deb: error: archive '<file>.deb' has premature member 'data.tar.gz' before

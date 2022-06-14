@@ -121,7 +121,25 @@ Rust 表达式又可以分为‘左值’ （lvalue ）和‘右值’（rvalue)
 
 - 函数: `func x(a1:T1,...)-> T{}`
 
+	rust函数使用fn标识, 其参数列表与let一样也可模式解构.
 	在rust中， 如果函数没有返回值， 那么其返回值是unit即空元组`()`
+
+	Rust 中, 每个函数具有自己单独的类型，但是这个类型可以自动转换成fn类型. 因此两个有同样的参数类型和同样的返回值类型的函数, 但它们是不同类型因而不能赋值给相同变量, 解决方案是让先转为通用的fn类型即可.
+
+	Rust 支持一种特殊的发散函数（ Diverging functions ）, 它的返回类型是`!`. 发散类型的最大特点就是，它可以被转换为任意一个类型.
+
+	Rust 中，有以下这些情况永远不会返回，它们的类型就是!:
+	1. panic 以及基于它实现的各种函数/宏，比如`unimplemented!, unreachable!` ; 
+	1. 死循环 `loop {}`
+	1. 进程退出函数 `std::process::exit` 以及类似的 libc 中的 exec 一类函数
+
+	在大部分主流操作系统上，一个进程开始执行的时候可以接受一系列的参数，退出的时候也可以返回一个错误码. 许多编程语言也因此为 main 函数设计了参数和返回值类型, rust和go不同, 传递参数和返回状态码都由单独的 API 来完成.
+
+	Rust 设计组扩展了 main 函数的签名，使它变成了一个泛型函数，这个函数的返回类型可以是任何一个满足 Terminationtrait的类型，其中`（）,booL Result` 是满足这个约束的，它们都可以作为 main 函数的返回
+类型.
+
+	函数可以用 co st 键字修饰，这样的函数可以在编译阶段被编译器执行，返回值也被视为编译期常量.
+
 - 元组: 它通过圆括号包含一组表达式构成
 
 	如果元组中只包含一个元素, 应该在后面添加一个逗号, 以区分括号表达式和元组. 元组内部也可以一个元素都没有 这个类型单独有一个名字， unit （单元类型）.
@@ -412,3 +430,70 @@ rust支持使用mod 来组织代码.
 集成测试一般放在 tests 目录下，和 src 平行. 和单元测试不同，**集成测试只能测试 crate 下的公开接口，编译时编译成单独的可执行文件**. 在 crate 下，如果要运行测试用例，可以使用`cargo test`.
 
 当代码规模继续增长，把所有代码放在一个 crate 里就不是一个好主意了，因为任何代码的修改都会导致这个 crate 重新编译，这样效率不高. 此时可以使用 workspace, 一个 workspace 可以包含一到多个 crates，当代码发生改变时，只有涉及的 crates 才需要重新编译. 当要构建一个 workspace  时，需要先在某个目录下生成一个 Cargo.toml，包含 workspace 里所有的 crates，然后可以  cargo new 生成对应的 crates.
+
+## trait
+所有的 trait 中都有一个隐藏的类型 Self （大写），代表当前这个实现了此 trait 的具体类型. trait 中定义的函数，也可以称作关联函数（ associated function). 函数的第一个参数如果是 Self 相关的类型，且命名为 self（小写），这个参数可以被称为“receiver ”（接收者）. 具有 receiver 参数的函数，称为“方法”（method), 可以通过变量实例使用小数点来调用. 没有 receiver 参数的函数，称为“静态函数”（static function ），可以通过类型加`::`的方式来调用.
+
+```rust
+trait T { 
+	fn methodl(self: Self); 
+	fn method2(self: &Self); 
+	fn method3 (self: &mut Self); 
+}
+// 上下两种写法是完全一样的
+trait T { 
+	fn methodl (self) ; 
+	fn method2(&self); 
+	fn method3(&mut self); 
+}
+```
+
+直接对它 impl 来增加成员方法, 无须 trait 名字, 比如：
+```rust
+impl Circle { 
+
+	fn get radius(&self) -> f64 { self.radius } 
+}
+```
+可以把这段代码看作是为 Circle 类型 impl 了一个匿名的 trait. 用这种方式定义的方法叫作这个类型的`内在方法`（ inherent methods).
+
+trait 中可以包含方法的默认实现, 如果需要针对特殊类型作特殊处理，也可以选择重新实现来`override`默认的实现方式.
+
+impl 的对象甚至可以是 trait, 如下:
+```rust
+trait Shape { 
+	fn area(&self) - > f64;
+}
+
+trait Round { 
+	fn get_radius(&self) - > f64;
+}
+
+struct Circle { 
+	radius: f64, 
+}
+
+impl Round for Circle {
+	fn get_radius(&self) -> f64 { self.radius } 
+}
+
+// impl Trait for Trait 
+impl Shape for Round { 
+	fn area(&self) -> f64 { 
+		std::f64::consts::PI * self.get_radius() * self.get_radius() 
+	}
+}
+
+fn main() { 
+	let  c =Circle { radius : 2f64}; 
+	// build err
+	// c. area ( ) ; 
+
+	let b = Box::new(Circle {radius : 4f64}) as Box<Round>;
+	b.area();
+}
+```
+
+上面的`impl Shape for Round`和`impl<T: Round> Shape for T`是不一样的, 在前一种写法中, self 是`&Round`类型, 它是一个 trait object ，是胖指针. 在后一种写法中, self 是&T, T是具体类型 前一种写法是为 trait object增加一个成员方法; 而后一种写法是为所有的满足`T: Round`的具体类型增加一个成员方法. 所以上面的示例中，我们只能构造一个 trait object 之后才能调用 area()成员方法.
+
+Rust 2018 edition开始, trait object 的语法会被要求加上 dyn 关键字即`impl Shape for dyn Round`.
