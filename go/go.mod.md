@@ -1,4 +1,6 @@
 # go mod
+为了确保一致性构建，Go 引入了 go.mod 文件来标记每个依赖包的版本，在构建过程中 go 命令会下载 go.mod 中的依赖包，下载的依赖包会缓存在本地，以便下次构建.
+
 Go1.11和Go1.12只能在$GOPATH以外的目录中使用Go Modules.
 
 > 目前go mod的包及相关数据均缓存在 $GOPATH/pkg/mod和 $GOPATH/pkg/sum 下，未来或将移至 $GOCACHE/mod 和$GOCACHE/sum 下(可能会在当 $GOPATH 被淘汰后)
@@ -62,6 +64,23 @@ export GOPROXY=https://goproxy.cn,direct
 # 设置不走 proxy 的私有仓库，多个用逗号相隔
 go env -w GOPRIVATE=*.example.com
 ```
+
+## go.sum
+考虑到go mod下载的依赖包有可能是被黑客恶意篡改的，以及缓存在本地的依赖包也有被篡改的可能，单单一个 go.mod 文件并不能保证一致性构建. 为了解决 Go module 的这一安全隐患，Go 开发团队在引入 go.mod 的同时也引入了 go.sum 文件，用于记录每个依赖包的哈希值，在构建时，如果本地的依赖包 hash 值与 go.sum 文件中记录得不一致，则会拒绝构建.
+
+go.sum 文件中每行记录由 module 名、版本和哈希组成，并由空格分开：`<module> <version>[/go.mod] <hash>`, 比如
+```txt
+github.com/google/uuid v1.1.1 h1:Gkbcsh/GbpXz7lPftLA3P6TYMwjCLYm83jiFQZF/3gY=  
+github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+```
+
+正常情况下，每个依赖包版本会包含两条记录，第一条记录为该依赖包版本整体（所有文件）的哈希值，第二条记录仅表示该依赖包版本中 go.mod 文件的哈希值，如果该依赖包版本没有 go.mod 文件，则只有第一条记录.
+
+依赖包版本中任何一个文件（包括 go.mod）改动，都会改变其整体哈希值，此处再额外记录依赖包版本的 go.mod 文件主要用于计算依赖树时不必下载完整的依赖包版本，只根据 go.mod 即可计算依赖树.
+
+> 每条记录中的哈希值前均有一个表示哈希算法的 h1:，表示后面的哈希值是由算法 SHA-256 计算出来的，自 Go module 从 v1.11 版本初次实验性引入，直至 v1.14 ，只有这一个算法.
+
+go.sum 文件中记录的依赖包版本数量往往比 go.mod 文件中要多，这是因为二者记录的粒度不同导致的. go.mod 只需要记录直接依赖的依赖包版本，只在依赖包版本不包含 go.mod 文件时候才会记录间接依赖包版本，而 go.sum 则是要记录构建用到的所有依赖包版本.
 
 ## FAQ
 ### go: cannot determine module path for source directory
