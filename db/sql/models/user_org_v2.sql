@@ -1,5 +1,11 @@
+create database test default character set utf8mb4 collate utf8mb4_unicode_ci;
+CREATE USER 'sammy'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON *.* TO 'sammy'@'localhost';
+FLUSH PRIVILEGES;
+
 -- user,org主键基于同一套自增主键
 -- 成员表,表示成员,用于生成主键.
+DROP TABLE IF EXISTS `member`;
 CREATE TABLE `member` (
   `id` int NOT NULL AUTO_INCREMENT,
   `mtype` int int NOT NULL DEFAULT '0', -- 成员类型:0,未知; 1,个人; 2,组织

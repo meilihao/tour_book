@@ -117,3 +117,10 @@ alias new_command='command sequence'
 ```
 # \command # 在不可信环境下执行特权命令时, 可避免潜在的安全问题即利用别名伪装的特权命令.
 ```
+
+## FAQ
+### 获取当前工作目录的绝对路径
+```bash
+SHELL_FOLDER=$(dirname $(readlink -f "$0")) # 推荐
+SHELL_FOLDER=$(cd "$(dirname "$0")";pwd)
+```

@@ -1,4 +1,11 @@
 # tools
+## 性能
+- [pyroscope](https://colobu.com/2022/01/27/pyroscope-a-continuous-profiling-platform/)
+
+## http client
+- [github.com/go-resty/resty/v2](https://github.com/go-resty/resty)
+- [github.com/guonaihong/gout](https://github.com/guonaihong/gout)
+
 ## error
 - [errgroup]()
 

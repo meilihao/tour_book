@@ -34,6 +34,8 @@
 	insteadOf = git://github.com/
 [url "https://github.com/"]
 	insteadOf = git://github.com/
+[init]
+	defaultBranch = main
 ```
 
 ### prompt/提示

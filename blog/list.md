@@ -36,6 +36,8 @@
 - [从Elasticsearch集群及数据层架构，看分布式系统设计](https://mp.weixin.qq.com/s/jJ1LH2MLxRPAvma3Hd6-XA)
 - [轻松筹1.6亿注册用户的Passport账户体系架构设计](http://www.sohu.com/a/154131834_467759)
 - [新手入门一篇就够：从零开发移动端IM](https://link.jianshu.com/?t=http://www.52im.net/thread-464-1-1.html)
+- [团队开发框架实战—多租户架构](https://www.jianshu.com/p/3bfc9821858a)
+- [多租户技术](https://my.oschina.net/u/4313107/blog/4944803)
 
 ## 存储
 - [ceph基本架构及数据分布原理](https://www.tuicool.com/articles/VzEFRjf)
