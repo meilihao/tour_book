@@ -25,6 +25,9 @@ Vim 的三种模式:
 ```
 :set fileencoding # 查看编码
 :set fileencoding=utf-8 # 编码修改
+:set list # 显示出特殊字符, 比如换行
+:set ff=unix # 将文件换行转为unix换行. ff=fileencoding
+:set ff=dos # 将文件换行转为windows换行
 ```
 
 ## 命令/快捷键

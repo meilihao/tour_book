@@ -84,6 +84,7 @@ dot -Tpng -o a.png a.dot
 
 ## 调优
 - [Go调优神器trace介绍](https://studygolang.com/articles/9693)
+- [goleak : 一个可以事前检测 Go 泄漏的工具](https://mp.weixin.qq.com/s?__biz=MzUzNTY5MzU2MA==&mid=2247494572&idx=1&sn=f6281cd182e7bfb7f20cd3641cb93306)
 
 ## IDE
 ### FAQ

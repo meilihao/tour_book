@@ -30,7 +30,7 @@ DNF配置文件的位置:
 # dnf search httpd # 查找包
 # dnf install [--assumeno] httpd # 安装包, `--assumeno`类似dryrun
 # dnf reinstall httpd # 重装包
-# dnf download httpd # 下载包, 但不安装
+# dnf download httpd # 下载包, 但不安装. 用`dnf download --resolve samba`/`yumdownloader --resolve samba`可同时下载依赖
 # dnf download --source httpd # 下载src.rpm
 # dnf info httpd # 查看包的详细信息
 # dnf remove httpd # 卸载http包
@@ -161,6 +161,7 @@ rehat开发的包管理软件, 已被dnf取代.
 # yum groupinfo # 软件包组 查询指定的软件包组信息
 # yum whatprovides libmysqlclient* # 查找某一包的提供者
 # yum whatprovides '*bin/grep' # 查找某一文件的提供者
+# yum localinstall *.rpm
 ```
 
 # rpmlint
@@ -455,3 +456,16 @@ yum repolist
 ```
 
 安装单个工具: `yum install -y iotop --downloaddir=/root/centos-repo`
+
+### `%{?dist}`含义
+不加问号，如果 dist 有定义，那么就会用定义的值替换，否则就会保 %{dist};
+加问好，如果 dist 有定义，那么也是会用定义的值替换，否则就直接移除这个tag %{?dist}
+
+### `rpmbuild -bb rocksdb.spec`报错
+env: rocksdb.spec from [fedora 36](https://src.fedoraproject.org/rpms/rocksdb), build on oracle linux 7.9
+
+- `Unknown tag: %forgemeta` : 删除它
+- `forgesetup\n... no job control` : 用`%setup -q`代替
+- `%{set_build_flags}\n... no job control` : 删除它.
+
+    [set_build_flags用途](https://src.fedoraproject.org/rpms/redhat-rpm-config/blob/rawhide/f/buildflags.md?text=True)

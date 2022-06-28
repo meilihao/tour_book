@@ -490,3 +490,18 @@ d:=&Msg{
 ```
 
 ### [Golang 解析xml文件标签带冒号( : )解决方案 - 即带xml命名空间](https://blog.csdn.net/qq_24210767/article/details/102829205)
+
+### [获取windows磁盘列表](https://stackoverflow.com/questions/23128148/how-can-i-get-a-listing-of-all-drives-on-windows-using-golang)
+```go
+import (
+    "fmt"
+    "github.com/shirou/gopsutil/v3/disk"
+)
+
+func main() {
+    partitions, _ := disk.Partitions(false)
+    for _, partition := range partitions {
+        fmt.Println(partition.Mountpoint)
+    }
+}
+```

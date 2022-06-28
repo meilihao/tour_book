@@ -726,7 +726,7 @@ fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
           WildDir = "[A-Z]:/System Volume Information"  # 指定文件：从磁盘A到Z下的
           Exclude = yes                                 # 另一种方式指定不备份上述指定文件
         }
-        File ="C: / QMDownload "                    # 备份目录C:/QMDownload
+        File ="C:/QMDownload"                    # 备份目录C:/QMDownload
       }
     ```
 

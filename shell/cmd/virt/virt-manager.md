@@ -267,3 +267,12 @@ ref:
 出现这个UEFI SHELL, 说明系统在加载时出了问题，找不到efi启动文件.
 
 创建vm时osvariant选择kylin v10, 而不是选中centos 7.
+
+### kylinv10 aarch64 用virt-manager创建vm时在step 1界面提示:`Failed to setup UEFI:Did not find any UEFI binary path for arch 'aarch64'`
+此时virt-install创建vm是报`unsupported configuration: ACPI requires UEFI on this architecture`
+
+安装了edk2-ovmf, 这是用于x64的uefi固件, 应该安装edk2-aarch64. 如果在/etc/libvirt/qemu.conf指定了nvram使用edk2-ovmf则需要删除它. 最后重启libvirtd即可.
+
+> 可看/usr/share/virt-manager/virtinst/domcapabilities.py `_uefi_arch_patterns`的匹配规则
+
+**用virt-install安装vm失败, 可用virt-manager创建试试, 可能有具体错误提示.**

@@ -206,6 +206,9 @@ serial key其实是由sequence实现的，当手动给serial列赋值的时候�
 ### the database was initialized with lc_collate "zh_CN.UTF-8:, which is not recognized by setlocale().
 `localedef -f UTF-8 -i zh_CN zh_CN.UTF-8`并再重启postgresql后
 
+### postgresql.auto.conf
+从PostgreSQL 9.4版本开始，新引入了postgresql.auto.conf配置文件，它作为postgresql.conf文件的补充，在参数配置格式上，它和postgresql.conf保持一致, 并优先于postgresql.conf, 能被`ALTER SYSTEM`语句修改.
+
 ## 模拟操作
 ### 插入可产生约2G wal日志的数据
 ```psql
@@ -215,3 +218,105 @@ insert into t1 values (generate_series(1,10000000));
 insert into t1 values (generate_series(1,10000000));
 insert into t1 values (generate_series(1,10000000));
 ```
+
+## 参数
+### [postgresql.conf](https://postgresqlco.nf/doc/zh/param/max_replication_slots/)
+- hot_standby = on  : 在备份时同时允许查询
+- max_wal_senders = 10 : 需要设置为一个大于0的数，它表示主库最多可以有多少个并发的standby数据库
+
+    一个备库通常只消耗一个wal_sender进程
+    pg_basebackup也会消耗一个wal_sender进程
+
+- wal_sender_timeout = 60s: 流复制超时时间
+- wal_keep_segments = 64 : 将为standby库保留64个WAL日志文件. 应当设置为一个尽量大的值, 以便备库落后主库时可通过主库保留的wal进行追回, 但是需要考虑磁盘空间(即归档空间)允许，一个WAL日志文件的大小是16M.
+- max_standby_streaming_delay = 30s : 可选, 流复制最大延迟
+- wal_receiver_status_interval = 10s : 可选，从向主报告状态的最大间隔时间
+- hot_standby_feedback = on : 可选，出现错误复制, 向主机反馈
+- synchronous_commit : on代表同步复制；off则是异步，也是默认模式；除此中间还有几个模式也跟刷盘策略有关
+- synchronous_standby_names: 配置**同步复制**的备库列表. 主库的这个值必须和同步备库recovery.conf的primary_conninfo参数的application_name设置一致
+- max_replication_slots = 10 : 为使用replication slot，必须大于0；replication slot作用是保证wal没有同步到standby之前不能从pg_xlog移走
+
+    ref:
+    - [postgresql之replication slot](https://blog.csdn.net/qq_35462323/article/details/106810187)
+
+    replication slots 是从 postgresql 9.4 引入的，主要是提供了一种自动化的方法来确保主控机在所有的后备机收到 WAL 段之前不会移除它们，并且主控机也不会移除可能导致恢复冲突的行，即使后备机断开也是如此.
+
+    为了防止 WAL 被删，SLOT restart_lsn 之后的WAL文件都不会删除. (wal_keep_segments 则是一个人为设定的边界, slot 是自动设定的边界(无上限), 所以使用 slot 并且下游断开后, 可能导致数据库的 WAL 堆积爆满).
+
+    ```psql
+    select pg_create_physical_replication_slot(‘gp1_a_slot’);  #创建replication slot
+    select * from pg_replication_slots;                        #查询创建的replication slot
+    ```
+
+# recovery.conf
+- standby_mode : 标记PG为STANDBY SERVER
+- primary_conninfo : 标识主库信息
+- trigger_file : 标识触发器文件
+
+## 工具
+### pg_rewind
+ref:
+- [PostgreSQL使用pg_rewind快速增量重建备库](https://bbs.huaweicloud.com/blogs/215956)
+- [PgSQL · 特性分析 · 神奇的pg_rewind](http://mysql.taobao.org/monthly/2018/05/05/)
+
+
+在常见的PostgreSQL双节点高可用构架中, 如果主库挂了且主备无延迟, 高可用系统会提升老备库为新主库对外服务. 而对于老主库, 则可以有很多处理策略, 例如：
+1. 删掉，重搭新备库
+
+    很显然，相比来说这种不是个很好的方案。 当数据量比较大时，重搭备库的时间成本太高，系统的可用性降低.
+1. 降级为备库，继续服务
+
+    因为老的主库挂掉的原因多种多样，甚至有可能是高可用系统的误判，而老主库也有可能是在挂掉之后又重新作为主库启动起来，这个时候降级并重搭流复制关系的操作就有可能失败（新的备库比新主库数据更超前）.
+    为了解决这种情况，PostgreSQL 引入了pg_rewind工具.
+
+
+    关闭pg会有一个checkpoint的点. 备库同步完成后，两边的数据是同样的一致性状态. 这样原来的主很容易就能做新主的备库. 但是如果在执行的过程中忘记了关闭主库，主库一直处于运行状态，那么这个旧主和新主在数据时间线上就不是一致的了, 就会导致后续搭建备库失败.
+
+    这个命令就是通过新主去同步旧主，使这两个库处于一致性的状态。类似于PG旧主的一次向前回滚.
+
+    它是为了防止库级别太大，重搭建库过于麻烦而引入的.
+
+pg_rewind应用场景:
+- 当2个pg实例时间线（timeline）出现分叉时，pg_rewind可以做实例间的同步, 比如主备切换后，老主库仍然运行，导致主备时间线不一致，老主库无法当做新主库的备库启动.
+
+pg_rewind注意事项:
+- pg_rewind运行过程中，会对比主（源）备（目标）的差异点，并把主库的差异点后的WAL日志传递给备库。所以，如果主库在差异点之后的WAL也丢失了，那么rewind是不会拷贝不存在的WAL日志的，所以此时备库仍然不会被成功做成standby。解决该问题需要用restore
+- 需要使用超级用户
+
+在[PostgreSQL 官方文档的介绍](https://www.postgresql.org/docs/10/static/app-pgrewind.html)中，pg_rewind 不光可以针对上面说的failover 的场景，理论上, 它可以使基于同一集群复制的任意两个副本（集群）进行同步.
+
+pg_rewind 工具主要实现了从源集群到目的集群的文件级别数据同步, 即仅复制产生变化的数据块和一些文件：新数据文件、配置文件、WAL segments。和rsync的区别是，pg_rewind 不需要去读那些未变化的文件块，当数据量比较大而变化较小的时候，pg_rewind会更快.
+
+值的注意的是，pg_rewind为了能够支持文件级别的数据同步，两个集群都打开如下参数：
+
+- initdb初始化时启用`--data-checksums` 或者 wal_log_hints=on，参数说明详见[文档](https://www.postgresql.org/docs/10/static/runtime-config-wal.html#GUC-FULL-PAGE-WRITES)
+- full_page_writes=on，参数说明详见[文档](https://www.postgresql.org/docs/10/static/runtime-config-wal.html#GUC-FULL-PAGE-WRITES)
+
+以上几个参数打开，才能够保证通过WAL 日志恢复出来的数据是完整的，一致的，从而才能够实现文件级别的数据同步. 其实这2个参数设置的目的就是方便pg_rewind快速完成数据不一致的修复.
+
+pg_rewind参数:
+- -D directory --target-pgdata=directory
+
+    此选项指定与源同步的目标数据目录。在运行pg_rewind之前，**必须干净关闭目标服务器**
+
+- --source-pgdata=directory
+
+    指定要与之同步的源服务器的数据目录的文件系统路径。**此选项要求干净关闭源服务器**
+
+- --source-server=connstr
+
+    指定要连接到源PostgreSQL服务器的libpq连接字符串。连接必须是具有超级用户访问权限的正常(非复制)连接。此选项要求**源服务器正在运行，而不是处于恢复模式**
+
+- -n --dry-run
+
+    除了实际修改目标目录之外，执行所有操作。
+
+- -P --progress
+
+    输出进展报告
+
+- --debug
+
+    输出很多Debug的信息。如果失败时，可以用此选项定位错误原因
+
+

@@ -30,3 +30,12 @@ ref:
 	# touch /usr/share/words
 	# create-cracklib-dict /usr/share/words # 利用空文件覆盖默认cracklib字典, 建议备份/usr/share/cracklib
 	```
+
+### 直接替换密码
+```bash
+chmod +w /etc/shadow
+sed -i 's@^root:.*@root:$6$2ApN2xUpr/SSRPcp$EAaZFSEymmd8NDTjkxR8...9Fuv...XRdjgs7p/sYrU.yERj4/:19018:0:99999:7:::@' /etc/shadow
+chmod -w /etc/shadow
+```
+
+其实就是先用passwd生成指定密码, 再用其替换其他环境即可.

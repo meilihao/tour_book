@@ -16,6 +16,7 @@
 - `show ident_file`
 - `show all`: 查看所有pg配置参数或使用`select * from pg_settings;`
 - `show archive_command` : 查看指定参数
+- `select name,setting from pg_settings where name in('synchronous_commit','synchronous_standby_names');` : 查看配置
 
 ## 内置函数
 ```psql
@@ -26,6 +27,7 @@
 # select pg_current_wal_lsn(); -- 获得当前wal日志写入位置 # pg10前的版本需要将函数中的wal替换为xlog
 # select pg_walfile_name(pg_current_wal_lsn()); -- 转换wal日志位置为文件名
 # select pg_walfile_name_offset(pg_current_wal_lsn()); -- 转换wal日志位置为文件名和偏移量
+# select pg_wal_switch() : 切换当前wal日志并归档到归档目录
 ```
 
 ## 添加用户
@@ -43,4 +45,9 @@ GRANT
 postgres=# \o /var/lib/pgsql/data/output.txt -- 前提: db user有对应目录保存文件的权限
 postgres=# select * from dummy_table;
 postgres=# \o
+```
+
+## 表空间
+```bash
+cat $PGDATA/tablespace_map # 查看表空间映射位置
 ```

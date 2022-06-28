@@ -374,3 +374,18 @@ set +v # 禁止打印输入
 
 1. caller N : 在函数中使用caller可在stdout中打印该函数的相关信息. N表示打印哪层的frame
 1. trap : 指定在收到信号后采取的动作, 格式是`trap <command> <signals>`
+
+## FAQ
+### 执行bash脚本后机器变得很卡, 此时cpu和内存都不高
+该脚本来自git repo(在liunx上执行正常), 先git pull到windows上, 再上传到oracle linux 7.9, 此时该脚本的换行是windows换行.
+
+```bash
+# ./build.sh # 执行报如下错误, 且执行后os变得很卡
+: No such file or director
+# bash build.sh
+build.sh: line 2: $'\r': command not found
+# echo $SHELL
+/bin/bash
+# bash --version
+... 4.2.46(2)...
+```

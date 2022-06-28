@@ -501,6 +501,8 @@ help: `virt-install <参数> ?`
         blockresize                    创新定义域块设备大小
         change-media                   更改 CD 介质或者软盘驱动器
         console                        连接到客户会话
+
+            退出用`Ctrl + Shift + 5`
         cpu-stats                      显示域 cpu 统计数据
         create                         从一个 XML 文件创建一个域
         define                         从一个 XML 文件定义（但不开始）一个域

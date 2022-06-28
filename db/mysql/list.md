@@ -9,6 +9,8 @@
 
 ## ha
 - [MySQL高可用架构对比](https://juejin.cn/post/6844903812700831752)
+- [实战搭建MySQL高可用架构，手残党表示都会了！](https://mp.weixin.qq.com/s?__biz=MzkwOTIxNDQ3OA==&mid=2247576468&idx=1&sn=cdb60ab0a933360d1b11bca3d19fe23a)
+- [226_mysql_复制技术_主备切换_故障转移](https://bbs.huaweicloud.com/blogs/309679)
 
 ## 下载
 - [mariadb connectors](https://mariadb.com/downloads/#connectors)

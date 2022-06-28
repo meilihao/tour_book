@@ -40,4 +40,5 @@ $ rsync -avc --update --exclude="adapter" ./* root@192.168.0.137:/opt/test # 会
 $ rsync -P --rsh=ssh aliyun:~/git/lfs.img.zstd . # 断点续传
 $ rsync -ah --progress source destination # 拷贝带进度
 $ sspass -p "<password>" rsync -ah --progress source destination # 传入ssh password
+$ rsync -av -e ssh --exclude='*.new' ~/virt/ root@centos7:/tmp
 ```

@@ -45,4 +45,5 @@ $ cat /var/log/syslog |grep zfs
 Binary file (standard input) matches
 $ grep -a zfs /var/log/syslog # 可解决`Binary file (standard input) matches`的问题
 $ grep -r --include="*.lua"  "ToSearchString"  Path # 按扩展名搜索
+$ cat id_rsa.pub |grep -c - authorized_keys # 判断是否指定文件
 ```

@@ -1,3 +1,38 @@
+# iproute2
+- [新的网络管理工具 ip 替代 ifconfig 零压力](http://www.linuxstory.org/replacing-ifconfig-with-ip/)
+- [ip命令以及与net-tools的映射](https://linux.cn/article-3144-1.html)
+- [放弃 ifconfig，拥抱 ip 命令](https://linux.cn/article-13089-1.html)
+
+
+## 组件
+- ip : 用于管理路由表和网络接口
+- tc : 用于流量控制管理
+- ss : 用于转储套接字统计信息
+- lnstat : 用于转储linux网络统计信息
+- bridge : 用于管理网桥地址和设备
+- nstat : 类似于netstat, 但比它提供更多的信息
+
+    ```bash
+    nstat -a
+    nstat --json
+    ```
+
+    ```bash
+    $ strace -e open nstat 2>&1 > /dev/null|grep /proc
+    open("/proc/uptime", O_RDONLY)          = 4
+    open("/proc/net/netstat", O_RDONLY)     = 4
+    open("/proc/net/snmp6", O_RDONLY)       = 4
+    open("/proc/net/snmp", O_RDONLY)        = 4
+
+    $ strace -e open netstat -s 2>&1 > /dev/null|grep /proc
+    open("/proc/net/snmp", O_RDONLY)        = 3
+    open("/proc/net/netstat", O_RDONLY)     = 3
+    ```
+
+    参考:
+    - [Linux network metrics: why you should use nstat instead of netstat](https://loicpefferkorn.net/2016/03/linux-network-metrics-why-you-should-use-nstat-instead-of-netstat/)
+    - [Linux network statistics reference](https://loicpefferkorn.net/2018/09/linux-network-statistics-reference/)
+
 # ip route
 
 ## 描述
@@ -196,7 +231,7 @@ $ ip rule add from 60.30.128.15 table cnc
 ```
 
 ### `ip route`配置gateway时报`Nexthop has invalid gateway`
-解决方法: 先给网卡配上ip再配置gateway即可.
+解决方法: 先将网卡up并给其配上ip再配置gateway即可.
 
 ### 使用udev重命名网卡(**不推荐修改**)
 **通过添加kernel参数`net.ifnames=0 biosdevname=0`的方式可能不成功**
@@ -219,3 +254,11 @@ ip: /etc/sysconfig/network-scripts/ifcfg-xxx # 这里的GATEWAY会被忽略, 因
 ### net device online要求
 1. 已插入网线且链路ok
 2. ifup xxx
+
+### 对调网卡
+通过`/etc/udev/rules.d/70-persistent-net.rules`对调名称即可
+
+### 同网段ping/ssh均正常, 不同网段不能通信
+即192.168.0.191和192.168.16.78不能通信
+
+因为目标端的route没有配置, 在16.78配上默认网关192.168.16.2后通信正常

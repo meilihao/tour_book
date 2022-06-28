@@ -252,3 +252,6 @@ go-mod-upgrade
 > 传参格式: `-X '{go mod名称}/包名.{变量名}'`
 
 解决方法: 将version.go挪到version/version.go下, 使用`LDFLAGS="-X github.com/meilihao/golib/v2/version.appName='xxx'`即可.
+
+### 更新go vendor
+更新go.mod后重新执行`go mod tidy && go mod vendor`

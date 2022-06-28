@@ -135,3 +135,12 @@
 
 ## cache
 - [Golang 本地缓存选型对比及原理总结](https://www.tuicool.com/articles/aquUJrF)
+
+## windows
+- [将 Go 程序注册为一个 Window服务（原生）](https://www.misakas.com/default/register-the-window-service-with-a-go-program/)
+
+    看[kardianos/service/blob/master/example/stopPause/main.go](https://github.com/kardianos/service/blob/master/example/stopPause/main.go)即可, 注册/卸载/启动/停止在service.Control()里控制
+
+    注意:
+    1. xxx install后, 服务未启动
+    2. xxx uninstall前, 要先停止服务
