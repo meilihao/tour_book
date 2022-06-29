@@ -49,8 +49,12 @@ test2 192.168.1.12
 
 > 没有特别说明, 仅在主库上操作, 因为备库会同步主库数据目录.
 
-1. 修改postgres用户密码: `ALTER USER postgres WITH PASSWORD 'postgres';`
-1. 建立用户repuser: `CREATE ROLE repuser WITH REPLICATION LOGIN ENCRYPTED PASSWORD '123456';`
+1. `postgresql-setup --initdb`
+1. 启动主库, 配置管理员密码和创建复制账号
+
+	1. 修改postgres用户密码: `ALTER USER postgres WITH PASSWORD 'postgres';`
+	1. 建立用户repuser: `CREATE ROLE repuser WITH REPLICATION LOGIN ENCRYPTED PASSWORD '123456';`
+	1. 在从机查看从库是否可以访问主节点: `psql -h 192.168.1.11 -U postgres`
 1. 编辑pg_hba.conf, 在文件最前面添加
 	```
 	host replication repuser all md5 # all 表示不限制ip
@@ -71,17 +75,18 @@ test2 192.168.1.12
 	listen_addresses = '*'
 	wal_level = replica
 	synchronous_commit = on
+	synchronous_standby_names = '12' # `-.`均是非法字符. 使用异步复制时该字段为空
 	archive_mode = on
 	archive_command = 'test ! -f /var/lib/pgsql/data/pg_archive/%f && cp %p /var/lib/pgsql/data/pg_archive/%f'
 	max_wal_senders = 10
-    wal_keep_segments = 64
-    wal_sender_timeout = 60s
-    max_connections = 1000 # 主备最好相等
-    hot_standby = on
-    wal_log_hints = on
-    full_page_writes = on
-    # --- for standby
-    max_standby_streaming_delay = 30s 
+	wal_keep_segments = 64
+	wal_sender_timeout = 60s
+	max_connections = 1000 # 主备最好相等
+	hot_standby = on
+	wal_log_hints = on
+	full_page_writes = on
+	# --- for standby
+	max_standby_streaming_delay = 30s
 	wal_receiver_status_interval = 10s
 	hot_standby_feedback = on
 	```
@@ -90,7 +95,7 @@ test2 192.168.1.12
 	```bash
 	# vim /var/lib/pgsql/data/recovery.conf.sample
 	standby_mode = on # 表明是从库
-	primary_conninfo = 'host=xxx port=5432 user=repuser password=123456'
+	primary_conninfo = 'host=xxx port=5432 user=repuser password=123456 application_name=11' # 未设置synchronous_standby_names时, pg会忽略application_name
 	recovery_target_timeline = 'latest'
 	#trigger_file = '/tmp/pg.trigger.5432'
 	# chown postgres:postgres /var/lib/pgsql/data/recovery.conf.sample
@@ -105,10 +110,10 @@ test2 192.168.1.12
 	> recovery.conf没有配置明文密码时, 是从`~/.pgpass`获取的
 
 	从库follow新主库时, 修改recovery.conf里面的host, 然后重启pg即可; 主库降为备库时, 修改recovery.conf后, 还需要用到pg_rewind, 比如`pg_rewind --target-pgdata=/var/lib/pgsql/data --source-server='host=192.168.1.12 port=5432 user=postgres password=postgres' -P`, 如果pg_rewind失败就需要重新做备库了.
-1. 重启主库, 在从机查看从库是否可以访问主节点: `psql -h 192.168.1.11 -U postgres`
+1. 重启主库
 1. 备库同步主库数据
 
-	1. 从库安装完成后, 无需初始化; 若已初始化, 则删除其/var/lib/pgsql/data目录
+	1. 从库安装完成后, 无需初始化; 若已初始化, 则清空其/var/lib/pgsql/data目录
 	1. `pg_basebackup -h 192.168.1.11 -p 5432 -U repuser -F p -Xs -P -D /var/lib/pgsql/data/ && chown postgres:postgres -R /var/lib/pgsql/data`, 这步需要输入repuser的密码
 
 		pg_basebackup参数说明:
@@ -127,9 +132,13 @@ test2 192.168.1.12
 
 		> pg_basebackup能自动处理表空间问题.
 
-1. 修改配置
+1. 修改配置, 并启动备库即可完成一主一从的复制配置
 	1. 将postgresql.conf.bak复制为postgresql.conf:
+
+		如果使用了synchronous_standby_names, 那么将其设置为'11'
 	1. 将recovery.conf.sample中的host换成`192.168.1.11`, 并将其复制为recovery.conf
+
+		如果使用了synchronous_standby_names, 那么将application_name设置为'12'
 
 测试:
 1. 在主库查看同步节点并写入测试数据: 
@@ -140,6 +149,8 @@ test2 192.168.1.12
 	insert into test values(10,'i love you',10000.00);
 	insert into test values(2,'li si',12000.00);
 	```
+
+	启用synchronous_standby_names做同步复制时, test2关闭后, test1上执行插入会卡住, 直到test2 pg启动.
 
 	pg_stat_replication:
 	- pid: wal发送进程的pid
@@ -171,9 +182,13 @@ test2 192.168.1.12
 	- pid : wal接收进程的pid
 	- status : wal接收进程的状态
 	- receive_start_lsn: wal接收进程启动后使用的第一个wal日志位置
+	- receive_start_tli: wal的timeline
 	- received_lsn: 最近接收并写入wal日志文件的wal位置
+	- received_tli： 最近接收并写入wal日志文件的wal timeline
 	- last_msg_send_time: 备库接收到发送进程最后一个消息后,向主库发回确认消息的发送时间
 	- last_msg_receipt_time: 备库接收到发送进程最后一个消息的接收时间
+	- latest_end_lsn:
+	- latest_end_time: 
 	- conninfo: wal接收进程使用的连接串
 
 	监控流复制的相关函数:
@@ -192,7 +207,9 @@ test2 192.168.1.12
 
 	1. 在test2执行`systemctl stop postgresql`
 	1. 用postgres用户在test1执行`pg_ctl promote`, 并插入数据
-	1. 在test2, 将recovery.done还原为recovery.conf,执行`pg_rewind --target-pgdata=/var/lib/pgsql/data --source-server='host=192.168.1.11 port=5432 user=postgres password=postgres' -P` ,启动pg, 能看到上一步插入的新数据
+	1. 在test2, 执行`pg_rewind --target-pgdata=/var/lib/pgsql/data --source-server='host=192.168.1.11 port=5432 user=postgres password=postgres' -P` , 修正postgresql.conf和recovery.conf.sample, 再将recovery.conf.sample还原为recovery.conf并启动pg, 就能看到上一步插入的新数据了
+
+		成功执行pg_rewind后, 它会原样将对端文件原样拷贝过来(排除了postmaster.pid), 因此可能本地的recovery.conf, recovery.done会被删除. 因此需要修正postgresql.conf和recovery.conf.sample
 
 ### pg 12
 ref:
@@ -294,13 +311,28 @@ esac
 ```
 
 ## FAQ
+### pg_rewind报`target server needs to use either data checksums or "wal_log_hints = on"`
+在initdb时启用checksum或配置`wal_log_hints = on`
+
+已验证在pg_basebackup前配置了`wal_log_hints = on`是可行的.
+
 ### pg_rewind报`fatal: target server must be shut down cleanly`
-先启动pg, 再关闭, 并重新执行pg_rewind命令
+有两种情况:
+1. 之前pg未成功关闭, 先尝试启动pg, 再关闭, 并重新执行pg_rewind命令
+1. 之前已成功执行pg_rewind, 再次执行就报该错了
 
 ### 将原先主库变成备库报`...could not start WAL streaming: ERROR:  requested starting point 3/33000000 on timeline 1 is not in this server's history\n...new timeline 2 forked off current database system timeline 1 before current recovery point...`
 原因是：原备用服务器在能够赶上主服务器之前已经升级timeline, 导致现在主服务器不能充当备用服务器的角色
 
 先执行pg_rewind再启动pg
+
+### 执行pg_rewind报"source and target cluster are on the same timeline\n no rewind required"
+设置recovery.conf后直接重启即可
+
+### pg启动后报`highest timeline 3 of the primary is behind recovery timeline 4`
+在主库test1不停机的情况下, 对备库test2执行`pg_ctl promote`, 此后再在备库上执行插入, 再停止备库pg, 重建recovery.conf并启动pg, 发现备库日志报该错误. 此时主库的pg_stat_replication返回信息中没有该备库.
+
+执行`pg_rewind --target-pgdata=/var/lib/pgsql/data --source-server='host=192.168.1.11 port=5432 user=postgres password=postgres' -P`, 并修改postgresql.conf和recovery.conf后启动pg, 发现主库pg_stat_replication返回信息中有该备库了, 且test2启动中有报`consistent recovery state reached at 0/3037EE8\ninvalid record length at 0/3037EE8: wanted 24, got 0`, 该错的意思是: [standby尝试读取并重放存放在standby的WAL文件, 然后它发现了无效的WAL记录, 即它不再能够在本地读取WAL记录了](https://www.postgresql.org/message-id/CAHGQGwFvv0pxaf_iZ1FU1H%3Dd%3DexhPUoM0ss-9GkDWRP%3DFureMg%40mail.gmail.com), 但它会从test1重新同步wal, 因此在test1插入, test2也能显示出来, 忽略该提示日志即可.
 
 ### 如何处理主库wal被覆盖导致备库不可用
 1. 调大wal_keep_segments, 但也要确保pg_wal不会撑爆存储
