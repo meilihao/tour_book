@@ -15,6 +15,7 @@
 - [PostgreSQL手册](http://pgsqlcn.com)
 
 ## ha
+- [PostgreSQL部署|基于Stream复制的手工主从切换](https://www.modb.pro/db/404682)
 - [PostgreSQL流复制之主备切换](https://www.modb.pro/db/235078)
 - [pacemaker+drbd+postgres](https://www.insight-ltd.co.jp/tech_blog/postgresql/440/)
 - [PolarDB for PostgreSQL高可用原理](https://developer.aliyun.com/article/789048)
@@ -41,6 +42,7 @@
 	> [整体来说MySQL的日志同步上还是没有PostgreSQL做的严谨，在金融系统中，PostgreSQL的日志同步级别都是设置为on，即日志接收到，apply，然后等待数据刷盘才返回commit的ack](https://www.cnblogs.com/kuang17/p/11331969.html)
 
 	> MySQL通过半同步复制在很大程度上降低了failover丢失数据的概率。MySQL的主库在等待备库的应答超时时半同步复制会自动降级成异步，此时发生failover会丢失数据
+- [PostgreSQL复制槽实操](https://www.modb.pro/db/29737)
 
 ## 发行版
 - [Pigsty 开箱即用的 PostgreSQL 发行版](https://www.oschina.net/p/pigsty)/[Pigsty 近况与 v1.4 前瞻](https://www.oschina.net/news/184665)/[Vonng/pigsty](https://github.com/Vonng/pigsty)

@@ -39,6 +39,8 @@ Hot-Standby 切换步骤比较多，有些配置可以提前做好的，例如 .
 
 **生产环境中一主一备通常不采用同步复制, 因为备库宕机会对生产系统造成严重影响. 在一主多备的架构中才会采用同步复制.**
 
+> 在PG13中, wal_keep_segments 已经取消，改用 wal_keep_size
+
 ### pg 10 主备切换/Hot-Standby
 env:
 ```
@@ -54,6 +56,7 @@ test2 192.168.1.12
 
 	1. 修改postgres用户密码: `ALTER USER postgres WITH PASSWORD 'postgres';`
 	1. 建立用户repuser: `CREATE ROLE repuser WITH REPLICATION LOGIN ENCRYPTED PASSWORD '123456';`
+	1. 如果需要复制槽: `select * from pg_create_physical_replication_slot('phy_slot11');``
 	1. 在从机查看从库是否可以访问主节点: `psql -h 192.168.1.11 -U postgres`
 1. 编辑pg_hba.conf, 在文件最前面添加
 	```
@@ -127,8 +130,8 @@ test2 192.168.1.12
 		1. `-D` : 指定把备份写到哪个目录，前提是: **做基础备份之前从库的数据目录需要手动清空**
 		1. `-l` : 表示指定一个备份的标识
 		1. `-v` : 输出详细log
-		1. `-C` : 在开始备份之前，允许创建由`-S`选项命名的复制插槽, 比如`pg_basebackup -h 10.20.20.1 -D /var/lib/pgsql/12/data -U replicator -P -v  -R -X stream -C -S pgstandby1`
-		1. `-S` : 指定复制插槽名称
+		1. `-C` : 在开始备份之前，允许创建由`-S`选项命名的复制槽, 比如`pg_basebackup -h 10.20.20.1 -D /var/lib/pgsql/12/data -U replicator -P -v  -R -X stream -C -S pgstandby1`
+		1. `-S` : 指定复制槽名称, 指定主库使用的复制槽
 
 		> pg_basebackup能自动处理表空间问题.
 
@@ -139,6 +142,7 @@ test2 192.168.1.12
 	1. 将recovery.conf.sample中的host换成`192.168.1.11`, 并将其复制为recovery.conf
 
 		如果使用了synchronous_standby_names, 那么将application_name设置为'12'
+		如果使用了复制槽, 还要设置primary_slot_name
 
 测试:
 1. 在主库查看同步节点并写入测试数据: 
@@ -202,6 +206,8 @@ test2 192.168.1.12
 	1. 在test1执行`systemctl stop postgresql`
 	1. 用postgres用户在test2执行`pg_ctl promote`, 并插入数据
 	1. 在test1, 将recovery.conf.sample复制为recovery.conf, 启动pg, 能看到上一步插入的新数据
+
+		如果使用了复制槽, test1会提示`could not start WAL streaming: ERROR:  replication slot "pg_digops01" does not exist`, 解决方法: 登录新主库test2, 创建复制槽
 
 1. 再次切换
 
@@ -333,6 +339,15 @@ esac
 在主库test1不停机的情况下, 对备库test2执行`pg_ctl promote`, 此后再在备库上执行插入, 再停止备库pg, 重建recovery.conf并启动pg, 发现备库日志报该错误. 此时主库的pg_stat_replication返回信息中没有该备库.
 
 执行`pg_rewind --target-pgdata=/var/lib/pgsql/data --source-server='host=192.168.1.11 port=5432 user=postgres password=postgres' -P`, 并修改postgresql.conf和recovery.conf后启动pg, 发现主库pg_stat_replication返回信息中有该备库了, 且test2启动中有报`consistent recovery state reached at 0/3037EE8\ninvalid record length at 0/3037EE8: wanted 24, got 0`, 该错的意思是: [standby尝试读取并重放存放在standby的WAL文件, 然后它发现了无效的WAL记录, 即它不再能够在本地读取WAL记录了](https://www.postgresql.org/message-id/CAHGQGwFvv0pxaf_iZ1FU1H%3Dd%3DexhPUoM0ss-9GkDWRP%3DFureMg%40mail.gmail.com), 但它会从test1重新同步wal, 因此在test1插入, test2也能显示出来, 忽略该提示日志即可.
+
+### pg_rewind后, wal日志仍有丢失
+备库log:
+```log
+2022-04-13 20:26:44.706 CST [4452] LOG:  started streaming WAL from primary at 0/21000000 on timeline 9
+2022-04-13 20:26:44.706 CST [4452] FATAL:  could not receive data from WAL stream: ERROR:  requested starting point 0/21000000 is ahead of the WAL flush position of this server 0/1E030F08
+```
+
+解决方案: 只能通过pg_basebackup再重新初始化同步
 
 ### 如何处理主库wal被覆盖导致备库不可用
 1. 调大wal_keep_segments, 但也要确保pg_wal不会撑爆存储

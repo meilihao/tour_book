@@ -228,12 +228,18 @@ insert into t1 values (generate_series(1,10000000));
     pg_basebackup也会消耗一个wal_sender进程
 
 - wal_sender_timeout = 60s: 流复制超时时间
+
+    中断那些停止活动超过指定毫秒数的复制连接. 这对发送服务器检测一个后备机崩溃或网络中断有用, 设置为0将禁用该超时机制.
 - wal_keep_segments = 64 : 将为standby库保留64个WAL日志文件. 应当设置为一个尽量大的值, 以便备库落后主库时可通过主库保留的wal进行追回, 但是需要考虑磁盘空间(即归档空间)允许，一个WAL日志文件的大小是16M.
 - max_standby_streaming_delay = 30s : 可选, 流复制最大延迟
 - wal_receiver_status_interval = 10s : 可选，从向主报告状态的最大间隔时间
 - hot_standby_feedback = on : 可选，出现错误复制, 向主机反馈
+
+    设置hot_standby_feedback参数之后备库会定期向主库通知最小活跃事务id(xmin)，这样使得主库vacuum进程不会清理大于xmin值的事务。但是假如主备之间的网络突然中断，备库就无法向主库正常发送xmin值，如果时间够长，主库在这段时间内还是会清理无用元组，这样网络恢复后就可能发生冲突ERROR：canceling statement due to confilct with recovery.
 - synchronous_commit : on代表同步复制；off则是异步，也是默认模式；除此中间还有几个模式也跟刷盘策略有关
 - synchronous_standby_names: 配置**同步复制**的备库列表. 主库的这个值必须和同步备库recovery.conf的primary_conninfo参数的application_name设置一致
+
+    假设synchronous_standby_names='*', 备库有两台, 那么查看pg_stat_replication时, 一台是sync, 另一台是potential.
 - max_replication_slots = 10 : 为使用replication slot，必须大于0；replication slot作用是保证wal没有同步到standby之前不能从pg_xlog移走
 
     ref:
@@ -319,4 +325,5 @@ pg_rewind参数:
 
     输出很多Debug的信息。如果失败时，可以用此选项定位错误原因
 
+pg_rewind的排除目录见[这里](https://github.com/postgres/postgres/blob/REL_12_STABLE/src/bin/pg_rewind/filemap.c).
 

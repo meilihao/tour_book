@@ -3,20 +3,49 @@
 - `sudo -u postgres psql`
 - `psql -h 127.0.0.1 -p 5432 -U user -d dbname` : 连接数据库
 - `\encoding [编码名称]` : 显示或设定用户端编码
+- `\?` : help
 - `\q` : 退出 psql
 - `\c dbname` : 切换数据库
 - `\l` : 列举数据库
 - `\dt` : 列举表
 - `\d tblname` : 查看表结构
 - `\di` : 查看索引
+- `\x` : 以列显示的开关
+- `\timing on/off` : 显示执行时长
+- `\conninfo` : 显示连接信息
+- `\! date` : 执行shell命令, 主要命令前有空格
+- `\i file` : 执行file中的sql, = `psql -s file`
+- `\pset border 0/1/2：设置执行结果的边框样式` : 显示执行结果的边框
+- `\c` : 查看当前数据库和用户. = `select current_user;`
+- `\c db` : 进入指定db
+- `\c db username` :切到某个db的某个角色
+- `\dn` : 列出当前库下所有schema
+- `\d` : 查看当前数据库下的所有表、视图和序列
+- `\dt` : 只查看数据库中的所有表
+- `\d tb_name` : 查看表结构定义
+- `\dt+ tb_name` : 查看表大小等属性
+- `\db` : 查看表空间
+- `\du` : 列出所有用户及其用户权限
+- `\ds` : 查看用户自定义序列
+- `\df` : 查看用户自定义函数
 
 ## 其他命令
+- `select version()`
 - `show config_file` : 查看配置文件
 - `show hba_file`
 - `show ident_file`
 - `show all`: 查看所有pg配置参数或使用`select * from pg_settings;`
 - `show archive_command` : 查看指定参数
+- `vacuum test` : vacuum test表
+- `select * from pg_stat_activity;`: 查看会话
+- `select * from pg_locks where granted is not true;` : 查看锁等待信息
 - `select name,setting from pg_settings where name in('synchronous_commit','synchronous_standby_names');` : 查看配置
+- `select * from pg_tablespace;` : 查看表空间
+- `select pg_tablespace_size('pg_default');` : 查看表空间大小
+- `select spcname, pg_size_pretty(pg_tablespace_size(spcname)) from pg_tablespace;`: 查看各个表空间的大小
+- `select pg_size_pretty(pg_database_size(db_name)); ` : 查看db大小
+- `select pg_database.datname, pg_size_pretty (pg_database_size(pg_database.datname)) AS size from pg_database;` : 查看所有数据库的大小
+- `select pg_size_pretty(pg_relation_size(table_name))`: 查看表大小
 
 ## 内置函数
 ```psql
