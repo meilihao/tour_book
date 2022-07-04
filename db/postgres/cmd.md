@@ -36,6 +36,7 @@
 - `show ident_file`
 - `show all`: 查看所有pg配置参数或使用`select * from pg_settings;`
 - `show archive_command` : 查看指定参数
+- `show transaction_isolation;` : 查看隔离基本
 - `vacuum test` : vacuum test表
 - `select * from pg_stat_activity;`: 查看会话
 - `select * from pg_locks where granted is not true;` : 查看锁等待信息

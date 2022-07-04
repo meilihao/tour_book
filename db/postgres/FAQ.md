@@ -221,6 +221,18 @@ insert into t1 values (generate_series(1,10000000));
 
 ## 参数
 ### [postgresql.conf](https://postgresqlco.nf/doc/zh/param/max_replication_slots/)
+- default_transaction_isolation='repeatable read' : 默认事务隔离级别
+
+    在线修改方法:
+    ```sql
+    # -- 修改transaction_isolation必须在事务中进行
+    # begin;
+    # set default_transaction_isolation='repeatable read';
+    # show default_transaction_isolation;
+    # begin;
+    # set transaction isolation level serializable;
+    # show transaction_isolation;
+    ```
 - hot_standby = on  : 在备份时同时允许查询
 - max_wal_senders = 10 : 需要设置为一个大于0的数，它表示主库最多可以有多少个并发的standby数据库
 
