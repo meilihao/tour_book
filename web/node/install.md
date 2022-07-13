@@ -1,6 +1,6 @@
 ## nvm
 
-建议使用版本管理工具[nvm](https://github.com/creationix/nvm)，来安装Node.js和io.js。
+建议使用版本管理工具[nvm](https://github.com/creationix/nvm)，来安装Node.js
 
 ## 其他安装方式
 

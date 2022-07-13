@@ -158,20 +158,29 @@ ll ../RPMS/x86_64 # 所需rpms
 ```
 
 ### v20.0.3
-env: Ubuntu 20.04
+env: Ubuntu 20.04/Kylin 4.0.2
 
 ```bash
+# --- cmake
+# 需要cmake >=3.12.0, Kylinv4要自己编译, 并删除debian/control中的cmake依赖检查
+# --- deps
+# Kylinv4安装mtx依赖会报错, 下载该包解压并手动处理即可, 并删除debian/control中的mtx依赖检查
+# --- make install
 # git clone -b Release/20.0.3 --depth=1 git@github.com:bareos/bareos.git # 应使用`git clone xxx`方式获取bareos源码, 因为cmake需要从git tag/log获取信息.
 # cmake -P write_version_files.cmake
 # apt install libreadline-dev libpq-dev chrpath
 # mkdir build && cd build
 # cmake -Dpostgresql=yes -Dtraymonitor=no -Dmysql=no -Dsqlite3=no .. # make install时用, 而非deb打包时, cmake参数参考`debian/rules`
-dpkg-checkbuilddeps
-# generate changelog from [here](https://github.com/bareos/bareos/blob/15f82cd288f295f4ae13c3f27775eb2df46f2c98/.travis.yml)
+# --- build apt
+# dpkg-checkbuilddeps # check deps
+# -- generate changelog from [here](https://github.com/bareos/bareos/blob/15f82cd288f295f4ae13c3f27775eb2df46f2c98/.travis.yml)
 NOW=$(LANG=C date -R -u)
 BAREOS_VERSION=$(cmake -P get_version.cmake | sed -e 's/-- //')
 printf "bareos (%s) unstable; urgency=low\n\n  * See https://docs.bareos.org/release-notes/\n\n -- nobody <nobody@example.com>  %s\n\n" "${BAREOS_VERSION}" "${NOW}" | tee debian/changelog # 或从官方deb中拷贝一份
-vim debian/rules # ~~根据上面的cmake参数定制deb打包编译bareos时需要的参数~~. 不能修改参数, 只能装全依赖, 因为deb打包时dh_install并没有根据参数(比如`-Dmysql=no -Dsqlite3=no`, `-Dtraymonitor=no`等)忽略相关依赖文件. 不禁用traymonitor会报很多错. 删除override_dh_install并未使用的libbareoscats-mysql, libbareoscats-sqlite3
+vim core/cmake/distname.sh # Debian)-> Debian|Kylin) # for kylinv4.0.2 设置构建platform
+vim debian/rules # ~~根据上面的cmake参数定制deb打包编译bareos时需要的参数~~. 构建deb时不能修改参数, 只能装全依赖, 因为deb打包时dh_install并没有根据参数(比如`-Dmysql=no -Dsqlite3=no`, `-Dtraymonitor=no`等)忽略相关依赖文件. 其他修改内容:
+#   - DAEMON_USER = root
+#   - DAEMON_GROUP = root
 fakeroot debian/rules binary # 来自`/.travis/travis_before_script.sh`. 编译完成后在打包时会报错， 因为生成的debian/control还是包含了mysql， sqlit3和traymonitor, 同时还要去掉debian/bareos-[director|filedaemon|storage].install中的traymonitor相关项, 修改后再次执行该命令即可.
 # --- 制作apt local repo
 # mkdir bareos-apt
@@ -358,7 +367,7 @@ exit
         需要设置的参数:
         - Client Name: bconsole注册clients时的名称, 最好是clients os的hostname
         - Director Name: 不修改
-        - Password: dareos-server:/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf中的Password即`[md5]xxx`
+        - Password: dareos-server:/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf中的Password即`[md5]xxx`, **注意`[md5]`不能省略, 否则dir无法连接client**
         - Network Address: 注册client时本机的ip
         - Client Monitor Password: 用/etc/bareos/bareos-dir.d/console/bareos-mon.conf文件中的Password
 
@@ -1215,6 +1224,23 @@ client在win10上.
 
 这个错误的原因是openssl 在对收到的包做完整性校验时发现收到的报数据不对. 调查时需要从两端同时抓取wireshrk包分析，看到底哪里将数据破坏掉了.
 
+### bconsole执行`status client=bareos-fd`报`Probing client protocol... (result will be saved until config reload)`
+看`/var/log/bareos/bareos.log`提示`Unable to authenticate with File daemon at "localhost:9102"`, 是dir中client的配置的Password字段错误, 用`/etc/bareos/bareos-fd.d/director/bareos-dir.conf`中Password替换即可.
+
+其他类似错误:
+    - /etc/bareos/bareos-fd.d/director/bareos-dir.conf中的password没有使用
+
+        该password会用于dir和client间tls的CramMd5Handshake
+
+        报错原因: 通过`bareos-fd -v -d 500`发现client加载的配置是`/etc/bareos/bareos-fd.conf`, 而不是`/etc/bareos/bareos-fd.d`, 导致该密码完全没用到
+
+        报错信息:
+        - client systemd log: `ssl3_get_client_key_exchange:psk indentity not found`
+        - dir systemd log: `SSL routines:ssl3_read_bytes:reason(1115)`
+        - dir bareos.log: `Network error during CRAM MD5 with 192.168.0.61\nUnable to authenticate with File daemon at "192.168.0.61:9102"`
+
+
+
 ### 修改Director邮件发送命令
 参考:
 - [备份/恢复系统BAREOS的安装、设置和使用（四）](https://blog.csdn.net/laotou1963/article/details/82939355)
@@ -1494,9 +1520,6 @@ env: php-fpm 7.2
                 fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; # 脚本文件请求的路径,也就是说当访问127.0.0.1/index.php的时候，需要读取网站根目录下面的index.php文件，如果没有配置这一配置项时，nginx不回去网站根目录下访问.php文件，所以返回空白 
                 fastcgi_param APPLICATION_ENV production;
 ```
-
-### bconsole执行`status client=bareos-fd`报`Probing client protocol... (result will be saved until config reload)`
-看`/var/log/bareos/bareos.log`提示`Unable to authenticate with File daemon at "localhost:9102"`, 是dir中client的配置的Password字段错误, 用`/etc/bareos/bareos-fd.d/director/bareos-dir.conf`中Password替换即可.
 
 ### bareos-tray-monitor的开机自启
 `cat /etc/xdg/autostart/bareos-tray-monitor.desktop`

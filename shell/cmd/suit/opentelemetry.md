@@ -111,13 +111,22 @@ API分为四个部分：
 测试client: [exporter_otelcol](https://github.com/meilihao/demo/tree/master/opentelemetry/exporter_otelcol)
 
 ### 0. es
+ref:
+- [es下载地址](https://www.elastic.co/cn/downloads/past-releases#elasticsearch)
+
 ```bash
 # docker pull docker.elastic.co/elasticsearch/elasticsearch:7.10.1
 # docker volume create data-es
 # docker run -d --restart=unless-stopped --net host -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" -e "ES_JAVA_OPTS=-Xms512m -Xmx512m" -v data-es:/usr/share/elasticsearch/data docker.elastic.co/elasticsearch/elasticsearch:7.10.1
 ```
 
+> 开启es xpack security时, [jaeger配置方法见这里](https://github.com/jaegertracing/jaeger/issues/3382).
+
 ### 1. jaeger
+ref:
+- [jaeger 存储要求](https://www.jaegertracing.io/docs/1.36/#technical-specs)
+
+  es 7.x可以, es 8.3.1时jaeger-collector启动报错
 
 [演示部署(数据在内存)](https://www.jaegertracing.io/docs/1.21/getting-started/).
 ```bash
@@ -176,7 +185,7 @@ EOF
 参考[prometheus_grafana.md](/shell/cmd/suit/prometheus_grafana.md)
 
 ### 3. OpenTelemetry Collector(v0.41.0)
-1. 下载[binary](https://github.com/open-telemetry/opentelemetry-collector-releases/releases).
+1. 下载[otelcol-contrib binary](https://github.com/open-telemetry/opentelemetry-collector-releases/releases).
 1. 运行otelcol_linux_amd64
 
     ref:
@@ -184,7 +193,7 @@ EOF
     - [OpenTelemetry Collector Architecture](https://github.com/open-telemetry/opentelemetry-collector/blob/main/docs/design.md)
     - [Configuring the OpenTelemetry Collector:](https://www.sumologic.com/blog/configure-opentelemetry-collector/)
 
-    **[opentelemetry-collector git repo默认不再包含`exporter/jaegerexporter`(已被移到[`opentelemetry-collector-contrib `](https://github.com/open-telemetry/opentelemetry-collector-contrib)), PR是[这个](](https://github.com/open-telemetry/opentelemetry-collector/issues/3474)), 因此可用ocb工具精简binary. 同时根据[otel发行版Distributions](https://opentelemetry.io/docs/collector/distributions/), otel官方提供的binary已包含全部opentelemetry-collector-contrib组件**.
+    **[opentelemetry-collector git repo默认不再包含`exporter/jaegerexporter`(已被移到[`opentelemetry-collector-contrib `](https://github.com/open-telemetry/opentelemetry-collector-contrib)), PR是[这个](](https://github.com/open-telemetry/opentelemetry-collector/issues/3474)), 因此可用ocb工具精简binary. 同时根据[otel发行版Distributions](https://opentelemetry.io/docs/collector/distributions/), otel官方提供的otelcol-contrib已包含全部opentelemetry-collector-contrib组件**.
 
     > otel精简构建可参考[OpenTelemetry Collector builder](https://github.com/open-telemetry/opentelemetry-collector/tree/main/cmd/builder)+[distributions/otelcol-contrib/manifest.yaml](https://github.com/open-telemetry/opentelemetry-collector-releases/blob/main/distributions/otelcol-contrib/manifest.yaml)
 
@@ -277,6 +286,7 @@ otelcol端口:
 - 8889 : 作为prometheus的client(opentelemetry-collector收集的其clients的metrics), 被prometheus server采集metrics
 - 13133 : health_check extension
 - 55679 : zpages extension
+- 14250 : 安装otelcol-contrib 0.54.0后, 起来后会占用jaeger的14250端口, 使用上述otel-config.yaml重启后没再使用14250
 
 > opentelemetry collector 支持级联by [otlpexporter](https://github.com/open-telemetry/opentelemetry-collector/tree/master/exporter/otlpexporter)/[otlphttpexporter](https://github.com/open-telemetry/opentelemetry-collector/tree/master/exporter/otlphttpexporter), 此时前一级的opentelemetry-collector也被成为opentelemetry agent.
 
@@ -304,3 +314,10 @@ systemctl start elasticsearch
 
 ### ocb构建报`IncludeCore is deprecated. Starting from v0.41.0, you need to include all components explicitly`
 不是错误, 只是WARN并打印了stack信息.
+
+### jaeger-collector写es报`[TOO_MANY_REQUESTS/12/disk usage exceeded flood-stage watermark, index has read-only-allow-delete block]`
+是因为一次请求中批量插入的数据条数巨多，以及短时间内的请求次数巨多引起ES节点服务器存储超过限制，ES主动给索引上锁.
+
+释放空间后执行`curl -XPUT -H "Content-Type: application/json" http://localhost:9200/_all/_settings -d '{"index.blocks.read_only_allow_delete": null}'`来解除索引只读状态
+
+> es存储阈值是95%, 当前是96%.

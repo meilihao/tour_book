@@ -83,5 +83,5 @@ tps和吞吐量:
 
     # iostat
     # iostat 5 2 # 打算以 5 秒捕获的间隔捕获两个报告, iostat [Interval] [Number Of Reports], 使用特定的间隔输出
-    # iostat -x -d -m 1 zd224 # 1, 刷新间隔(s)
+    # iostat -x -d -m 1 zd224 zd224 # 1, 刷新间隔(s)
     # pidstat -d 1 # 展示I/O统计，每秒更新一次

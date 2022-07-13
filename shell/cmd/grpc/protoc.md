@@ -49,6 +49,11 @@ service checker {
 一旦使用了`-I`参数则必须将my.proto所在的path也要用`-I`指定, 比如这里是`-I=.`. 注意`-I`不支持`~`路径形式但支持`$GOPATH`.
 
 ### protobuf 因为 XXX 插入数据库报错的情况
+ref:
+- [golang 解决 protobuf 因为 XXX 插入数据库报错的情况](https://www.hwholiday.com/2020/go_protoc_gen_go/)
+
+**新版protobuf-go, 比如`google.golang.org/protobuf@v1.28.0`**已用其他字段取代了`XXX_`
+
 ```go
 // https://github.com/gogo/protobuf/blob/master/protoc-gen-gogo/generator/generator.go#L2487
 // generateInternalStructFields just adds the XXX_<something> fields to the message struct.

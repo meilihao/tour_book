@@ -47,6 +47,7 @@
 - `select pg_size_pretty(pg_database_size(db_name)); ` : 查看db大小
 - `select pg_database.datname, pg_size_pretty (pg_database_size(pg_database.datname)) AS size from pg_database;` : 查看所有数据库的大小
 - `select pg_size_pretty(pg_relation_size(table_name))`: 查看表大小
+- `alter table xxx owner to new_owner;` # 修改表owner
 
 ## 内置函数
 ```psql
@@ -80,4 +81,9 @@ postgres=# \o
 ## 表空间
 ```bash
 cat $PGDATA/tablespace_map # 查看表空间映射位置
+```
+
+## 元数据
+```sql
+SELECT u.datname  FROM pg_catalog.pg_database u where u.datname='xxx'; # 检查是否存在数据库xxx
 ```

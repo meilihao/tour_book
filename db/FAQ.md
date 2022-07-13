@@ -1,6 +1,10 @@
 # linux postgres 好用的gui client
 [dbeaver](https://dbeaver.io/)
 
+## db管理工具
+- [heidisql](https://www.heidisql.com/)
+- [DBeaver](https://dbeaver.io/)
+
 ## 迁移db
 ### sqlite3 -> mysql
 1. 使用正则`DEFAULT\s{1,}""` -> `DEFAULT ''`

@@ -17,4 +17,5 @@ gpt分区工具. 与fdisk类似, 也分为两种模式: 命令模式(直接进�
 ## example
 ```bash
 # parted -l /dev/nvme0n1 | grep "Partition Table" # 查看磁盘分区方案(是否是gpt)
+# parted /dev/sda print # 打印分区
 ```

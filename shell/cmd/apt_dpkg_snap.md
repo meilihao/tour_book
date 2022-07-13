@@ -167,8 +167,9 @@ aptitude search ~c # list the residual packages
 sudo aptitude purge ~c # purge them
 ```
 
-### apt log
-`/var/log/apt/term.log`
+### apt/dpkg log
+- `/var/log/apt/term.log`
+- `/var/log/dpkg.log`
 
 ### apt `Couldn't find any package by glob 'qemu'`
 `apt remove qemu*` 改为 `apt remove "qemu*"`
@@ -228,6 +229,7 @@ debuild默认构建deb需要gpg签名, 通过`man debuild`可用`debuild -i -us 
 ### 手动清理软件
 ```bash
 # dpkg -L icaclient # 罗列文件
+# rm -rf ... # 清理上述列出的文件
 # vim /var/lib/dpkg/status # 清理掉icaclient
 # sudo dpkg --configure -a
 # 清理罗列的icaclient文件
@@ -254,6 +256,9 @@ sub   rsa4096 2017-05-08 [S]
 # vim /etc/apt/sources.list.d/sublime-text.list 
 deb [arch=amd64 signed-by=/usr/share/keyrings/sublimehq-pub.gpg] https://download.sublimetext.com/ apt/stable/
 ```
+
+### `apt install ./xxx.deb`报`couldn't be accessed by user '_apt'. - pkgAcquire::Run (13: Permission denied)`
+原因: xxx.deb无法被_apt用户访问导致, 即权限问题. 将xxx.deb移到`/tmp`再安装即可
 
 ### apt update NO_PUBKEY
 ```bash

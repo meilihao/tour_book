@@ -721,3 +721,6 @@ arcstat -f time,hit%,dh%,ph%,mh% 1
 
 ### zfs使用内存
 `cat /proc/spl/kmem/slab |awk '{a+=$3}END{print a}'`, **这部分memory不包括arc, 仅是zfs objects**
+
+### zfs命令卡住
+用iostat发现磁盘写入超过20MB/s时, `%util`已超过90%, await也挺高, 是磁盘性能不够导致. 磁盘空闲后, 该命令可很快成功.
