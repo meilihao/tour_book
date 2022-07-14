@@ -19,7 +19,7 @@
 ### example
 ```
 # zip -9r /opt/etc.zip /etc # 将/etc进行压缩保存入/opt/etc.zip.
-# zip -r /opt/var.zip -/var -x "*.log" # 将/var中除"*.log"外的所有文件压入/opt/var.zip
+# zip -r /opt/var.zip /var -x "*.log" # 将/var中除"*.log"外的所有文件压入/opt/var.zip
 # zip /opt/etc.zip -d etc/passwd # 将etc.zip中的etc/passwd删除
 # zip -u /opt/etc.zip /etc/inittab # 将/etc/inittab更新入etc.zip
 # zip -u /opt/etc.zip /etc/* # 将/etc下所有内容更新入etc.zip

@@ -505,3 +505,10 @@ func main() {
     }
 }
 ```
+
+## 兼容性
+### os.ReadDir
+```go
+os.ReadDir("C:") // 返回当前工作目录下的文件列表
+os.ReadDir("C:/") // 返回C盘下的文件列表
+```

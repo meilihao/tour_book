@@ -736,6 +736,7 @@ fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
           Exclude = yes                                 # 另一种方式指定不备份上述指定文件
         }
         File ="C:/QMDownload"                    # 备份目录C:/QMDownload
+        File ="D:/" # 整盘时, 最后的`/`不能省略
       }
     ```
 
@@ -1580,3 +1581,8 @@ ref:
 > ESXi 格式的虚拟磁盘由两个单独的文件组成: 一个数据文件和一个磁盘描述符文件.
 
 > VMware Workstation 和 VMware ESXi 的 VMware 虚拟磁盘格式是另一回事. VMware Workstation 格式的虚拟磁盘具有内置于单个 VMDK 文件中的磁盘描述符.
+
+### bareos windows还原后目标目录为空, 但该目录大小和备份原目录相近
+env: bareos v21
+
+还原时选择了xxx.iso和windows的系统文件(比如`$Recycle.Bin`, `System Volume Information`等), 还原后xxx.iso不展示, 通过修改文件管理器(`查看->选项->查看->取消"隐藏受保护的操作系统文件(推荐)"和选中"显示隐藏的文件,文件夹和驱动器"`)的使其展示windows系统文件即可看到xxx.iso

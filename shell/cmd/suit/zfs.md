@@ -41,7 +41,10 @@ mirror : 一个虚拟设备存储相同的两个或两个以上的磁盘上的�
 resilvering ：在恢复设备时将数据从一个磁盘复制到另一个磁盘的过程
 snapshot : 快照, 是文件系统或卷的只读副本. 在zfs中，快照几乎可以即时创建，而且最初不会额外占用池中的磁盘空间
 scrub : 用于一致性检验. 其他文件系统会使用fsck.
-thin: zfs支持thin provisioning, 
+thin: zfs支持thin provisioning
+
+## reg
+- [dataset name](https://openzfs.github.io/openzfs-docs/man/8/zfs.8.html)
 
 ### 建议
 1. 使用整个磁盘来作为磁盘写入高速缓存(ZIL)并使维护更轻松
