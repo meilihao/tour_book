@@ -1,6 +1,9 @@
 # rocksdb
 参考:
 - [RocksDB系列](https://www.jianshu.com/p/061927761027)
+- [RocksDB 第6课](https://www.modb.pro/db/385068)
+- [Rocksdb基本用法](https://www.cnblogs.com/wanshuafe/p/11564148.html)
+- [Basic Operations](https://github.com/facebook/rocksdb/wiki/Basic-Operations)
 
 RocksDB的目的是成为一套能在服务器压力下，真正发挥高速存储硬件（特别是Flash 和 RAM）性能的高效单点数据库系统. 它是一个C++库，允许存储任意长度二进制kv数据, 支持原子读写操作, 因此本质上来说它是一个可插拔式的存储引擎选择.
 
