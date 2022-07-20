@@ -22,7 +22,7 @@ exclude=kernel* centos-release*
 // 新建用户
 # useradd username
 // 添加sudo权限
-# vim /etc/sudoers
+# vim /etc/sudoers 或 visudo
 // username  ALL=(ALL)  NOPASSWD:ALL
 // 修改密码
 # passwd username

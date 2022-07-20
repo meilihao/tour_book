@@ -4,6 +4,7 @@
 - [RocksDB 第6课](https://www.modb.pro/db/385068)
 - [Rocksdb基本用法](https://www.cnblogs.com/wanshuafe/p/11564148.html)
 - [Basic Operations](https://github.com/facebook/rocksdb/wiki/Basic-Operations)
+- [漫谈RocksDB(四)存储结构](https://www.modb.pro/db/112483)
 
 RocksDB的目的是成为一套能在服务器压力下，真正发挥高速存储硬件（特别是Flash 和 RAM）性能的高效单点数据库系统. 它是一个C++库，允许存储任意长度二进制kv数据, 支持原子读写操作, 因此本质上来说它是一个可插拔式的存储引擎选择.
 
@@ -235,6 +236,47 @@ RocksDB提供以下3大类型的工具:
 - [RocksDB · 数据的读取(一)](http://mysql.taobao.org/monthly/2018/11/05/)
 - [RocksDB解析](https://www.cnblogs.com/pdev/p/11277784.html)
 
+## 组件
+### Iterator
+rocksdb迭代器为用户提供了大量的便捷操作和接口访问方式:
+- NewIterator 创建一个迭代器，需要传入读配置项
+- Seek 查找一个key
+- SeekToFirst 迭代器移动到db的第一个key位置，一般用于顺序遍历整个db的所有key
+- SeekToLast 迭代器移动到db的最后一个key位置， 一般用于反向遍历整个db的所有key
+- SeekForPrev移动到当前key的上一个位置，一般用于遍历(limit, start]之间的key
+- Next 迭代器移动到下一个key
+- Prev迭代器移动到上一个key
+
+## example
+```go
+options.SetPrefixExtractor(gorocksdb.NewFixedPrefixTransform(1))
+db,err:=gorocksdb.OpenDb(options, "rdb")
+
+opts:=gorocksdb.NewDefaultReadOptions()
+opts.SetPrefixSameAsStart(true) // 确保下面it返回值的前缀都是'b'
+opts.SetTotalOrderSeek(true)
+defer opts.Destroy()
+
+it:=db.NewIterator()
+defer it.Close()
+
+it.Seek([]byte{'b'}) // Seek的参数超过NewFixedPrefixTransform设定时会按FixedPrefixTransform截取. 按前缀查找需设置SetTotalOrderSeek=true.
+```
+
+```go
+// 查找最后一个可用[SetIterateUpperBoundin](https://stackoverflow.com/questions/60576749/rocksdb-iterator-seek-until-last-matching-prefix)
+ro := NewDefaultReadOptions()
+ro.SetIterateUpperBound([]byte("keya")) // 全尺寸key, targetkey < "keya"
+
+iter, count := db.NewIterator(ro), 0
+for iter.SeekToFirst(); iter.Valid(); iter.Next() {
+    count++
+}
+
+ro.Destroy()
+iter.Close()
+```
+
 ## FAQ
 ### 即使Put() use writeOptions.SetSync(true), Iterator遍历时部分数据(最近put的数据)无法访问到, 但Get()正常
 ```go
@@ -264,6 +306,9 @@ RocksDB的内存大致有如下四个区：
 - Blocked pinned by iterators
 
 ### 获取所使用的rocksdb version/config
+ref:
+- [MySQL · MyRocks · MyRocks参数介绍](https://developer.aliyun.com/article/397246)
+
 查看db_path下的OPTIONS-<SN>中的section "Version"即可
 
 参考rocksdb 配置:
@@ -390,6 +435,14 @@ RateLimiter参数：
 - int64_t refill_period_us：控制 tokens 多久再次填满，譬如 rate_limit_bytes_per_sec 是 10MB/s，而 refill_period_us 是 100ms，那么每 100ms 的流量就是 1MB/s. 相当于将1s分成1s/refill_period_us个小窗口, 每个小窗口占用一定的token, 使得写入更均匀.
 - int32_t fairness：用来控制 high 和 low priority 的请求，防止 low priority 的请求饿死.
 
+
+### `setTotalOrderSeek(true)`
+不设置时查找第一个key可能返回不一样, 原因未知.
+
+### [tikv如何调用rocksdb](https://asktug.com/t/topic/663579)
+tikv通过[components/engine_rocks](https://github.com/tikv/tikv/blob/v6.1.0/components/engine_rocks/Cargo.toml#L56)调用rocksdb.
+
+[rust-rocksdb](https://github.com/tikv/rust-rocksdb/blob/tikv-6.1/src/rocksdb.rs)
 ### ttl
 参考:
 - [基于RocksDB实现精准的TTL过期淘汰机制](https://segmentfault.com/a/1190000021185954)

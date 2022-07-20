@@ -45,6 +45,7 @@ alias llvm-link="llvm-link-13"
 alias llvm-mc="llvm-mc-13"
 alias lli="lli-13"
 alias llc="llc-13"
+alias ncdu="ncdu --exclude-kernfs "
 
 # --- liteide
 export LD_LIBRARY_PATH="/opt/liteide/lib:$LD_LIBRARY_PATH"

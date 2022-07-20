@@ -29,3 +29,5 @@ zstd -b5 # 测试指定压缩级别的效率
 zstd --priority=rt my_file.txt # 将压缩进程设定为rt(实时)以加速压缩
 zstd -v my_file.txt.zst # 输出detail
 ```
+
+> go example: [github.com/klauspost/compress/zstd](https://github.com/TeaOSLab/EdgeNode/blob/d5f6acf6903ca42d1dc75004bb95b6462cb41033/internal/compressions/writer_zstd.go)

@@ -141,7 +141,10 @@ ansible-playbook rolling_update.yml -c local
   1. 登录缓慢
   1. use <db> : tikv server timeout
 
-使用`iptables -F`清理后, tidb cluster恢复正常．
+使用`iptables -F`清理后, tidb cluster恢复正常
+
+### [key编码](https://longfangsong.github.io/tipedia/zh/what/Memory%20Comparable%20Encoding.html)
+[Memory Comparable Encoding](https://github.com/pingcap/tidb/blob/v6.1.0/util/codec/bytes.go#L46)
 
 ## Error
 1. `ansible-playbook bootstrap.yml`报错

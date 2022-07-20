@@ -2081,6 +2081,7 @@ File -> Invalidate Caches/Restart...
 明明`license.LicenseManager.py`却提示找不到, 因为LicenseManager.py同目录的`__init__.py`被删除了.
 
 ### ImportError: No module named Cython.Build
+`pip install Cython`
 
 ### 编译成`.so`的源py文件被修改并重启应用后代码未生效
 应先删除`.so`, 否则应用还是用旧的`.so`代码来运行
@@ -2198,8 +2199,6 @@ urlpatterns = patterns(
 
 #### W291 trailing whitespace
 行尾有多余的空格
-
-#### ImportError: No module named Cython.Build
 
 #### AttributeError: '_ssl._SSLSocket' object has no attribute '_sslobj'
 使用了[bareos example](https://pypi.org/project/python-bareos/)中的`Use JSON objects of the API mode 2`, 并用python3.8.5执行时报错.

@@ -72,6 +72,8 @@ timedatectl set-timezone UTC
 timedatectl set-time '16:10:40 2015-11-20'
 timedatectl set-time 20151120
 timedatectl set-time 15:58:30
-timedatectl set-local-rtc 1 # 将硬件时钟设置为本地时区
+timedatectl set-local-rtc 1 # 将硬件时钟的时间标准设置为localtime
+timedatectl set-local-rtc 0 # 将硬件时钟的时间标准设置为UTC
 timedatectl set-ntp true # 启用远程NTP服务自动时间同步, 前提是安装NTP
+timedatectl status # 查看时间设
 ```

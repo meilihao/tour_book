@@ -120,3 +120,17 @@ Rust也不建议以`-rs`或`_rs`为后缀来命名包名, 而且会强制性的�
 
 ### 升级`Cargo.toml`的edition
 `cargo fix`
+
+### cargo添加mirror
+ref:
+- [Rust crates.io 索引镜像使用帮助](https://mirrors.tuna.tsinghua.edu.cn/help/crates.io-index.git/)
+- [cargo config层级](https://doc.rust-lang.org/cargo/reference/config.html)
+
+```bash
+# vim $CARGO_HOME/config.toml
+[source.crates-io]
+replace-with = 'tuna'
+
+[source.tuna]
+registry = "https://mirrors.tuna.tsinghua.edu.cn/git/crates.io-index.git"
+```

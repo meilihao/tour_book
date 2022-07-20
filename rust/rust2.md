@@ -33,6 +33,12 @@ rust的`RFC -> Nightly -> Beta -> Stable`策略成功实践了快速迭代、敏
 
 2017 年下半年， rust 设计组又提出了一个基于 poch 演进策略（后来也被称为edition). 它要解决的问题是`如何让 Rust 平稳地进化`. 简单来说就是让 Rust 的兼容性保证是一个有时限的长度, 而不是永久.
 
+## 内存安全
+ref:
+- [Rust、Go、C ，哪个才是“内存管理大师”？](https://mp.weixin.qq.com/s?__biz=MjM5ODI5Njc2MA==&mid=2655873042&idx=1&sn=db17488d9ea741c280cf26ee6fb4b8ea)
+
+Rust通过使用借用检查器(borrow checker)、所有权(ownership)、借用(borrow)这三个概念来管理和确保跨堆栈和堆的内存安全来管理内存，从而实现内存管理.
+
 # base
 ## 代码
 rust代码使用`.rs`扩展名, 且必须是utf-8编码.

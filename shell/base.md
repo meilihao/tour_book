@@ -389,3 +389,6 @@ build.sh: line 2: $'\r': command not found
 # bash --version
 ... 4.2.46(2)...
 ```
+
+### 程序调用命令行执行报`shell-init: error retrieving current directory: getcwd: cannot access parent directories: No such file or directory`
+getcwd 命令无法定位到当前工作目录, 即工作目录被删除了, 或者曾经被删除过.
