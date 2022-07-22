@@ -30,3 +30,4 @@
 
 ### polardb
 - [PolarDB PostgreSQL更新路计划](https://github.com/ApsaraDB/PolarDB-for-PostgreSQL/tree/POLARDB_11_STABLE/docs/zh/roadmap)
+- [十年磨一剑，云原生分布式数据库PolarDB-X的核心技术演化](https://mp.weixin.qq.com/s?__biz=MzkwOTIxNDQ3OA==&mid=2247579604&idx=1&sn=65a728b33d7ef37de351415933861cad)

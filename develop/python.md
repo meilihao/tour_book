@@ -2096,6 +2096,18 @@ File -> Invalidate Caches/Restart...
 ### TypeError: Class advice impossible in Python3.  Use the @implementer class decorator instead.
 python3使用`from zope.interface import implementer`, 而python2.7使用`from zope.interface import implements`
 
+
+### Ubuntu 16.04构建的应用(py已编译成so)在oracle linux 7.9上报`undefined symbol: PyFPE_jbuf`
+ref:
+- [undefined symbol: PyFPE_jbuf 问题分析并处理](https://blog.csdn.net/u011728480/article/details/104817741)
+
+```bash
+# readefl -a app_xxx.so |grep PyFPE_ # 应用的so, 有PyFPE_jbuf
+# readefl -a libpython3.5m.so |grep PyFPE_ # Ubuntu 16.04有PyFPE_jbuf, 而oracle linux 7.9没有
+```
+
+参考ref获悉: `PyFPE_jbuf`来自构建python3时的`--with-fpectl`(处理浮点数异常)选项, 使用后会启用pyfpe.h的WANT_SIGFPE_HANDLER, 从而拥有了PyFPE_jbuf.
+
 ### [Python 中如何将字节 bytes 转换为整数 int](https://www.delftstack.com/zh/howto/python/how-to-convert-bytes-to-integers/)
 参考:
 - [Python中struct.pack()和struct.unpack()用法](https://cloud.tencent.com/developer/article/1406350)

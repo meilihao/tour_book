@@ -469,3 +469,14 @@ env: rocksdb.spec from [fedora 36](https://src.fedoraproject.org/rpms/rocksdb), 
 - `%{set_build_flags}\n... no job control` : 删除它.
 
     [set_build_flags用途](https://src.fedoraproject.org/rpms/redhat-rpm-config/blob/rawhide/f/buildflags.md?text=True)
+
+### 清理旧kernel
+```bash
+# rpm -aq |grep kernel # 查看kernel所有包
+# uname -a # 查看正在使用的kernel
+# rpm -q kernel # 查看全部kernel
+# dnf remove kernel-5.14.0-96.el9.x86_64
+# dnf remove kernel-core-5.14.0-96.el9.x86_64
+```
+
+一键清理所有非使用的kernel: `dnf remove $(rpm -qa | grep kernel | grep -v $(uname -r))`

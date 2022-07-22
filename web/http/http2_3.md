@@ -13,6 +13,9 @@ HTTP/2解决了HTTP的队头拥塞（head of line blocking）问题, 客户端�
 在限定的条件下，在TCP下解决这个问题相当困难, 即http2未解决TCP队头阻塞, 但http3解决了.
 
 ## http3
+ref:
+- [检查是否已启用h3](https://http3check.net)
+
 HTTP/3不存在明文的不安全版本.
 
 ## quic

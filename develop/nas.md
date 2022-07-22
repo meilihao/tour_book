@@ -1331,3 +1331,4 @@ DSM在[这里](https://www.synology.com/zh-tw/support/download/VirtualDSM?versio
 	其他设置:
 	1. 跳过创建Synology账号
 	1. "设备分析"页不勾选, 直接提交
+1. 访问`http://xxx:5000`
