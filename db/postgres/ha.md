@@ -119,12 +119,15 @@ test2 192.168.1.12
 	1. 从库安装完成后, 无需初始化; 若已初始化, 则清空其/var/lib/pgsql/data目录
 	1. `pg_basebackup -h 192.168.1.11 -p 5432 -U repuser -F p -Xs -P -D /var/lib/pgsql/data/ && chown postgres:postgres -R /var/lib/pgsql/data`, 这步需要输入repuser的密码
 
-		pg_basebackup参数说明:
+		[pg_basebackup参数 from "pg_basebackup物理备份日常使用姿势"](https://www.modb.pro/db/50395)说明:
 		1. `-F` : 指定了输出的格式，支持p（原样输出）或者t（tar格式输出）
+
+			- p : 不处理自定义表空间, 有自定义表空间时需与`-T`结合使用. 此时pg_basebackup输出文件的所有者是当前用户
+			- t : 会自动处理表空间. 压缩时常用参数: `-Ft -z -Z5`. 此时tar.gz里的文件owner是postgres
 		1. -`X` : 用于在备份中包括所需的预写日志文件（WAL文件）. 取值为f/fetch 时与参数-x 含义一样. 取s/stream时表示备份开始后，启动另一个流复制进程接收WAL日志, 此方式需要主库max_wal_senders参数大于或等于2
 
 			- f : 指wal日志在基础备份完成后被传送到备节点, 这时主库上的wal_keep_segments需要设得较大, 以免备份过程中产生的wal还没发送到备库就已被覆盖, 如果出现这种情况创建基准备份会失败. 该模式下主库会启动一个基准备份wal发送进程
-			- s : 主库上除了启动原红一个基准备份wal发送进程外还会额外启动一个wal发送进程用于发送主库产生的wal增量日志流, 这种方式避免了f方式过程中主库wal被覆盖的情况, 生产模式推荐这种方式, 特别是比较繁忙的库或大库.
+			- s : 主库上除了启动原红一个基准备份wal发送进程外还会额外启动一个wal发送进程用于发送主库产生的wal增量日志流, 这种方式避免了f方式过程中主库wal被覆盖的情况, 生产模式推荐这种方式, 特别是比较繁忙的库或大库. **推荐使用它**.
 		1. `-P` :表示允许在备份过程中实时的打印备份的进度(估算值)
 		1. `-R` : 表示会在备份结束后自动生成recovery.conf文件，这样也就避免了手动创建, 通常是使用手动创建的
 		1. `-D` : 指定把备份写到哪个目录，前提是: **做基础备份之前从库的数据目录需要手动清空**
@@ -132,8 +135,9 @@ test2 192.168.1.12
 		1. `-v` : 输出详细log
 		1. `-C` : 在开始备份之前，允许创建由`-S`选项命名的复制槽, 比如`pg_basebackup -h 10.20.20.1 -D /var/lib/pgsql/12/data -U replicator -P -v  -R -X stream -C -S pgstandby1`
 		1. `-S` : 指定复制槽名称, 指定主库使用的复制槽
-
-		> pg_basebackup能自动处理表空间问题.
+		1. `-z` : 使用gunzip压缩
+		1. `-Z` : 指定压缩级别
+		1. `-T` : 指定自定义表空间目录路径
 
 1. 修改配置, 并启动备库即可完成一主一从的复制配置
 	1. 将postgresql.conf.bak复制为postgresql.conf:

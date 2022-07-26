@@ -8,7 +8,7 @@ rsync命令是一个远程数据同步工具，可通过LAN/WAN快速同步多�
 - -a, --archive : 归档模式，表示以递归方式传输文件，并保持所有文件属性，等于-rlptgoD
 - -c, --checksum : 打开校验开关，强制对文件传输进行校验
 - -e "ssh -i $HOME/.ssh/somekey" : `-e`表示指定使用rsh、ssh方式进行数据同步, 这里同时指定了使用的ssh key
-- --exclude : 排除路径, 相对于源地址
+- --exclude : 排除路径, 相对于源地址. 可先加`-n -v`输出传输细节再来设置该项
 - -n : dry-run
 - --progress : 显示备份过程
 - -P 等同于 --partial : 断点续传
@@ -36,6 +36,8 @@ rsync [OPTION]... rsync://[USER@]HOST[:PORT]/SRC [DEST]
 
 ## example
 ```bash
+$ rsync -ac /etc/bareos bak # 备份bareos目录到bak
+$ rsync -ac /etc/bareos/ bak # 备份bareos目录下的内容到bak
 $ rsync -avc --dry-run --update ./* root@192.168.0.137:/opt/test # 仅计算同步
 $ rsync -avc --update --exclude="adapter" ./* root@192.168.0.137:/opt/test # 会排除./adapter
 $ rsync -P --rsh=ssh aliyun:~/git/lfs.img.zstd . # 断点续传

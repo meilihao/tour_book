@@ -334,7 +334,9 @@ doing at any given time.
 
 可通过`qemu-system-x86_64 --machine help`查看x86支持的所以machine type.
 
-i440fx是1996年推出的架构, 已过时. q35是2009年推出的架构, 更现代.
+i440fx是1996年推出的架构, 已过时, 支持的是PCI的设备, 支持传统bios. q35是2009年推出的架构, 更现代, 支持的是pcie slot槽位, 支持uefi和bios.
+
+> 从virsh domcapabilities和`/usr/share/qemu/firmware/60-edk2-x86_64.json(固件描述文件)`上看, `pc-i440fx-*`也是支持uefi???
 
 #### riscv64
 参考:
@@ -451,7 +453,7 @@ qemu-system-x86_64 -m 512M -drive format=raw,file=rootfs.img
 
 libvirt 5.3 引入了对 QEMU 自 QEMU 2.9 提供的固件自动选择功能的支持. 此 QEMU 功能依赖于固件 JSON 文件(`/usr/share/qemu/firmware` from `edk2-ovmf`), 这些文件描述了每个固件文件的用途以及如何描述它.
 
-`virsh domcapabilities --machine pc-q35-5.1 | xmllint --xpath '/domainCapabilities/os' -`看查看machine支持的uefi固件.
+`virsh domcapabilities --machine pc-q35-5.1 | xmllint --xpath '/domainCapabilities/os' -`看查看machine支持的uefi固件, type里的rom表示bios, pflash表示uefi.
 
 ### hostdev与direct区别
 hostdev为vm提供对 PCI 设备的直接访问, 缺点是无法模拟不同的设备类型. 因此, vm必须有一个可用的驱动程序，该驱动程序与管理程序提供的硬件类型相匹配.

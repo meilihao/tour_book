@@ -790,6 +790,10 @@ virt-xml --build-xml --disk virt-xml --build-xml --disk /mnt/1.qcow2,target=vdb 
 其他:
 virt-clone -o Demo-kylin-v10 -n kylin-1 -f /home/kvm/kylin-1.qcow2 : # 克隆Demo-kylin-v10, 虚拟机名：kylin-1, 虚拟机路径：/home/kvm/kylin-1.qcow2
 
+## virt-install
+ref:
+- [koan/virtinstall.py](https://github.com/cobbler/koan/blob/master/koan/virtinstall.py)
+
 创建vm:
 ```bash
 # --- virsh 5.5

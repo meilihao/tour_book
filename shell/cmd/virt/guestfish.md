@@ -25,6 +25,8 @@ guestfish主要包含以下工具：
 
 	virt-copy-in -a t.qcow2 /root/test.txt .
 - virt-customize : 定制虚拟机镜像
+
+	- 设置 root 密码并禁用 cloud-init: `virt-customize -a MY-CLOUD-IMAGE.qcow2 --root-password password:SUPER-SECRET-PASSWORD --uninstall cloud-init`
 - virt-df :查看虚拟机镜像空间使用情况
 
 	virt-df -a t.qcow2

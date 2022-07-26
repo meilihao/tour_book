@@ -41,9 +41,6 @@
 - `select * from pg_stat_activity;`: 查看会话
 - `select * from pg_locks where granted is not true;` : 查看锁等待信息
 - `select name,setting from pg_settings where name in('synchronous_commit','synchronous_standby_names');` : 查看配置
-- `select * from pg_tablespace;` : 查看表空间
-- `select pg_tablespace_size('pg_default');` : 查看表空间大小
-- `select spcname, pg_size_pretty(pg_tablespace_size(spcname)) from pg_tablespace;`: 查看各个表空间的大小
 - `select pg_size_pretty(pg_database_size(db_name)); ` : 查看db大小
 - `select pg_database.datname, pg_size_pretty (pg_database_size(pg_database.datname)) AS size from pg_database;` : 查看所有数据库的大小
 - `select pg_size_pretty(pg_relation_size(table_name))`: 查看表大小
@@ -80,7 +77,19 @@ postgres=# \o
 
 ## 表空间
 ```bash
-cat $PGDATA/tablespace_map # 查看表空间映射位置
+cat $PGDATA/tablespace_map # 查看表空间映射位置, from pg 9.5. 在10.5上是用$PGDATA/pg_tblspc, 但pg_basebackup备份的base.tar.gz里有tablespace_map
+```
+
+```sql
+# create tablespace tbs_test owner postgres location '/usr/local/pgdata'; # 会在$PGDATA/pg_tblspc下有一个连接文件xxx, 指向/usr/local/pgdata
+# CREATE DATABASE logistics TABLESPACE ts_primary; -- 在表空间内建库
+# create table test(a int) tablespace tbs_test; --在表空间内建表
+# \db[+] [<tablespace_name>] --罗列表空间, `+`表示更多细节, 比如空间大小
+# select * from pg_tablespace; -- 查看表空间
+# select pg_tablespace_size('pg_default'); -- 查看表空间大小
+# select spcname, pg_size_pretty(pg_tablespace_size(spcname)) from pg_tablespace; -- 查看各个表空间的大小
+# alter table test_tsp03 set tablespace tsp01; -- 将表从一个表空间移到另一个表空间, 期间会锁表(在这个期间涉及到的对象将被锁定, 不可访问)
+# drop tablespace if exists tbs_test; -- 删除表空间. 删除表空间前必须要删除该表空间下的所有数据库对象，否则无法删除
 ```
 
 ## 元数据
