@@ -7,13 +7,14 @@ rsync命令是一个远程数据同步工具，可通过LAN/WAN快速同步多�
 ## 选项
 - -a, --archive : 归档模式，表示以递归方式传输文件，并保持所有文件属性，等于-rlptgoD
 - -c, --checksum : 打开校验开关，强制对文件传输进行校验
-- -v : 显示执行细节
-- -z, --compress : 对备份的文件在传输时进行压缩处理
-- --exclude : 排除路径, 相对于源地址
-- --update : 跳过目标文件比源文件新的文件
 - -e "ssh -i $HOME/.ssh/somekey" : `-e`表示指定使用rsh、ssh方式进行数据同步, 这里同时指定了使用的ssh key
+- --exclude : 排除路径, 相对于源地址
+- -n : dry-run
 - --progress : 显示备份过程
 - -P 等同于 --partial : 断点续传
+- --update : 跳过目标文件比源文件新的文件
+- -v : 显示执行细节
+- -z, --compress : 对备份的文件在传输时进行压缩处理
 
 ## 格式
 ```
