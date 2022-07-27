@@ -276,3 +276,15 @@ ref:
 > 可看/usr/share/virt-manager/virtinst/domcapabilities.py `_uefi_arch_patterns`的匹配规则
 
 **用virt-install安装vm失败, 可用virt-manager创建试试, 可能有具体错误提示.**
+
+### `virt-install --dry-run --print-xml --os-variant centos-stream8 ... --disk /dev/zvol/a/b,device=disk,bus=scsi,target.dev=sda`报`utf-8' codec can't decode byte 0xe3 in position 9 invalid continuation byte`
+问题环境: kylinv10. oracle linux 7.9, Ubuntu 22.04正常.
+
+刚开始将命令缩减为`virt-install --dry-run --print-xml --os-variant centos-stream8`还报错, 就以为是问题在`centos-stream8`中的`-`, 但删除`--os-variant`选项, `--disk`选项还是报该错.
+
+通过添加`--debug`后获取了具体报错位置在`libvirt.py#libvirtmod.virStorageVolGetName()`.
+
+通过查看报错stack, 在其上层的`/usr/share/virt-manager/virtinst/pollhelpers.py#_new_poll_helper`的`l26`的`name = obj.name()`下面添加`print(connkey)`查看`virStorageVolGetName`返回信息, 最后发现程序不但读取了`virsh pool-list --all`罗列的pool下面的文件名称以及`/root`(不知是否是因为使用了root用户或者PWD是`/root`)的, 而`/root`下存在一个名称是乱码的目录, 删除它后需要重启libvirtd.service, 因为读到的路径会被cached.
+
+### virt-install报`Size must be specified for non existent volume 'xxx'`
+对于不存在的vol, 必须设置size.

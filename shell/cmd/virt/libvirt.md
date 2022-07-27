@@ -914,6 +914,9 @@ install 常用参数说明展开目录:
 
       - none : 没有声卡
    - noautoconsole: 不自动连接到guest console. 即不阻塞virt-install
+   - --check : check开关
+
+      - `disk_size=off` : 不检查disk size
 
 ## [vm生命周期及状态转换](https://docs.openeuler.org/zh/docs/22.03_LTS/docs/Virtualization/%E7%AE%A1%E7%90%86%E8%99%9A%E6%8B%9F%E6%9C%BA.html)
 虚拟机主要有如下几种状态：

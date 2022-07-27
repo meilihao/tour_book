@@ -31,6 +31,7 @@
 - -S : 按照文件大小排序
 - -R : 递归输出所有子目录
 - --time={atime,ctime} : 输出指定时间, 默认是mtime
+- --time-style=long-iso : 输出格式为`2022-07-27 10:20`
 - -u : 根据atime排序
 - -x : 按列输出, 即横向输出
 
@@ -54,3 +55,7 @@
 # ls  -ld  * # 输出不带"total ...", 仅罗列当前路径
 # ls  -lL 2>dev/null | awk '{print $9}' # 仅显示文件名
 ```
+
+## FAQ
+### `ls /`卡住
+`/`下有挂载目录 from iscsi, iscsi服务端取消分配后, iscsi client没有umount

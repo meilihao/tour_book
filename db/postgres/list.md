@@ -6,6 +6,7 @@
 - [PostgreSQL on Linux 最佳部署手册](http://mp.weixin.qq.com/s/FR65pyRmpEFFVvoJ28uBUg)
 - [Postgres 索引类型探索之旅](https://linux.cn/article-9035-1.html)
 - [PostgreSQL数据目录深度揭秘](https://www.tuicool.com/articles/aiYZny6)
+- [史上最详细的PostgreSQL体系架构介绍](https://cloud.tencent.com/developer/article/1873795)
 
 ### 相关主页
 
