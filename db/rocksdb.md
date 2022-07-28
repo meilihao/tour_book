@@ -457,3 +457,11 @@ tikv通过[components/engine_rocks](https://github.com/tikv/tikv/blob/v6.1.0/com
 在Compact时通过自定义的TtlCompactionFilter, 去判断数据是否可以清理, 具体参考DBWithTTLImpl::IsStale.
 
 > RocksDB TTL在compact时才清理过期数据，所以，过期时间并不是严格的，会有一定的滞后，取决于compact的速度.
+
+## FAQ
+### grocksdb程序报`pure virtual method called\nterminate called without an active exception`
+这个错误的主要原因是当前对象已经被销毁或者正在被销毁, 导致最终调用到其基类的虚方法上, 最终报出了这个错误.
+
+> 其他场景(比如嵌入式)报该错可能是程序链接的so不存在或环境不提供某些方法.
+
+解决方法: 记录db引用count, 使用前atomic+1,defer atomic-1, 等到再count为0后再关闭
