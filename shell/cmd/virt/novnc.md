@@ -30,3 +30,19 @@ websockify --web=/usr/share/novnc 6080 --target-config=/usr/share/novnc/conf # �
 `/usr/share/novnc/conf`目录下的每个文件写入vm vnc信息, 格式是`token1: host1:port1`(token1为自定义token), 因此创建vm时需要提前配置port, 之后访问`http://192.168.1.130:8787/vnc.html?path=websockify/?token=token1`即可
 
 > oracle linux 7.9上的novnc只支持websockify旧语法
+
+## FAQ
+### 查看websockify version
+`vim /usr/bin/websockify`
+
+### 配置tls
+ref:
+- [Encrypted Connections](https://github.com/novnc/websockify/wiki/Encrypted-Connections)
+
+```bash
+openssl req -new -x509 -days 365 -nodes -out self.pem -keyout self.pem # cert和key都在self.pem里
+websockify --cert=/usr/share/novnc/self.pem ...
+websockify --cert=/usr/share/novnc/self.pem --key=/usr/share/novnc/self.key ... # 当cert和key分开存储时使用该命令
+```
+
+> 仅使用tls时可用`ssl_only=true`
