@@ -799,7 +799,7 @@ Kubernetes数据卷是对Docker数据卷的扩展，Kubernetes数据卷是Pod级
 - 配置参数烦琐, 需手工配置, 违背了k8s自动化的追求目录
 - 预定义的静态volume可能不符合目标应用的需求, 比如容量, 性能等.
 
-后来k8s发展了存储动态化的新机制即存储消费模式, 来事先存储的自动化管理: Persistent Volume(PV), Persistent Volume Claim(PVC), StorageClass.
+后来k8s发展了存储动态化的新机制即存储消费模式, 来实现存储的自动化管理: Persistent Volume(PV), Persistent Volume Claim(PVC), StorageClass.
 
 ```yaml
 apiVersion: storage.k8s.io/v1
@@ -911,6 +911,9 @@ pv 存在:
 1. 创建这种 PV 需要用到的存储插件(provisioner) : 比如，Ceph 等等
 有了这样两个信息之后，Kubernetes 就能够根据用户提交的 PVC，找到一个对应的 StorageClass 了。然后，Kubernetes 就会调用该 StorageClass 声明的存储插件，创建出需要的 PV
 
+创建 PV 有两种方式：
+- 一种是集群管理员通过手动方式静态创建应用所需要的 PV
+- 另一种是用户手动创建 PVC 并由 Provisioner 组件动态创建对应的 PV
 
 #### 本地数据卷
 参考:

@@ -29,3 +29,7 @@
 ## 部署工具
 - kubekey
 - sealos
+
+## 存储
+- [一文读懂 K8s 持久化存储流程](https://mp.weixin.qq.com/s?__biz=MzUzNzYxNjAzMg==&mid=2247490043&idx=1&sn=c09ad4a9bc790f4b742abd8ca1301ffb)
+- [一文读懂容器存储接口 CSI](https://developer.aliyun.com/article/783464)
