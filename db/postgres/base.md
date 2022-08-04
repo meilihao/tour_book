@@ -1,3 +1,127 @@
+## 体系结构
+ref:
+- [史上最详细的PostgreSQL体系架构介绍](https://cloud.tencent.com/developer/article/1873795)
+
+### 存储结构
+PG数据存储结构分为：逻辑存储结构和物理存储存储. 其中：逻辑存储结构是内部的组织和管理数据的方式；物理存储结构是操作系统中组织和管理数据的方式
+
+#### 逻辑存储结构
+所有数据库对象都有各自的oid(object identifiers),oid是一个无符号的四字节整数，相关对象的oid都存放在相关的system catalog表中，比如数据库的oid和表的oid分别存放在pg_database,pg_class表中.  
+
+在逻辑存储结构的相关术语：
+- 数据库集群-Database cluster
+  也叫数据库集簇。它是指有单个PostgreSQL服务器实例管理的数据库集合，组成数据库集群的这些数据库使用相同的全局配置文件和监听端口、共用进程和内存结构。
+
+  一个DataBase Cluster可以包括：多个DataBase、多个User、以及Database中的所有对象。
+
+- 数据库-Database
+
+  在PostgreSQL中，数据库本身也是数据库对象，并且在逻辑上彼此分离.
+
+- 数据库对象-Database object
+
+  如：表、视图、索引、序列、函数等等。在PostgreSQL中的所有数据库对象都由各自的对象标识符（OID）进行内部的管理。例如，数据库的OID存储在pg_database系统表中，可以通过`select oid,datname from pg_database;`进行查询.
+
+  而数据库中的表、索引、序列等数据库对象的OID则存在了pg_class系统表中，例如可以通过`select oid,relname,relkind,relfilenode from pg_class where relname ='testtable1';`查询前面创建的testtable1表的OID.
+
+- 表空间-tablespace
+
+  数据库在逻辑上分成多个存储单元，称作表空间。表空间用作把逻辑上相关的结构放在一起。数据库逻辑上是由一个或多个表空间组成。初始化的时候，会自动创建pg_default和pg_global两个表空间.
+- 模式-Schema
+
+  当创建一个数据库时，会为其创建一个名为public的默认Schema. Schema是数据库中的命名空间，在数据库中创建的所有对象都是在Schema中创建，一个用户可以从同一个客户端连接中访问不同的Schema。而不同的Schema中可以有多个同名的Table、Index、View、Sequence、Function等等数据库对象。可以通过`\dn`来查看当前数据库的Schema.
+
+- 段-segment
+
+  一个段是分配给一个逻辑结构（一个表、一个索引或其他对象）的一组区，是数据库对象使用的空间的集合；段可以有表段、索引段、回滚段、临时段和高速缓存段等。
+
+- 区-extent
+
+  区是数据库存储空间分配的一个逻辑单位，它由连续数据块所组成。第一个段是由一个或多个盘区组成。当一段中间所有空间已完全使用，PostgreSQL为该段分配一个新的范围。
+
+- 块-block（Page）
+  数据块是PostgreSQL 管理数据文件中存储空间的单位，为数据库使用的I/O的最小单位，是最小的逻辑部件。默认值8K。
+
+### 物理存储结构
+在执行initdb的时候会初始化一个目录，通常我们都会在系统配置相关的环境变量$PGDATA来表示，初始化完成后，会再这个目录生成相关的子目录以及一些文件。在postgresql中，表空间的概念并不同于其他关系型数据库，这里一个Tablespace对应的都是一个目录.
+
+而PostgreSQL的物理存储结构主要是指硬盘上存储的文件，包括：数据文件、日志文件、参数文件、控制文件、redo日志（WAL）。下面分别进行介绍:
+
+- 数据文件（表文件）
+
+  顾名思义，数据文件用于存储数据。文件名以OID命名，对于超出1G的表数据文件，PostgreSQL会自动将其拆分为多个文件来存储，而拆分的文件名将由pg_class中的relfilenode字段来决定, 例如`select oid,relname,relkind,relfilenode from pg_class where relname ='testtable1';`
+
+  在PostgreSQL中，将保存在磁盘中的块（Block）称为Page。数据的读写是以Page为最小单位，每个Page默认的大小是8K。在编译PostgreSQL时指定BLCKSZ大小将决定Page的大小。每个表文件由逗哥BLCKSZ字节大小的Page组成。在分析型数据库中，适当增加BLCKSZ大小可以小幅度提升数据库的性能。
+- 日志文件
+
+  PostgreSQL日志文件的类型，分为以下几种:
+  - 运行日志（pg_log）
+
+    默认没有开启，开启后会自动生成
+  - 重做日志（pg_xlog）
+
+    pg_xlog 这个日志是记录的Postgresql的WAL信息，默认存储在目录$PGDATA/pg\_wal/，是一些事务日志信息(transaction log)。默认单个大小是16M，源码安装的时候可以更改其大小（./configure --with-wal-segsize=target_value 参数，即可设置）这些日志会在定时回滚恢复(PITR)， 流复制(Replication Stream)以及归档时能被用到，这些日志是非常重要的，记录着数据库发生的各种事务信息，不得随意删除或者移动这类日志文件，不然你的数据库会有无法恢复的风险.
+  -  事务日志（pg_xact） 
+
+    pg_xact是事务提交日志，记录了事务的元数据。默认开启。内容一般不能直接读。默认存储在目录$PGDATA/pg_xact.
+  - 服务器日志
+
+    如果用pg_ctl启动的时候没有指定-l参数来指定服务器日志，错误可能会输出到cmd前台。服务器日志记录了数据库的重要信息.
+- 参数文件
+
+  主要包括postgresql.conf、pg_hba.conf和pg_ident.conf这三个参数文件:
+  - postgresql.conf
+
+    PostgreSQL的主要参数文件，有很详细的说明和注释，和Oracle的pfile，MySQL的my.cnf类似。默认在$PGDATA下。很多参数修改后都需要重启。9.6之后支持了alter system来修改，修改后的会存在$PGDATA/postgresql.auto.conf下，可以reload或者 restart来使之生效.
+  - pg_hba.conf
+
+    这个是黑白名单的设置
+  - pg_ident.conf
+
+    pg_ident.conf是用户映射配置文件，用来配置哪些操作系统用户可以映射为数据库用户。结合pg_hba.conf中，method为ident可以用特定的操作系统用户和指定的数据库用户登录数据库.
+- 控制文件
+
+  控制文件记录了数据库运行的一些信息，比如数据库id，是否open，wal的位置，checkpoint的位置等等。controlfile是很重要的文件。  
+
+  控制文件的位置：$PGDATA/global/pg_control，可以使用命令bin/pg_controldata查看控制文件的内容
+- redo日志（WAL）
+
+  默认保存在$PGDATA/pg_wal目录下. 文件名称为16进制的24个字符组成，每8个字符一组，每组的意义是：时间线    逻辑ID 物理ID. 可通过`select pg_switch_wal();`进行WAL的手动切换.
+
+### 进程结构
+通过`ps -ef | grep postgres`可列出所有的PostgreSQL的进程:
+-  Postmaster进程
+
+  主进程Postmaster是整个数据库实例的总控制进程，负责启动和关闭数据库实例。用户可以运行postmaster，postgres命令加上合适的参数启动数据库。实际上，postmaster命令是一个指向postgres的链接.
+
+  更多时候我们使用pg_ctl启动数据库，pg_ctl也是通过运行postgres来启动数据库，它只是做了一些包装，让我们更容易启动数据库，所以，主进程Postmaster实际是第一个postgres进程，此进程会fork一些与数据库实例相关的辅助子进程，并管理它们.
+
+  当用户与PostgreSQL数据库建立连接时，实际上是先与Postmaster进程建立连接。此时，客户端程序会发出身份证验证的消息给Postmaster进程，Postmaster主进程根据消息中的信息进行客户端身份验证。如果验证通过，它会fork一个子进程postgres为这个连接服务，fork出来的进程被称为服务进程，查询pg_stat_activity表可以看到的pid，就是这些服务进程的pid.
+- SysLogger进程
+
+  在postgresql.conf里启用    运行日志（pg_log）后，会有SysLogger进程。SysLogger会在日志文件达到指定的大小时关闭当前日志文件，产生新的日志文件.
+- BgWriter后台写进程
+
+  BgWriter是PostgreSQL中在后台将脏页写出到磁盘的辅助进程，引入该进程主要为达到如下两个目的：
+  1. 首先，数据库在进行查询处理时若发现要读取的数据不在缓冲区中时要先从磁盘中读入要读取的数据所在的页面，此时如果缓冲区已满，则需要先选择部分缓冲区中的页面替换出去。如果被替换的页面没有被修改过，那么可以直接丢弃；但如果要被替换的页已被修改，则必需先将这页写出到磁盘中后才能替换，这样数据库的查询处理就会被阻塞。通过使用BgWriter定期写出缓冲区中的部分脏页到磁盘中，为缓冲区腾出空间，就可以降低查询处理被阻塞的可能性。
+  1. 其次，PostgreSQL在定期作检查点时需要把所有脏页写出到磁盘，通过BgWriter预先写出一些脏页，可以减少设置检查点时要进行的IO操作，使系统的IO负载趋向平稳。通过BgWriter对共享缓冲区写操作的统一管理，避免了其他服务进程在需要读入新的页面到共享缓冲区时，不得不将之前修改过的页面写出到磁盘的操作。
+- WalWriter预写日志写进程  
+
+  该进程用于保存WAL预写日志。预写式日志WAL（Write Ahead Log，也称为Xlog）的中心思想是对数据文件的修改必须是只能发生在这些修改已经记录到日志之后，也就是先写日志后写数据。如果遵循这个过程，那么就不需要在每次事务提交的时候都把数据块刷回到磁盘，这一点与Oracle数据库是完全一致的.   
+- PgArch归档进程
+
+  从PostgreSQL 8.x开始，有了PITR（Point-In-Time-Recovery）技术，该技术支持将数据库恢复到其运行历史中任意一个有记录的时间点；PITR的另一个重要的基础就是对WAL文件的归档功能。PgArch辅助进程的目标就是对WAL日志在磁盘上的存储形式进行归档备份。但在默认情况下，PostgreSQL是非归档模式，因此看不到PgArch进程。PgArch进程通过postgresql.conf文件中的参数进行配置.
+- AutoVacuum自动清理进程
+
+  在PG数据库中，对数据进行UPDATE或者DELETE操作后，数据库不会立即删除旧版本的数据，而是标记为删除状态。这是因为PG数据库具有多版本的机制，如果这些旧版本的数据正在被另外的事务打开，那么暂时保留他们是很有必要的。当事务提交后，旧版本的数据已经没有价值了，数据库需要清理垃圾数据腾出空间，而清理工作就是AutoVacuum进程进行的。postgresql.conf文件中与AutoVacuum进程相关的参数.
+- PgStat统计信息收集进程
+  
+  PgStat进程是PostgreSQL数据库的统计信息收集器，用来收集数据库运行期间的统计信息，如表的增删改次数，数据块的个数，索引的变化等等。收集统计信息主要是为了让优化器做出正确的判断，选择最佳的执行计划。postgresql.conf文件中与PgStat进程相关的参数.
+- CheckPoint检查点进程
+
+### 内存结构
+PostgreSQL的内存结构，分为：本地内存和共享内存
+
 ## 数据类型
 
 ### 整型

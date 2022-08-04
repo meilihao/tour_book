@@ -108,7 +108,7 @@ $ dpkg-scanpackages . | gzip -9c > Packages.gz #  制作本地软件源
 ## snap
 ```bash
 snap list --all
-snap remove gtk-common-themes 123 # 删除disabled的版本
+snap remove gtk-common-themes --revision=123 # 删除disabled的版本
 snap set system refresh.retain=2 # 保留最近的两个版本, 这已是默认设置
 bash -c 'rm -rf /var/lib/snapd/cache/*' # 清理cache
 

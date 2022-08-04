@@ -785,6 +785,7 @@ virt-xml(需关机操作):
 ```
 virt-xml testguest --remove-device --disk target=vdb
 virt-xml --build-xml --disk virt-xml --build-xml --disk /mnt/1.qcow2,target=vdb # test option
+virt-xml --build-xml --network type=bridge,source=br0
 ```
 
 其他:

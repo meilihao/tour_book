@@ -16,6 +16,7 @@
 
     它伪装成kubelet，与Kubernetes集群API通信, 实现Kubernetes API向阿里云的ECI、AWS的Fargate等serverless平台扩展.
 - [OpenELB及其与 MetalLB 的对比](https://kubesphere.io/zh/blogs/openelb-joins-cncf-sandbox-project/)
+- [kubernetes源码解析](https://www.cnblogs.com/lianngkyle/tag/kubernetes%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/)
 
 ## ha
 - [[k8s源码分析][kube-scheduler]scheduler之高可用及原理](https://www.jianshu.com/p/e30addc18560)
@@ -33,3 +34,11 @@
 ## 存储
 - [一文读懂 K8s 持久化存储流程](https://mp.weixin.qq.com/s?__biz=MzUzNzYxNjAzMg==&mid=2247490043&idx=1&sn=c09ad4a9bc790f4b742abd8ca1301ffb)
 - [一文读懂容器存储接口 CSI](https://developer.aliyun.com/article/783464)
+- [Kubernetes CSI(Container Storage Interface) 设计文档](http://anywhy.xyz/posts/2603569835/)
+- [一图看懂CSI插件如何注册至Kubernetes](https://juejin.cn/post/7008041558997991461)
+- [Kubernetes-CSI Documentation](https://github.com/kubernetes-csi/docs)
+- [kubernetes ceph-csi分析](https://www.cnblogs.com/lianngkyle/p/14772131.html)
+- [Kubernetes 1.23：树内存储向 CSI 卷迁移工作的进展更新](https://kubernetes.io/zh-cn/blog/2021/12/10/storage-in-tree-to-csi-migration-status-update/)
+
+    在v1.27后, k8s所有csi in-tree代码都将被移除, 由out-of-tree代码取代.
+- [container-storage-interface/spec](https://github.com/container-storage-interface/spec)

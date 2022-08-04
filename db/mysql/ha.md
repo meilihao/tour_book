@@ -16,6 +16,12 @@ ha需要解决的两个问题:
 > 从服务器只读
 
 ### 2. MMM(Master-Master Replication Manager for MySQL), 已被MHA替代
+ref:
+- [MariaDB集群——双主复制架构 - 5.5](https://blog.51cto.com/sky9896/4632092)
+- [如何设置 MariaDB 主主复制 - 10.3](http://blog.itpub.net/69955379/viewspace-2896100/)
+
+    未测试自增
+
 提供了MySQL主主复制配置的监控, 故障转移和管理的一套可伸缩的脚本套件.
 
 典型: 双主多从架构
@@ -23,6 +29,24 @@ ha需要解决的两个问题:
 通过MySQL复制实现两个server互为主从, 且在任何时刻只有一个节点可写, 避免多点写入冲突; 可写入的server故障时触发切换.
 
 故障转移: keepalived
+
+core配置:
+```bash
+# --- db1
+cat /etc/my.cnf
+log-bin=master-bin   #二进制日志
+binlog_format=mixed   #二进制模式
+server-id=1    #服务ID
+auto-increment-offset=1  #从1开始
+auto-increment-increment=2  #步长为2
+# --- db2
+cat /etc/my.cnf
+log-bin=master-bin   #二进制日志
+binlog_format=mixed   #二进制模式
+server-id=2    #服务ID
+auto-increment-offset=2  #从2开始
+auto-increment-increment=2  #步长为2
+```
 
 ### 3. heartbeat/SAN
 故障转移: 高可用集群软件heartbeat.

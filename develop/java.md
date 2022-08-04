@@ -892,6 +892,21 @@ example:
 ### 清理maven cache
 `rm -rf ~/.m2/repository/*`
 
+### maven添加mirror
+ref:
+- [aliyunmaven](https://developer.aliyun.com/mvn/guide)
+
+```bash
+mvn --version # 获取MAVEN_HOME
+vim /usr/share/maven/conf/settings.xml # 找到 mirrors 标签，添加如下内容
+<mirror>
+  <id>aliyunmaven</id>
+  <mirrorOf>*</mirrorOf>
+  <name>阿里云公共仓库</name>
+  <url>https://maven.aliyun.com/repository/public</url>
+</mirror>
+```
+
 ### spring xml配置
 - `import resource="applicationContext-tx.xml"/>` : include其他配置
 
