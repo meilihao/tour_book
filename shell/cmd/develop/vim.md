@@ -152,3 +152,9 @@ vim可以直接打开压缩包, 然后对想要的压缩文件进行编辑保存
 
 ### vim中处理windows下的文档换行符
 `:set fileformat=unix`再`:wq`即可.
+
+### [如何在基于 Ubuntu 的 Linux 发行版上安装最新的 Vim 9.0](https://linux.cn/article-14899-1.html)
+```bash
+sudo add-apt-repository ppa:jonathonf/vim
+sudo add-apt-repository -r ppa:jonathonf/vim # 移除repo
+```

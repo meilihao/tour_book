@@ -1,0 +1,11 @@
+# from zops(docker container)
+# https://github.com/novnc/websockify
+[Unit]
+Description=websockify
+After=syslog.target network.target
+
+[Service]
+ExecStart=/usr/bin/sh /websockify/run --token-plugin TokenFile --token-source /var/lib/cobbler/kickstarts/token/ 6080
+
+[Install]
+WantedBy=multi-user.target

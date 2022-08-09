@@ -83,3 +83,12 @@ echo 8 > /proc/irq/96/smp_affinity # //8=2^3, 表示绑定到cpu3
 - Shared: 是该函数或指令所在的动态共享对象（Dynamic Shared Object）, 如内核、进程名、动态链接库名、内核模块名等
 - Object: 动态共享对象的类型, 比如`[.]`表示用户空间的可执行程序、或者动态链接库, 而`[k]`则表示内核空间
 - Symbol: 函数名, 当名称未知时用16进制地址表示
+
+### 生成火焰图
+```bash
+$ git clone --depth 1 https://github.com/brendangregg/FlameGraph.git
+# 合并调用栈
+$ FlameGraph/stackcollapse-perf.pl --all out.perf > out.folded
+# 生成火焰图
+$ FlameGraph/flamegraph.pl out.folded > out.svg
+````

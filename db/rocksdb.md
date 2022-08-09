@@ -5,6 +5,7 @@
 - [Rocksdb基本用法](https://www.cnblogs.com/wanshuafe/p/11564148.html)
 - [Basic Operations](https://github.com/facebook/rocksdb/wiki/Basic-Operations)
 - [漫谈RocksDB(四)存储结构](https://www.modb.pro/db/112483)
+- [Tuning RocksDB - Statistics](https://www.jianshu.com/p/ddf652aa4882)
 
 RocksDB的目的是成为一套能在服务器压力下，真正发挥高速存储硬件（特别是Flash 和 RAM）性能的高效单点数据库系统. 它是一个C++库，允许存储任意长度二进制kv数据, 支持原子读写操作, 因此本质上来说它是一个可插拔式的存储引擎选择.
 
@@ -254,7 +255,7 @@ db,err:=gorocksdb.OpenDb(options, "rdb")
 
 opts:=gorocksdb.NewDefaultReadOptions()
 opts.SetPrefixSameAsStart(true) // 确保下面it返回值的前缀都是'b'
-opts.SetTotalOrderSeek(true)
+opts.SetTotalOrderSeek(true) // cdp大数据量场景下, 该参数+`Seek()/Iterator.Next()`很慢, 特别是no space时
 defer opts.Destroy()
 
 it:=db.NewIterator()
@@ -443,6 +444,28 @@ RateLimiter参数：
 tikv通过[components/engine_rocks](https://github.com/tikv/tikv/blob/v6.1.0/components/engine_rocks/Cargo.toml#L56)调用rocksdb.
 
 [rust-rocksdb](https://github.com/tikv/rust-rocksdb/blob/tikv-6.1/src/rocksdb.rs)
+
+### [rocksdb perf_context性能perf](https://github.com/facebook/rocksdb/issues/261)
+```go
+grocksdb.SetPerfLevel(grocksdb.KEnableCount)
+p:=gorocksdb.NewPerfContext()
+p.Reset()
+
+// do your thing -- SeekToFirst()
+
+fmt.Println(p.Report(false))
+p.Destroy()
+```
+
+```c++
+rocksdb::SetPerfLevel(rocksdb::kEnableCount);
+rocksdb::perf_context.Reset();
+
+// do your thing -- SeekToFirst()
+
+cout << rocksdb::perf_context.ToString();
+```
+
 ### ttl
 参考:
 - [基于RocksDB实现精准的TTL过期淘汰机制](https://segmentfault.com/a/1190000021185954)

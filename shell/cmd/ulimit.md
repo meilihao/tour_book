@@ -100,3 +100,6 @@ ulimit, limits.conf 和 pam_limits 的关系，大致是这样的：
 ## FAQ
 ### 查看进行的limits
 `cat /proc/<pid>/limits`
+
+### 修改进程limits的max open files
+`prlimit --pid ${pid} --nofile=soft_limit:hard_limit`

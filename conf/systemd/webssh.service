@@ -1,0 +1,11 @@
+# from zops(docker container)
+# https://github.com/huashengdun/webssh
+[Unit]
+Description=webssh
+After=syslog.target network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /webssh/run.py --port=8888 --xsrf=false --delay=3000 --fbidhttp=false
+
+[Install]
+WantedBy=multi-user.target

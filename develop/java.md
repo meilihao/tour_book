@@ -907,6 +907,20 @@ vim /usr/share/maven/conf/settings.xml # 找到 mirrors 标签，添加如下内
 </mirror>
 ```
 
+### spring xml中的占位符
+ref:
+- [Spring 4 官方文档学习（五）核心技术之SpEL](https://www.cnblogs.com/larryzeal/p/5910149.html)
+
+```xml
+    <bean id="RESTFacade" class="org.zstack.core.rest.RESTFacadeImpl">
+        <property name="hostname" value="${RESTFacade.hostname:AUTO}" />
+        <property name="port" value="${RESTFacade.port:8080}" />
+        <property name="path" value="${RESTFacade.path:zstack}" />
+    </bean>
+```
+
+RESTFacade.hostname其实是`zstack.properties`中的`RESTFacade.hostname`, 其"AUTO"表示默认值
+
 ### spring xml配置
 - `import resource="applicationContext-tx.xml"/>` : include其他配置
 
@@ -983,3 +997,142 @@ JPA包括以下三个方面的技术：
 
 标签:
 - mapping-file : 指定映射文件的位置即声明orm对象位置的xml配置
+
+# log4j2
+
+## log4j2配置
+ref:
+- [Log4j2进阶使用(Pattern Layout详细设置)](https://www.jianshu.com/p/37ef7bc6d6eb)
+
+`/usr/local/zstack/apache-tomcat/webapps/zstack/WEB-INF/classes/log4j2.xml`:
+```xml
+ <?xml version="1.0" encoding="UTF-8" standalone="no"?><Configuration monitorInterval="30" status="warn">
+    <Appenders>
+        <RollingFile fileName="${sys:catalina.home}/logs/management-server.log" filePattern="${sys:catalina.home}/logs/management-server-%d{yyyy-MM-dd}-%i.log.gz" name="RollingFile">
+            <Masksensitivepatternlayout>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c{}] %X{api,task} (%t) %m%n</pattern>
+                <replaces>
+                   <!-- <replace regex='(password|remote_pass|dstPassword|consolePassword|remotePass)(\\":\\"|":"|": "|:)(.*?)(\\"|"| )' replacement="$1$2*****$4" />-->
+                    <replace regex="(ansible_ssh_pass)(=)(.*?)( )" replacement="$1$2*****$4"/>
+                </replaces>
+            </Masksensitivepatternlayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="450 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="50">
+                <Delete basePath="${sys:catalina.home}/logs/" maxDepth="1">
+                    <IfFileName glob="management-server-*.log.gz">
+                        <IfAny>
+                        </IfAny>
+                    </IfFileName>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+        <RollingFile fileName="${sys:catalina.home}/logs/zstack-api.log" filePattern="${sys:catalina.home}/logs/zstack-api-%d{yyyy-MM-dd}-%i.log.gz" name="ApiRequestLogger">
+            <Masksensitivepatternlayout>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c{}] (%t) %m%n</pattern>
+                <replaces>
+                    <!--<replace regex='(password|remote_pass|dstPassword|consolePassword|remotePass)(\\":\\"|":"|": "|:)(.*?)(\\"|"| )' replacement="$1$2*****$4" />-->
+                    <replace regex="(ansible_ssh_pass)(=)(.*?)( )" replacement="$1$2*****$4"/>
+                </replaces>
+            </Masksensitivepatternlayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="150 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="50">
+                <Delete basePath="${sys:catalina.home}/logs/" maxDepth="1">
+                    <IfFileName glob="zstack-api-*.log.gz">
+                        <IfAny>
+                        </IfAny>
+                    </IfFileName>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+        <RollingFile fileName="${sys:catalina.home}/logs/zstack-disk-capacity.log" filePattern="${sys:catalina.home}/logs/zstack-disk-capacity-%d{yyyy-MM-dd}-%i.log.gz" name="DiskCapacityLogger">
+            <Masksensitivepatternlayout>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c{}] (%t) %m%n</pattern>
+                <replaces>
+                   <!-- <replace regex='(password|remote_pass|dstPassword|consolePassword|remotePass)(\\":\\"|":"|": "|:)(.*?)(\\"|"| )' replacement="$1$2*****$4" />-->
+                    <replace regex="(ansible_ssh_pass)(=)(.*?)( )" replacement="$1$2*****$4"/>
+                </replaces>
+            </Masksensitivepatternlayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="150 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="50"/>
+        </RollingFile>
+
+        <RollingFile fileName="${sys:catalina.home}/logs/zstack-disk-capacity-details.log" filePattern="${sys:catalina.home}/logs/zstack-disk-capacity-details-%d{yyyy-MM-dd}-%i.log.gz" name="DiskCapacityLoggerDetails">
+            <Masksensitivepatternlayout>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c{}] (%t) %m%n</pattern>
+                <replaces>
+                   <!-- <replace regex='(password|remote_pass|dstPassword|consolePassword|remotePass)(\\":\\"|":"|": "| )(.*?)(\\"|"| )' replacement="$1$2*****$4" />-->
+                    <replace regex="(ansible_ssh_pass)(=)(.*?)( )" replacement="$1$2*****$4"/>
+                </replaces>
+            </Masksensitivepatternlayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="150 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="50"/>
+        </RollingFile>
+
+        <Async bufferSize="512" ignoreExceptions="false" name="Async">
+            <AppenderRef ref="RollingFile"/>
+        </Async>
+        <Rewrite name="Rewrite">
+            <MaskSensitiveInfoRewritePolicy/>
+            <AppenderRef ref="Async"/>
+        </Rewrite>
+    </Appenders>
+
+    <Loggers>
+        <Logger additivity="TRUE" level="trace" name="org.zstack.storage.primary.DiskCapacityTracer">
+            <AppenderRef level="trace" ref="DiskCapacityLogger"/>
+        </Logger>
+
+        <Logger additivity="TRUE" level="trace" name="org.zstack.storage.primary.DiskCapacityTracerDetails">
+            <AppenderRef level="trace" ref="DiskCapacityLoggerDetails"/>
+        </Logger>
+
+        <Logger additivity="TRUE" level="TRACE" name="api.request">
+            <AppenderRef level="TRACE" ref="ApiRequestLogger"/>
+        </Logger>
+
+        <Logger level="trace" name="org.zstack"/>
+
+        <Logger level="trace" name="org.zstack.utils"/>
+        <Logger level="trace" name="org.zstack.utils.string.StringSimilarity"/>
+        <Logger level="trace" name="org.zstack.utils.HTTP"/>
+
+        <Logger level="trace" name="org.zstack.core.rest"/>
+
+        <Logger level="trace" name="org.zstack.core.cloudbus"/>
+
+        <Logger level="trace" name="org.springframework"/>
+
+        <Logger level="TRACE" name="org.zstack.core.workflow"/>
+
+        <!--
+                <Logger name="org.zstack.billing" level="TRACE" />
+        -->
+
+        <Logger level="trace" name="org.zstack.zwatch.prometheus.ProgressMonitorHelper"/>
+
+        <Logger level="trace" name="org.zstack.header.rest.TimeoutRestTemplate"/>
+
+        <Logger level="trace" name="org.hibernate"/>
+
+        <Logger level="TRACE" name="org.zstack.storage.primary"/>
+        <!--
+          Root节点用来指定项目的根日志，如果没有单独指定Logger，那么就会默认使用该Root日志输出.
+          level: All < Trace < Debug < Info < Warn < Error < Fatal < OFF.
+          AppenderRef：用来指定该日志输出到哪个Appender.
+        -->
+        <Root additivity="false" level="trace">
+            <AppenderRef ref="Rewrite"/>
+        </Root>
+    </Loggers>
+</Configuration>
+```

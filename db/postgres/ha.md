@@ -2,6 +2,8 @@
 ref:
 - <<PostgresSQL实战>>
 
+**pg没有主主复制(但mysql有), 仅支持主备复制**.
+
 ## base
 ### 主备切换的触发方式
 PostgreSQL热备(HOT-Standby)如果主库出现异常，备库有两种方法切换到主库:

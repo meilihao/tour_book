@@ -37,6 +37,7 @@ ssh root@192.168.16.40 'bash -s' < a.sh # 复杂命令时, 推荐
 ssh root@192.168.16.40 bash -c "ls -lL /home/ubuntu | awk '{print \$9}'" # 此时的执行结果不正确, 因此不能使用`bash -c "xxx"`的形式
 ssh aliyun "nohup sleep 10 &" # 使用nohup也会卡10s, 推测是输出会被写入ssh conn导致
 ssh aliyun "nohup sleep 10 >/dev/null 2>&1 &" # 不卡
+ssh -p 22 -C -f -N -g -L 9200:192.168.1.19:9200 ihavecar@192.168.1.19 # 将发往本机（192.168.1.15）的 9200 端口访问转发到 192.168.1.19 的 9200 端口
 ```
 
 ## FAQ

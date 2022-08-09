@@ -42,7 +42,9 @@ modifier: b、d、f、i、n 或 r:
 
 ## 例
 ```sh
-$sort -nk 2 -t: sort.txt # 根据第二列按照数字排序(字母排在最前面)
+$ ps -aux | sort -rnk 3 | head -20 # cpu前20
+$ ps -aux | sort -rnk 4 | head -20 # 内存前20
+$ sort -nk 2 -t: sort.txt # 根据第二列按照数字排序(字母排在最前面)
 $ sort -n -t. -k3,3 -k4.1,4.3 arp.txt // 先按IP地址的第3列排序, 再按照ip地址的第4列排序
 $ sort -n -t ' ' -k 3r -k 2 facebook.txt // 让facebook.txt(`公司名称 公司人数 员工平均工资`)按照员工工资降序排序，如果员工人数相同的，则按照公司人数升序排序
 $ sort -n -k 2 1.txt // = sort -k 2,2n 1.txt

@@ -29,6 +29,8 @@ debian,ubuntu等发行版的包管理.
 # apt download redis # 下载deb
 # apt-mark hold package_name # 升级时锁定选定的软件包 
 # apt-mark unhold package_name
+# add-apt-repository ppa:jonathonf/vim # add repo
+# add-apt-repository -r ppa:jonathonf/vim # remove repo
 ```
 
 > apt-file也可用于查找文件
@@ -51,6 +53,25 @@ $ dpkg-deb -c xxx.deb # 查看deb内容
 
 按文件搜索package也可直接使用[debian package服务](https://www.debian.org/distrib/packages)
 
+# snap
+```bash
+snap refresh # 更新snap包
+snap list --all
+snap remove gtk-common-themes --revision=123 # 删除disabled的版本
+snap set system refresh.retain=2 # 保留最近的两个版本, 这已是默认设置
+bash -c 'rm -rf /var/lib/snapd/cache/*' # 清理cache
+
+# --- 推荐使用clean-snap.sh
+vim clean-snap.sh
+#!/bin/bash
+# Removes old revisions of snaps
+# CLOSE ALL SNAPS BEFORE RUNNING THIS
+set -eu
+snap list --all | awk '/disabled/{print $1, $3}' |
+    while read snapname revision; do
+        snap remove "$snapname" --revision="$revision"
+    done
+```
 
 ## deb
 参考:
@@ -104,25 +125,6 @@ $ dpkg-scanpackages . | gzip -9c > Packages.gz #  制作本地软件源
 - [Easy way to create a Debian package and local package repository](https://linuxconfig.org/easy-way-to-create-a-debian-package-and-local-package-repository)
 - [apt source包打包](https://www.debian.org/doc/manuals/apt-howto/ch-sourcehandling.zh-cn.html)
 - [Debian 新维护者手册](https://www.debian.org/doc/manuals/maint-guide/)
-
-## snap
-```bash
-snap list --all
-snap remove gtk-common-themes --revision=123 # 删除disabled的版本
-snap set system refresh.retain=2 # 保留最近的两个版本, 这已是默认设置
-bash -c 'rm -rf /var/lib/snapd/cache/*' # 清理cache
-
-# --- 推荐使用clean-snap.sh
-vim clean-snap.sh
-#!/bin/bash
-# Removes old revisions of snaps
-# CLOSE ALL SNAPS BEFORE RUNNING THIS
-set -eu
-snap list --all | awk '/disabled/{print $1, $3}' |
-    while read snapname revision; do
-        snap remove "$snapname" --revision="$revision"
-    done
-```
 
 ## FAQ
 ### dpkg-deb: error: archive '<file>.deb' has premature member 'data.tar.gz' before
