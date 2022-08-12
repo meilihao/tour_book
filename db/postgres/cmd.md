@@ -66,6 +66,8 @@ postgres=# CREATE USER mytestuser WITH ENCRYPTED PASSWORD '123456'; # 或`create
 CREATE ROLE
 postgres=# GRANT ALL PRIVILEGES ON DATABASE mytestdb to mytestuser;
 GRANT
+ALTER DATABASE name OWNER TO new_owner; -- 修改db owner
+ALTER TABLE <tablename> OWNER TO <username>; -- 修改table owner
 ```
 
 ## sql结果保存到file

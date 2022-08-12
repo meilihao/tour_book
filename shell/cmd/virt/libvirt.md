@@ -418,6 +418,9 @@ $ sudo systemctl restart libvirtd
 ### Guest has not initialized the display (yet) 
 - [qemu machine i440FX 仅支持 BIOS ，需更改成q35, q35 同时支持 BIOS 和 UEFI](https://blog.csdn.net/m0_47541842/article/details/113521732)
 - iso里os的arch与qemu使用的arch不一致
+- kylinv10 host(aarm64) + `vm(osVariant:ubuntu 19.10 + uefi + vga)` + Ubuntu 20.04-arm64.iso : 启动过程**很慢(超过90s, 同时cpu负载高)**且装机界面是字符型, 上下移动光标会出现花屏. 显卡model.type换成virtio后正常
+
+   `host(aarm64) + vm(uefi + vga)`发现很慢或者甚至不出现装机界面, 因此uefi配合virtio或qxl为佳.
 
 或用`virt-manager --debug`调试.
 
@@ -428,6 +431,19 @@ qemu构建时没有选中spice.
 
 ### 修改vm xml磁盘的bus而修改target.dev时`virsh define`会报`Found duplicate dirve address for disk with target name 'hdb'`
 将原先vdb 的bus从virtio改为ide, 报了该错, 将vdb改为hdc后正常.
+
+### aarch64上vm开机报`cpu mode 'host-model' for aarch64 kvm domain on aarch64 host is not supported by hypervisor`
+解决方法:
+1. 通过`qemu-kvm -machine virt -cpu help`
+1. cpu_mode 改成 host-passthrough
+
+### aarch64上vm开机报`failed to find romfile "vgabios-stdvga.bin"`
+已安装seavgabios-bin.
+
+解决方法: `ln -s /usr/share/seavgabios/vgabios-stdvga.bin /usr/share/qemu/vgabios-stdvga.bin`
+
+### aarch64上vm开机报`this qemu does not support 'qxl' video device`
+qemu 的 configure 将 spice 改为 yes 并再次编译安装
 
 ### 运行非root使用virsh
 ```bash
@@ -848,11 +864,41 @@ install 常用参数说明展开目录:
       前提: `apt install seabios`
 - 网络配置
 
-   - network OPTIONS: 网络配置
+   - network OPTIONS: 网络配置, 参考[Understanding virtual networking](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/configuring_and_managing_virtualization/configuring-virtual-machine-network-connections_configuring-and-managing-virtualization#understanding-virtual-networking-overview_configuring-virtual-machine-network-connections)
 
-      - default : 使用默认network配置, 即bridge桥接
-      - bridge=br0 : 接至名为“NAME”的网络指定桥接网卡的名称
-      - NETWORK=NAME : 连接至名为`NAME`的网络
+
+      网络模式, 主要分为两种模式:
+      1. nat模式，虚拟出一个有nat转换的网络设备，虚拟机内部自动获取ip地址, 然后通过nat转换访问互联网. 这种模式内（虚拟机）访问外（虚拟机外）可以, 外不可以访问内.
+      1. 桥接模式,与真实的物理网卡绑定，虚拟出交换机用于通信
+
+      - type=direct,source=eth0,source_mode=bridge,model=virtio : macvtap
+      - bridge=br0 = `type=bridge,source=br0` : 接至名为“NAME”的网络指定桥接网卡的名称
+
+         ```xml
+         <interface type='bridge'>
+            <mac address='52:54:00:eb:d7:7d'/>
+            <source bridge='br0'/>
+            <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
+         </interface>
+         ```
+      - NETWORK=NAME : 即nat
+
+         ```xml
+         <interface type='network'>
+            <mac address='52:54:00:eb:d7:7d'/>
+            <source network='default'/>
+            <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
+         </interface>
+         <interface type='network'>
+            <source network='default' portgroup='engineering'/>
+            <target dev='vnet7'/>
+            <mac address="00:11:22:33:44:55"/>
+            <virtualport>
+              <parameters instanceid='09b11c53-8b5c-4eeb-8f00-d84eaa0aaa4f'/>
+            </virtualport>
+
+          </interface>
+         ```
 
       选项:
       - model: netdev model, 可用`qemu-system-x86_64 -net nic,model=?`获取

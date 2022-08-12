@@ -6,6 +6,7 @@
 - [Basic Operations](https://github.com/facebook/rocksdb/wiki/Basic-Operations)
 - [漫谈RocksDB(四)存储结构](https://www.modb.pro/db/112483)
 - [Tuning RocksDB - Statistics](https://www.jianshu.com/p/ddf652aa4882)
+- [rocksdb参数](https://tikv.org/docs/6.1/deploy/configure/tikv-configuration-file/#rocksdb)
 
 RocksDB的目的是成为一套能在服务器压力下，真正发挥高速存储硬件（特别是Flash 和 RAM）性能的高效单点数据库系统. 它是一个C++库，允许存储任意长度二进制kv数据, 支持原子读写操作, 因此本质上来说它是一个可插拔式的存储引擎选择.
 
@@ -408,7 +409,15 @@ writeOptions.SetSync=true时, writeOptions.DisableWAL必须为false.
 
 ### rocksdb delete a range of keys
 参考:
-- [rocksdb系列delete a range of keys](https://www.jianshu.com/p/cea1267628b6)
+- [带你全面了解 compaction 的13个问题](https://tidb.net/book/tidb-monthly/2022-06/usercase/compaction-question)
+- [2020-10-03-Rocksdb删除问题总结.pdf](https://emperorlu.github.io/files/2020-10-03-Rocksdb%E5%88%A0%E9%99%A4%E9%97%AE%E9%A2%98%E6%80%BB%E7%BB%93.pdf)
+- [rocksdb系列delete a range of keys](https://www.jianshu.com/p/cea1267628b6) from 官方文档的翻译[Delete A Range Of Keys](https://github.com/facebook/rocksdb/wiki/Delete-A-Range-Of-Keys)
+- [iterator.seek() so slow](https://github.com/facebook/rocksdb/issues/10510)
+
+    通过PerfContext输出的block_read_bytes和internal_delete_skipped_count, 发现有很多tombstone(即rocksdb的标志删除)导致`Seek()`慢
+
+    `db.CompactRange(Range{nil, nil})`处理过程慢(原42g,后11g, 耗时11分钟), 处理后`Seek()`很快.
+- [Rocksdb和Lethe 对Delete问题的优化](https://blog.csdn.net/Z_Stand/article/details/110270317)
 
 最消极的做法: 遍历DB， 遇到特定范围里的key，直接调用Delete就可以了，这种方法适合于要删除的keys数量小的情况, 另一方面， 这种方法有两个显著问题：
 1. 不能立刻收回资源，得等compaction完成后在能真正收回资源
@@ -428,6 +437,11 @@ writeOptions.SetSync=true时, writeOptions.DisableWAL必须为false.
 
     - 如果从来不改写已经存在的keys，使用DB::SingleDelete而不是Delete就可以很快消灭tombstones， 这种Tombstone可以很快被清除而不是被一直推到last level
     - 使用NewCompactOnDeletionCollectorFactory()， 可以在有大量tombstones的时候加快compaction
+
+        NewCompactOnDeletionCollectorFactory函数声明一个用户配置的表格属性收集器，这里的表格指的是sstable. 该函数需要传入的两个参数sliding_window_size和 deletion_trigger 表示删除收集器 的滑动窗口 和 触发删除的key的个数.
+
+        在每个sst文件内维护一个滑动窗口，滑动窗口维护了一个窗口大小，在当前窗口大小内出现的delete-key的个数超过了窗口的大小，那么这个sst文件会被标记为need_compaction_，从而在下一次的compaction过程中被优先调度。达到将delete-key较多的sst文件快速下沉到底层，delete的数据被真正删除的目的，可以理解为这是一种更加激进的compaction调度策略
+
 ### RateLimiter
 rocksdb通过RateLimiter来控制最大写入速度的上限, 因为在某些场景下，突发的大量写入会导致很大的read latency，从而影响系统性能.
 
@@ -439,6 +453,9 @@ RateLimiter参数：
 
 ### `setTotalOrderSeek(true)`
 不设置时查找第一个key可能返回不一样, 原因未知.
+
+### DeleteFilesInRange没生效
+写几十个kv, 删除中间的一个range, 再执行DeleteFilesInRange, 打印数据发现没有生效, 推测是sst包含了未删除的key, 导致sst被忽略.
 
 ### [tikv如何调用rocksdb](https://asktug.com/t/topic/663579)
 tikv通过[components/engine_rocks](https://github.com/tikv/tikv/blob/v6.1.0/components/engine_rocks/Cargo.toml#L56)调用rocksdb.
