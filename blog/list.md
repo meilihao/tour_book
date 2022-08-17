@@ -159,3 +159,8 @@
 ## im
 - [深度剖析「圈组」消息系统设计 | 「圈组」技术系列文章](https://mp.weixin.qq.com/s?__biz=MzI1NTMwNDg3MQ==&mid=2247490738&idx=1&sn=bb70ea5548dba07c21b51532c1a4ad87)
 - [openim](https://github.com/OpenIMSDK)
+
+## 静态网站生成
+ref:
+- [最热开源静态网站生成器 TOP 20 揭晓！](https://blog.51cto.com/u_15127629/2838609)
+- [Google 力荐的静态站点生成神器！](https://zhuanlan.zhihu.com/p/553352876)

@@ -420,3 +420,24 @@ git push -u new_origin --tags
 
 ### [`git push`报`shallow update not allowed`](https://stackoverflow.com/questions/28983842/remote-rejected-shallow-update-not-allowed-after-changing-git-remote-url)
 解决方法: `git fetch --unshallow origin && git push`
+
+### commitizen-go
+ref:
+- [规范你的代码 -Commitizen](https://juejin.cn/post/7024103006752735269)
+- [git commit规范及自动检查工具安装小记](https://juejin.cn/post/6844904033635794958)
+- [约定式提交](https://www.conventionalcommits.org/zh-hans/v1.0.0/)
+
+```bash
+$ go install github.com/lintingzhen/commitizen-go@master
+$ whereis commitizen-go
+/home/chen/git/go/bin/commitizen-go
+$ sudo /home/chen/git/go/bin/commitizen-go install
+$ git cz
+```
+
+node版本:
+```bash
+npm install -g commitizen cz-conventional-changelog
+echo '{ "path": "cz-conventional-changelog" }' > ~/.czrc
+cz
+```

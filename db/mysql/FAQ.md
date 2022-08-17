@@ -276,6 +276,12 @@ ExecStart=/usr/sbin/mysqld --skip-grant-tables ...
 
 记得删除skip-grant-tables, 并重启mariadb.
 
+### 允许MySQL的root用户远程登录
+```sql
+> GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'password';
+> FLUSH PRIVILEGES;
+```
+
 ### master_use_gtid介绍
 master_use_gtid是当Slave连接到Master时，Master将从哪个GTID开始给Slave复制 Binlog.
 

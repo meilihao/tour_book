@@ -13,6 +13,7 @@
 - [Understanding and administering systemd](https://docs.fedoraproject.org/en-US/quick-docs/understanding-and-administering-systemd/index.html)
 - [Resource Management Guide - 资源管理](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/7/html/resource_management_guide/index)
 - [Linux 启动性能分析](https://linux.cn/article-14462-1.html)
+- [systemd攻略 - (3)如何利用systemd控制cgroup,实战](https://muahao.github.io/systemd-03/)
 
 ### systemd 与 System V init 的区别以及作用
 |System V init 运行级别|systemd 目标名称|作用|
@@ -140,6 +141,9 @@ ref:
 - TimeoutStartSec: 设置该服务允许的最大启动时长。 如果守护进程未能在限定的时长内发出"启动完毕"的信号，那么该服务将被视为启动失败，并会被关闭. 如果一个 Type=notify 服务发送了 "EXTEND_TIMEOUT_USEC=…" 信号， 那么允许的启动时长将会在 TimeoutStartSec= 基础上继续延长指定的时长.
 - RestartPreventExitStatus: 当符合某些退出状态时不要进行重启, 比如`123 SIGTERM`(123是return code)
 - PrivateTmp : 私有tmp, 比如php-fpm配置它后会有一个`/tmp/systemd-private-xxx-php-fpm.service-yyy/tmp`目录
+- PIDFile: systemd会在中间父进程退出后立即读取这个PID文件，读取成功后就认为该服务已经启动成功. 如果systemd读取PIDFile的时候，服务主进程可能还未将PID写入到PID文件中，这时systemd将出现问题. 更详细可参考[systemd service：Type=forking](https://www.junmajinlong.com/linux/systemd/service_2/)
+
+	服务停止时该文件会被删除.
 
 > [Unit 配置文件的完整字段清单](https://www.freedesktop.org/software/systemd/man/systemd.unit.html)
 > 所有的启动设置之前，都可以加上一个连词号（-），表示"抑制错误"，即发生错误的时候，不影响其他命令的执行。比如，EnvironmentFile=-/etc/sysconfig/sshd（注意等号后面的那个连词号），就表示即使/etc/sysconfig/sshd文件不存在，也不会抛出错误.
@@ -148,6 +152,8 @@ ref:
 Type字段定义启动类型。它可以设置的值如下:
 - simple（默认值）：ExecStart字段启动的进程为主进程
 - forking：ExecStart字段将以fork()方式启动，此时父进程将会退出，子进程将成为主进程
+
+	Type=forking时的systemd提供了PIDFile指令(PIDFile只适合在Type=forking模式下使用，其它时候没必要使用，因为其它类型的Service主进程的PID都是确定的), systemd会从PIDFile指令所指定的PID文件中获取服务的主进程PID. 且PIDFile指令的值要和服务程序的PID文件路径保持一致.
 - oneshot：类似于simple，但只执行一次，Systemd 会等它执行完，才启动其他服务
 - dbus：类似于simple，但会等待 D-Bus 信号后启动
 - notify：类似于simple，启动结束后会发出通知信号，然后 Systemd 再启动其他服务
@@ -191,7 +197,7 @@ systemd与init进程的主要差别如下:
 
 ## 启动优化
 ```sh
-# systemd-cgls                            - 启动的结构树
+# systemd-cgls                            显示cgroup树
 # systemd-analyze                         ← 查看系统引导用时
 # systemd-analyze time                    ← 同上
 # systemd-analyze blame                   ← 查看初始化任务所消耗的时间
