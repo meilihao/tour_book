@@ -506,6 +506,20 @@ func main() {
 }
 ```
 
+### 上传大文件报`write /tmp/multipart-<N>: no space left on device`
+ref:
+- [Upload a file larger than RAM size in Go](https://dev.to/tobychui/upload-a-file-larger-than-ram-size-in-go-4m2i)
+- [Go: Debugging why ParseMultipartForm returns Error "no such file or directory"](https://blog.cubieserver.de/2020/go-debugging-why-parsemultipartform-returns-error-no-such-file-or-directory/)
+
+env:
+- go 1.18.3
+- 上传文件大小: 1.56G
+- 空余磁盘: 14T
+- 空余内存: 97G
+- `/tmp`大小: 1G
+
+推测是ParseMultipartForm报错了, 把`/tmp`写满了, 解决方法: 分片上传
+
 ## 兼容性
 ### os.ReadDir
 ```go

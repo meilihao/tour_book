@@ -43,3 +43,21 @@ sqlite3默认没有datetime和date类型, 但[SQLite支持列的亲和类型](ht
 INSERT INTO loginfo(username, created) values(?,datetime(?, 'unixepoch')) // "xxx", time.Now().Unix()
 SELECT * FROM loginfo where created > datetime(?, 'unixepoch'); // time.Now().Unix()
 ```
+
+### json支持
+```bash
+go build --tags "sqlite_json1"  github.com/mattn/go-sqlite3
+# t.go
+
+type Product struct {
+	gorm.Model
+	Code   string
+	Price  uint
+	Author Author `gorm:"type:JSON;serializer:json"`
+}
+
+type Author struct {
+	Name  string
+	Email string
+}
+```

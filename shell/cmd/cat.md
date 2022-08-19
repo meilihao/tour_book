@@ -1,4 +1,6 @@
 # cat
+ref:
+- [Linux中split大文件分割和cat合并文件详解](https://cloud.tencent.com/developer/article/1721262)
 
 ## 描述
 
