@@ -368,7 +368,7 @@ exit
         - Client Name: bconsole注册clients时的名称, 最好是clients os的hostname
         - Director Name: 不修改
         - Password: dareos-server:/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf中的Password即`[md5]xxx`, **注意`[md5]`不能省略, 否则dir无法连接client**
-        - Network Address: 注册client时本机的ip
+        - Network Address: 注册client时**本机的ip**
         - Client Monitor Password: 用/etc/bareos/bareos-dir.d/console/bareos-mon.conf文件中的Password
 
 1. 测试client by bconsole
@@ -1221,9 +1221,7 @@ fileset中备份文件路径错误.
 ### `status client=xxx` bareos.log报`Network error during CRAM MD5 with 192.168.0.130\nUnable to authenticate with File daemon at "192.168.0.130:9102"`, client端报:`TLS negotiation failed`, `error:1408F119:SSL routines:ssl3_get_record:decryption failed or bad record mac`
 client在win10上.
 
-已尝试重装client, 或重新配置client的director-dir.conf, 均无效.
-
-这个错误的原因是openssl 在对收到的包做完整性校验时发现收到的报数据不对. 调查时需要从两端同时抓取wireshrk包分析，看到底哪里将数据破坏掉了.
+已尝试重装client, 或重新配置client的director-dir.conf, 均无效. 这个错误的原因是openssl 在对收到的包做完整性校验时发现收到的报数据不对. 其实就是client端上director/bareos-dir.conf`中的Password与bareos-dir的不一致导致.
 
 ### bconsole执行`status client=bareos-fd`报`Probing client protocol... (result will be saved until config reload)`
 看`/var/log/bareos/bareos.log`提示`Unable to authenticate with File daemon at "localhost:9102"`, 是dir中client的配置的Password字段错误, 用`/etc/bareos/bareos-fd.d/director/bareos-dir.conf`中Password替换即可.
@@ -1240,7 +1238,8 @@ client在win10上.
         - dir systemd log: `SSL routines:ssl3_read_bytes:reason(1115)`
         - dir bareos.log: `Network error during CRAM MD5 with 192.168.0.61\nUnable to authenticate with File daemon at "192.168.0.61:9102"`
 
-
+### 备份光驱文件报`Fatal error: No drive letters found for generating VSS snapshots...Error: VSS API failure calling "BackupComplete". ERR=Object is not initialized; called during restore or not called in correct sequence.`
+备份光驱文件时可能需要关闭vss.
 
 ### 修改Director邮件发送命令
 参考:

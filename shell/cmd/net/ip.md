@@ -87,6 +87,7 @@ ip link delete cilium_vxlan # 删除网络接口
 # ip link delete cilium_net@cilium_host # cilium_net@cilium_host： cilium_host可能是cilium_net的secondary ip
 Cannot find device "cilium_net@cilium_host"
 # ip link delete cilium_net
+# ip [-j -details] link show
 ```
 
 # ip rule

@@ -43,6 +43,7 @@
 - [一文教你搞懂 Go 中栈操作](https://mp.weixin.qq.com/s/hU6Xmp5zeh9vgUEV5otjWg)
 - [字节跳动 Go RPC 框架 KiteX 性能优化实践](https://mp.weixin.qq.com/s/Xoaoiotl7ZQoG2iXo9_DWg)
 - [字节跳动 Go RPC 框架 KiteX开源 : cloudwego/kitex](https://github.com/cloudwego/kitex)
+- [Go 1.19中值得关注的几个变化](https://tonybai.com/2022/08/22/some-changes-in-go-1-19/)
 
 ## go src
 - [go-under-the-hood](https://github.com/changkun/go-under-the-hood)

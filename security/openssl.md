@@ -40,6 +40,14 @@ ps:
 ### openssl x509
 - -x509toreq             基于当前证书创建一个CSR文件
 
+### crt
+```bash
+openssl x509 -noout -text -in ca.crt
+# --- 验证
+openssl verify selfsign.crt # 验证自签名crt
+openssl verify -CAfile ca.crt myserver.crt # 验证非自签名crt
+```
+
 ### rsa
 参考:
 - [ 利用openssl进行RSA加密解密](https://www.cnblogs.com/alittlebitcool/archive/2011/09/22/2185418.html)
@@ -148,3 +156,11 @@ openssl rsautl -encrypt -inkey publickey.pem -pubin -in key.bin -out key.bin.enc
 openssl rsautl -decrypt -inkey privatekey.pem -in key.bin.enc -out key.bin # 解出aes key
 openssl enc -d -aes-256-cbc -in largefile.pdf.enc -out largefile.pdf -pass file:./bin.key # 解密文件
 ```
+
+### ERR_CERT_COMMON_NAME_INVALID(chrome)/SSL_ERROR_BAD_CERT_DOMAI(firefox)
+向chrome/firefox导入自签名证书并重启浏览器后, 网站还是显示不安全, 这是因为虽然已信任ca证书, 但网站证书里的主题备用名(SAN,Subject Alternative Name)与实际使用的ip/域名不匹配.
+
+SAN无法对所有ip进行授权, 只能使用多SAN的形式指定多个ip地址.
+
+其他方案:
+- 让用户先手动访问目标地址授权不拦截该种不安全的https, 然后再进行操作. 场景: 不通过管理节点中转, 而是直接向存储节点上传iso. 

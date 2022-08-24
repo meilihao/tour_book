@@ -460,6 +460,33 @@ selinux环境需在虚拟机XML配置文件中的domain根元素中添加如下�
 
 > seclabel元素允许控制安全驱动程序的操作.
 
+### 创建kvm时libvirtd报`unsupported configuration: more than 255 vCPUs require extended interrupt mode enable on the iommu device`
+ref:
+- [Fail to start a q35 guest with vcpu > 255](https://bugzilla.redhat.com/show_bug.cgi?id=1451282)
+- [让KVM突破限制，支持512个vCPU](https://github.com/GiantVM/doc/blob/master/extend_kvm_cpu.md)
+
+`virsh domcapabilities --machine q35`返回上限是288, 但xml使用256时就报该错.
+
+### 启动vm报`Unable to add bridge eth0 port vnet0: Operation not supported`
+eth0不是brigde device.
+
+### virbr0和virbr0-nic
+ref:
+- [libvirt之virbr0和virbr0-nic](https://xiaoz.info/2020/01/08/libvirt-virbr0/)
+
+libvirtd会自动创建一个virbr0, 它是一个virtual network switch(bridge device), 所有虚拟机都将连接到virbr0.
+
+默认virbr0使用NAT模式, 可以提供NAT模式上网. 默认情况下, virbr0分配地址192.168.122.1, 它可以为连接到它的其他虚拟接口提供 DHCP 服务.
+
+virbr0包括两个端口：virbr0-nic 为网桥内部端口，vnet0 为虚拟机网关端口(192.168.122.1).
+
+> 增加virbr0-nic接口是为了解决一个内核的bug(或者说是feature)。创建bridge后，当我们添加第一块虚拟NIC到bridge时，这块NIC的MAC地址会复制到bridge，作为bridge的MAC地址。当我们所有NIC从bridge移除之后，这时bridge会丢失原来的MAC地址。而再次加入另外的NIC时，bridge又会获取新的MAC地址，这个MAC地址获取的是新NIC的MAC地址. virbr0-nic其实是一个[dummy device](https://xiaoz.info/2020/01/08/libvirt-virbr0/).
+
+### vm id
+一旦vm运行中, `virsh list --all`就会输出其id, 包括paused(暂停中).
+
+virDomainGetID可能返回4294967295, 它即[`^uint32(0)=(unsigned int)-1)`](https://github.com/libvirt/libvirt/blob/master/tools/virsh-domain-monitor.c#L1231)等价于`virsh list`中的`-`.
+
 ## uefi shell
 - exit : 进入qemu machine(virt-4.0)的类似bios界面的字符uefi firmware settings界面.
 
