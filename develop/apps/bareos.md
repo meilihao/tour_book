@@ -368,6 +368,7 @@ exit
         - Client Name: bconsole注册clients时的名称, 最好是clients os的hostname
         - Director Name: 不修改
         - Password: dareos-server:/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf中的Password即`[md5]xxx`, **注意`[md5]`不能省略, 否则dir无法连接client**
+            windows client的`director/bareos-dir.conf`的Password属性没有直接保存password, 而是引用了其他位置, 即使手动修改重启后也不生效, 需要卸载(不保留配置)重新安装.
         - Network Address: 注册client时**本机的ip**
         - Client Monitor Password: 用/etc/bareos/bareos-dir.d/console/bareos-mon.conf文件中的Password
 

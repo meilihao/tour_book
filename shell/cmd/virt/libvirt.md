@@ -829,6 +829,14 @@ virt-xml(需关机操作):
 virt-xml testguest --remove-device --disk target=vdb
 virt-xml --build-xml --disk virt-xml --build-xml --disk /mnt/1.qcow2,target=vdb # test option
 virt-xml --build-xml --network type=bridge,source=br0
+virt-xml --remove-device --disk target=sda
+virt-xml --add-device --disk xxx
+virt-xml vs002 --edit target=sda --disk path=''
+virt-xml vs002 --edit target="sda" --disk="boot_order=1" # 实际效果是一个盘是boot_order=1, 其他(disk,network device)按原先顺序递增
+virt-xml vs002 --edit target=sda --disk boot_order=1 # 同上 
+virt-xml vs002 --edit all --disk="boot_order=999" # 实际效果是一个盘是boot_order=999, 其他按原先顺序递增
+virt-xml vs002 --edit mac="00:16:3e:20:b0:11" --network="boot_order=1" 实际效果是一个网卡是boot_order=1, 其他按原先顺序递增 
+virt-xml vs002 --edit all --network="boot_order=999" # 实际效果是一个网卡是boot_order=999 其他按原先顺序递增
 ```
 
 其他:

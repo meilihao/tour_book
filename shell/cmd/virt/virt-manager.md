@@ -288,3 +288,6 @@ ref:
 
 ### virt-install报`Size must be specified for non existent volume 'xxx'`
 对于不存在的vol, 必须设置size.
+
+### vm配置中的"引导选项"中的"启用引导菜单"的左右
+如果不启用, libvirtd按配置中设备的顺序进行引导; 否则按"启用引导菜单"下方的列表顺序进行引导.
