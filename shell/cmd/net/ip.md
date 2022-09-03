@@ -65,6 +65,8 @@ default via 192.168.0.1 dev bond0
 # arping -I ens160 192.168.16.38 # 反查mac, by `apt install arping`, ens160必须是up
 # ip link set dev ens33 multicast on # 启用多播
 # ip maddr # 显示多播地址
+# route -n # 靠前的优先
+# arp -an # 查看数据走向
 ```
 
 网关是路由出口的位置, 不一定和本机网段相同.
@@ -72,22 +74,11 @@ default via 192.168.0.1 dev bond0
 # ip addr
 ## example
 ```bash
-ip -s link list # 显示更加详细的设备信息, 信息from /sys/class/net/${interface}/statistics
-ip link show                     # 显示网络接口信息
-ip link set eth0 up             # 开启网卡
-ip link set eth0 down            # 关闭网卡
-ip link set eth0 promisc on      # 开启网卡的混合模式
-ip link set eth0 promisc offi    # 关闭网卡的混个模式
-ip link set eth0 txqueuelen 1200 # 设置网卡队列长度
-ip link set eth0 mtu 1400        # 设置网卡最大传输单元
 ip addr show     # 显示网卡IP信息
 ip addr add 192.168.0.1/24 dev eth0 # 设置eth0网卡IP地址192.168.0.1, 需要ip link set eth0 down/up重启网卡
 ip addr del 192.168.0.1/24 dev eth0 # 删除eth0网卡IP地址
 ip link delete cilium_vxlan # 删除网络接口
-# ip link delete cilium_net@cilium_host # cilium_net@cilium_host： cilium_host可能是cilium_net的secondary ip
-Cannot find device "cilium_net@cilium_host"
-# ip link delete cilium_net
-# ip [-j -details] link show
+ip [-j -details] link show
 ```
 
 # ip rule
@@ -102,6 +93,19 @@ ip rule list的这三张路由表，又称为路由规则. 只不过路由规则
 ```
 
 # ip link
+```bash
+ip -s link list # 显示更加详细的设备信息, 信息from /sys/class/net/${interface}/statistics
+ip link show                     # 显示网络接口信息
+ip link set eth0 up             # 开启网卡
+ip link set eth0 down            # 关闭网卡
+ip link set eth0 promisc on      # 开启网卡的混合模式
+ip link set eth0 promisc offi    # 关闭网卡的混个模式
+ip link set eth0 txqueuelen 1200 # 设置网卡队列长度
+ip link set eth0 mtu 1400        # 设置网卡最大传输单元
+# ip link delete cilium_net@cilium_host # cilium_net@cilium_host： cilium_host可能是cilium_net的secondary ip
+Cannot find device "cilium_net@cilium_host"
+# ip link delete cilium_net
+```
 
 # ip netns
 参考:
@@ -231,6 +235,7 @@ $ ip rule add from 60.30.128.15 table cnc
 # --- 以上就基本配置好了电信和联通的多线原路返回路由
 ```
 
+## FAQ
 ### `ip route`配置gateway时报`Nexthop has invalid gateway`
 解决方法: 先将网卡up并给其配上ip再配置gateway即可.
 
@@ -263,3 +268,26 @@ ip: /etc/sysconfig/network-scripts/ifcfg-xxx # 这里的GATEWAY会被忽略, 因
 即192.168.0.191和192.168.16.78不能通信
 
 因为目标端的route没有配置, 在16.78配上默认网关192.168.16.2后通信正常
+
+### 同网段直连不能通信
+env:
+- A : 192.168.2.100
+- B : eth0:192.168.2.101,用于连外网;eth1:192.168.2.102,用于直连. 即双网卡在同一网段.
+- 连接: A与B的eth1直连
+
+问题其实是出在路由表. 系统里面有一个路由表，当设置IP的时候就会同时设置路由表, 当需要访问外面的时候, 系统会去路由表里面查询，当查询到第一个匹配的项目时就应用这个项, 也就是从这条路径走了.
+
+如果系统有两个独立网卡, 并且这两个网卡的IP属于同一个子网, 数据包默认发到该网段的默认路由(通常是后启动的网卡即`ip addr`的输出顺序)所在的eth0上, 又因为eth0上没有192.168.2.102, 从而不通.
+
+解决方法:
+1. 直连换其他网段
+1. 设置策略路由, 指定IP路由的走向: 给每个网卡分配单独的路由表, 并且通过 ip rule 来指定
+
+    ```bash
+    ip route add to 192.168.0.0/16 dev eth1 table 20/ip route add via 192.168.2.254 dev eth1 table 20 //路由表20 走eth1
+    ip rule add from 192.168.2.102/32 table 20   //源IP为192.168.2.102 走路由表20
+    ```
+1. down B的eth0
+
+    eth0下线时会删除旧路由, 从而使得默认路由在eth1上
+

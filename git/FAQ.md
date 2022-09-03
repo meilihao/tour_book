@@ -441,3 +441,8 @@ npm install -g commitizen cz-conventional-changelog
 echo '{ "path": "cz-conventional-changelog" }' > ~/.czrc
 cz
 ```
+
+### git pull报`无法找到远程引用 refs/heads/xxx`
+原因: 以前重命名过分支
+
+解决方法: `vim .git/config`, 将其中错误的分支名替换为正确的分支名.

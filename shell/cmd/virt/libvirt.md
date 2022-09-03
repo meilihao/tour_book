@@ -470,6 +470,15 @@ ref:
 ### 启动vm报`Unable to add bridge eth0 port vnet0: Operation not supported`
 eth0不是brigde device.
 
+### 使用usb 2/3
+ref:
+- [虚拟机配置](https://docs.openeuler.org/zh/docs/22.03_LTS/docs/Virtualization/%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%85%8D%E7%BD%AE.html)
+- [usb](https://libvirt.org/formatdomain.html#controllers)
+
+`virt-xml --build-xml --controller type=usb,model=qemu-xhci`, 由model控制:
+- usb3 : qemu-xhci
+- usb2 : ich9-ehci1
+
 ### virbr0和virbr0-nic
 ref:
 - [libvirt之virbr0和virbr0-nic](https://xiaoz.info/2020/01/08/libvirt-virbr0/)
@@ -837,6 +846,8 @@ virt-xml vs002 --edit target=sda --disk boot_order=1 # 同上
 virt-xml vs002 --edit all --disk="boot_order=999" # 实际效果是一个盘是boot_order=999, 其他按原先顺序递增
 virt-xml vs002 --edit mac="00:16:3e:20:b0:11" --network="boot_order=1" 实际效果是一个网卡是boot_order=1, 其他按原先顺序递增 
 virt-xml vs002 --edit all --network="boot_order=999" # 实际效果是一个网卡是boot_order=999 其他按原先顺序递增
+virt-xml --build-xml --disk type=block,target=sda,path=/dev/sda
+virt-xml --build-xml --controller type=usb,model=qemu-xhci
 ```
 
 其他:
@@ -844,6 +855,7 @@ virt-clone -o Demo-kylin-v10 -n kylin-1 -f /home/kvm/kylin-1.qcow2 : # 克隆Dem
 
 ## virt-install
 ref:
+- [**Configuring Virtual Machines with virsh**](https://documentation.suse.com/sles/15-SP1/html/SLES-all/cha-libvirt-config-virsh.html)
 - [koan/virtinstall.py](https://github.com/cobbler/koan/blob/master/koan/virtinstall.py)
 
 创建vm:
@@ -877,6 +889,7 @@ install 常用参数说明展开目录:
    - cpu=CPU：CPU模式及特性，如coreduo等；可以使用`qemu-system-x86_64 -cpu ?`来获取支持的CPU模式
    - virt-type : hypervisor类型, 可使用`virsh capabilities`获取
    - os-variant=rhel6, 可用`osinfo-query os`获取, 信息来源于`/usr/share/osinfo`, 较新的os xml(比如`/usr/share/osinfo/os/centos.org/centos-stream-9.xml`)包含了支持的设备列表`<devices>`标签
+      osinfo-query支持family, eol-date等
    - machine : machine类型, 可用`qemu-system-x86_64 -machine help`获取
    - soundhw: 声卡类型, 可用`qemu-system-x86_64 -soundhw help`获取
 - 安装方式
@@ -948,6 +961,8 @@ install 常用参数说明展开目录:
       - bus：磁盘总结类型，其值可以为ide、scsi、usb、virtio或xen
       - perms：访问权限，如rw、ro或sh（共享的可读写），默认为rw
       - cache：缓存模型，其值有none、writethrouth（缓存读）及writeback（缓存读写）
+
+         ![](http://blog.chinaunix.net/attachment/201210/12/20940095_1350022176aC72.png)
       - sparse：磁盘映像使用稀疏格式，即不立即分配指定大小的空间
       - boot_order: 多个磁盘用于安装时guest时的尝试引导的顺序, 越小优先
 - 图形配置
@@ -999,6 +1014,7 @@ install 常用参数说明展开目录:
    - --check : check开关
 
       - `disk_size=off` : 不检查disk size
+      - `all=off` : 全部不检查
 
 ## [vm生命周期及状态转换](https://docs.openeuler.org/zh/docs/22.03_LTS/docs/Virtualization/%E7%AE%A1%E7%90%86%E8%99%9A%E6%8B%9F%E6%9C%BA.html)
 虚拟机主要有如下几种状态：

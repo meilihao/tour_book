@@ -19,5 +19,8 @@
 ref:
 - [如何在无网络的情况下给Dbeaver安装数据库驱动](https://blog.csdn.net/Georgetwo/article/details/112390120)
 
+	数据库->驱动管理器->选中一种db, 点右侧"编辑"-> 选中"库"标签页, 删除原有内容(可以看到需要的driver及其版本), 点右侧"添加文件", 加入驱动jar文件即可
+
 - [miaridb : mariadb-java-client](https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client)
-- [oracle : mariadb-java-client](https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client)
+- [postgres : postgresql-42.2.20.jar](https://mvnrepository.com/artifact/org.postgresql/postgresql)
+- [oracle]()

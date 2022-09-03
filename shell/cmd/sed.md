@@ -74,6 +74,7 @@ $ sed -i '/2222222222/a\3333333333' test.txt # 在匹配行前插入新行
 $ sed -i '/2222222222/i\3333333333' test.txt # 在匹配行后追加新行
 $ sed -i "s/max_dbs_open = 100.*/max_dbs_open = 1000/g" /etc/couchdb/default.ini # 匹配里使用通配符
 $ sed -i -r "s/([0-9]{1,3}\.){3}([0-9]{1,3})/127.0.0.1/g" <file> # 替换文件中的ip
+$ sed -i 's@os id="\(.*\)@os id="https://xxx"@' <file> # 替换virt xml的osinfo
 $ pattern1=XXX
 $ sed -i "s/aaa/$pattern1/g" inputfile # 如果要使用shell变量，就需要使用双引号
 $ for file in `ls | grep .txt` # 批量文件重命名

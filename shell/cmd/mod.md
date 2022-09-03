@@ -94,6 +94,22 @@ modprobe需要一个最新的modules.dep(`/lib/modules/$(uname -r)/modules.dep`)
 # ksyms
 显示内核符号和模块符号表的信息. 信息来自`/proc/kallsyms`
 
+# dracut
+Dracut 是一个用于构建 initramfs cpio 档案的工具.
+
+在`/etc/dracut.conf.d`配置, 配置文件格式是`add_drivers+=" xxx xxx "`(**两边需有空格**)
+
+```bash
+# dracut --list-modules # 列出系统上所有可用的 dracut 模块. 所有 dracut 模块都位于 /usr/lib/dracut/modules.d 目录中. 在此目录中，所有模块都表示为子目录, 并包含一系列脚本. 每个模块都提供特定的功能
+# dracut --kver 5.14.14-300.fc35.x86_64 # 为特定内核版本构建 initramfs
+# dracut --regenerate-all --force # 为所有现有内核构建或重新构建 initramfs. 如果特定内核的 initramfs 已经存在, 则需要`--force`
+# dracut -H --force # 通常使用 dracut 生成 initramfs 时, 会创建通用主机配置, 即包含了启动通用机器所需的所有内容, 以确保最大可能的兼容性. 如果只想将特定机器实际需要的内容放入 initramfs 中, 可以使用 -H 选项（--hostonly 的缩写）.
+# lsinitrd /boot/initramfs-5.14.0-130.el9.x86_64.img # 列出 initramfs 中包含的文件, 该脚本实际就是使用了dracut
+# dracut --include /custom-content.conf /etc/custom-content.conf --force # 使用 --include <sourcePath> <targetPath> 在 initramfs 中包含额外文件
+# dracut --install "/custom-content.conf /custom-content0.conf" --force # --install 可用于在 initramfs 中包含文件. 与 --include 的主要区别在于: 文件安装在 initramfs 中, 与它们在系统中的位置相同.
+# man dracut.conf
+```
+
 ## FAQ
 ### modprobe和insmod区别
 insmod不能处理依赖, 而modprobe可以.

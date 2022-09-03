@@ -291,3 +291,6 @@ ref:
 
 ### vm配置中的"引导选项"中的"启用引导菜单"的左右
 如果不启用, libvirtd按配置中设备的顺序进行引导; 否则按"启用引导菜单"下方的列表顺序进行引导.
+
+### 使用 qemu monitor
+`virsh# qemu-monitor-command vm-name --hmp "pmemsave 0 0x20000000 /tmp/dumpfile"`
