@@ -19,6 +19,7 @@ Vim 的三种模式:
 # vim +/pattern file # 打开文件, 将光标置于第一个与pattern匹配的位置
 # vim -R file # 只读打开
 # vim -r file # 恢复删除vim打开时崩溃的文件
+# vim xxx.txt -c "e ++enc=gbk" # 指定使用gbk编码打开文件
 ```
 
 ## 编码

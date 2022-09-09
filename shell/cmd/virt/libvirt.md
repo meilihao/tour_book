@@ -470,6 +470,13 @@ ref:
 ### 启动vm报`Unable to add bridge eth0 port vnet0: Operation not supported`
 eth0不是brigde device.
 
+### `virsh start xxx`报`internal error: qemu unexpectedly closed the monitor: Could not access KVM kernel module: Permission denied\n...qemu-system-x86_64: failed to initialize KVM: Permission denied`
+`ls -al /dev/kvm`返回`crw-rw----+`m, 存在acl属性
+
+解决(2种):
+1. `setfacl -b /dev/kvm && chmod 0660 /dev/kvm`(重启后失效)
+2. 修改/etc/libvirt/qemu.conf, 将user和group都设为root
+
 ### 使用usb 2/3
 ref:
 - [虚拟机配置](https://docs.openeuler.org/zh/docs/22.03_LTS/docs/Virtualization/%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%85%8D%E7%BD%AE.html)
@@ -849,6 +856,8 @@ virt-xml vs002 --edit all --network="boot_order=999" # 实际效果是一个网�
 virt-xml --build-xml --disk type=block,target=sda,path=/dev/sda
 virt-xml --build-xml --controller type=usb,model=qemu-xhci
 ```
+
+> 需逐个调用virt-xml修改xml, 遇到过并发删除disk, 且命令返回成功但实际disk没有移除的问题.
 
 其他:
 virt-clone -o Demo-kylin-v10 -n kylin-1 -f /home/kvm/kylin-1.qcow2 : # 克隆Demo-kylin-v10, 虚拟机名：kylin-1, 虚拟机路径：/home/kvm/kylin-1.qcow2

@@ -2,6 +2,7 @@
 参考:
 - [Linux C编程一站式学习](https://akaedu.github.io/book/index.html)
 - [GCC编译器原理（三）------编译原理三：编译过程---预处理](https://my.oschina.net/u/4307784/blog/3862542)
+- [RMS 发布 GNU C 语言学习手册](https://www.oschina.net/news/209464/richard-stallman-gnu-c-language-reference-manual)
 
 特点:
 1. 效率高 : 编译型语言

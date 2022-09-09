@@ -27,7 +27,7 @@ websockify --web=/usr/share/novnc 6080 --token-plugin TokenFile --token-source /
 websockify --web=/usr/share/novnc 6080 --target-config=/usr/share/novnc/conf # 同上, 是上面的旧语法
 ```
 
-`/usr/share/novnc/conf`目录下的每个文件写入vm vnc信息, 格式是`token1: host1:port1`(token1为自定义token), 因此创建vm时需要提前配置port, 之后访问`http://192.168.1.130:8787/vnc.html?path=websockify/?token=token1`即可
+`/usr/share/novnc/conf`目录下的每个文件写入vm vnc信息, 格式是`token1: host1:port1`(token1为自定义token), 因此创建vm时需要提前配置port, 之后访问`http://192.168.1.130:8787/vnc.html?path=websockify/?token=token1`即可. 该方法进入页面需要点击一次右上角的`connect`, 也可使用`http://192.168.1.130:8787/vnc_auto.html?path=/conf?token=token1`直接看到vm屏幕.
 
 > oracle linux 7.9上的novnc只支持websockify旧语法
 

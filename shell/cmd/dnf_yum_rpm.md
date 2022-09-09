@@ -1,4 +1,7 @@
 # dnf
+ref:
+- [Fedora 39 将使用 DNF5 作为默认打包工具](https://www.oschina.net/news/209467/fedora-39-dnf5-plan)
+
 rehat开发的新一代包管理软件, 用于取代dnf.
 
 DNF包管理器克服了YUM包管理器的一些瓶颈，提升了包括用户体验，内存占用，依赖分析，运行速度等多方面的内容. DNF使用 RPM, libsolv 和 hawkey 库进行包管理操作.

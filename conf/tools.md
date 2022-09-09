@@ -250,13 +250,6 @@ $ sudo apt-get install isomaster # isomaster可修改iso, 保存时需要另存�
 
 [pip.conf](https://pip.pypa.io/en/stable/user_guide/?highlight=pip.conf#config-file)是pip的配置文件.
 
-### 字符浏览器
-
-#### w3m
-乱码问题
-- 在乱码页面, 按快捷键o进入设置界面, 将"Charset Setting"的"Display charset"设为"Unicode (UTF-8)", 再翻页到末尾点击"OK"按钮保存即可. 
-- `w3m -I GBK  www.baidu.com`,解决中文乱码.
-
 ### 硬件
 - [硬盘监控和分析工具：Smartctl](https://linux.cn/article-4682-1.html)
 

@@ -27,6 +27,7 @@
 ### 其他打包工具
 - [Arch Linux 软件包制作入门](https://linux.cn/article-13843-1.html)
 - [`.run/.bin`制作 - makeself](https://github.com/megastep/makeself)
+- [flatpak](https://linux.cn/article-15007-1.html)
 
 ## desktop
 ### UbuntuDDE
