@@ -379,3 +379,59 @@ nginx+php原理:
 # vim /etc/php-fpm.d/www.conf
 listen.acl_users = apache,nginx # listen.owner=listen.group=nobody. 默认不允许nginx用户(nginx)访问
 ```
+
+### spa更新后请求资源仍使用旧资源
+[nginx-spa-index-disable-cache-v2](https://gist.github.com/xuxihai123/fb3f358a8196fc8d143324b0f1b6866b), 未测试:
+```conf
+# 不带前缀区分静态资源
+
+server {
+    listen 0.0.0.0:8000;
+
+    location @index {
+        root /home/nginx/www/exam/dist;
+        # Cache-Control设置缓存策略，no-cache使用协商缓存, no-store禁用缓存策略
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        expires 0;
+        try_files /index.html =404;
+    }
+    location / {
+        root /home/nginx/www/exam/dist;
+        try_files $uri  @index;
+        # 静态资源缓存（优先使用强制缓存策略，优先使用浏览器缓存)
+        expires 7d;
+    }
+}
+```
+
+或
+```
+// https://stackoverflow.com/questions/41631399/disable-caching-of-a-single-file-with-try-files-directive
+location = / {
+    add_header Cache-Control no-cache;
+    expires 0;
+    try_files /index.html =404;
+}
+
+location / {
+    gzip_static on;
+    try_files $uri @index;
+}
+
+location @index {
+    add_header Cache-Control no-cache;
+    expires 0;
+    try_files /index.html =404;
+}
+```
+
+或
+```
+location / {
+  try_files $uri $uri/ /index.html;
+}
+
+location = /index.html {
+  expires -1;
+}
+```

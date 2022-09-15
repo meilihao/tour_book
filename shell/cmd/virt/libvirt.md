@@ -2,6 +2,7 @@
 ref:
 - [libvirt 源码分析 - virsh](https://winddoing.github.io/post/dec26e6d.html)
 - [virsh list所有vm state及其转换](https://docs.openeuler.org/zh/docs/20.03_LTS_SP3/docs/Virtualization/%E7%AE%A1%E7%90%86%E8%99%9A%E6%8B%9F%E6%9C%BA.html)
+- [Domain XML format](https://avdv.github.io/libvirt/formatdomain.html)
 
 目前使用最广泛的对kvm进行管理的工具和应用程序接口, 它也支持xen, vmware, virtualbox, hyper-v等平台虚拟化, 以及openvz, lxc等容器虚拟化.
 
@@ -445,6 +446,17 @@ qemu构建时没有选中spice.
 ### aarch64上vm开机报`this qemu does not support 'qxl' video device`
 qemu 的 configure 将 spice 改为 yes 并再次编译安装
 
+### virt-xml update boot order报`unsupported configuration: per-device boot elements cannot be used together with os/boot elements`
+env: virt-install v2.2/v1.5
+
+当磁盘,光驱和网卡都没有设置boot order或没有这些可引导设备时, xml会自动在`<os>`加上`<boot dev='xxx'/>`, 该项与设置设备的boot order(包括添加带boot order的device)冲突.
+
+手动删除`<boot dev='hd'/>`, 再使用virt-xml添加带boot_order的disk device还是会报该错.
+
+解决方法:
+1. 必须保留一个带boot order的光驱
+2. 自己构建xml
+
 ### 运行非root使用virsh
 ```bash
 sudo su root
@@ -469,6 +481,9 @@ ref:
 
 ### 启动vm报`Unable to add bridge eth0 port vnet0: Operation not supported`
 eth0不是brigde device.
+
+### 启动vm报`error creating macvtap interface macvtap@eth0 (52:54:00:56:84:7a): Device or resource busy`
+eth0被用于创建bond0, 此时应使用bond0
 
 ### `virsh start xxx`报`internal error: qemu unexpectedly closed the monitor: Could not access KVM kernel module: Permission denied\n...qemu-system-x86_64: failed to initialize KVM: Permission denied`
 `ls -al /dev/kvm`返回`crw-rw----+`m, 存在acl属性
@@ -848,7 +863,7 @@ virt-xml --build-xml --network type=bridge,source=br0
 virt-xml --remove-device --disk target=sda
 virt-xml --add-device --disk xxx
 virt-xml vs002 --edit target=sda --disk path=''
-virt-xml vs002 --edit target="sda" --disk="boot_order=1" # 实际效果是一个盘是boot_order=1, 其他(disk,network device)按原先顺序递增
+virt-xml vs002 --edit target="sda" --disk="boot_order=1" # 实际效果是一个盘是boot_order=1, 其他(disk,network device)按原先顺序递增(virt-install v1.5不允许boot order重复, v2.2会自动递增处理)
 virt-xml vs002 --edit target=sda --disk boot_order=1 # 同上 
 virt-xml vs002 --edit all --disk="boot_order=999" # 实际效果是一个盘是boot_order=999, 其他按原先顺序递增
 virt-xml vs002 --edit mac="00:16:3e:20:b0:11" --network="boot_order=1" 实际效果是一个网卡是boot_order=1, 其他按原先顺序递增 
@@ -959,7 +974,7 @@ install 常用参数说明展开目录:
 
       选项:
       - model: netdev model, 可用`qemu-system-x86_64 -net nic,model=?`获取
-      - mac=52:54:00:01:02:03 : 指定mac, 对于 QEMU 或 KVM 虚拟机, 它必须是`52:54:00`
+      - mac=52:54:00:01:02:03 : 指定mac, 对于 QEMU 或 KVM 虚拟机, 它必须是`52:54:00`, **注意检查mac重复, 实际发现随机生成有较高的概率**
 - 存储配置
 
    - disk : 指定虚拟机的磁盘存储位置
