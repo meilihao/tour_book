@@ -435,3 +435,15 @@ location = /index.html {
   expires -1;
 }
 ```
+
+### 设置`proxy_set_header Host $host:$server_port`, 后端应用还是无法获取host
+ref:
+- [How to get :authority header on Nginx?](https://stackoverflow.com/questions/67282314/how-to-get-authority-header-on-nginx)
+
+因为chrome http请求头里本身没有Host(但有authority,referer), 且nginx conf里的server_name是`_`, 因此proxy的请求也没有host.
+
+解决方法: 解析authority,referer作为host
+
+原因: [HTTP/2 要求请求具有 :authority 伪标头或 host 标头. 当直接构建 HTTP/2 请求时首选 :authority，从 HTTP/1 转换时首选 host（例如在代理中）](http://nodejs.cn/api/http2/note_on_authority_and_host.html)
+
+> `proxy_set_header Host $host:$server_port`无法获取`:authority`, 但`proxy_set_header Authority $host`可以.

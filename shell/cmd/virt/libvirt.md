@@ -485,6 +485,15 @@ eth0不是brigde device.
 ### 启动vm报`error creating macvtap interface macvtap@eth0 (52:54:00:56:84:7a): Device or resource busy`
 eth0被用于创建bond0, 此时应使用bond0
 
+### 启动vm报`unsupported configuration: disk type 'virtio' of 'vdb' does not support ejectable media'`
+原因:cdrom使用了virtio.
+
+cdrom bus获取:
+1. virt domcapabilities ... 获取disk bus, 过滤fdc,usb,virtio,scsi
+1. q35过滤ide
+
+> 实践发现bus=scsi的iso起不来, 包括oracle 7.9 x64, windows2012r2
+
 ### `virsh start xxx`报`internal error: qemu unexpectedly closed the monitor: Could not access KVM kernel module: Permission denied\n...qemu-system-x86_64: failed to initialize KVM: Permission denied`
 `ls -al /dev/kvm`返回`crw-rw----+`m, 存在acl属性
 

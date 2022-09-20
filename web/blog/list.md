@@ -101,6 +101,7 @@
 
 ## 负载均衡
 - [负载均衡原理与技术实现](http://network.51cto.com/art/201509/492457_all.htm)
+- [Cloudflare 放弃 Nginx，使用内部 Rust 编写的 Pingora](https://www.oschina.net/news/210473/cloudflare-pingora-nginx)
 
 ## 优化
 - [京东首页前端技术剖析与对比](http://www.barretlee.com/blog/2015/09/09/jd-architecture-analysis/)
