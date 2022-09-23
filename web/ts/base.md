@@ -262,4 +262,74 @@ interface Cat {
 
 const tom = getCacheData<Cat>('tom');
 tom.run();
+
+// --- 声明文件
+// 声明文件必需以 .d.ts 为后缀. 更推荐的是使用 @types 统一管理第三方库的声明文件, 使用方法: `npm install @types/jquery --save-dev`
+// 推荐使用`declare const`以禁止修改变量的值.
+// 声明语句中只能定义类型，切勿在声明语句中定义具体的实现; declare class 语句也只能用来定义类型，不能用来定义具体的实现.
+// declare namespace已淘汰, 推荐使用 ES6 的模块化方案.
+// npm查找声明文件:
+// 1. 与该 npm 包绑定在一起。判断依据是 package.json 中有 types 字段，或者有一个 index.d.ts 声明文件. 推荐
+// 1. 发布到 @types 里
+// 1. 自实现
+//      1. 创建一个 node_modules/@types/foo/index.d.ts 文件，存放 foo 模块的声明文件。这种方式不需要额外的配置，但是 node_modules 目录不稳定, 也不在git repo中, 仅用于临时测试
+//      1. 项目下创建一个 types 目录，专门用来管理自己写的声明文件，将 foo 的声明文件放到 types/foo/index.d.ts 中。这种方式需要配置下 tsconfig.json 中的 paths 和 baseUrl 字段
+
+        // {
+        //     "compilerOptions": {
+        //         "module": "commonjs",
+        //         "baseUrl": "./",
+        //         "paths": {
+        //             "*": ["types/*"]
+        //         },
+        //         "declaration": true // 如果库的源码本身就是由 ts 写的，那么在使用 tsc 脚本将 ts 编译为 js 的时候，添加 declaration 选项，就可以同时也生成 .d.ts 声明文件
+        //     }
+        // }
+// npm 包的声明文件与全局变量的声明文件有很大区别。在 npm 包的声明文件中，使用 declare 不再会声明一个全局变量，而只会在当前文件中声明一个局部变量。只有在声明文件中使用 export 导出，然后在使用方 import 导入后，才会应用到这些类型声明
+// 只有 function、class 和 interface 可以直接默认导出，其他的变量需要先定义出来，再默认导出
+// > 在 ES6 模块系统中，使用 export default 可以导出一个默认值，使用方可以用 import foo from 'foo' 而不是 import { foo } from 'foo' 来导入这个默认值.
+// > 既可以通过 <script> 标签引入，又可以通过 import 导入的库，称为 UMD 库.
+declare const jQuery: (selector: string) => any;
+
+declare function jQuery(selector: string): any;
+
+declare function jQuery(domReadyCallback: () => any): any; // 函数重载
+declare class Animal {
+    name: string;
+    constructor(name: string);
+    sayHi(): string;
+}
+
+declare enum Directions {
+    Up,
+    Down,
+    Left,
+    Right
+}
+
+// 在 commonjs 规范中，我们用以下方式来导出一个模块：
+
+// 整体导出
+module.exports = foo;
+// 单个导出
+exports.bar = bar;
+
+// 此时 ts 官方推荐使用: import ... require来导入使用, 但也支持`import ... from`或`const ... = require`
+// 整体导入
+import foo = require('foo');
+// 单个导入
+import bar = foo.bar;
+// --- 内置对象
+// [TypeScript 核心库的定义文件](https://github.com/Microsoft/TypeScript/tree/master/src/lib)中定义了所有浏览器环境需要用到的类型，并且是预置在 TypeScript 中的.
+// -- 别名
+type Name = string;
+type NameResolver = () => string;
+type NameOrResolver = Name | NameResolver;
+function getName(n: NameOrResolver): Name {
+    if (typeof n === 'string') {
+        return n;
+    } else {
+        return n();
+    }
+}
 ```

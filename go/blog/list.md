@@ -97,6 +97,7 @@
 - [*Go语言标准库](https://books.studygolang.com/The-Golang-Standard-Library-by-Example/)
 - [hacking-code/golang-tutorials](https://github.com/hacking-code/golang-tutorials)
 - [Go语言高级编程](https://legacy.gitbook.com/book/chai2010/advanced-go-programming-book/details)
+- [阿里开发者手册-Golang专题](https://developer.aliyun.com/ebook/7728)
 
 ## 其他
 - [Unknwon's go-study-index](https://github.com/Unknwon/go-study-index)

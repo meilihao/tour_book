@@ -636,13 +636,13 @@ abstract class Person {
 　2. 设计层面不同，抽象类作为很多子类的父类，它是一种模板式设计。而接口是一种行为规范，它是一种辐射式设计. 什么是模板式设计？最简单例子，大家都用过ppt里面的模板，如果用模板A设计了ppt B和ppt C，ppt B和ppt C公共的部分就是模板A了，如果它们的公共部分需要改动，则只需要改动模板A就可以了，不需要重新对ppt B和ppt C进行改动。而辐射式设计，比如某个电梯都装了某种报警器，一旦要更新报警器，就必须全部更新。也就是说对于抽象类，如果需要添加新的方法，可以直接在抽象类中添加具体的实现，子类可以不进行变更；而对于接口则不行，如果接口进行了变更，则所有实现这个接口的类都必须进行相应的改动。
 
 ### synchronized
-synchronized是Java中的关键字，是一种同步锁。它修饰的对象有以下几种： 
+synchronized是Java中的关键字，是一种同步锁, 可以保证方法或者代码块在运行时，同一时刻只有一个方法可以进入到临界区，同时它还可以保证共享变量的内存可见性。它修饰的对象有以下几种： 
 1. 修饰一个代码块，被修饰的代码块称为同步语句块，其作用的范围是大括号{}括起来的代码，作用的对象是调用这个代码块的对象； 
 2. 修饰一个方法，被修饰的方法称为同步方法，其作用的范围是整个方法，作用的对象是调用这个方法的对象； 
 3. 修改一个静态的方法，其作用的范围是整个静态方法，作用的对象是这个类的所有对象； 
 4. 修改一个类，其作用的范围是synchronized后面括号括起来的部分，作用主的对象是这个类的所有对象
 
-
+类似go的Mutex.
 ### new interface
 [反编译观察一下，发现原来是编译器自动生成一个类](https://www.cnblogs.com/yjmyzz/p/3448330.html).
 
@@ -742,6 +742,139 @@ Annotation类型里面的参数该怎么设定:
 - 首先,只能用public或默认(default)这两个访问权修饰.例如,String value();这里把方法设为defaul默认类型；　 　
 - 其次,参数成员只能用基本类型byte,short,char,int,long,float,double,boolean八种基本数据类型和 String,Enum,Class,annotations等数据类型,以及这一些类型的数组.例如,String value();这里的参数成员就为String;　　
 - 最后,如果只有一个参数成员,最好把参数名称设为”value”,后加小括号.例:下面的例子FruitName注解就只有一个参数成员。
+
+### getSimpleName
+```java
+package com.example;
+
+public final class TestClassNames {
+    private static void showClass(Class<?> c) {
+        System.out.println("getName():          " + c.getName());
+        System.out.println("getCanonicalName(): " + c.getCanonicalName());
+        System.out.println("getSimpleName():    " + c.getSimpleName());
+        System.out.println("toString():         " + c.toString());
+        System.out.println();
+    }
+
+    private static void x(Runnable r) {
+        showClass(r.getClass());
+        showClass(java.lang.reflect.Array.newInstance(r.getClass(), 1).getClass()); // Obtains an array class of a lambda base type.
+    }
+
+    public static class NestedClass {}
+
+    public class InnerClass {}
+
+    public static void main(String[] args) {
+        class LocalClass {}
+        showClass(void.class);
+        showClass(int.class);
+        showClass(String.class);
+        showClass(Runnable.class);
+        showClass(SomeEnum.class);
+        showClass(SomeAnnotation.class);
+        showClass(int[].class);
+        showClass(String[].class);
+        showClass(NestedClass.class);
+        showClass(InnerClass.class);
+        showClass(LocalClass.class);
+        showClass(LocalClass[].class);
+        Object anonymous = new java.io.Serializable() {};
+        showClass(anonymous.getClass());
+        showClass(java.lang.reflect.Array.newInstance(anonymous.getClass(), 1).getClass()); // Obtains an array class of an anonymous base type.
+        x(() -> {});
+    }
+}
+
+enum SomeEnum {
+   BLUE, YELLOW, RED;
+}
+
+@interface SomeAnnotation {}
+```
+
+out:
+```
+getName():          void
+getCanonicalName(): void
+getSimpleName():    void
+toString():         void
+
+getName():          int
+getCanonicalName(): int
+getSimpleName():    int
+toString():         int
+
+getName():          java.lang.String
+getCanonicalName(): java.lang.String
+getSimpleName():    String
+toString():         class java.lang.String
+
+getName():          java.lang.Runnable
+getCanonicalName(): java.lang.Runnable
+getSimpleName():    Runnable
+toString():         interface java.lang.Runnable
+
+getName():          com.example.SomeEnum
+getCanonicalName(): com.example.SomeEnum
+getSimpleName():    SomeEnum
+toString():         class com.example.SomeEnum
+
+getName():          com.example.SomeAnnotation
+getCanonicalName(): com.example.SomeAnnotation
+getSimpleName():    SomeAnnotation
+toString():         interface com.example.SomeAnnotation
+
+getName():          [I
+getCanonicalName(): int[]
+getSimpleName():    int[]
+toString():         class [I
+
+getName():          [Ljava.lang.String;
+getCanonicalName(): java.lang.String[]
+getSimpleName():    String[]
+toString():         class [Ljava.lang.String;
+
+getName():          com.example.TestClassNames$NestedClass
+getCanonicalName(): com.example.TestClassNames.NestedClass
+getSimpleName():    NestedClass
+toString():         class com.example.TestClassNames$NestedClass
+
+getName():          com.example.TestClassNames$InnerClass
+getCanonicalName(): com.example.TestClassNames.InnerClass
+getSimpleName():    InnerClass
+toString():         class com.example.TestClassNames$InnerClass
+
+getName():          com.example.TestClassNames$1LocalClass
+getCanonicalName(): null
+getSimpleName():    LocalClass
+toString():         class com.example.TestClassNames$1LocalClass
+
+getName():          [Lcom.example.TestClassNames$1LocalClass;
+getCanonicalName(): null
+getSimpleName():    LocalClass[]
+toString():         class [Lcom.example.TestClassNames$1LocalClass;
+
+getName():          com.example.TestClassNames$1
+getCanonicalName(): null
+getSimpleName():    
+toString():         class com.example.TestClassNames$1
+
+getName():          [Lcom.example.TestClassNames$1;
+getCanonicalName(): null
+getSimpleName():    []
+toString():         class [Lcom.example.TestClassNames$1;
+
+getName():          com.example.TestClassNames$$Lambda$1/1175962212
+getCanonicalName(): com.example.TestClassNames$$Lambda$1/1175962212
+getSimpleName():    TestClassNames$$Lambda$1/1175962212
+toString():         class com.example.TestClassNames$$Lambda$1/1175962212
+
+getName():          [Lcom.example.TestClassNames$$Lambda$1;
+getCanonicalName(): com.example.TestClassNames$$Lambda$1/1175962212[]
+getSimpleName():    TestClassNames$$Lambda$1/1175962212[]
+toString():         class [Lcom.example.TestClassNames$$Lambda$1;
+```
 
 # java框架
 ## Spring

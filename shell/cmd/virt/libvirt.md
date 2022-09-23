@@ -3,6 +3,7 @@ ref:
 - [libvirt 源码分析 - virsh](https://winddoing.github.io/post/dec26e6d.html)
 - [virsh list所有vm state及其转换](https://docs.openeuler.org/zh/docs/20.03_LTS_SP3/docs/Virtualization/%E7%AE%A1%E7%90%86%E8%99%9A%E6%8B%9F%E6%9C%BA.html)
 - [Domain XML format](https://avdv.github.io/libvirt/formatdomain.html)
+- [虚拟化调试和优化指南](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/7/html/virtualization_tuning_and_optimization_guide/sect-virtualization_tuning_optimization_guide-blockio-tuning)
 
 目前使用最广泛的对kvm进行管理的工具和应用程序接口, 它也支持xen, vmware, virtualbox, hyper-v等平台虚拟化, 以及openvz, lxc等容器虚拟化.
 
@@ -430,8 +431,34 @@ qemu构建时没有选中spice.
 
 ### [vm 磁盘扩容](https://opengers.github.io/openstack/openstack-instance-disk-resize-and-convert/)
 
+### vm disk测试性能容易卡死
+ref:
+- [Virtualization Tuning and Optimization Guide7.2. Caching](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_tuning_and_optimization_guide/sect-virtualization_tuning_optimization_guide-blockio-caching)
+vm disk xml没有设置cache(即使用了默认选项), 使用none后问题消失. 同时none通常是支持迁移的最佳和唯一选项.
+
+> io: ssd推荐使用native, 其他使用threads.
+
 ### 修改vm xml磁盘的bus而修改target.dev时`virsh define`会报`Found duplicate dirve address for disk with target name 'hdb'`
 将原先vdb 的bus从virtio改为ide, 报了该错, 将vdb改为hdc后正常.
+
+### ping虚拟机网络断断续续
+ref:
+- [浅析虚拟化环境网卡绑定模式](https://www.shsnc.com/show-109-956-1.html)
+
+env:
+- host: 10.0.4.171. bond0(mode 6)
+- vm: 10.0.4.188
+- gateway: 10.0.4.1
+- test: 10.0.4.170
+
+现象:
+1. vm ping gateway: 断断续续
+1. test ping vm: 断断续续
+两种现象同时出现, 同时恢复.
+
+解决: 使用bond mod=1, 业界大多虚拟化环境采用该模式稳定及高可用性已得到了充分的证明.
+
+> zstack: 使用bond0(mod 4), 在其上创建bridge设备br_bond0, 再将br_bond0给vm
 
 ### aarch64上vm开机报`cpu mode 'host-model' for aarch64 kvm domain on aarch64 host is not supported by hypervisor`
 解决方法:
@@ -551,7 +578,7 @@ ref:
 启动虚拟机： `virsh start <name>`
 列出所有虚拟机 (不管是否运行)： `virsh list --all`, `--all`包括没运行的vm, 则只输出运行中的vm
 正常关闭 guest ： `virsh shutdown <virtual machine (name | id | uuid)>`
-强制关闭 guest ： `virsh destroy <virtual machine (name | id | uuid)>`
+强制关闭 guest ： `virsh destroy <virtual machine (name | id | uuid)>`, 通常只需要几秒, 有次遇到是81s
 挂起vm: `virsh suspend <name>`
 恢复被挂起的vm: `virsh resumed <name>`
 开机自启动vm: `virsh autostart <name>`
