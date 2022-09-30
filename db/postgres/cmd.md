@@ -29,6 +29,24 @@
 - `\ds` : 查看用户自定义序列
 - `\df` : 查看用户自定义函数
 
+
+## ddl
+ref:
+- [创建和删除索引](https://cloud.tencent.com/document/product/1129/39829)
+
+```sql
+--- table
+alter table xxx drop column yyy;
+alter table xxx add column yyy smallint default 0 not null;
+--- index
+create unique index  tbl_bb_index  on  tbl_bb(id,name);
+drop index xxx;
+--- constraint
+alter table xxx drop constraint yyy;
+```
+
+> index和constraint是不同的, 删除命令有差异.
+
 ## 其他命令
 - `select version()`
 - `show config_file` : 查看配置文件

@@ -94,9 +94,14 @@ WantedBy=multi-user.target
 - Conflicts：这里指定的 Unit 不能与当前 Unit 同时运行
 - Condition...：当前 Unit 运行必须满足的条件，否则不会运行
 - Assert...：当前 Unit 运行必须满足的条件，否则会报启动失败
+- StartLimitIntervalSec=400. 用于设置时长， 默认值等于 DefaultStartLimitIntervalSec= 的值(默认为10秒)，设为 0 表示不作限制
+
+	> Before systemd-230 it was called just StartLimitInterval.
+- StartLimitBurst=3. 用于设置在一段给定的时长内，最多允许启动多少次.  默认值等于 DefaultStartLimitBurst= 的值(默认为5次)
 
 > After和Before字段只涉及启动顺序，不涉及依赖关系
 > Wants字段与Requires字段只涉及依赖关系，与启动顺序无关
+> 自动重启逻辑的单元触碰到了启动频率限制，那么该单元将再也不会尝试自动重启. systemctl reset-failed 命令能够重置单元的启动频率计数器.
 
 ### `[Install]`
 [Install]通常是配置文件的最后一个区块，用来定义如何安装这个配置文件即怎样做到开机启动. 它的主要字段如下:
@@ -127,6 +132,17 @@ ref:
 - ExecStopPost：ExecStop 执行完成之后所执行的命令（指定在 ExecStop 命令执行后的收尾工作，也**可以有多个**）.
 - RestartSec：在重启服务之前系统休眠时间（很有效的防止失败服务少于100ms重启一次;如果服务需要被重启，这个参数的值为服务被重启前的等待秒数）.
 - Restart：定义何种情况 Systemd 会自动重启当前服务，可能的值包括always（总是重启）、on-success、on-failure、on-abnormal、on-abort、on-watchdog
+
+    - no（默认值）：退出后不会重启
+    - on-success：只有正常退出时（退出状态码为0），才会重启
+    - on-failure：非正常退出时（退出状态码非0），包括被信号终止和超时，才会重启
+    - on-abnormal：只有被信号终止和超时，才会重启
+    - on-abort：只有在收到没有捕捉到的信号终止时，才会重启
+    - on-watchdog：超时退出，才会重启
+    - always：不管是什么退出原因，总是重启
+
+    > 对于守护进程，推荐设为on-failure。对于那些允许发生错误退出的服务，可以设为on-abnormal
+
 - TimeoutSec：定义 Systemd 停止当前服务之前等待的秒数
 - Environment：指定环境变量
 

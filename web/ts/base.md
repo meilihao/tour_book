@@ -332,4 +332,64 @@ function getName(n: NameOrResolver): Name {
         return n();
     }
 }
+
+// --- 字符串字面量类型: 用来约束取值只能是某几个字符串中的一个
+type EventNames = 'click' | 'scroll' | 'mousemove';
+
+// --- 元组（Tuple）合并了不同类型的对象. 当添加越界的元素时，它的类型会被限制为元组中每个类型的联合类型
+let tom: [string, number] = ['Tom', 25];
+// 枚举
+enum Days {Sun, Mon, Tue, Wed, Thu, Fri, Sat};
+console.log(Days["Sun"] === 0); // true
+
+enum Days {Sun = 7, Mon = 1, Tue, Wed, Thu, Fri, Sat};
+
+console.log(Days["Sun"] === 7); // true
+console.log(Days["Mon"] === 1); // true
+console.log(Days["Tue"] === 2); // true // 未手动赋值的枚举项会接着上一个枚举项递增. 注意: 如果未手动赋值的枚举项与手动赋值的重复了，TypeScript 是不会察觉到这一点的
+
+enum Days {Sun = 7, Mon, Tue, Wed, Thu, Fri, Sat = <any>"S"}; // 手动赋值的枚举项可以不是数字，此时需要使用类型断言来让 tsc 无视类型检查 (编译出的 js 仍然是可用的)
+
+enum Days {Sun = 7, Mon = 1.5, Tue, Wed, Thu, Fri, Sat}; // 手动赋值的枚举项也可以为小数或负数，此时后续未手动赋值的项的递增步长仍为 1
+console.log(Days["Sun"] === 7); // true
+console.log(Days["Mon"] === 1.5); // true
+console.log(Days["Tue"] === 2.5); // true
+
+// 枚举项有两种类型：常数项（constant member）和计算所得项（computed member）
+enum Color {Red, Green, Blue = "blue".length};
+enum Color {Red = "red".length, Green, Blue}; // 如果紧接在计算所得项后面的是未手动赋值的项，那么它就会因为无法获得初始值而报错
+
+const enum Directions { // 常数枚举. 常数枚举与普通枚举的区别是，它会在编译阶段被删除，并且不能包含计算成员
+    Up,
+    Down,
+    Left,
+    Right
+}
+
+let directions = [Directions.Up, Directions.Down, Directions.Left, Directions.Right];
+var directions = [0 /* Up */, 1 /* Down */, 2 /* Left */, 3 /* Right */]; // 上面的编译结果
+
+// 外部枚举（Ambient Enums）是使用 declare enum 定义的枚举类型. 外部枚举与声明语句一样，常出现在声明文件中. declare 定义的类型只会用于编译时的检查，编译结果中会被删除
+declare enum Directions {
+    Up,
+    Down,
+    Left,
+    Right
+}
+
+let directions = [Directions.Up, Directions.Down, Directions.Left, Directions.Right];
+
+// --- 类
+// TypeScript 中类的用法:
+// - public 修饰的属性或方法是公有的，可以在任何地方被访问到，默认所有的属性和方法都是 public 的
+// - private 修饰的属性或方法是私有的，不能在声明它的类的外部访问
+//
+//    当构造函数修饰为 private 时，该类不允许被继承或者实例化
+// - protected 修饰的属性或方法是受保护的，它和 private 类似，区别是它在子类中也是允许被访问的
+//   
+//    当构造函数修饰为 protected 时，该类只允许被继承
+
+// 修饰符和readonly还可以使用在构造函数参数中，等同于类中定义该属性同时给该属性赋值. 只读属性关键字，只允许出现在属性声明或索引签名或构造函数中. 如果 readonly 和其他访问修饰符同时存在的话，需要写在其后面
+
+// abstract 用于定义抽象类和其中的抽象方法. 抽象类是不允许被实例化的, 抽象类中的抽象方法必须被子类实现.
 ```

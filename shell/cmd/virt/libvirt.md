@@ -521,6 +521,18 @@ cdrom bus获取:
 
 > 实践发现bus=scsi的iso起不来, 包括oracle 7.9 x64, windows2012r2
 
+### vm启动后发现时间比host快8h
+ref:
+- [kvm虚拟化环境中的时区设置](https://opengers.github.io/virtualization/kvm-guest-clock-timezone/)
+
+vm和host都是东8区.
+
+处理方法:
+- 如果guest OS是Linux系统，应该选用utc，guest OS在启动时便会向host同步一次utc时间，然后根据/etc/localtime中设置的时区，来计算系统时间
+- 如果guest OS是windows系统，则应该选用localtime，guest OS在启动时向host同步一次系统时间
+
+原因: 当前guest使用centos, 因此将其xml配置的clock offset的localtime改为utc即可.
+
 ### `virsh start xxx`报`internal error: qemu unexpectedly closed the monitor: Could not access KVM kernel module: Permission denied\n...qemu-system-x86_64: failed to initialize KVM: Permission denied`
 `ls -al /dev/kvm`返回`crw-rw----+`m, 存在acl属性
 

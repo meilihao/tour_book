@@ -840,7 +840,7 @@ getCanonicalName(): com.example.TestClassNames.NestedClass
 getSimpleName():    NestedClass
 toString():         class com.example.TestClassNames$NestedClass
 
-getName():          com.example.TestClassNames$InnerClass
+getName():          com.example.TestClassNames$InnerClass // `$`表示嵌套的class
 getCanonicalName(): com.example.TestClassNames.InnerClass
 getSimpleName():    InnerClass
 toString():         class com.example.TestClassNames$InnerClass

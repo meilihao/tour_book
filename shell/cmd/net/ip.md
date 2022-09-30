@@ -291,3 +291,10 @@ env:
 
     eth0下线时会删除旧路由, 从而使得默认路由在eth1上
 
+### `ping 192.168.16.159`报`connect: Network is unreachable`
+现象:
+1. ipmi登入, 16.159能ping通网关(192.168.16.2)
+1. 0.241和16.159不能相互ping通, 以前可以
+
+原因: 修改网络时, 16.159的默认网关被删除.
+解决方案: `ip route add default via 192.168.16.2 dev eth0`

@@ -120,3 +120,8 @@ ExecStartPre=/usr/bin/bash -c "echo 'y'|redis-check-aof --fix /var/lib/redis/app
 ```
 
 > 追加`||true`原因: appendonly.aof不存在或大小为0时, redis-check-aof会报错
+
+### 应用连接redis报`LOADING Redis is loading the dataset in memory`
+如果在系统将数据集完全加载到内存并使 Redis 准备好之前, 连接请求到达就会触发该报错
+
+解决方法: 应用等待, 或使用 info 命令检查redis是否正在加载.

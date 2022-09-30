@@ -2341,9 +2341,18 @@ os已有rpm安装的`pyparsing 2.0.3`
 
 pip安装的某个软件版本不对(我这里是过高)也会报该错, 但pip没有提示哪个组件的版本有问题, 怀疑是使用了多个requirements.txt, pip计算出来的版本有差异导致该问题.
 
+### apscheduler报"Unable to determine the name of the local timezone -- you must explicitly specify the name of the local timezone"
+装了个tzlocal, 用get_localzone 这个方法来打印自己机器的timezone, 发现结果就很奇怪, 系统显示的是正常的`Asia/Beijing`, 但是python获取的却是`local?`
+
+```bash
+rm -rf /etc/localtime
+ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+# 如果是systemd系统就更简单了,单单执行下面命令就OK了
+timedatectl set-timezone Asia/Shanghai
+```
+
 ### 使用linux下gdb来调试python程序
 **gdb调试Python没有pdb那么方便, 主要是没法直接给python代码打断点**
-
 
 前提条件:
 1. 确保gdb版本>=7.0
