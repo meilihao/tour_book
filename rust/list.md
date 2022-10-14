@@ -13,3 +13,6 @@
 ## book
 - rust权威指南 = [Rust 程序设计语言](https://kaisery.github.io/trpl-zh-cn/title-page.html)
 - [Rust 版本指南(中文版)](https://rustwiki.org/zh-CN/edition-guide/)
+
+## gui
+- [Pop!_OS COSMIC 桌面使用 Rust GUI 库 Iced 取代 GTK](https://www.oschina.net/news/212636/cosmic-desktop-iced-toolkit)

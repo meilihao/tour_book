@@ -2,6 +2,11 @@
 ## 性能
 - [pyroscope](https://colobu.com/2022/01/27/pyroscope-a-continuous-profiling-platform/)
 
+## others
+- [csv解析](https://github.com/gocarina/gocsv)
+- [skip utf8 bom](https://github.com/dimchansky/utfbom)
+- [test](https://github.com/stretchr/testify)
+
 ## http client
 - [github.com/go-resty/resty/v2](https://github.com/go-resty/resty)
 - [github.com/guonaihong/gout](https://github.com/guonaihong/gout)
