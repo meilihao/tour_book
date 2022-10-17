@@ -776,7 +776,7 @@ samba client挂载测试情况:
 1. 用fsck修复nfs server的文件系统(先umount)
 
 ### nfs server restart后nfs clinet操作报`... Stale file handle`
-nfs restart后export rule使用新的句柄导致旧句柄失效, 需重新挂载.
+nfs restart后export rule使用新的句柄导致旧句柄失效, 需重新挂载(先umount再mount).
 
 > client挂载成功后，它通过rpc.mountd会得到服务器文件系统的一个文件句柄(fh).
 
