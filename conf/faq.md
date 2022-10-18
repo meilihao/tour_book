@@ -212,3 +212,15 @@ google-chrome-stable --proxy-server="socks5://127.0.0.1:1080" // 需梯子
 修改"设置-常用-默认状态"也没用.
 
 解决: 输入法工具栏右击再点击"简繁切换"即可.
+
+### [ubuntu 22.04安装nvidia驱动](https://zh-cn.linuxcapable.com/%E5%A6%82%E4%BD%95%E5%9C%A8-ubuntu-22-04-lts-%E4%B8%8A%E5%AE%89%E8%A3%85-nvidia-%E9%A9%B1%E5%8A%A8%E7%A8%8B%E5%BA%8F/)
+```bash
+# ubuntu-drivers devices
+# apt install nvidia-driver-515
+# reboot
+# nvidia-smi
+```
+
+或使用`软件更新器`->`设置`->`附加驱动`
+
+注意: 第一代笔记本用`软件更新器`安装nvidia-driver-515后无法进入图形界面, ctrl+alt+f1切换到terminal, 再安装nvidia-driver-510重启后恢复正常.
