@@ -28,6 +28,13 @@
 - [中高级前端大厂面试秘籍，为你保驾护航金三银四，直通大厂](https://github.com/xd-tayde/blog/blob/master/interview-1.md)
 - [HTTP2 in GO](https://www.tuicool.com/articles/jMreQbN)
 - [Tailwind 重塑编写 CSS 的方式](https://www.tuicool.com/articles/BbYZFbj)
+- [SFTP vs. FTPS](https://www.goanywhere.com/blog/2016/11/23/sftp-vs-ftps-the-key-differences)
+
+    FTPS 和 SFTP 之间的一个主要区别是它们使用端口的方式:
+    1. 对于所有 SFTP 通信，SFTP 只需要一个端口号，因此很容易保护
+    1. FTPS 使用多个端口号. 命令通道的第一个端口用于身份验证和传递命令。但是，每次发出文件传输请求或目录列表请求时，都需要为数据通道打开另一个端口号. 因此它必须在防火墙中打开一系列端口以允许 FTPS 连接，这可能会带来更多的安全风险
+
+    因此推荐使用sftp.
 
 ## css
  - [CSS动画简介](http://www.ruanyifeng.com/blog/2014/02/css_transition_and_animation.html)

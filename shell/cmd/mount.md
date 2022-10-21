@@ -72,4 +72,7 @@ TARGET    SOURCE         FSTYPE OPTIONS
 ### mount: /dev/nbd0p4: can't find in /etc/fstab
 执行`mount -v -t ext4 /dev/nbd0p4 $LFS`时报错.
 
-原因: $LFS未定义. 
+原因: $LFS未定义.
+
+### 使用`/etc/rc.local`挂载本地盘
+`echo "mount /dev/sdb /zstack_ps" >> /etc/rc.local`, 不放在fstab, 是为了避免磁盘故障后无法引导系统. 

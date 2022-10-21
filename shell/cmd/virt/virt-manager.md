@@ -57,7 +57,7 @@ logging.basicConfig(format='%(asctime)s.%(msecs)03d [%(levelname)s] [%(pathname)
 
 通过日志, virt-manager创建vm最后一步的`Finish`按钮调用的是`createvm.py#_finish_clicked()`, 它通过`installer.set_install_defaults(guest)`+`installer.start_install(guest, meter=meter)`来创建guest xml.
 
-具体生成xml逻辑在`virtinst/install/install.py#start_install()`:
+具体生成xml逻辑在`virtinst/install/installer.py#start_install()`:
 1. 先通过`self._build_xml()`生成xml骨架, 比如没有具体的pci controller设备的vm xml.
 1. 通过`self._create_guest()`将骨架xml提交给libvirtd, 由它填充细节并返回完整xml.
 

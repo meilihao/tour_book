@@ -1,5 +1,8 @@
 # list
 
+## 高可用
+- [Linux网卡bond的七种模式详解](https://blog.51cto.com/linuxnote/1680315)
+
 ## tools
 - [dropwatch - 监听系统丢包信息工具](https://cloud.tencent.com/developer/article/1638140)
 
