@@ -141,3 +141,7 @@
 - [QUIC 协议在蚂蚁集团落地之综述](https://my.oschina.net/alimobile/blog/5296337)
 
     QUIC LB 组件：基于 NGINX 4层 UDP Stream 模块开发.
+## 打包
+- [Turbopack](https://www.oschina.net/news/214982/nextjs-13-released)
+
+    Next.js 13 发布，推出快 700 倍的基于 Rust 的 Webpack 替代品

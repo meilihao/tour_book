@@ -1,6 +1,9 @@
 # mq
 参考:
 - [90%的Java程序员，都扛不住这波消息中间件的面试四连炮！](http://www.liuhaihua.cn/archives/587877.html)
+- [云原生消息系统设计：NATS + Cloudevents](https://wbsnail.com/p/using-cloudevents-with-nats)
+
+	[NATS Streaming Server supports clustering and data replication, implemented with the Raft consensus algorithm, for the purposes of high availability.](https://docs.nats.io/legacy/stan/intro/clustering)
 
 使用MQ的场景有挺多的，但是比较核心的有3个：异步、解耦、削峰填谷.
 

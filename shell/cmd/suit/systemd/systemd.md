@@ -490,6 +490,6 @@ $ sudo systemctl isolate multi-user.target
 ### 升级工具upgrader在停止system的服务时被kill
 upgrader由该服务启动, 即使使用了setsid来脱离从父进程继承而来的已打开的终端、隶属进程组和隶属的会话, 但仍在该服务的cgroup里, 导致停止服务时, 升级工具会被kill.
 
-解决方法: 通过systemd-run创建临时cgroup来解决: [`systemd-run --unit=my_system_upgrade --scope --slice=my_system_upgrade_slice -E  setsid nohup start-the-upgrade &> /tmp/some-logs.log &`](https://stackoverflow.com/questions/35200232/how-to-launch-a-process-outside-a-systemd-control-group)
+解决方法: 通过systemd-run创建临时cgroup来解决: [`systemd-run --unit=my_system_upgrade --scope --slice=my_system_upgrade_slice -E  setsid start-the-upgrade &> /tmp/some-logs.log &`](https://stackoverflow.com/questions/35200232/how-to-launch-a-process-outside-a-systemd-control-group), 里面无需再使用nohup.
 
 > [transient cgroup with systemd-run](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/resource_management_guide/chap-using_control_groups#sec-Creating_Transient_Cgroups_with_systemd-run)

@@ -27,3 +27,74 @@ binwalk选项:
 	`binwalk -D 'zip archive:zip:unzip %e' -D 'png image:png' firmware.bin`:
 	1. 该选项将提取包含字符串“zip archive”,文件扩展名为“zip”的文件，然后执行“unzip”命令. 请注意使用’％e’占位符。执行unzip命令时，此占位符将替换为解压缩文件的相对路径
 	1. 此外，PNG图像按原样提取，带有’png’文件扩展名。
+
+## FAQ
+### 制作bin
+linux 下制作二进制`.bin`的文件的方法是使用cat 命令将执行脚本和打包文件同时放到一个文件里, 在给它可执行权限. 这样安装的时候只要使用一个包, 直接执行该包即可安装完毕, 简单方便.
+
+env:
+```bash
+# tree demo
+demo
+├── 新建文件.txt
+└── t.sh
+# cat t.sh
+#!/bin/bash
+demo_pkg="`ls demo*.rpm 2>/dev/null |grep -v demo_ui 2>/dev/null |head -1`" # 变量名不能出现`-`
+if [ -f ${demo_pkg} ]; then
+	echo "found "${demo_pkg}
+fi
+# tar -cvf demo.tar demo
+```
+
+#### [zstack](https://github.com/zstackio/zstack-utility/blob/master/zstackbuild)
+```bash
+$ cat #!/bin/bash
+cat >$1 <<EOF
+#!/bin/bash
+#set -x
+line=\`wc -l \$0|awk '{print \$1}'\`
+line=\`expr \$line - 12\` # 12是生成的setup.sh的行数, 需去掉第一行和最后一行的换行
+tmpdir=\`mktemp\`
+/bin/rm -f \$tmpdir
+mkdir -p \$tmpdir
+tail -n \$line \$0 |tar -x -C \$tmpdir --strip-components 1
+cd \$tmpdir
+bash ./t.sh \$*
+ret=\$?
+#rm -rf \$tmpdir
+exit \$ret
+EOF
+# cat build_installation_bin.sh
+#!/bin/bash
+cat $1 $2 > $3
+chmod a+x $3
+# ./gen_setup.sh setup.sh
+# ./build_installation_bin.sh setup.sh demo.tar upgrade.bin
+# ./upgrade.bin
+# strings upgrade.bin # 可用strings验证
+# tail -n 3 ./upgrade.bin # 可验证获取的demo.tar是否正确
+```
+
+#### 网上
+ref:
+- [linux下制作二进制bin 文件制做方法](https://blog.csdn.net/xiaotengyi2012/article/details/8493929)
+
+```bash
+# cat setup2.sh
+#!/bin/bash
+#set -x
+tmpdir=`mktemp`
+/bin/rm -f $tmpdir
+mkdir -p $tmpdir
+sed -n -e '1,/^exit 0$/!p' $0 |tar -x -C $tmpdir --strip-components 1
+cd $tmpdir
+bash ./t.sh $*
+rm -rf $tmpdir
+exit 0
+
+# ./build_installation_bin.sh setup2.sh demo.tar upgrade.bin
+# ./upgrade.bin
+```
+
+**setup2.sh必须存在最后一行空行, 便于sed提取, 否则sed会匹配不到需要截断的行, 因此没有最后一行空行时, sed会匹配到整个upgrade.bin**

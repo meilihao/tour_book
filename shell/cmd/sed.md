@@ -82,6 +82,7 @@ do
  newfile=`echo $file | sed 's/\([a-z]\+\)\([0-9]\+\)/\1-\2/'`
  mv $file $newfile
 done
+$ sed -n  -e '1,/^exit 0$/!p' ./upgrade.bin # 提取1~`exit 0`外的所有行, `//`是sed用于标记正则
 ```
 
 ps:

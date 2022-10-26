@@ -118,6 +118,28 @@ alias new_command='command sequence'
 # \command # 在不可信环境下执行特权命令时, 可避免潜在的安全问题即利用别名伪装的特权命令.
 ```
 
+## 参数扩展
+ref:
+- [Shell 截取文件名和后缀](http://zuyunfei.com/2016/03/23/Shell-Truncate-File-Extension/)
+
+参数形式    扩展后
+x{y,z}  xy xz
+${x}{y, z}  ${x}y ${x}z
+${x}{y, $z}     ${x}y ${x}${z}
+${param#pattern}    从param前面删除pattern的最小匹配
+${param##pattern}   从param前面删除pattern的最大匹配
+${param%pattern}    从param后面删除pattern的最小匹配
+${param%%pattern}   从param后面删除pattern的最大匹配
+${param/pattern/string}     从param中用string替换pattern的第一次匹配，string可为空
+${param//pattern/string}    从param中用string替换pattern的所有匹配，string可为空
+${param:3:2}    截取$param中索引3开始的2个字符
+${param:3}  截取$param中索引3至末尾的字符
+${@:3:2}    截取参数列表$@中第3个开始的2个参数
+${param:-word}  若$param为空或未设置，则参数式返回word，$param不变
+${param:+word}  若$param为非空，则参数式返回word，$param不变
+${param:=word}  若$param为空或为设置，则参数式返回word，同时$param设置为word
+${param:?message}   若$param为空或为设置，则输出错误信息message，若包含空白符，则需引号
+
 ## FAQ
 ### 获取当前工作目录的绝对路径
 ```bash

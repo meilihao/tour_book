@@ -526,3 +526,16 @@ env:
 os.ReadDir("C:") // 返回当前工作目录下的文件列表
 os.ReadDir("C:/") // 返回C盘下的文件列表
 ```
+
+### [上传后`/tmp/multipart*`没有被删除](https://github.com/golang/go/issues/20253)
+```go
+file, _, err := r.FormFile("file")
+if err != nil {
+	return err
+}
+defer func(){
+	file.Close()
+	r.MultipartForm.RemoveAll() // https://go-review.googlesource.com/c/net/+/423055/3/http2/server.go
+}()
+
+```
