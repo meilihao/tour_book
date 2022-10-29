@@ -22,3 +22,9 @@ cinder组件:
 cinder驱动状态:
 - [Available Drivers](https://docs.openstack.org/cinder/rocky/drivers.html)
 - [Cinder Driver Support Matrix](https://docs.openstack.org/cinder/rocky/reference/support-matrix.html)
+
+## Neutron
+ref:
+- [LBaaS 实现机制 - 每天5分钟玩转 OpenStack（125）](https://developer.aliyun.com/article/463372)
+
+Neutron 是用 Haproxy 来实现负责LBaaS(负载均衡)的.
