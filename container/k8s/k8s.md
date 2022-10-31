@@ -11,6 +11,14 @@ env: k8s 1.14.1 / Rancher v2.2.3
 - [ Kubernetes Handbook （Kubernetes指南）](https://github.com/feiskyer/kubernetes-handbook)
 - [Pod 一直处于 Pending 状态](https://cloud.tencent.com/document/product/457/42948)
 - [《Kubernetes权威指南》第 5 版的示例代码](https://github.com/kubeguide/K8sDefinitiveGuide-V5-Sourcecode)
+- [**【重识云原生】第六章容器6.2.2节——K8S架构剖析**](https://blog.csdn.net/junbaozi/article/details/126858138)
+- [【重识云原生】第六章容器6.3.1节——K8S核心组件总述](https://cloud.tencent.com/developer/article/2129651)
+- [【重识云原生】第六章容器6.3.2节——API Server组件](https://blog.csdn.net/junbaozi/article/details/126939571)
+- [【重识云原生】第六章容器6.3.3节——Kube-Scheduler使用篇](https://blog.csdn.net/junbaozi/article/details/126878490)
+- [【重识云原生】第六章容器6.3.4节——etcd组件](https://blog.csdn.net/junbaozi/article/details/126942520)
+- [【重识云原生】第六章容器6.3.5节——Controller Manager概述](https://blog.csdn.net/junbaozi/article/details/126961676)
+- [【重识云原生】第六章容器6.3.6节——kubelet组件](https://blog.csdn.net/junbaozi/article/details/126979695)
+- [【重识云原生】第六章容器6.3.8节——kube-proxy](https://mp.csdn.net/mp_blog/creation/editor/126999935)
 
 Kubernetes 最主要的设计思想是从更宏观的角度，以统一的方式来定义任务之间的各种关系，并且为将来支持更多种类的关系留有余地.
 
@@ -186,6 +194,8 @@ controller分类:
 - Job Controller
 - Pod AutoScaler
 - RelicaSet : 实现了Pod的多副本管理,包括滚动更新. 使用Deployment时会自动创建ReplicaSet, 因此我们通常不直接使用它
+
+  RS是新一代RC
 - Service Controller
 - ServiceAccount Controller
 - StatefulSet Controller : 保证pod的每个副本在整个生命周期中的名称是不变的(因故障需删除并重启除外), 同时会保证副本按照固定的顺序启动,更新或删除

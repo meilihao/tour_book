@@ -318,6 +318,7 @@ $ sudo zfs snapshot mypool/projects@snap1
 $ sudo zfs clone mypool/projects@snap1 mypool/projects-clone
 $ zfs get origin mypool/projects-clone # 获取origin snap
 $ zfs get all mypool/projects@snap1 # clones字段显示基于它创建的clone, 该snap没有clone时可能没有该属性
+$ zfs get all -r mypool/projects
 $ sudo destroy mypool/projects-clone # 销毁clone
 ```
 

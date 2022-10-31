@@ -490,6 +490,10 @@ $ sudo systemctl isolate multi-user.target
 ### 升级工具upgrader在停止system的服务时被kill
 upgrader由该服务启动, 即使使用了setsid来脱离从父进程继承而来的已打开的终端、隶属进程组和隶属的会话, 但仍在该服务的cgroup里, 导致停止服务时, 升级工具会被kill.
 
-解决方法: 通过systemd-run创建临时cgroup来解决: [`systemd-run --unit=my_system_upgrade --scope --slice=my_system_upgrade_slice -E  setsid start-the-upgrade &> /tmp/some-logs.log &`](https://stackoverflow.com/questions/35200232/how-to-launch-a-process-outside-a-systemd-control-group), 里面无需再使用nohup.
+解决方法: 通过systemd-run创建临时cgroup来解决: [`systemd-run [--remain-after-exit] --unit=my_system_upgrade --scope --slice=my_system_upgrade_slice -E  setsid start-the-upgrade > /tmp/some-logs.log 2>&1`](https://stackoverflow.com/questions/35200232/how-to-launch-a-process-outside-a-systemd-control-group), 里面无需再使用nohup.
 
 > [transient cgroup with systemd-run](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/resource_management_guide/chap-using_control_groups#sec-Creating_Transient_Cgroups_with_systemd-run)
+
+>  `--remain-after-exit`: 可以将命令执行的stdout存入systemd log. 与`--scope`互斥
+
+> 在oracle linux 7.9 x64上systemd-run执行命令(执行bin文件, 其中通过bash执行了其他脚本, 且脚本逻辑正确. 但直接执行bin正常)时可能会莫名退出, 加`> /tmp/some-logs.log 2>&1`或`--remain-after-exit`可解决问题. 推测可能与`systemd-run`的`--wait`有关: [systemd-run 将会以异步模式在后台启动临时服务并在命令开始执行之后返回](http://www.jinbuguo.com/systemd/systemd-run.html)
