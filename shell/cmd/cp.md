@@ -23,3 +23,19 @@ $ sudo cp -rpv /nvim-linux64/*  / # 复制安装nvim, 有问题:`无法以目录
 $ sudo cp -r usr/* /usr # 同上, 实现绿色安装软件
 $ cp –r test/ newtest  # 将当前目录 test/ 下的所有文件复制到新目录 newtest 
 ```
+
+## FAQ
+### 进度条
+使用[coreutils](https://ftp.gnu.org/gnu/coreutils/coreutils-9.1.tar.xz)
+
+```bash
+# cd coreutils-9.1
+# patch -p1 -i ../advcpmv/advcpmv-0.9-9.1.patch # https://github.com/jarun/advcpmv/blob/master/advcpmv-0.9-9.1.patch
+# ./configure
+# make
+# cp src/cp /usr/local/bin/cp
+# cp src/mv /usr/local/bin/mv
+# cp -g archlinux.iso mydownload/ # <=> cp --progress-bar archlinux.iso mydownload/ 
+# cp -gR directory1/ directory2/ # `-R`:递归
+# mv -g archlinux.iso mydownload/
+```

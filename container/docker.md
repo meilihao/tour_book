@@ -132,6 +132,10 @@ docker run的资源限制参数:
 - docker 原生的overlay和macvlan
 - 第三方的flannel, calico, weave等
 
+    [RKE2 Kubernetes clusters支持: Canal, Calico, Cilium](https://docs.ranchermanager.rancher.io/faq/container-network-interface-providers#rke2-kubernetes-clusters).
+
+    calico是目前最主流的企业级节点BGP路由容器网络产品.
+
 对比: Underlay网络性能优于Overlay; Overlay支持等多的二层网段, 更能利用已有的网络以及能避免物理交换机MAC表耗尽等
 
 ## 存储
@@ -211,3 +215,10 @@ docker的 logging driver(从运行的容器中提取日志)默认是`json-file`,
 ## 实践
 - [美团容器平台架构及容器技术实践](https://tech.meituan.com/2018/11/15/docker-architecture-and-evolution-practice.html)
 - [HECD = Haproxy + Etcd + Cond + Docker]
+
+## 超融合(hyperconverged infrastructure,HCI)
+- [SUSE 发布超融合基础设施 Harvester v1.1.0](https://www.oschina.net/news/216233)
+
+## FAQ
+### 基于hypervisor的容器
+Kata 项目是由 Intel （Clear Container）和 Hyper.sh （Hyper/RunV）共建，并且在 2017 年进行开源.
