@@ -24,3 +24,9 @@ sudo sysctl -p
 ```
 
 即添加相应proto_path即可.
+
+### java没有智能提示
+`Java Language Server requires a JDK 17+ to launch itself.`
+
+### extension log
+`cmd-shift-p -> Search Show Logs -> Extension Host`

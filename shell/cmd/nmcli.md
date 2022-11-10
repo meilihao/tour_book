@@ -24,7 +24,17 @@ nmtui是nmcli的terminal gui. nm-connection-editor是gui.
 # nmcli connection add con-name company ifname eno16777736 autoconnect no type ethernet ip4 192.168.10.10/24 gw4 192.168.10.1 # autoconnect no 参数设置该网络会话默认不被自动激活，以及用 ip4 及 gw4 参数手动指定网络的 IP 地址
 # nmcli connection add con-name house type ethernet ifname eno16777736 # 从外部 DHCP 服务器自动获得 IP 地址，因此不需要进行手动指定
 # nmcli connection up house # 回家启用 house网络会话，网卡就能自动通过 DHCP 获取到 IP 地址
-nmcli -p dev # 查看设备状态
+# nmcli -p dev # 查看设备状态
+# nmcli connection modify Example-Connection ipv4.addresses 192.0.2.1/24 # 设置ipv4
+# nmcli connection modify Example-Connection ipv6.addresses 2001:db8:1::1/64 # 设置ipv6
+# nmcli connection modify Example-Connection ipv4.method manual # 设置为手动连接
+# nmcli connection modify Example-Connection ipv6.method manual
+# nmcli connection modify Example-Connection ipv4.gateway 192.0.2.254 # 设置默认网关
+# nmcli connection modify Example-Connection ipv6.gateway 2001:db8:1::fffe
+# nmcli connection modify Example-Connection ipv4.dns "192.0.2.200" # 设置dns, 可用`host xxx`来验证
+# nmcli connection modify Example-Connection ipv6.dns "2001:db8:1::ffbb"
+# nmcli connection modify Example-Connection ipv4.dns-search example.com # 设置搜索域
+# nmcli connection modify Example-Connection ipv6.dns-search example.com
 ```
 
 ## bonding
@@ -65,6 +75,10 @@ options bond0 miimon=100 mode=6
 - mode0（平衡负载模式）：平时两块网卡均工作，且自动备援，但需要在与服务器本地网卡相连的交换机设备上进行端口聚合来支持绑定技术
 - mode1（自动备援模式）：平时只有一块网卡工作，在它故障后自动替换为另外的网卡
 - mode6（平衡负载模式）：平时两块网卡均工作，且自动备援，无须交换机设备提供辅助支持
+
+## lib
+- [ushiboy/nmcli](https://github.com/ushiboy/nmcli)
+- [Wifx/gonetworkmanager](https://github.com/Wifx/gonetworkmanager)
 
 ## FAQ
 ### 管理工具选择

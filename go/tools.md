@@ -91,6 +91,16 @@ dot -Tpng -o a.png a.dot
 - [Go调优神器trace介绍](https://studygolang.com/articles/9693)
 - [goleak : 一个可以事前检测 Go 泄漏的工具](https://mp.weixin.qq.com/s?__biz=MzUzNTY5MzU2MA==&mid=2247494572&idx=1&sn=f6281cd182e7bfb7f20cd3641cb93306)
 
+## script
+- [在 Linux 中使用 Go 作为脚本语言](https://studygolang.com/articles/12461)
+
+    ```bash
+    # go get github.com/erning/gorun
+    # echo ':golang:E::go::/usr/local/bin/gorun:OC' | sudo tee /proc/sys/fs/binfmt_misc/register
+    # echo '-1' |sudo tee /proc/sys/fs/binfmt_misc/golang # [删除golang](https://android.googlesource.com/kernel/x86_64/+/android-5.0.0_r0.12/Documentation/binfmt_misc.txt)
+    ```
+- [github.com/bitfield/script](https://github.com/bitfield/script)
+
 ## IDE
 ### FAQ
 #### vscode 智能提示突然消失

@@ -127,10 +127,17 @@ Cannot find device "cilium_net@cilium_host"
 #### 多网卡同IP技术
 参考:
 - [Bonding vs Team](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/configuring_and_managing_networking/configuring-network-teaming_configuring-and-managing-networking)
+- [linux bond设备删除,删除修改bond](https://blog.csdn.net/weixin_33976326/article/details/116748742)
+
+    ```bash
+    # echo -bond0 > /sys/class/net/bonding_masters # `-`表示删除
+    ```
 
 将多个网卡端口绑定为一个，可以提升网络的性能. 在linux系统上有两种技术可以实现:Linux 网络组和bond.
 
-网络组(Teaming, RHEL7开始使用): 是将多个网卡聚合在一起方法，从而实现冗错和提高吞吐量,网络组不同于旧版中bonding 技术，能提供**更好的性能和扩展性**，网络组由内核驱动和teamd 守护进程实现.
+网络组(Teaming, RHEL7开始使用): 是将多个网卡聚合在一起方法，从而实现冗错和提高吞吐量,网络组不同于旧版中bonding 技术，能提供**更好的性能和扩展性**: 支持ipv6, 至多8张网卡, 负载均衡, hash加密. 网络组由内核驱动和teamd 守护进程实现.
+
+> 负载均衡模式和轮询模式最大的区别就在于，轮询一定是进程两个交替分配，而负载均衡模式会根据目前的空闲网卡来进行分配进程，不一定是两个交替，在大数据进行网络传输等时，效果会更好.
 
 确定内核是否支持 bonding:
 ```sh
@@ -142,6 +149,54 @@ team安装:
 ```bash
 apt install libteam-utils
 dnf install teamd NetworkManager-team
+```
+
+team与bond的mod对应关系:
+1. roundrobin 【mode 0】轮转策略 (balance-rr)
+1. activebackup【mode 1】活动-备份（主备）策略
+1. loadbalance【mode 2】限定流量
+1. broadcast【mode 3】广播策略
+1. lacp (implements the 802.3ad Link Aggregation ControlProtocol)【mode 4】
+
+team:
+```bash
+# --- 创建网络组team接口
+# nmcli connection add type team con-name team0 ifname team0 config
+ {"runner":{"name":"activebackup"}} ipv4.method manual ipv4.addresses 192.168.32.100/24 connection.autoconnect yes
+# --- 创建port接口
+# nmcli connection add con-name team0-ens33 type team-slave ifname ens33 master team0 # 把 ens33网卡创建为 team0网络组的子接口
+# nmcli connection add con-name team0-ens37 type team-slave ifname ens37 master team0 # 把 ens37 网卡创建为 team0网络组的子接口
+# --- 启用team0下创建的两个子接口
+# nmcli connection up team0-ens33
+# nmcli connection up team0-ens37
+# --- 其他
+# nmcli connection down team0 # 删除网络组team
+# teamdctl team0 state # 查看当前网络组team主网卡和热备网卡哪个在工作
+# nmcli connection delete team0-ens33 / nmcli connection delete team0-ens37
+# nmcli connection show # 查看网络组, 删除后就看不到了
+```
+
+手动配置team:
+```bash
+# vim /etc/sysconfig/network-scripts/team
+DEVICE="team"
+DEVICETYPE="Team"
+ONBOOT="yes"
+BOOTPROTO=static
+NETMASK=255.255.255.0
+IPADDR=ip
+GATEWAY=网关
+TEAM_CONFIG='{"runner": {"name": "activebackup"}}'
+# vim /etc/sysconfig/network-scripts/ifcfg-em1 # 编辑文件ifcfg- em1
+DEVICE="em1"
+DEVICETYPE="TeamPort"
+ONBOOT="yes"
+TEAM_MASTER="team"
+# vim /etc/sysconfig/network-scripts/ifcfg-em2 # 编辑文件ifcfg- em2
+DEVICE="em2"
+DEVICETYPE="TeamPort"
+ONBOOT="yes"
+TEAM_MASTER="team"
 ```
 
 #### 同网卡多IP技术
@@ -235,22 +290,32 @@ $ ip rule add from 60.30.128.15 table cnc
 # --- 以上就基本配置好了电信和联通的多线原路返回路由
 ```
 
+## vxlan
+ref:
+- [使用 VXLAN 为虚拟机创建虚拟第 2 层域](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/9/html/configuring_and_managing_networking/assembly_using-a-vxlan-to-create-a-virtual-layer-2-domain-for-vms_configuring-and-managing-networking)
+
 ## FAQ
 ### `ip route`配置gateway时报`Nexthop has invalid gateway`
 解决方法: 先将网卡up并给其配上ip再配置gateway即可.
 
 ### 使用udev重命名网卡(**不推荐修改**)
-**通过添加kernel参数`net.ifnames=0 biosdevname=0`的方式可能不成功**
+**通过添加kernel参数`net.ifnames=0 biosdevname=0`的方式可能不成功**. RHEL7开始不支持这种修改方式.
 
 这里通过修改udev:
 ```bash
-# vim /etc/udev/rules.d/70-persistent-net.rules
-SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="00:0c:29:30:be:cd", ATTR{type}=="1", KERNEL=="eth*", NAME="eth0"
+# vim /etc/udev/rules.d/70-persistent-net.rules # 也有叫`70-custom-ifnames.rules`
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", ATTR{address}=="00:0c:29:30:be:cd", ATTR{type}=="1", NAME="eth0" # need root. ATTR{type} 参数值 1 定义了接口类型为 Ethernet.
 # mv /etc/sysconfig/network-scripts/ifcfg-ens192 /etc/sysconfig/network-scripts/ifcfg-eth0
 # vim /etc/sysconfig/network-scripts/ifcfg-eth0 # 将内容里的ens192替换为eth0
 # reboot
 ```
 
+udev 设备管理器支持很多不同的命名方案. 默认情况下, udev 根据固件、拓扑和位置信息分配固定名称. 它有以下优点：
+1. 设备名称完全可预测
+1. 即使添加或删除了硬件，设备名称也会保持不变，因为不会进行重新枚举
+1. 替换问题/旧硬件不会引发重命名
+
+RHEL9使用`/usr/lib/systemd/network/99-default.link`中的 NamePolicy 设置设备名称. 如果手动配置 udev 规则来更改内核设备名称，则这些规则优先. [网络设备重命名启用规则](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/9/html/configuring_and_managing_networking/how-the-network-device-naming-works_consistent-network-interface-device-naming).
 
 ### Oracle linux 7.9网络配置
 gateway: /etc/sysconfig/network

@@ -83,6 +83,7 @@ do
  mv $file $newfile
 done
 $ sed -n  -e '1,/^exit 0$/!p' ./upgrade.bin # 提取1~`exit 0`外的所有行, `//`是sed用于标记正则
+$ nmcli --mode multiline dev | cut -d" " -f 2- | sed "s/^[ \t]*//"
 ```
 
 ps:

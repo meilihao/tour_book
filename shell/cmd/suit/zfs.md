@@ -247,6 +247,7 @@ zfs list的属性可参考[freebsd zfs#Native Properties](https://www.freebsd.or
 - createtxg : 创建时的事务id. bookmark与snapshot有相同的createtxg. 该属性常用于`zfs send/recv`
 - creation : 创建时间, unix时间戳
 - REFER : 即referenced
+- recordsize: fs块大小. 更改记录大小只会对新文件产生影响, 它不会对现有文件产生任何影响.
 
 > 物理卷(Physical Volume, PV)：操作系统识别到的物理磁盘(或者RAID提交的逻辑磁盘LUN), 物理卷可以是一个磁盘，也可以是磁盘中的一个分区.
 > volume : 通常是指逻辑卷, 是逻辑卷组(VG, 由若干PV组成)上的一块空间, 上面没有文件系统.
@@ -432,6 +433,7 @@ $ sudo zfs set dedup=on mypool/projects # 启用去重
 
 ## zdb
 - `zdb -l /dev/sdj` : 查看磁盘上的zpool信息
+- `zdb -dddddddd testpool` : 查看写入的range
 
 ## FAQ
 ### quota于refquota区别
@@ -728,3 +730,15 @@ arcstat -f time,hit%,dh%,ph%,mh% 1
 
 ### zfs命令卡住
 用iostat发现磁盘写入超过20MB/s时, `%util`已超过90%, await也挺高, 是磁盘性能不够导致. 磁盘空闲后, 该命令可很快成功.
+
+### zfs fs写放大35左右%
+ref:
+- [ZFS Recordsize 和 TXG 探索](https://tim-tang.github.io/blog/2016/06/01/zfs-recordsize-txg)
+
+原始文件124M, 拷入fs
+
+- recordsize=4k: 168M左右
+- recordsize=8k: 148M左右 
+- recordsize=16k及以上: 123M左右
+
+ssd pool且recordsize=4k不存在该问题.

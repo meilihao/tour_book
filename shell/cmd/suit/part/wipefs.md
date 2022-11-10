@@ -8,7 +8,7 @@ wipefs不会擦除文件系统本身或设备中的任何其他数据;
 
 ## example
 ```bash
-# wipefs -a /dev/sdd # Erase any file system, partition table, or RAID signatures
+# wipefs -af /dev/sdd # Erase any file system, partition table, or RAID signatures
 dd if=/dev/zero of=/dev/sdd bs=512 count=1 conv=notrunc # 清除mbr
 sfdisk --delete /dev/sdd # 清除分区表
 ```
