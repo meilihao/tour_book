@@ -8,7 +8,7 @@ Manager 服务. 即nmcli 是一款基于命令行的网络配置工具.
 
 **使用 nmcli 命令配置过的网络会话是永久生效的.**
 
-nmtui是nmcli的terminal gui. nm-connection-editor是gui.
+nmtui是nmcli的terminal gui. nm-connection-editor是gui. [nmstatectl以yaml/json来配置网络](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/9/html/configuring_and_managing_networking/proc_configuring-a-static-ethernet-connection-using-nmstatectl_configuring-an-ethernet-connection). control-center也可以, 但不支持与 nm-connection-editor 应用程序或 nmcli 实用程序一样多的配置选项.
 
 > 在RHEL 8上，已经弃用Network.service，因此只能通过NetworkManager.service进行网络配置，包括动态IP和静态IP
 
@@ -21,6 +21,7 @@ nmtui是nmcli的terminal gui. nm-connection-editor是gui.
 ```bash
 # nmcli connection show # 查看网络信息或网络状态
 # ### nmcli 支持网络会话功能, 便于切换网络, 比如公司和家里
+# --- 设置静态地址
 # nmcli connection add con-name company ifname eno16777736 autoconnect no type ethernet ip4 192.168.10.10/24 gw4 192.168.10.1 # autoconnect no 参数设置该网络会话默认不被自动激活，以及用 ip4 及 gw4 参数手动指定网络的 IP 地址
 # nmcli connection add con-name house type ethernet ifname eno16777736 # 从外部 DHCP 服务器自动获得 IP 地址，因此不需要进行手动指定
 # nmcli connection up house # 回家启用 house网络会话，网卡就能自动通过 DHCP 获取到 IP 地址
@@ -35,6 +36,47 @@ nmtui是nmcli的terminal gui. nm-connection-editor是gui.
 # nmcli connection modify Example-Connection ipv6.dns "2001:db8:1::ffbb"
 # nmcli connection modify Example-Connection ipv4.dns-search example.com # 设置搜索域
 # nmcli connection modify Example-Connection ipv6.dns-search example.com
+# --- 交互式编辑
+# nmcli connection edit type ethernet con-name Example-Connection
+nmcli> set connection.interface-name enp7s0 # 设置网络接口
+nmcli> set ipv4.addresses 192.0.2.1/24 # 设置 IPv4 地址
+nmcli> set ipv6.addresses 2001:db8:1::1/64 # 设置 IPv6 地址
+nmcli> set ipv4.method manual # 将 IPv4 和 IPv6 连接方法设置为 manual
+nmcli> set ipv6.method manual
+nmcli> set ipv4.gateway 192.0.2.254 # 设置 IPv4 和 IPv6 默认网关
+nmcli> set ipv6.gateway 2001:db8:1::fffe
+nmcli> set ipv4.dns 192.0.2.200  # 设置 IPv4 和 IPv6 DNS 服务器地址. 要设置多个 DNS 服务器，以空格分隔并用引号括起来
+nmcli> set ipv6.dns 2001:db8:1::ffbb
+nmcli> set ipv4.dns-search example.com # 为 IPv4 和 IPv6 连接设置 DNS 搜索域
+nmcli> set ipv6.dns-search example.com
+nmcli> save persistent # 保存并激活连接
+Saving the connection with 'autoconnect=yes'. That might result in an immediate activation of the connection.
+Do you still want to save? (yes/no) [yes] yes
+nmcli> quit # 退出
+# nmcli device status # 显示设备和连接的状态
+# nmcli connection show Example-Connection # 显示连接配置集的所有设置
+# --- 设置动态地址
+# nmcli connection add con-name Example-Connection ifname enp7s0 type ethernet
+# nmcli connection modify Example-Connection ipv4.dhcp-hostname Example ipv6.dhcp-hostname Example # （可选）在使用 Example-Connection 配置文件时，更改 NetworkManager 发送给 DHCP 服务器的主机名
+# nmcli connection modify Example-Connection ipv4.dhcp-client-id client-ID # （可选）在使用 Example-Connection 配置文件时，更改 NetworkManager 发送给 IPv4 DHCP 服务器的客户端 ID. 对于 IPv6 ，没有 dhcp-client-id 参数。要为 IPv6 创建一个标识符，请配置 dhclient 服务.
+# --- 按接口名称使用单一连接配置文件配置多个以太网接口, [实现主机在具有动态 IP 地址分配的以太网之间漫游](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/9/html/configuring_and_managing_networking/proc_configuring-multiple-ethernet-interfaces-using-a-single-connection-profile-by-interface-name_configuring-an-ethernet-connection), 也支持通过PCI ID来匹配`match.path "pci-0000:07:00.0 pci-0000:08:00.0"`
+nmcli connection add con-name Example connection.multi-connect multiple match.interface-name enp* type ethernet
+```
+
+## dhcp
+默认情况下，NetworkManager 使用其内部的 DHCP 客户端. 但是，如果使用内置客户端的 DHCP 客户端，也可以将 NetworkManager 配置为使用 dhclient. 请注意，RHEL 不提供 dhcpcd，因此 NetworkManager 无法使用这个客户端
+
+```bash
+# vim /etc/NetworkManager/conf.d/dhcp-client.conf
+[main]
+dhcp=dhclient
+# dnf install dhcp-client
+# systemctl restart NetworkManager
+# cat /var/log/messages |grep dhclient # 验证
+Apr 26 09:54:19 server NetworkManager[27748]: <info>  [1650959659.8483] dhcp-init: Using DHCP client 'dhclient'
+# nmcli connection modify connection_name ipv4.dhcp-timeout 30 ipv6.dhcp-timeout 30 # 设置 ipv4.dhcp-timeout 和 ipv6.dhcp-timeout 属性
+# nmcli connection modify connection_name ipv4.may-fail <value> # 配置如果网络管理器（NetworkManager）在超时前没有接收 IPv4 地址时的行为: yes, 尝试ipv6, 除非ipv6禁用或未配置, 一旦ipv6成功, 则不再尝试ipv4; no，连接会被停止. 如果启用了连接的 autoconnect, 会根据 autoconnect-retries 属性中设置的值尝试多次激活连接. 如果连接仍然无法获得 DHCP 地址，则自动激活会失败。请注意，5 分钟后，自动连接过程会再次启动，从 DHCP 服务器获取 IP 地址.
+# nmcli connection modify connection_name ipv6.may-fail <value> # 配置如果网络管理器（NetworkManager）在超时前没有接收 IPv6 地址时的行为. 行为类似同上
 ```
 
 ## bonding
