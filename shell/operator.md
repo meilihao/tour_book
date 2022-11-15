@@ -18,12 +18,12 @@
 
 测试:
 ```sh
-$  [ -e /dev/cdrom ] && echo "Exist" 
+$ [ -e /dev/cdrom ] && echo "Exist" 
 Exist
 ```
 ### 数值
-- `-ne` : 数值不相等
 - `-eq` : 数值等于
+- `-ne` : 数值不相等
 - `-lt` : 数值小于
 - `-le` : 数值小于等于
 - `-gt` : 数值大于

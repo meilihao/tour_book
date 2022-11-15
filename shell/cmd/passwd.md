@@ -4,7 +4,7 @@ ref:
 
 修改用户密码、过期时间、认证信息等
 
-实际上linux要求的密码验证机制是在/etc/login.defs中规定最小密码字符数; 同时还要受到/etc/pam.d/passwd的限定.                                                                                                                                                                                                                                                                     
+实际上linux要求的密码验证机制是在/etc/login.defs中规定最小密码字符数; 同时还要受到/etc/pam.d/passwd的限定.
 
 ## 格式
 - -l 锁定用户，禁止其登录
@@ -39,3 +39,16 @@ chmod -w /etc/shadow
 ```
 
 其实就是先用passwd生成指定密码, 再用其替换其他环境即可.
+
+### 重置root密码
+1. 开机grub界面, 选中kernel, 按e进入kernel启动参数编辑页面
+1. kernel arg追加` rd.break`, 在按ctrl+x开始以emergency.target启动
+1. 修改密码
+
+	```bash
+	# mount -o remount,rw /sysroot
+	# chroot /sysroot
+	# passwd
+	touch /.autorelabel
+	```
+1. 连续按两次ctrl+d进行退出重启即可

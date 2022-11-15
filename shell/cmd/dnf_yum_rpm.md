@@ -127,6 +127,7 @@ ref:
 # --- 其他
 # rpm2cpio xxx.rpm | cpio -div # `apt install rpm2cpio`, rpm解压
 # rpm -q --whatprovides /etc/pki/CA # 查找文件的提供者
+# rpm -qf /etc/pki/CA # 同上
 # rpm -ivh filename.rpm # 安装软件
 # rpm -ivh 源码包名*.src.rpm # 安装至 ~/rpmbuild 目录
 # rpm -Uvh filename.rpm # 升级软件, `-U`表示升级, 当已安装的version和要更新的version相同时, 原rpm安装到系统里的文件不变动, 但新rpm里的升级script会被执行.
@@ -135,6 +136,8 @@ ref:
 # rpm --reinstall xxx.rpm # 重复安装 from rpm v4.12.0
 # rpm -q --provides openssl-libs | grep libcrypto.so.10 # 查看openssl-libs中的libcrypto.so.10版本
 # rpm -qp --scripts ./packagecloud-test-1.1-1.x86_64.rpm # 查看preinstall 和 postinstall scripts
+# rpm -qpi xxx.rpm # 查看rpm描述信息
+# rpm -qpl xxx.rpm # 查看rpm文件信息
 # rpm -q --scripts <pkg> # 查看已安装的pkg的rpm scripts
 # rpm -e --test centos-release  # 检查谁依赖了这个包
 # repoquery -i php-intl # repoquery from yum-utils. 获取包信息, 包括来源repo. `-i`,展示详情
@@ -399,8 +402,8 @@ from [Oracle Linux 7 Repositories](https://yum.oracle.com/oracle-linux-7.html)
 [ol7_optional_latest]
 name=Oracle Linux $releasever Optional Latest ($basearch)
 baseurl=http://yum.oracle.com/repo/OracleLinux/OL7/optional/latest/$basearch/
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle
-gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-oracle # 校验文件所使用的公钥
+gpgcheck=1 # 是否校验文件
 enabled=1
 ```
 

@@ -16,7 +16,7 @@
 %K 小时(以0-23来表示)
 %l 小时(以0-12来表示)
 %M 分钟(以00-59来表示)
-%P AM或PM
+%p AM或PM
 %r 时间(含时分秒，小时以12小时AM/PM来表示)
 %s 总秒数起算时间为1970-01-01 00:00:00 UTC
 %S 秒(以本地的惯用法来表示)
@@ -32,6 +32,7 @@
 %D 日期(含年月日)
 %j 该年中的第几天
 %m 月份(以01-12来表示)
+%q 季度(1~4)
 %U 该年中的周数
 %w 该周的天数，0代表周日，1代表周一，异词类推
 %x 年份日期(以本地的惯用法来表示)
@@ -75,5 +76,5 @@ timedatectl set-time 15:58:30
 timedatectl set-local-rtc 1 # 将硬件时钟的时间标准设置为localtime
 timedatectl set-local-rtc 0 # 将硬件时钟的时间标准设置为UTC
 timedatectl set-ntp true # 启用远程NTP服务自动时间同步, 前提是安装NTP
-timedatectl status # 查看时间设
+timedatectl status # 查看时间
 ```

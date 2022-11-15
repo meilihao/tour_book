@@ -72,6 +72,7 @@ done <<< "$IN"
 可通过`locale -a`查看可用的字符集.
 
 # 其他环境变量
+- SHELL : 当前使用的shell
 - HISTSIZE : 输出的历史命令记录条数
 - HISTFILESIZE : 保存的历史命令记录条数
 - LANG : 系统语言、语系名称

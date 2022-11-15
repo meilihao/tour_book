@@ -121,3 +121,12 @@ $ grep -r ErrorLog /etc/apache2
 使用`yumdownloader httpd-mmn`发现就是httpd, 再用`dnf install httpd-2.4.34-18...aarch64.rpm`, 最后再用`dnf install php`即可(也可先用yumdownloader下载再安装).
 
 > [Module Magic Number (MMN)](http://httpd.apache.org/docs/2.0/glossary.html), 其实httpd-mmn就是httpd, 用于确保mod_xxx仅与提供相同二进制模块接口的 httpd 包一起使用
+
+### http2 proxy访问后端https服务报`AH01097 pass request body failed to`
+```bash
+SSLProxyEngine on # 启用proxy
+SSLProxyVerify none
+SSLProxyCheckPeerCN off
+SSLProxyCheckPeerName off # 当前及上面2项是禁用ssl的部分检查
+SSLProxyCheckPeerExpire off # 比较server time和cert created_at
+```

@@ -742,3 +742,5 @@ ref:
 - recordsize=16k及以上: 123M左右
 
 ssd pool且recordsize=4k不存在该问题.
+
+> truenas 22.02.4(22.9.27)上也发现该问题.

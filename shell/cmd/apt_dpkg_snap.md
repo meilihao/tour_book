@@ -278,3 +278,25 @@ gpg -a --export  9C949F2093F565FF | sudo apt-key add -
 进入packs目录下，生成包的依赖信息：dpkg-scanpackages packs /dev/null |gzip > packs/Packages.gz
 制作iso包：mkisofs -r -o /home/ubuntu/ubuntu-16.04.5-amd64.iso /home/ubunut/packs
 ```
+
+### Ubuntu安装kernel
+ref:
+- [`/~kernel-ppa/mainline`](https://kernel.ubuntu.com/~kernel-ppa/mainline/)
+
+方法1:
+```bash
+wget -c https://kernel.ubuntu.com/~kernel-ppa/mainline/v6.0/amd64/linux-headers-6.0.0-060000_6.0.0-060000.202210022231_all.deb
+wget -c https://kernel.ubuntu.com/~kernel-ppa/mainline/v6.0/amd64/linux-headers-6.0.0-060000-generic_6.0.0-060000.202210022231_amd64.deb
+wget -c https://kernel.ubuntu.com/~kernel-ppa/mainline/v6.0/amd64/linux-modules-6.0.0-060000-generic_6.0.0-060000.202210022231_amd64.deb
+wget -c https://kernel.ubuntu.com/~kernel-ppa/mainline/v6.0/amd64/linux-image-unsigned-6.0.0-060000-generic_6.0.0-060000.202210022231_amd64.deb
+sudo apt install ./linux-*.deb
+sudo apt remove linux-headers-6.0.0* linux-modules-6.0.0* linux-image-unsigned-6.0.0*
+```
+
+方法2:
+```bash
+sudo add-apt-repository ppa:cappelikan/ppa
+sudo apt update
+sudo apt install mainline
+mainline-gtk    
+```
