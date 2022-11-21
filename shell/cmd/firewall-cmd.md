@@ -8,16 +8,19 @@ firewalld 服务是把配置好的防火墙策略交由内核层面的 nftables 
 
 firewalld的字符界面管理工具.
 
+区域就是 firewalld 预先准备了几套防火墙策略集合（策略模板），用户可
+以根据生产场景的不同而选择合适的策略集合，从而实现防火墙策略之间的快速切换.
+
 firewalld 中常用的区域名称及测了规则:
-trusted 允许所有的数据包
-home 拒绝流入的流量，除非与流出的流量相关；而如果流量与 ssh、mdns、ipp-client、amba-client 与 dhcpv6-client 服务相关，则允许流量
-internal 等同于 home 区域
-work 拒绝流入的流量，除非与流出的流量数相关；而如果流量与 ssh、ipp-client 与dhcpv6-client 服务相关，则允许流量
-public 拒绝流入的流量，除非与流出的流量相关；而如果流量与 ssh、dhcpv6-client 服务相关，则允许流量
-external 拒绝流入的流量，除非与流出的流量相关；而如果流量与 ssh 服务相关，则允许流量
-dmz 拒绝流入的流量，除非与流出的流量相关；而如果流量与 ssh 服务相关，则允许流量
-block 拒绝流入的流量，除非与流出的流量相关
-drop 拒绝流入的流量，除非与流出的流量相关
+- trusted 允许所有的数据包
+- home 拒绝流入的流量，除非与流出的流量相关；而如果流量与 ssh、mdns、ipp-client、amba-client 与 dhcpv6-client 服务相关，则允许流量
+- internal 等同于 home 区域
+- work 拒绝流入的流量，除非与流出的流量数相关；而如果流量与 ssh、ipp-client 与dhcpv6-client 服务相关，则允许流量
+- public 拒绝流入的流量，除非与流出的流量相关；而如果流量与 ssh、dhcpv6-client 服务相关，则允许流量
+- external 拒绝流入的流量，除非与流出的流量相关；而如果流量与 ssh 服务相关，则允许流量
+- dmz 拒绝流入的流量，除非与流出的流量相关；而如果流量与 ssh 服务相关，则允许流量
+- block 拒绝流入的流量，除非与流出的流量相关
+- drop 拒绝流入的流量，除非与流出的流量相关
 
 使用 firewalld 配置的防火墙策略默认为运行时（Runtime）模式，又称为当前生效模式，而且随着系统的重启会失效. 如果想让配置策略一直存在，就需要使用永`--permanent`参数.
 
@@ -45,6 +48,8 @@ drop 拒绝流入的流量，除非与流出的流量相关
 - --reload 让“永久生效”的配置规则立即生效，并覆盖当前的配置规则
 - --panic-on 开启应急状况模式
 - --panic-off 关闭应急状况模式
+- --add-rich-rule : 富规则也叫复规则， 表示更细致、更详细的防火墙策略配置，它可以针对系统服务、端
+口号、源地址和目标地址等诸多信息进行更有针对性的策略配置。它的优先级在所有的防火
 
 ## 参考
 - [CentOS 7 下使用 Firewall](https://havee.me/linux/2015-01/using-firewalls-on-centos-7.html)
@@ -135,7 +140,9 @@ port=888:proto=tcp:toport=22:toaddr=192.168.10.10
 # firewall-cmd --reload
 # ### 拒绝192.168.10.0/24 网段的所有用户访问本机的 ssh 服务（22 端口）
 # firewall-cmd --permanent --zone=public --add-rich-rule=" 
-rule family="ipv4" source address="192.168.10.0/24" service name="ssh" reject" 
+rule family="ipv4" source address="192.168.10.0/24" service name="ssh" reject" # 拒绝
+192.168.10.0/24 网段的所有用户访问本机的 ssh 服务
+墙策略中也是最高的
 # firewall-cmd --reload
 ```
 

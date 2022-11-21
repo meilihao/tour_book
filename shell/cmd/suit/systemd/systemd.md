@@ -82,6 +82,11 @@ ExecStop=/usr/bin/docker stop busybox1
 WantedBy=multi-user.target
 ```
 
+### Var
+- MAINPID : 服务的systemd变量, 它指向主应用程序的PID
+
+	- `systemctl  show --property MainPID --value NetworkManager.service`
+
 ### `[Unit]`
 [Unit]区块通常是配置文件的第一个区块，用来定义 Unit 的元数据，以及配置与其他 Unit 的关系.它的主要字段如下:
 - Description：简短描述,systemd服务启停时会打印到Systemd日志（可以通过journalctl和Systemdctl来检查日志文件）

@@ -65,14 +65,17 @@ posix acl按以下顺序检查：所有者、命名用户、拥有组或命名�
 - [Handling ACLs](https://www.pks.mpg.de/~mueller/docs/suse10.2/html/opensuse-manual_en/manual/sec.acls.handle.html)
 - [权限检查算法 ACCESS CHECK ALGORITHM](http://man7.org/linux/man-pages/man5/acl.5.html)
 
+设置acl后ls时文件权限的最后出现了`+`.
+
 ### 格式
 
 	setfacl [-bkRd] [{-m|-x} acl参数] 文件/目录名
 
 ### 选项
-- -m ：配置后面的 acl 参数给文件/目录使用，不可与 -x 合用
+- -m ：配置 acl 给文件/目录使用，不可与 -x 合用
+- -M : 从文件中读取权限
 - -n : 不重新计算mask. setfacl默认在未明确给出mask时会重新计算acl mask. mask就是ACL的默认的权限掩码
-- -x ：删除后续的 acl 参数，不可与 -m 合用
+- -x ：删除某个 acl 参数，不可与 -m 合用
 - -b ：移除所有的 ACL 配置参数, 包括default, 会递归清除acl.
 - -k ：移除默认的 ACL 参数
 - -R ：递归配置 acl

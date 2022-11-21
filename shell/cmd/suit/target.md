@@ -12,6 +12,8 @@
 # apt install targetcli-fb # ubuntu 18.04
 # apt install targetcli # [ubuntu 16.04](https://packages.ubuntu.com/search?suite=xenial&section=all&arch=any&keywords=targetcli&searchon=contents), 不推荐
 # systemctl status iscsid
+# firewall-cmd --permanent --add-port=3260/tcp
+# firewall-cmd --reload
 ```
 
 > targetcli的官方git repo已不再维护, 推荐使用**[targetcli-fb](https://github.com/open-iscsi/targetcli-fb)**

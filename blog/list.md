@@ -164,3 +164,6 @@
 ref:
 - [最热开源静态网站生成器 TOP 20 揭晓！](https://blog.51cto.com/u_15127629/2838609)
 - [Google 力荐的静态站点生成神器！](https://zhuanlan.zhihu.com/p/553352876)
+
+## lock
+- [图解ReentrantLock底层公平锁和非公平锁实现原理](https://www.cnblogs.com/zhujiqian/p/16898222.html)

@@ -5,6 +5,8 @@
 
 tmux是一款优秀的终端复用软件，类似 GNU screen，但比screen更出色. 通常当终端关闭后该shell里面运行的任务进程也会随之中断，通过使用tmux就能很容易的解决这个问题.
 
+tmux也可用于会话共享.
+
 ## example
 ```bash
 $ tmux list-keys # 列出所有快捷键，及其对应的 Tmux 命令

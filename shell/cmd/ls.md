@@ -34,6 +34,7 @@
 - --time-style=long-iso : 输出格式为`2022-07-27 10:20`
 - -u : 根据atime排序
 - -x : 按列输出, 即横向输出
+- -Z : 查看文件的安全上下文值 for selinux. 见selinux
 
 文件类型:
 - 可执行文件 : *

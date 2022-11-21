@@ -6,6 +6,10 @@
 ## 描述
 一种硬盘设备资源管理技术, 允许用户对硬盘资源进行动态调整.
 
+不建议xfs配合lvm使用, 因为两者兼容性可能有问题.
+
+**`/boot`分区用于存放引导文件，不能应用LVM机制**.
+
 ## 概念
 - PV：physical volume 物理卷在逻辑卷管理系统最底层，可为整个物理硬盘或实际物理硬盘上的分区
 - VG：volume group 卷组建立在物理卷上，一卷组中至少要包括一物理卷，卷组建立后可动态的添加卷到卷组中，类似磁盘的扩展分区，本身不能创建文件系统，需再划分成LV来使用，一个逻辑卷管理系统工程中可有多个卷组
@@ -19,10 +23,10 @@
 ## 常用的 LVM 部署命令
 PV管理工具
 
-- pvs: 简要显示物理卷信息
+- pvscan: 简要显示物理卷信息
 
     ```bash
-    # pvs --reportformat json
+    # pvscan --reportformat json
     ```
 - pvdisplay: 显示物理卷详细信息
 - pvcreate: 创建物理卷
@@ -30,11 +34,11 @@ PV管理工具
 
 VG管理工具
 
-- vgs: 简要显示卷组信息
+- vgscan: 简要显示卷组信息
 
 
     ```bash
-    # vgs --reportformat json
+    # vgscan --reportformat json
     ```
 - vgdisplay: 显示卷组详细信息
 - vgcreate: 创建卷组
@@ -44,10 +48,10 @@ VG管理工具
 
 LV管理工具
 
-- lvs: 简要显示逻辑卷信息
+- lvscan: 简要显示逻辑卷信息
 
     ```bash
-    # lvs --reportformat json
+    # lvscan --reportformat json
     ```
 - lvdisplay: 显示逻辑卷详细信息
 - lvcreate: 创建逻辑卷
@@ -57,11 +61,15 @@ LV管理工具
     - -n: 指定创建卷名
     - -s: 指定创建为快照
     - -p: 权限[r|rw],默认rw
-- lvextend: 扩展逻辑卷
+- lvextend: 扩展逻辑卷. 需先umount
 
-    - -L: 指定大小
-- resize2fs: 调整文件系统
+    - -L: 指定扩容后的大小
+- resize2fs: 调整文件系统, 比如`resize2fs /dev/storage/vo 120M`(120M是缩容后的大小)
 - lvremove: 删除逻辑卷
+- lvreduce: 缩小逻辑卷. 缩容前检查fs完整性, 比如`e2fsck -f /dev/storage/vo`
+
+    - L : 指定缩容后的大小
+- lvconvert: 管理逻辑卷的快照. 需先umount
 
 功能/命令 物理卷管理 卷组管理 逻辑卷管理
 扫描 pvscan vgscan lvscan

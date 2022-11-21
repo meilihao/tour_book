@@ -1,5 +1,7 @@
 # chattr
 
+chattr是针对某一类用户设置的, 针对某个指定用户可用acl.
+
 ## 描述
 
 修改文件的扩展属性. 与chmod相比, chmod只能改变文件rwx权限, 更底层的属性是由chattr来修改的.

@@ -253,6 +253,8 @@ GRANT 权限 ON*.*TO 账户名@主机名 | 对所有数据库及所有表单给�
 GRANT 权限 1,权限 2 ON 数据库.*TO 账户名@主机名 | 对某个数据库中的所有表单给予多个授权
 GRANT ALL PRIVILEGES ON *.*TO 账户名@主机名 | 对所有数据库及所有表单给予全部授权(需谨慎操作)
 
+查看权限: `SHOW GRANTS FOR luke@localhost;`
+
 ### 全同步复制
 全同步复制（full sync replication）是指当主库执行完一个事务后，需要确保所有的从库都执行了该事务才返回给客户端. 因为需要等待所有的从库都执行完该事务才能返回，所以全同步复制的性能较差.
 
@@ -275,6 +277,11 @@ ExecStart=/usr/sbin/mysqld --skip-grant-tables ...
 ```
 
 记得删除skip-grant-tables, 并重启mariadb.
+
+### sql
+```sql
+> CREATE USER luke@localhost IDENTIFIED BY 'linuxprobe';
+```
 
 ### 允许MySQL的root用户远程登录
 ```sql

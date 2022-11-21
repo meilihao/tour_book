@@ -95,7 +95,7 @@ systemd-ask-password-conso
        # systemctl status firewalld.service
 
 1. 刷新systemd的配置
-        # systemctl daemon-reload
+        # systemctl daemon-reload # service连续启动失败多次后, 再start会直接报错, 应先用daemon-reload重置其状态, 再start
 
 1. 列出所有slice
 

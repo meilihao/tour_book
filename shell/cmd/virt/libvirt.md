@@ -540,6 +540,10 @@ vm和host都是东8区.
 1. `setfacl -b /dev/kvm && chmod 0660 /dev/kvm`(重启后失效)
 2. 修改/etc/libvirt/qemu.conf, 将user和group都设为root
 
+### 通过snap接管的含lvm的vm启动失败
+env: oracle linux 7.9
+需要将`/root`分区所在的disk, 放在xml disks的第一个
+
 ### 使用usb 2/3
 ref:
 - [虚拟机配置](https://docs.openeuler.org/zh/docs/22.03_LTS/docs/Virtualization/%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%85%8D%E7%BD%AE.html)

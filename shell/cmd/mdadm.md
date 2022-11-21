@@ -19,7 +19,7 @@ linux下用于构建、管理和监控RAID阵列(也被称为md设备)的工具.
 - -f dev : 模拟设备损坏
 - -r : 移除设备
 - -Q : 查看摘要信息
-- -D : 查看详细信息
+- -D : 查看详细信息, 包括重建状态(Rebuild Status)
 - -S : 停止 RAID 磁盘阵列
 - -x N : 表示有几块备用盘
 
@@ -32,6 +32,7 @@ linux下用于构建、管理和监控RAID阵列(也被称为md设备)的工具.
     # sudo mdadm --manage /dev/md0 --add /dev/sdd # 追加磁盘
     # echo "/dev/md0 /RAID ext4 defaults 0 0" >> /etc/fstab # 并把挂载信息写入到配置文件中，使其永久生效
     # mdadm /dev/md0 -f /dev/sdb # 模拟坏盘
+    # mdadm /dev/md0 -r /dev/sdb # 移除坏盘
     # mdadm /dev/md0 -a /dev/sdb # 将新盘换入md0(需先卸载再重新挂载)
 
 ## FAQ

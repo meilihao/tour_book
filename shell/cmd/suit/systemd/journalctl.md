@@ -1,9 +1,32 @@
 # journalctl
+journald是systemd独有的日志系统，替换了sysVinit中的syslog守护进程,使用journalctl用来读取日志.
 
 > 一些发行版已经配置了日志，以便将日志写入磁盘（/var/log/journal），而其他发行版将日志保存在内存中（/run/log/journal）.
-## 描述
 
-journald是systemd独有的日志系统，替换了sysVinit中的syslog守护进程,使用journalctl用来读取日志.
+# 选项
+- -k : 内核日志
+- -b : 启动日志
+- -u : 指定服务
+- -n : 指定条数
+- -p : 指定类型
+
+       - emerg 系统出现严重故障，比如内核崩溃
+       - alert 应立即修复的故障，比如数据库损坏
+       - crit 危险性较高的故障，比如硬盘损坏导致程序运行失败
+       - err 危险性一般的故障，比如某个服务启动或运行失败
+       - warning 警告信息，比如某个服务参数或功能出错
+       - notice 不严重的一般故障，只是需要抽空处理的情况
+       - info 通用性消息，用于提示一些有用的信息
+       - debug 调试程序所产生的信息
+       - none 没有优先级，不进行日志记录
+- -f : 实时刷新（追踪日志）
+- --since : 指定时间
+
+       - "-1 hour" : 最近1小时
+
+- --disk-usage : 占用空间
+
+## example
 
 1. 读取日志
        # journalctl
@@ -30,6 +53,8 @@ journald是systemd独有的日志系统，替换了sysVinit中的syslog守护进
 1. 按时间查询
 
        # journalctl --since "2018-03-26 20:20:00" [--until "2021-08-26 03:00"]
+       # journalctl --since "12:00" --until "14:00"
+       # journalctl --since "2020-07-01" --until "2020-08-01"
 
 ## 日志管理
 Systemd 统一管理所有 Unit 的启动日志。日志的配置文件是`/etc/systemd/journald.conf`.

@@ -23,8 +23,7 @@ NFS是SUN为Unix开发的网络文件系统, 提供类unix间的文件共享. �
 
 > nfs server端权限变化后client端无需重新mount即可生效.
 
-autofs 自动挂载服务: 无论是 Samba 服务还是 NFS 服务，都要把挂载信息写入到/etc/fstab 中，这样远程共享资源就会自动随服务器开机而进行挂载. autofs 服务程序是一种 Linux 系统守护进程，当检测到用户视图访问一个尚未挂载的文件系统时，将自动挂载该
-文件系统.
+autofs 自动挂载服务: 无论是 Samba 服务还是 NFS 服务，都要把挂载信息写入到/etc/fstab 中，这样远程共享资源就会自动随服务器开机而进行挂载. autofs 服务程序是一种 Linux 系统守护进程，当检测到用户视图访问一个尚未挂载的文件系统时，将自动挂载该文件系统.
 
 >  RHEL 7 开始不支持NFSv2
 
@@ -165,7 +164,7 @@ NFS server 的配置选项在`/etc/default/nfs-kernel-server`和`/etc/default/nf
 
 1. showmount
 
-　　-a 显示已经于客户端连接上的目录信息
+　　-a 显示客户端已挂载的nfs信息
 　　-e IP或者hostname 显示此IP地址共享出来的目录
 
 1. netstat
@@ -239,6 +238,12 @@ NFSv4版本的客户端，可以将NFSv4的服务端、所有的共享目录，�
 服务端是NFSv4，应该如何mount共享目录:
 not compatible solution:
 ```bash
+# ---
+# firewall-cmd --permanent --zone=public --add-service=nfs
+# firewall-cmd --permanent --zone=public --add-service=rpc-bind
+# firewall-cmd --permanent --zone=public --add-service=mountd
+# firewall-cmd --reload
+# ---
 # Server端export file
 /home *(rw,fsid=0,sync)
 
@@ -343,19 +348,25 @@ SMB 协议版本:
 	log file = /var/log/samba/log.%m # 设置服务器日志文件的存储位置以及存储日志文件名称，%m 表示来访的主机名，即对每台访问服务器的机器都单独记录一个日志文件.
 	log level = 3 # 0~10, 值越大越详细
 	max log size = 5 # 定义日志文件的最大容量为 50KB
-	security = user # 定义安全级别, 一共由四种级别：
+	security = user # 定义安全验证的方法, 一共由四种：
 	# - share：匿名共享，用户访问服务器不需要提供用户名和口令, 安全性差
 	# - user：使用samba服务自我管理的帐号和密码进行用户认证，用户必须是本系统用户，但密码非/etc/shadow中的密码，而由samba自行管理的文件，其密码文件的格式由passdb bachend进行定义.
 	# - server：由第三方服务进行统一认证
 	# - domain：使用主域控制器进行认证，基于kerberos协议进行
 	# - ADS: Active Directory Service, 是samba 3.0新增的身份验证方式
 	passdb backend = tdbsam # 定义用户后台的类型，共有 3 种:
-	# - smbpasswd：使用 smbpasswd 命令为系统用户设置 Samba 服务程序的密码. 使用smbpasswd命令来管理用户，要添加/管理的用户必须先是系统用户
-	# - tdbsam使用一个数据库文件(`/var/lib/samba/private/passdb`)来建立用户数据库. 新版Samba的密码验证方式已使用tdbsam取代smbpasswd. 使用pdbedit命令来管理用户，要添加/管理的用户必须先是系统用户(**推荐**)
+	# - smbpasswd：使用 smbpasswd 命令为系统用户设置 Samba 服务程序的密码. 使用smbpasswd命令来管理用户，要添加/管理的用户必须先是系统用户. centos 5/6采用.
+	# - tdbsam使用一个数据库文件(`/var/lib/samba/private/passdb`)来建立用户数据库. 新版Samba的密码验证方式已使用tdbsam取代smbpasswd. 使用pdbedit命令来管理用户，要添加/管理的用户必须先是系统用户(**推荐**). centos 7/8采用.
 	# - ldapsam：基于 LDAP 服务进行账户验证
+	printing = cups # 打印服务协议
+	printcap name = cups # 打印服务名称
 	load printers = yes #设置在 Samba 服务启动时是否共享打印机设备
+	cpus options = raw # 打印机选项. 如果不适用printer可删除本项及上面3项
 	map to guest = bad user # 将samba sever所不能正确识别的用户都映射成guest用户
 	guest account = user_name # samba默认将guest账户映射为nobody
+	unix charset = utf8 # unix客户端连接时, 给它们发送的字符集
+	dos charset ＝ CP936 # dos客户端连接时, 给它们发送的字符集. CP936是GBK
+	display charset ＝ utf8 # 输出打印信息时的编码. 这三行用于确保windows共享的内容能在linux上能正常显示而不是乱码 started v3
 	[josh] # 挂载时将使用的共享名称, 其相关的读写共权限与acl独立起作用
 	comment = 共享的描述信息
     path = /samba/josh # 分享路径
@@ -378,6 +389,7 @@ SMB 协议版本:
 	invalid users = root # 设定不允许访问此共享资源的用户或组
     sync always = no # 写操作后是否立即进行sync, 打开后性能极差
     # strict sync = yes, 不常用, 相关资料:[sync always, strict sync, cache question](https://lists.samba.org/archive/samba/2008-September/143647.html)
+	inherit acls = yes # 是否继承访问控制列表
 	```
 
 	在smb.conf中<section header>中有三个特殊的NAME，分别是global、homes和printers:
@@ -435,11 +447,17 @@ SMB 协议版本:
 	`smbd -d <0~10>` : 指定日志级别, 优先于smb.conf的相关配置, 详见`man smbd`
 ### 使用
 ```sh
+$ ---
+$ setsebool -P samba_enable_home_dirs on # 设置selinux
+$ firewall-cmd --zone=public --permanent --add-service=samba
+$ firewall-cmd --reload
+$ ---
+$ testparm -v | grep "charset" # 查看charset配置
 $ smbd -b # 查看smbd的构建选项
 $ testparm -s # 检查smb.conf是否正确, 它会输出生效的配置, **推荐使用**
-$ smbclient -L //127.0.0.1 [-U josh]# 列出正在分享的内容
+$ smbclient [-U share] -L //127.0.0.1 [-U josh]# 列出正在分享的内容
 $ smbclient //192.168.0.141/{samba_share_name} # 默认以当前用户和字符界面模式交互式地访问samba_share_name
-$ smbclient --user=share //192.168.66.198/share # 访问共享
+$ smbclient --user=share //192.168.66.198/share # 访问共享.
 $ sudo useradd -M -s /usr/sbin/nologin -G sambashare josh
 # $ sudo smbpasswd -a josh # 设置用户密码将sadmin用户帐户添加到Samba数据库, 默认已启用账号. 可用`pdbedit -a -u ${user}`代替
 # $ yes password |sudo smbpasswd -a ubuntu # 不用交互输入密码
@@ -447,7 +465,7 @@ $ sudo useradd -M -s /usr/sbin/nologin -G sambashare josh
 $ pdbedit -a -u username    #新建Samba账户, **username必须已存在**
 $ pdbedit -x username    #删除Samba账户
 $ pdbedit -v username    #显示账户详细信息
-$ sudo pdbedit -L -v # 查看smbpasswd创建的samba用户
+$ sudo pdbedit -L -v # 查看smbpasswd创建的samba用户.
 $ sudo systemctl restart smbd # 使**配置生效**
 # smbcontrol all reload-config # 重新加载Samba配置, 使授权生效, **即可实现重载导出目录**
 $ sudo mount -t cifs //127.0.0.1/{samba_share_name} /mnt [-o username=josh -o password=xxx -o vers=2.0  -o uid=$(id -u),gid=$(id -g) ] # 挂载samba分享的内容, client端支持的smb protocol 版本可通过`man mount.cifs#vers查看`. samba使用samba_share_name, 而不像nfs那样的export路径. 未登录用户(密码登录)映射为nobody:nogroup, 否则用指定的username:username. `vers`建议使用2.1或者3.0
