@@ -101,6 +101,9 @@ dot -Tpng -o a.png a.dot
     ```
 - [github.com/bitfield/script](https://github.com/bitfield/script)
 
+## crypto
+- [go-dongle](github.com/golang-module/dongle)
+
 ## IDE
 ### FAQ
 #### vscode 智能提示突然消失

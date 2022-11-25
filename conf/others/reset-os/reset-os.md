@@ -31,3 +31,7 @@
 ```bash
 sudo apt install clang-13 lldb-13 lld-13  llvm-13 llvm-13-dev
 ```
+
+### 清理/var/spool/postfix/maildrop
+- 清理全部: `sudo postsuper -d ALL`
+- 清理其中的某个: `postcat -q 165EA1AF2`

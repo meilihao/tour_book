@@ -20,6 +20,7 @@ USS和PSS仅包括物理内存使用情况, 它们不包括已换出到磁盘的
 - -k 开关显示以 MB/GB 为单位的内存使用情况，而不是单纯的字节数
 - -m 按映射统计
 - -p 以百分比显示
+- -s 以 PSS 的值排序
 - -t 开关显示总数
 - -w 按系统地址范围(system wide)统计
 - -u 按用户统计
@@ -33,5 +34,6 @@ USS和PSS仅包括物理内存使用情况, 它们不包括已换出到磁盘的
 # smem --pie name -c pss # 显示总的内存使用情况并以图形输出
 # echo 'smem -c pss -P "$1" -k -t | tail -n 1' > ~/bin/memory-use && chmod +x ~/bin/memory-use # 内存统计脚本, 用法`memory-use firefox`
 # smem --bar name -c "pss uss rss" # 显示USS, PSS和RSS的条形图组合
-# smem -tw
+# smem -twk
+# smem --userfilter="root" --bar pid -c "pss rss" #  root 用户的所有进程
 ```
