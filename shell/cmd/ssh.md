@@ -139,3 +139,18 @@ ssh-agent gnome-session # 请使用当前系统的窗口管理器取代gnome-ses
 或在`~/.bashrc`添加`export $(gnome-keyring-daemon --start --components=secrets,ssh)`来启用ssh-agent.
 
 **最佳方法是在`/etc/profile`中追加`eval "$(ssh-agent)"`**.
+
+### OpenSSH8无法用root登录
+OpenSSH8默认仅支持非root用户用password登录.
+
+```bash
+# vim /etc/ssh/sshd_config
+...
+PermitRootLogin yes
+# PermitRootLogin prohibit-password
+...
+```
+
+PermitRootLogin选项:
+- yes : 允许root登录
+- prohibit-password : 允许root登录, 但是禁止root用密码登录

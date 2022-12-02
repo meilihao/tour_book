@@ -25,6 +25,9 @@ journald是systemd独有的日志系统，替换了sysVinit中的syslog守护进
        - "-1 hour" : 最近1小时
 
 - --disk-usage : 占用空间
+- -x/--catalog : 将错误消息与日志中的解释性文本放在一起输出
+- -e/--pager-end: 从journalctl的输出末尾开始查看日志
+- --boot <N>: 指定要查看哪个启动会话的日志
 
 ## example
 

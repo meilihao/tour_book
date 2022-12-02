@@ -446,4 +446,24 @@ ref:
 
 原因: [HTTP/2 要求请求具有 :authority 伪标头或 host 标头. 当直接构建 HTTP/2 请求时首选 :authority，从 HTTP/1 转换时首选 host（例如在代理中）](http://nodejs.cn/api/http2/note_on_authority_and_host.html)
 
-> `proxy_set_header Host $host:$server_port`无法获取`:authority`, 但`proxy_set_header Authority $host`可以.
+`proxy_set_header Host $host:$server_port`无法获取`:authority`, 但`proxy_set_header Authority $host`可以.
+
+```conf
+proxy_set_header Host $host:$server_port
+proxy_set_header Authority $host
+```
+
+### uwsgi获取client ip
+```conf
+            location / { 
+                  include /etc/nginxi/uwsgi_params;
+                  uwsgi_pass 127.0.0.1:3031;   
+
+                  # X-Real-IP表示客户端真实的IP 
+                  # X-Forwarded-For多层代理时包含真实客户端及中间每个代理服务器IP 
+                  # X-Forwarded-Proto表示客户端真实的协议, http还是https. 实际测试该项没有获取到.
+                  uwsgi_param X-Real-IP $remote_addr;
+                  uwsgi_param X-Forwarded-For $proxy_add_x_forwarded_for;
+                  uwsgi_param X-Forwarded-Proto $http_x_forwarded_proto;
+            }
+```

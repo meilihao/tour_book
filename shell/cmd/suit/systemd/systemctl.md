@@ -255,6 +255,13 @@ Runlevel 6 : 关闭并重启机器(runlevel6.target, reboot.target)
 # timedatectl status # 查看当前时区设置的状态
 ```
 
+### timer
+计划的事件就是在特定时间需要激活的服务. systemd 管理一个名为定时器的工具，它类似 cron 的功能.
+
+```sh
+# systemctl list-timers
+```
+
 ## 参考
 
 - [最简明扼要的 Systemd 教程，只需十分钟](https://linux.cn/article-6888-1.html)

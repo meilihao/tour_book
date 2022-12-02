@@ -11,6 +11,7 @@
 - [ZFS──瑞士军刀般的文件系统](https://www.eaimty.com/2020/02/zfs-file-system.html)
 - [ZFS 分层架构设计](https://farseerfc.me/zhs/zfs-layered-architecture-design.html)
 - [zfs share(nas)](https://wiki.debian.org/ZFS#File_Sharing)
+- [在Linux上安装和使用ZFS](https://www.escapelife.site/posts/caf259ea.html)
 
 ```sh
 # ubuntu 18.04

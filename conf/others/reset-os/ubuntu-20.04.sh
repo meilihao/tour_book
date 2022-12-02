@@ -8,3 +8,6 @@ sudo apt install clang-13 lldb-13 lld-13 gcc
 sudo apt install mariadb-server
 sudo apt install maven openjdk-8-jdk openjdk-11-jdk
 # sudo apt install unixbench
+# --- Ubuntu Mainline Kernel Installer
+sudo add-apt-repository ppa:cappelikan/ppa -y
+sudo apt install mainline -y

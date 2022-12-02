@@ -19,6 +19,9 @@ Bareos 由 bacula fork而來.
 
     目录服务允许系统管理员或用户快速查找和还原任何所需的文件.
 
+其他文件
+- /usr/lib/bareos/defaultconfigs : example configs
+
 > Bareos推荐使用postgres, mysql/mariadb已废弃.
 
 > 要成功执行保存或还原, 必须配置并运行以下四个守护程序：Director daemon, File daemon, Storage daemon 以及 Catalog service(即DB).
@@ -357,7 +360,7 @@ exit
 
         ```bash
         # apt install bareos-filedaemon
-        # scp dareos-server:/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf /etc/bareos/bareos-fd.d/director # director对client的授权
+        # scp dareos-server:/etc/bareos/bareos-dir-export/client/client2-fd/bareos-fd.d/director/bareos-dir.conf /etc/bareos/bareos-fd.d/director # director对client的授权, 其中bareos-dir.conf的Password即是`show client=client2-fd`时显示的Password
         # vim /etc/bareos/bareos-fd.d/director/director-mon.conf # 用/etc/bareos/bareos-dir.d/console/bareos-mon.conf文件中的Password替换该文件中的Password
         # systemctl restart bareos-fd
         ```
@@ -615,6 +618,71 @@ python3 plugin启用方法:
 
 fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
 
+## tap
+ref:
+- [Using AWS Virtual Tape Library as Storage for Bacula Bareos by Alberto Gimen](https://osbconf.org/wp-content/uploads/2015/10/Using-AWS-Virtual-Tape-Library-as-Storage-for-Bacula-Bareos-by-Alberto-Gimen%C3%A9z.pdf)
+- [搭建开源虚拟磁带库mhvtl](https://www.renrendoc.com/paper/215764472.html)
+
+按照`/usr/lib/bareos/defaultconfigs`配置即可, 具体步骤是:
+1. 配置bareos sd
+
+    1. 在autochanger下创建磁带库配置
+    2. 在device下创建该磁带库的驱动器配置
+
+        ```conf
+        ...
+        MediaType = LTO
+        ...
+        MaximumFileSize = 500MB # 本驱动器的一次写入的最大大小. [磁带建议改为20G, 或更大](https://docs.bareos.org/Configuration/StorageDaemon.html#config-Sd_Device_MaximumFileSize).
+        ```
+1. 配置bareos dir
+    1. 在storage添加磁带库的配置
+    1. bconsole + reload
+1. 在bareos webui标记磁带库中的磁带即可
+
+
+注意: 配置时使用by-id, 因为/dev/sgN名称可能会变
+
+相关命令:
+```bash
+# bconsole
+* status slots storage=Tape
+* update slots [storage=Tape] [drive=1] scan # = label [storage=Tape] [pool=xxx] [drive=1] barcodes # 此时bareso操作mhvtl容易卡住???, 操作飞康vtl正常. 不推荐使用`label barcodes`因为其要设置多个选项
+# /usr/lib/bareos/scripts/mtx-changer /dev/sg3 listall # list时不包括driver和邮件槽
+D:0:F:16:E01016L8 # 16表示该磁带原先是16槽位的
+D:1:E
+S:1:F:AIK282L6 # AIK282L6是磁带条码
+S:2:E
+S:3:E
+S:4:E
+S:5:E
+S:6:E
+S:7:E
+S:8:E
+S:9:E
+S:10:E
+S:11:E
+S:12:E
+S:13:E
+S:14:E
+S:15:E
+S:16:E
+S:17:E
+S:18:E
+S:19:E
+S:20:E
+S:21:E
+S:22:E
+S:23:E
+I:24:E
+# /usr/lib/bareos/scripts/mtx-changer /dev/sg3 losts # 返回仓数(磁带槽+邮件槽)
+24
+# /usr/lib/bareos/scripts/mtx-changer /dev/sg3 load 1 /dev/nst0 0
+```
+
+测试:
+1. 当一个磁带库的磁带写满后, bareos会自动切换到另一个空磁带. 如果磁带的剩余空间不够本次备份时, 它切换磁带而不是先写一部分再切换磁带.
+
 ## FAQ
 ### bconsole配置
 `/etc/bareos/bconsole.conf`
@@ -635,7 +703,7 @@ fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
       Random Access = yes;                # 可随机读写
       AutomaticMount = yes;               # 自动加载
       RemovableMedia = no;                # 媒体介质不可移除
-      AlwaysOpen = yes;                   # 建议总是打开, FIFO存储设备除外
+      AlwaysOpen = yes;                   # 建议总是打开, FIFO存储设备除外. 如果是磁带强烈建议设置为yes；如果是文件存储，设置为no，在需要时自动打开.
       Description = "File device. A connecting Director must have the same Name and MediaType"
     }
 
@@ -684,6 +752,8 @@ fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
 
     - bareos-dir.conf : bareos-dir配置
 - fileset : 备份文件组(定义如何备份一组文件)配置
+
+    发现bareos不会`follow symbolic link`, 而是直接备份连接, 也未找到相关配置项
 
     example:
     ```conf
@@ -1046,6 +1116,7 @@ fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
           Maximum Volume Bytes = 50G          # Volume最大尺寸
           Maximum Volumes = 100               # 单个存储池允许的Volume数量
           Label Format = "Full-"              # Volumes 将被标记为 "Differential-<volume-id>"
+          Storage = VTL                       # 指定storage
         }
         ```
     - incremental : 增量备份, 备份所有状态变化的文件. 前提是有full备份, 否则转为full备份.
