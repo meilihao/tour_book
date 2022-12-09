@@ -142,3 +142,14 @@ FAIL: gcc.c-torture/execute/builtins/fprintf.c execution,  -O0
 
 ### unrecognized command line option '-fmacro-prefix-map=.'
 gcc 8才开始支持'-fmacro-prefix-map'
+
+### 获取编译linux内核所用的编译器信息
+`cat /proc/version`
+
+### 按照gcc 12
+Ubuntu 22.04:
+```bash
+# apt install gcc-12
+# update-alternatives --config gcc # 已有gcc配置项
+# update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 20 --slave /usr/bin/g++ g++ /usr/bin/g++-12 # 新增gcc配置项
+```

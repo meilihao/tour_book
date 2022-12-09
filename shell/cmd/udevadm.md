@@ -11,6 +11,8 @@ udev 管理工具
 # udevadm info /sys/class/net/enp2s0 | grep ID_PATH= # 获取设备路径. PCI ID 是连接到系统的设备的唯一标识符.
 ```
 
+`udevadm info`获取mediumx(磁带柜)其`/dev/sgX`设备比`/dev/schY`设备输出信息更多, 但tape和disk却恰好相反, 是`/dev/stZ`或`/dev/sdZ`输出更多信息.
+
 ## FAQ
 ### udev rules优先级
 /etc/udev/rules.d中的任何规则都将优先于/lib/udev/rules.d中的规则

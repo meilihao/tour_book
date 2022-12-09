@@ -9,9 +9,9 @@
 ```bash
 # yum -y install targetd targetcli-fb
 
-# apt install targetcli-fb # ubuntu 18.04
+# apt install targetcli-fb # ubuntu 18.04 # targetcli是
 # apt install targetcli # [ubuntu 16.04](https://packages.ubuntu.com/search?suite=xenial&section=all&arch=any&keywords=targetcli&searchon=contents), 不推荐
-# systemctl status iscsid
+# systemctl status iscsid # iscsid是iSCSI initiator daemon
 # firewall-cmd --permanent --add-port=3260/tcp
 # firewall-cmd --reload
 ```
@@ -223,11 +223,13 @@ vim /etc/iscsi/iscsid.conf # 编辑客户端 iscsiadm 守护程序配置文件
 # 设置启用登陆验证
 node.session.auth.authmethod = CHAP
  
-# 设置登入服务端 targetcli 的用户名和密码
+# To set a CHAP username and password for initiator
+# authentication by the target(s)
 node.session.auth.username = InAuthUser
 node.session.auth.password = InAuthPassword
  
-# 设置当服务端访向客户端验证时的用户和密码
+# To set a CHAP username and password for target(s)
+# authentication by the initiator
 node.session.auth.username_in = OutAuthUser
 node.session.auth.password_in = OutAuthPassword
  
@@ -249,19 +251,19 @@ systemctl restart iscsid # 重启 iscsi和iscsid 服务. 修改initiator iqn需�
 - generate_node_acls=1 # 此项为将 Initiator 自动添加进 ACL 认证列表，设置generate_node_acls时必须与authentication同时配置, 它可控制Normal Authentication设置在TPG节点还是ACL节点
 - cache_dynamic_acls=1 # 此项为记录 ACL 信息, 方便 SCSI 保持连接，设置成 demo 模式后，默认即为1
 
-## targetcli backstores
+## [targetcli backstores](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/managing_storage_devices/configuring-an-iscsi-target_managing-storage-devices#iscsi-backstore_configuring-an-iscsi-target)
 backstores分类:
 - block/iblock(旧版使用) : 通常能提供最好的性能，可以使用其他任何类型的磁盘设备
 
     /backstores> iblock/ create name=block_backend dev=/dev/sdb
 - fileio : 不要使用 buffered FILEIO，默认是non-buffered 模式
 
-    /backstores> fileio/ create name=file_backend file_or_dev=/usr/src/fileio size=2G
+    /backstores> fileio/ create name=file_backend file_or_dev=/usr/src/fileio size=2G // create name=demo file_or_dev=vd.qcow2
 
     如果新建的FILEIO 中，参数 buffered =True，就可以使用buffer cache ，将明显提高其有效性能
     同时伴随的风险是一系列数据的整体风险：如果系统崩溃，一个 unflushed buffer cache将导致整个后
     备存储不能挽回的损坏.
-- [pscsi(parallel SCSI)](https://en.wikipedia.org/wiki/Parallel_SCSI): 物理scsi设备，不推荐使用, 建议使用 block 代替
+- [pscsi(parallel SCSI)](https://en.wikipedia.org/wiki/Parallel_SCSI): pscsi支持透传scsi命令, 因此支持比如(虚拟磁)带库/(虚拟)磁带驱动器, Asymmetric Logical Unit Assignment (ALUAs) 或 Persistent Reservations (for example, those used by VMware ESX, and vSphere)
 
     /backstores> pscsi/ create name=pscsi_backend dev=/dev/sr0
 - ramdisk : RAM 硬盘后备存储
@@ -302,12 +304,22 @@ iscsiadm:
 
 ### example
 ```bash
-# iscsiadm -m discovery -t st -p 192.168.10.10
+# --- 查看状态
+# iscsiadm -m node
+# iscsiadm -m node -o show
+# --- 查看连接后状态
+# iscsiadm -m session -o show # logout设备不显示在输出中. 输出中的`[n]`, 其中n是session id, 其实就是`/sys/class/iscsi_session/session<n>`, 该目录中的device/target<scsi path>是该target导出的scsi设备. 如果是磁盘格式为`target35:0:0:0`(其子目录下只有`target35:0:0:0`), 如果是磁带柜格式为`target34:0:0`(其子目录下有`target34:0:0:0`(磁带柜),`target34:0:0:1`(磁带)等).
+# iscsiadm -m node -T iqn.2006-01.com.openfiler:Foundation [-P 3] -o show # 查看target
+# --- 发现
+# iscsiadm -m discovery -t st -p 192.168.10.10 # **需先发现, 再设置chap, 最后login**
 # iscsiadm -m discovery -t st -p 192.168.10.10 -o show # 输出discovery信息(含认证)
+# --- 挂载
 # iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linux.x8664:sn.d497c356ad80 -p 192.168.10.10 --login # 此时是禁用CHAP的情况 ,在 iSCSI 客户端成功登录之后,会在客户端主机上多出一块名为`/dev/sd${xxx}` 的设备文件. `-T`表示要挂载的盘. 如果target使用了多张网卡时会存在多路径问题, 挂载磁盘数=target提供的磁盘数*路径数
 # iscsiadm -m session -P 3 | grep "Attached scsi disk" | awk '{print $4}' # 获取挂载信息并显示所有已登录iSCSI会话中每个SCSI LUN的`/dev`节点名称. `-P`, 信息的详细level, 越大越详细.
 # iscsiadm -m node --login # Connect to target, 即挂载所有discovery中发现的scsi盘
-# iscsiadm -m node -o delete # 删除Target节点缓存, 这将导致启动器忘记所有先前发现的iSCSI目标节点
+# --- 卸载
+# iscsiadm -m node -o delete # 删除Target节点缓存, 这将导致启动器忘记所有先前发现的iSCSI目标节点. delete前需要先logout
+# iscsiadm -m node -T iqn.2006-08.com.huawei:oceanstor:10.131.131.150 -o delete # 删除某个target
 # mkfs.xfs /dev/sdb
 # mkdir /iscsi
 # mount /dev/sdb /iscsi
@@ -316,6 +328,18 @@ iscsiadm:
 UUID=eb9cbf2f-fce8-413a-b770-8b0f243e8ad6 /iscsi xfs defaults,_netdev 0 0 # 由于iscsi 磁盘是一块网络存储设备,而 iSCSI 协议是基于TCP/IP 网络传输数据的, 因此必须在/etc/fstab 配置文件中添加上_netdev 参数,表示当系统联网后再进行挂载操作,以免系统开机时间过长或开机失败.
 # umount /iscsi   # 如果磁盘正在挂载使用，建议先卸载再登出
 # iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linux.x8664:sn.d497c356ad80 -u # 登出, 或使用`iscsiadm -m node --logout`全部登出
+# iscsiadm -m node -T iqn.2006-01.com.openfiler:Foundation -R # 刷新target
+```
+
+在target未`-o delete`前, 当前target已挂载或已`--logout`, reboot后该target会重新自动挂载(by cache).
+
+设置chap是在login前设置, 否则login时会报错误.
+
+针对某个node设置chap:
+```bash
+iscsiadm -m node -o update -p 10.131.131.150 -n node.session.auth.authmethod -v CHAP
+iscsiadm -m node -o update -p 10.131.131.150 -n node.session.auth.username -v myusername
+iscsiadm -m node -o update -p 10.131.131.150 -n node.session.auth.password -v mypassword
 ```
 
 针对某个target设置chap:
@@ -325,6 +349,13 @@ sudo iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664:sn.0d690
 sudo iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664:sn.0d690d398ec5 -o update --name=node.session.auth.username --value=user
 sudo iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664:sn.0d690d398ec5 -o update --name=node.session.auth.password --value=password
 sudo cat /etc/iscsi/nodes/iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664\:sn.0d690d398ec5/127.0.0.1\,3260\,1/default # 配置位置, `127.0.0.1`是target server ip, `1`未知, 但`iscsiadm -m discovery -t st -p 127.0.0.1`时都能找到
+```
+
+删除target chap:
+```bash
+sudo iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664:sn.0d690d398ec5 -o delete --name=node.session.auth.authmethod
+sudo iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664:sn.0d690d398ec5 -o delete --name=node.session.auth.username
+sudo iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664:sn.0d690d398ec5 -o delete --name=node.session.auth.password
 ```
 
 ## FAQ
@@ -368,7 +399,7 @@ sudo cat /etc/iscsi/nodes/iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664\:sn.0d6
 
 一旦配置成自动生成acl节点，当initiator认证成功后，再配置成自定义的acl实现访问控制是无效的 只有重启系统后恢复正常，我感觉这个是因为有认证记忆的功能.
 
-### iscsiadm -m node xxx 无法login, 报"initiator reported error ( 24 - ..."
+### iscsiadm -m node xxx 无法login, 报"initiator reported error ( 24 - iSCSI login failed due to authorization failure"
 开启了CHAP认证, 禁用即可: `.../tpg1> set attribute authentication=0` 或 iscsiadm添加chap信息(见iscsiadm example)
 
 此时target端是报: `kernel: Initiator is requesting CSG: 1, has not been successfully authenticated, and the Target is enforcing iSCSI Authentication, login failed.`
@@ -390,7 +421,7 @@ ps: `/iscsi`设置`set discovery_auth enable=0`(发现验证), 但tpgX设置`set
 Online
 # cat /sys/class/fc_host/host<N>/port_type # 查看fc 插口的连接类型: LPort是与其他HBA卡相连; NPort是与光纤交换机相连
 # cat /sys/class/fc_host/host<N>/supported_speeds # 查看port支持的速率
-# systool -v -c fc_host # 获取详细的光纤卡信息, from `apt install sysfsutils`
+# systool -v -c fc_host # 获取详细的光纤卡信息, from `apt/dnf install sysfsutils`
 ```
 
 ### 光纤initiator发现的方法
@@ -509,6 +540,11 @@ nqn.2014-08.org.nvmexpress:uuid:75953f3b-77fe-4e03-bf3c-09d5a156fbcd
 
 ### iscsid日志
 `iscsid -d<N:0~8>`
+
+### 分配磁带柜
+通过targetcli将磁带柜(`/dev/sch0`)当做pscsi导出时, initiator挂载后只能看到mediumx, 没有tape. 推测需将sch0的tape也作为pscsi同时导出.
+
+将本地磁带柜通过上述方式重新分配给本机, 发现`/dev/tape/by-id`里是新发现设备的路径**覆盖**了原有设备的路径.
 
 # tgtadm
 参考:
