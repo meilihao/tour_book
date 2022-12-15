@@ -446,3 +446,15 @@ cz
 原因: 以前重命名过分支
 
 解决方法: `vim .git/config`, 将其中错误的分支名替换为正确的分支名.
+
+### 访问github报`kex_exchange_identification: Connection closed by remote host`
+原因: 被封禁了 Github 端口 22 的连接
+
+```bash
+# vim ~/.ssh/config
+Host github.com
+    HostName ssh.github.com
+    User git
+    Port 443
+# ssh -T git@github.com -v
+```
