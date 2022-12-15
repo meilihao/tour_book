@@ -27,7 +27,7 @@
 |S|emergency |emergency.target |单用户模式 —— 没有服务运行；文件系统没有挂载. 这是最基础级的操作模式, 只有一个运行在主控制台的用于紧急情况的命令行解释器，供用户和系统交互 |
 |||halt.target|关机|
 
-修改默认运行级别: ` ln -sf /lib/systemd/system/multi-user.target /etc/systemd/system/default.target`, default.target 文件是指向真实的目标文件的符号链接.
+修改默认运行级别: `ln -sf /lib/systemd/system/multi-user.target /etc/systemd/system/default.target`, default.target 文件是指向真实的目标文件的符号链接.
 
 
 # 配置

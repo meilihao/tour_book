@@ -384,6 +384,9 @@ exit
   如果无法链接到windows的bareos client上(windows日志里均是提示tls相关错误), 先卸载该client, 卸载时必须选择**不保留配置**, 再重新安装并配置入正确的参数即可.
 
 ## bconsole cmd
+ref:
+- [bacula备份终端操作bconsole指令](https://www.cnblogs.com/nulige/p/7891161.html)
+
 ```bash
 * reload # 重载配置
 * status client # 测试client connection
@@ -646,8 +649,9 @@ ref:
 相关命令:
 ```bash
 # bconsole
-* status slots storage=Tape
-* update slots [storage=Tape] [drive=1] scan # = label [storage=Tape] [pool=xxx] [drive=1] barcodes # 此时bareso操作mhvtl容易卡住???, 操作飞康vtl正常. 不推荐使用`label barcodes`因为其要设置多个选项
+* status slots[=1] storage=Tape # 获取槽位信息
+* update slots storage=Tape # 更新槽位信息
+* update slots [storage=Tape] [drive=1] scan # 条码扫描. = label [storage=Tape] [pool=xxx] [drive=1] barcodes # 此时bareso操作mhvtl容易卡住???, 操作飞康vtl正常. 不推荐使用`label barcodes`因为其要设置多个选项
 # /usr/lib/bareos/scripts/mtx-changer /dev/sg3 listall # list时不包括driver和邮件槽
 D:0:F:16:E01016L8 # 16表示该磁带原先是16槽位的
 D:1:E
@@ -678,10 +682,12 @@ I:24:E
 # /usr/lib/bareos/scripts/mtx-changer /dev/sg3 losts # 返回仓数(磁带槽+邮件槽)
 24
 # /usr/lib/bareos/scripts/mtx-changer /dev/sg3 load 1 /dev/nst0 0
+# /usr/lib/bareos/scripts/mtx-changer /dev/sg3 transfer <src_slot> <dest_slot> : 导出/导入磁带. 飞康vtl模拟ADIC-Scalar 100-00004导出时底层磁带直接进入其虚拟仓库, 而不会出现在邮件槽, 将该磁带重新导入时, 它直接出现在正常槽位而非邮件槽; 而bareos-webui模拟了导出行为, 初始`status slots storage=Tape`看到邮件槽有磁带, 过几秒后消失.
 ```
 
 测试:
-1. 当一个磁带库的磁带写满后, bareos会自动切换到另一个空磁带. 如果磁带的剩余空间不够本次备份时, 它切换磁带而不是先写一部分再切换磁带.
+1. ~~当一个磁带库的磁带写满后, bareos会自动切换到另一个空磁带. 如果磁带的剩余空间不够本次备份时, 它切换磁带而不是先写一部分再切换磁带~~(待测试).
+1. 将虚拟磁带加入vtl, bareos需要等待一会才能看到新磁带
 
 ## FAQ
 ### bconsole配置
@@ -744,6 +750,17 @@ I:24:E
 - client : clients信息
 
     - xxx.conf : client注册信息
+    
+    ```conf
+    Client {
+      Name = bacula.dev-fd
+      Address = bacula.dev
+      Password = "wbVV1z7mv+/KEuMUOIuHnWVgzPHzJWuW4Nvo/07uxgN7"          #这个密码要和FD配置中的一致
+      File Retention = 60 days            # 60 days # 所备份的文件在Catalog的保持周期. `Auto Prune = yes`时, Bareos 将修剪（删除）早于指定文件保留期的文件记录. 请注意, 这只会影响目录数据库中的记录. 它不会影响存档备份.
+      Job Retention = 6 months            # six months # 同类似File Retention. job的保持周期，应大于File Retention的值
+      Auto Prune = yes                     # Prune expired Jobs/Files
+    }
+    ```
 - console
 
     - admin.conf : web ui访问的授权
@@ -1061,7 +1078,7 @@ I:24:E
       Level = Incremental                                       # 方式：递进（Incremental）
       Client = bareos-fd                                        # 被备份客户端：bareos-fd （在Client中定义）
       FileSet = "TestSet"                                       # 备份文件组：TesetSet （在FileSet中定义）
-      Schedule = "WeeklyCycle"                                  # 备份周期：WeeklyCy（在schedule中定义）
+      Schedule = "WeeklyCycle"                                  # 备份周期：WeeklyCy（在schedule中定义）. 如果没有指定schedule, 默认不运行
       Storage = File                                            # 备份媒体： File（在Storage中定义）
       Messages = Standard                                       # 消息方式：Standard（在Message中定义）
       Pool = Incremental                                        # 存储池：Incremental（在pool中定义） 
@@ -1115,7 +1132,7 @@ I:24:E
           Volume Retention = 365 days         # Volume有效时间
           Maximum Volume Bytes = 50G          # Volume最大尺寸
           Maximum Volumes = 100               # 单个存储池允许的Volume数量
-          Label Format = "Full-"              # Volumes 将被标记为 "Differential-<volume-id>"
+          Label Format = "Full-"              # Volumes 将被标记为 "Full-<volume-id>", 其他`db-${Year}-${Month:p/2/0/r}-${Day:p/2/0/r}-id${JobId}`
           Storage = VTL                       # 指定storage
         }
         ```

@@ -222,7 +222,7 @@ resilvering 是替换磁盘后重建冗余组的过程. 它是一个低优先级
 $ zfs list -t all -r <dataset>
 $ sudo zfs list # 显示系统上pools/filesystems的列表, `-r`递归显示fs及其子fs, `-o`指定要显示的属性,比如space(空间使用); `-t`指定显示的类型, 比如filesystem, volume, share, snapshot.`-H`表示脚本模式: 不输出表头并用单个tab分隔各列; `-p`:精确显示数值; `-d`: 与`-r`连用,限制递归深度; `-s`按指定列升序排序; `-S`:与`-s`类似, 但以降序排序.
 $ sudo zfs get [ all | property[,property]...] <pool> # 获取pool的参数. `-s`指定要显示的source类型; `-H`输出信息去掉标题, 并用tab代替空格来分隔
-$ sudo zfs set atime = off <pool> # 设置pool参数
+$ sudo zfs set atime = off sync=disable <pool> # 设置pool参数
 $ sudo zfs set compression=gzip-9 mypool # 设置压缩的级别
 $ sudo zfs inherit -rS atime  <pool> # 重置参数到default值. `-r`以递归的方式应用inherit子命令
 $ sudo zfs get keylocation <pool>/<filesystem> # 获取filesystem属性
