@@ -9,6 +9,7 @@
 - [rocksdb参数](https://tikv.org/docs/6.1/deploy/configure/tikv-configuration-file/#rocksdb)
 - [Apache Flink中的RocksDB状态后端](https://zhuanlan.zhihu.com/p/332484994)
 - [rocksdb-doc-cn](https://wanghenshui.github.io/rocksdb-doc-cn/)
+- [WiscKey 发布的五年后，工业界用上了 KV 分离吗？](https://zhuanlan.zhihu.com/p/397466422)
 
 RocksDB的目的是成为一套能在服务器压力下，真正发挥高速存储硬件（特别是Flash 和 RAM）性能的高效单点数据库系统. 它是一个C++库，允许存储任意长度二进制kv数据, 支持原子读写操作, 因此本质上来说它是一个可插拔式的存储引擎选择.
 

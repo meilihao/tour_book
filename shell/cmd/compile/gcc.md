@@ -1,4 +1,11 @@
 # gcc
+ref:
+- [microarchitecture level](https://developers.redhat.com/blog/2021/01/05/building-red-hat-enterprise-linux-9-for-the-x86-64-v2-microarchitecture-level)
+
+    - rhel9 use x86-64-v2
+    - [x86-64 psABI supplement](https://developers.redhat.com/blog/2021/01/05/building-red-hat-enterprise-linux-9-for-the-x86-64-v2-microarchitecture-level#background_of_the_x86_64_microarchitecture_levels)
+    - gcc 11/llvm 12 use `-march=` to support microarchitecture level, and please use with glibc 2.33
+
 gnu编译套件之一.
 
 ## [选项](https://gcc.gnu.org/onlinedocs/gcc/Option-Index.html#Option-Index):

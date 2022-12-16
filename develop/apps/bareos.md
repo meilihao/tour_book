@@ -694,6 +694,11 @@ I:24:E
 `/etc/bareos/bconsole.conf`
 
 ### bareos-sd配置
+ref:
+- [NDMP基础介绍](https://bbs.huaweicloud.com/blogs/112813)
+
+    备份NAS到其他存储. 不推荐使用, 使用bareos-fd备份即可, 除非是没法安装bareos-fd的环境, 比如OceanStor 9000.
+
 > 修改bareos-sd的配置后, 必须重启bareos-sd. 在重启bareos-sd前, 请首先使用`bareos-sd -t -v`检查bareos-sd配置文件, 如它没有任何输出, 说明配置文件没有任何语法问题.
 
 `/etc/bareos/bareos-sd.d`:

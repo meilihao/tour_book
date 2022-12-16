@@ -48,6 +48,7 @@
 $ zip -9r lfs/lfs_root/iso/lfs-fsroot.zip lfs -x="lfs/lfs_root/*"
 $ unzip lfs-fsroot.zip
 # unzip tilix.zip -d / # 绿色安装tilix
+# zip -9r - main.go |cat - > a.zip
 ```
 
 ## FAQ
