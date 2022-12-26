@@ -94,10 +94,18 @@ METHOD 连接数据库时的认证方式，常见的有几个特殊值：
 > pg11的pg_hba.conf在`/etc/postgresql/11/main/pg_hba.conf`
 > pg11的数据在`/var/lib/postgresql/11/main`
 
+密码登录example:
+```conf
+local bareos bareos md5
+host all all all md5
+```
+
 ### `sudo systemctl status postgresql.service` failed
 
 使用`dnf install postgresql-server`安装了Fedora22 repo默认提供的postgres9.4,但无法启动.
 原因：postgres未初始化,启动前运行`postgresql-setup initdb`即可.
+
+> kylinv10上的pg10使用`postgresql-setup --initdb`
 
 ### psql: fe_sendauth: no password supplied
 新安装的pg, 其postgres用户没有密码

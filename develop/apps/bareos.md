@@ -135,9 +135,13 @@ ref:
 
 ## 编译
 参考:
+- [travis.yml](https://github.com/bareos/bareos/blob/Release/21.1.5/.travis.yml)
+- [travis](https://github.com/bareos/bareos/tree/Release/21.1.2/.travis)
 - [Configure (cmake) build settings](https://docs.bareos.org/DeveloperGuide/BuildAndTestBareos/systemtests.html)
+- [bareos release/历史版本](https://download.bareos.org/bareos/release/)
+
 ### v21.1.2
-env: oracle linux 7.9
+#### oracle linux 7.9
 
 前提: 根据FAQ安装gcc9
 
@@ -160,9 +164,31 @@ cp -r ../RPMS/noarch/* ../RPMS/x86_64
 ll ../RPMS/x86_64 # 所需rpms
 ```
 
+#### Ubuntu 20.04
+ref:
+- [travis.yml](https://github.com/bareos/bareos/blob/Release/21.1.2/.travis.yml)
+- [travis_before_install.sh](https://github.com/bareos/bareos/blob/master/.travis/travis_before_install.sh)
+
+```bash
+# git clone -b Release/21.1.2 --depth=1 git@github.com:bareos/bareos.git # 应使用`git clone xxx`方式获取bareos源码, 因为cmake需要从git tag/log获取信息.
+# dpkg-checkbuilddeps # check deps
+# NOW=$(LANG=C date -R -u)
+# BAREOS_VERSION=$(cmake -P get_version.cmake | sed -e 's/-- //')
+# printf "bareos (%s) unstable; urgency=low\n\n  * dummy\n\n -- nobody <nobody@example.com>  %s\n\n" "${BAREOS_VERSION}" "${NOW}" | tee debian/changelog
+# vim debian/rules # v21开始仅支持pg
+...
+DAEMON_USER = root
+DAEMON_GROUP = root
+...
+# export DEB_BUILD_OPTIONS="nocheck"
+# fakeroot debian/rules binary # 参考`.travis.yml`和`.travis/*.sh`
+# ll ../*.deb # 生成的deb在当前目录的上级目录
+```
+
 ### v20.0.3
 env: Ubuntu 20.04/Kylin 4.0.2
 
+Ubuntu 20.04:
 ```bash
 # --- cmake
 # 需要cmake >=3.12.0, Kylinv4要自己编译, 并删除debian/control中的cmake依赖检查
@@ -170,7 +196,7 @@ env: Ubuntu 20.04/Kylin 4.0.2
 # Kylinv4安装mtx依赖会报错, 下载该包解压并手动处理即可, 并删除debian/control中的mtx依赖检查
 # --- make install
 # git clone -b Release/20.0.3 --depth=1 git@github.com:bareos/bareos.git # 应使用`git clone xxx`方式获取bareos源码, 因为cmake需要从git tag/log获取信息.
-# cmake -P write_version_files.cmake
+# cmake -P write_version_files.cmake # 其实源码的cmake目录已存在BareosVersion.cmake, 即官方src已预先生成
 # apt install libreadline-dev libpq-dev chrpath
 # mkdir build && cd build
 # cmake -Dpostgresql=yes -Dtraymonitor=no -Dmysql=no -Dsqlite3=no .. # make install时用, 而非deb打包时, cmake参数参考`debian/rules`
@@ -206,6 +232,7 @@ deb [trusted=yes] file:///root/bareos-apt/ ./ # 放在第一行， 优先使用.
 1. 数据库配置在`/usr/local/etc/bareos-dir.d/catalog/Mycatalog.conf`, 且默认使用sqlite3, 需改用postgres
 1. `bareos-dir -t -f -d 500 -v`发现database bareos不存在. 需手动配置db见[这里](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareos.html#other-platforms)
 
+Kylin 10:
 ```bash
 # --- kylin v10
 # dnf install kylin-lsb kylin-release jansson-devel # 其他依赖rpmbuild时根据提示安装. jansson-devel kylin默认没有,导致没法启用".api json"
@@ -393,6 +420,8 @@ ref:
 * status storage
 * show client=l130 [verbose]
 * show fileset[=xxx]
+* show storage # 从conf配置获取数据
+* list storage # 从catelog获取数据, 可能与conf配置不一致
 * list clients
 * list pools
 * list volumes [pool=xxx]
@@ -403,6 +432,8 @@ ref:
 * configure add client name=client2-fd address=192.168.0.2 password=secret # 注册client, 需要重启bareos-dir
 * setdebug client=bareos-fd level=200 # [测试client](https://docs.bareos.org/TasksAndConcepts/TheWindowsVersionOfBareos.html#enable-debuggging)
 * configure add job name=client2-job client=client2-fd jobdefs=DefaultJob # 添加job
+* configure add storage name=xx addr=192.168.0.1 password=xxx device=xxx mediatype=xxx [autochanger=yes] # add storage
+* configure add pool name=test pooltype=Backup recycle=yes autoprune=yes volumeretention=3600 labelformat="test-a-" maximumvolumebytes=100G maximumvolumes=100
 * restore # 常用选项3来还原指定id. 选择文件的命令在[restore-command](https://docs.bareos.org/TasksAndConcepts/TheRestoreCommand.html#restore-command)即`mark (xxx|*)`, 被选中的文件名前会带`*`
 
 # --- cancel
@@ -649,9 +680,10 @@ ref:
 相关命令:
 ```bash
 # bconsole
-* status slots[=1] storage=Tape # 获取槽位信息
+* status slots[=1] storage=Tape # 获取槽位信息. 遇到过某个已加载tape的drive, 在bareos-sd log显示`omode=3 ofloags=0 errno=16: ERR=设备或资源忙`而导致获取磁盘柜状态失败
 * update slots storage=Tape # 更新槽位信息
 * update slots [storage=Tape] [drive=1] scan # 条码扫描. = label [storage=Tape] [pool=xxx] [drive=1] barcodes # 此时bareso操作mhvtl容易卡住???, 操作飞康vtl正常. 不推荐使用`label barcodes`因为其要设置多个选项
+* release storage=Tape drive=0 # 卸载磁带
 # /usr/lib/bareos/scripts/mtx-changer /dev/sg3 listall # list时不包括driver和邮件槽
 D:0:F:16:E01016L8 # 16表示该磁带原先是16槽位的
 D:1:E
@@ -689,7 +721,10 @@ I:24:E
 1. ~~当一个磁带库的磁带写满后, bareos会自动切换到另一个空磁带. 如果磁带的剩余空间不够本次备份时, 它切换磁带而不是先写一部分再切换磁带~~(待测试).
 1. 将虚拟磁带加入vtl, bareos需要等待一会才能看到新磁带
 
-## FAQ
+## 配置
+ref:
+- [Centos 6.3 部署Bacula实现远程备份还原](https://developer.aliyun.com/article/478350)
+
 ### bconsole配置
 `/etc/bareos/bconsole.conf`
 
@@ -699,7 +734,7 @@ ref:
 
     备份NAS到其他存储. 不推荐使用, 使用bareos-fd备份即可, 除非是没法安装bareos-fd的环境, 比如OceanStor 9000.
 
-> 修改bareos-sd的配置后, 必须重启bareos-sd. 在重启bareos-sd前, 请首先使用`bareos-sd -t -v`检查bareos-sd配置文件, 如它没有任何输出, 说明配置文件没有任何语法问题.
+注意: **修改bareos-sd的配置后, 必须重启bareos-sd**. 在重启bareos-sd前, 请首先使用`bareos-sd -t -v`检查bareos-sd配置文件, 如它没有任何输出, 说明配置文件没有任何语法问题.
 
 `/etc/bareos/bareos-sd.d`:
 - device : [数据存储位置](https://docs.bareos.org/Configuration/StorageDaemon.html#device-resource)
@@ -1290,6 +1325,189 @@ quit
 END_OF_DATA
 ```
 
+## 备份
+env:
+- bareos 21.0.0
+
+### pg
+ref:
+- [postgresql-plugin](https://docs.bareos.org/bareos-21/TasksAndConcepts/Plugins.html#postgresql-plugin)
+- [BareosFdPluginPostgres.py](https://github.com/bareos/bareos/blob/Release/21.1.5/core/src/plugins/filed/python/postgres/BareosFdPluginPostgres.py)
+
+dep:
+- pg8000 >= 1.16
+- bareos-filedaemon-python3-plugin : 必须与pg server同机器
+
+target:
+- pg >=9 : current is pg12
+
+操作步骤:
+1. 准备测试pg 9@centos 7
+```bash
+# yum install postgresql-server
+# apt install postgresql-12 postgresql-client-12
+## --- start: set pg
+### --- pg 10
+# postgresql-setup --initdb
+# vim /var/lib/pgsql/data/pg_hba.conf # 在最前面添加rule
+host all all all md5
+# mkdir /var/lib/pgsql/wal_archive/
+# chown -R postgres:postgres /var/lib/pgsql/wal_archive
+# vim /var/lib/pgsql/data/postgresql.conf
+wal_level = replica # pg9是hot_standby
+archive_mode = on
+archive_command = 'test ! -f /var/lib/pgsql/wal_archive/%f && cp %p /var/lib/pgsql/wal_archive/%f'
+...
+### --- pg 12
+# postgresql-setup initdb # Ubuntu安装pg12时已初始化, 此时可忽略命令
+# vim /etc/postgresql/12/main/pg_hba.conf # 在最前面添加rule
+host all all all md5 # pg12默认包含了`localhost md5`, 因此也可不设置该规则
+# mkdir /var/lib/postgresql/12/wal_archive/
+# chown -R postgres:postgres /var/lib/postgresql/12/wal_archive
+# vim /etc/postgresql/12/main/postgresql.conf
+wal_level = replica
+archive_mode = on # off时不会生成archive, 此时bareos全备能成功但增量会报`Timeout waiting 60 s for wal file xxx to be archived`
+archive_command = 'test ! -f /var/lib/postgresql/12/wal_archive/%f && cp %p /var/lib/postgresql/12/wal_archive/%f'
+...
+## --- end
+# systemctl start postgresql
+# --- 准备测试数据
+# su postgres -c psql
+# alter user postgres with password 'postgres';
+# create database test;
+# create database test1; --- 测试会备份哪些dbname
+# \c test
+# create table t(id int);
+# insert into t(id) values (1);
+# \q
+# psql -h localhost -U postgres # 测试设置的postgres密码是否正确
+```
+
+1. 设置bareos fd(要求与上述的pg同机)
+```bash
+# --- on bareos dir
+# bconsole
+* configure add client name=client37-fd address=192.168.0.37 password=password
+* reload
+# --- on bareos fd
+# yum install python3 python3-pip
+# pip3 install python-dateutil pg8000 # python-dateutil是pg8000的依赖
+# yum install bareos-filedaemon-python-plugins-common bareos-filedaemon-python3-plugin bareos-filedaemon-postgresql-python-plugin
+# systemctl restart bareos-fd
+# vim /etc/bareos/bareos-fd.d/client/myself.conf
+Client {
+  ...
+  Plugin Directory = /usr/lib64/bareos/plugins
+  # Plugin Names = "python3"
+}
+# vim /usr/lib64/bareos/plugins/BareosFdPluginPostgres
+...
+        self.dbport = os.environ.get("PGPORT", "5432")
+        self.dbname = os.environ.get("PGDATABASE", "postgres")
+
+        self.dbport = self.options.get("dbport", "5432")
+        self.dbpassword = self.options.get("dbpassword", "postgres")
+...
+            else:
+                self.dbCon = pg8000.Connection(
+                    self.dbuser, database=self.dbname, host=self.dbHost, port=self.dbport, password=self.dbpassword
+                )
+...
+```
+
+1. 配置bareos dir
+```
+# vim /etc/bareos/bareos-dir.d/fileset/postgrs.conf
+FileSet {
+    Name = "postgres"
+    Include  {
+        Options {
+            compression=LZ4
+            signature = MD5
+        }
+        Plugin = "python3"
+                 ":module_path=/usr/lib64/bareos/plugins" # Ubuntu=/usr/lib/bareos/plugins
+                 ":module_name=bareos-fd-postgres" # 原生插件使用unix socket, 需要切换到pguser, 官方文档未找到说明, 这里直接修改源码支持password
+                 ":postgresDataDir=/var/lib/pgsql/data" # /var/lib/postgresql/12/main
+                 ":walArchive=/var/lib/pgsql/wal_archive" # /var/lib/postgresql/12/wal_archive
+                 ":dbuser=postgres"
+                 ":dbname=postgres" # 虽然指定了一个dbname, 实际备份的是整个db data目录. 换成其他dbname也可用, 只要能连上pg即可
+                 ":dbHost=localhost"
+                 ":dbpassword=postgres"
+                 ":dbport=5432"
+    }
+}
+```
+1. 验证
+ref:
+- [postgresql-plugin](https://docs.bareos.org/bareos-21/TasksAndConcepts/Plugins.html#postgresql-plugin)
+
+    备份步骤:
+    1. 通过bareos webui全备一次, 并通过bareos还原得到pg_f1目录
+    1. 查找pg, 再次插入一条数据`insert into t(id) values (2);`, 并再次通过bareos webui增备一次, 并通过还原得到pg_i1目录
+
+pg9:
+```bash
+# --- 验证全备
+# systemctl stop postgresql
+# mv /var/lib/pgsql /var/lib/pgsql.bak # 等同删除旧数据
+# cp -r /pg_f1/var/lib/pgsql /var/lib
+# vim /var/lib/pgsql/data/recovery.conf
+restore_command = 'cp /var/lib/pgsql/wal_archive/%f %p'
+# chown -R postgres:postgres /var/lib/pgsql
+# systemctl start postgresql
+# cat /var/lib/pgsql/data/recovery.done # 文件后缀变化
+# su postgres -c psql
+=# \c test
+=# \c select * from t; -- 只看到id=1的记录
+=# \q
+# --- 验证增量
+# systemctl stop postgresql
+# rm -rf /var/lib/pgsql
+# cp -r /pg_f1/var/lib/pgsql /var/lib
+# vim /var/lib/pgsql/data/recovery.conf
+restore_command = 'cp /var/lib/pgsql/wal_archive/%f %p'
+# chown -R postgres:postgres /var/lib/pgsql
+# systemctl start postgresql
+# cat /var/lib/pgsql/data/recovery.done
+# su postgres -c psql
+=# \c test
+=# \c select * from t; -- 看到id=1和id=2的记录
+```
+
+pg12:
+```bash
+# --- 验证全备
+# systemctl stop postgresql
+# mv /var/lib/postgresql/12 /var/lib/postgresql/12.bak # 等同删除旧数据
+# cp -r /pg_f1/var/lib/postgresql/12 /var/lib/postgresql
+# vim /etc/postgresql/12/main/postgresql.conf
+restore_command = 'cp /var/lib/postgresql/12/wal_archive/%f %p'
+# touch /var/lib/postgresql/12/main/recovery.signal
+# chown -R postgres:postgres /var/lib/postgresql/12
+# systemctl start postgresql
+# ll /var/lib/postgresql/12/main/recovery.signal # 该文件会消失
+# su postgres -c psql
+=# \c test
+=# \c select * from t; -- 只看到id=1的记录
+=# \q
+# --- 验证增量
+# systemctl stop postgresql
+# rm -rf /var/lib/postgresql/12
+# cp -r /pg_i1/var/lib/postgresql/12 /var/lib/postgresql
+# vim /etc/postgresql/12/main/postgresql.conf
+restore_command = 'cp /var/lib/postgresql/12/wal_archive/%f %p'
+# touch /var/lib/postgresql/12/main/recovery.signal
+# chown -R postgres:postgres /var/lib/postgresql/12
+# systemctl start postgresql
+# ll /var/lib/postgresql/12/main/recovery.signal # 该文件会消失
+# su postgres -c psql
+=# \c test
+=# \c select * from t; -- 看到id=1和id=2的记录
+```
+
+## FAQ
+
 ### job执行过程中报`BnetHost2IpAddrs() for host "ubuntu-18" failed: ERR=`
 ubuntu-18是storage daemon的参数在`/etc/bareos/bareos-dir.d/storage/File.conf`的`Address`.
 
@@ -1334,6 +1552,10 @@ client在win10上.
 
 ### 备份光驱文件报`Fatal error: No drive letters found for generating VSS snapshots...Error: VSS API failure calling "BackupComplete". ERR=Object is not initialized; called during restore or not called in correct sequence.`
 备份光驱文件时可能需要关闭vss.
+
+
+### 如果`status slots storage=Tape`报`not found or cloud not be opened`
+restart bareos-sd后可看到该磁带库
 
 ### 修改Director邮件发送命令
 参考:

@@ -544,6 +544,33 @@ vm和host都是东8区.
 env: oracle linux 7.9
 需要将`/root`分区所在的disk, 放在xml disks的第一个
 
+### 添加ide cdrom失败`unsupported configuration: Only a single IDE controller is supported for this machine type`
+ref:
+- [qemuValidateDomainDeviceDefControllerIDE](https://github.com/libvirt/libvirt/blob/master/src/qemu/qemu_validate.c#L3403)
+- [/usr/share/virt-manager/virtinst/devices/disk.py", line 917]
+
+   virt-manager对ide设备的数量检查 from 添加ide cdrom报错
+
+env:
+- libvirtd (libvirt) 8.0.0
+- 当前vm已有4个cdrom
+
+[当前机器类型其一个ide控制器只能连接4个设备](https://bbs.sangfor.com.cn/forum.php?mod=viewthread&tid=136273). virt-manager添加超过4个ide cdrom时会提示"仅支持总线'ide'的4个磁盘"
+
+当前观察到x86仅支持一个ide controller.
+
+### 创建vm时将默认q35改为i440fx, 导致创建vm报错`must be model='pci-root' for this machine type, but model='pcie-root' was found instead`
+ref:
+- [virt-manager#398](https://github.com/virt-manager/virt-manager/issues/398)
+
+env:
+- virt-manager : 4.0.0
+- vm os: centos 7
+
+virt-manager根据vm os默认选中q35时xml已填充了部分controller数据, 该数据和之后的i440fx配置冲突.
+
+解决方法: 将当前xml保存为tmp.xml, 在删除其中所有`<controller type='pci*'/>`, 再`virsh define tmp.xml`即可.
+
 ### 使用usb 2/3
 ref:
 - [虚拟机配置](https://docs.openeuler.org/zh/docs/22.03_LTS/docs/Virtualization/%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%85%8D%E7%BD%AE.html)

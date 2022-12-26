@@ -333,7 +333,7 @@ UUID=eb9cbf2f-fce8-413a-b770-8b0f243e8ad6 /iscsi xfs defaults,_netdev 0 0 # 由�
 
 在target未`-o delete`前, 当前target已挂载或已`--logout`, reboot后该target会重新自动挂载(by cache).
 
-设置chap是在login前设置, 否则login时会报错误.
+设置chap是在`iscsiadm -m discovery -t st`和login之间设置, 否则login时会报错误.
 
 针对某个node设置chap:
 ```bash
@@ -351,7 +351,7 @@ sudo iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664:sn.0d690
 sudo cat /etc/iscsi/nodes/iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664\:sn.0d690d398ec5/127.0.0.1\,3260\,1/default # 配置位置, `127.0.0.1`是target server ip, `1`未知, 但`iscsiadm -m discovery -t st -p 127.0.0.1`时都能找到
 ```
 
-删除target chap:
+删除target chap, 需在`iscsiadm -m discovery -t st`前:
 ```bash
 sudo iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664:sn.0d690d398ec5 -o delete --name=node.session.auth.authmethod
 sudo iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.fyhdesktop29.x8664:sn.0d690d398ec5 -o delete --name=node.session.auth.username

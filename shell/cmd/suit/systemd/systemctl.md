@@ -225,7 +225,7 @@ systemd-ask-password-conso
        # systemctl set-default runlevel5.target
 1. 重启、停止、挂起、休眠系统或使系统进入混合休眠
 ```shell
-# systemctl reboot
+# systemctl reboot [--firmware-setup] # `--firmware-setup`与 reboot 一起使用时, 它会指示系统固件启动进入固件设置界面
 # systemctl halt
 # systemctl suspend # 待机/挂起
 # systemctl hibernate # 休眠

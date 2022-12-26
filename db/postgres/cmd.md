@@ -2,6 +2,7 @@
 - `su postgres -c psql` = `sudo -u postgres psql`
 - `sudo -u postgres psql`
 - `psql -h 127.0.0.1 -p 5432 -U user -d dbname` : 连接数据库
+- `psql -U user -d dbname -W` : 没有`-h`即连接数据库 by unix socket
 - `\encoding [编码名称]` : 显示或设定用户端编码
 - `\?` : help
 - `\q` : 退出 psql
@@ -28,6 +29,10 @@
 - `\du` : 列出所有用户及其用户权限
 - `\ds` : 查看用户自定义序列
 - `\df` : 查看用户自定义函数
+- `SHOW config_file;` : 显示postgresql.conf路径
+- `SHOW data_directory;` : 显示pg data目录
+- `SHOW unix_socket_directories` : 显示unix socket路径
+- `SHOW hba_file;`
 
 
 ## ddl

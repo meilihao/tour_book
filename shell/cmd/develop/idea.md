@@ -12,3 +12,8 @@ File->Project Structure->Project Settings-> Modules, 删除错误的module配置
 
 ### 禁用插件
 Flie -> Settings -> Plugins 找到插件, 通过右键菜单禁用
+
+### 源码和sample在一个project, 如何高亮
+比如`ocksdb-6.29.5/java`
+
+解决方法: 将其samples和src目录同时`Mark Directory as`为`Sources Root`

@@ -25,6 +25,13 @@ RocksDB是一个嵌入式的K-V（任意字节流）存储. 所有的数据在�
 
 ## 编译
 1. 参照[rocksdb INSTALL](https://github.com/facebook/rocksdb/blob/master/INSTALL.md), 选择平台安装依赖lib
+
+    ```bash
+    # apt install libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev liblz4-dev  libzstd-dev libjemalloc-dev
+    # make -j4 shared_lib
+    # make install-shared
+    # ldconfig
+    ```
 1. `cd rocksdb_source_root`, 查看Makefile, 选择`make static_lib/make shared_lib`进行编译
 
     如果构建环境存在jemalloc/tcmalloc, make会通过`build_tools/build_detect_platform <platform>`将相应的环境变量存入生成的make_config.mk中, 供自身使用

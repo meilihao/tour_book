@@ -15,6 +15,9 @@
 1. wechat
 1. git
 
+## other
+- [Ubuntu上安装番茄时钟](https://zhuanlan.zhihu.com/p/350023097)
+
 ## repo
 ```
 # from https://www.atzlinux.com/faq.htm#apt-hand-other from install v2raylui

@@ -17,6 +17,9 @@ tput和stty
     # stty -echo # 禁止将输出内容发送给终端，常用于输入密码但不显示内容.
     # stty echo # 允许将输出内容发送给终端
 
+## tty
+查看当前使用的terminal
+
 ## 快捷键
 - `ctrl + a` : 光标回到命令行首
 - `ctrl + e` : 光标回到命令行尾

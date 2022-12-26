@@ -486,3 +486,7 @@ env: rocksdb.spec from [fedora 36](https://src.fedoraproject.org/rpms/rocksdb), 
 ```
 
 一键清理所有非使用的kernel: `dnf remove $(rpm -qa | grep kernel | grep -v $(uname -r))`
+
+### 重新打包rpm
+ref:
+- [修改rpm中的文件重新打包](https://www.cnblogs.com/felixzh/p/10564895.html)
