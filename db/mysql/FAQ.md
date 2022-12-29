@@ -18,6 +18,11 @@ set global log_output={FILE|TABLE|NONE}	 #设置日志的输出方式，可以�
 set global general_log_file='/var/log/mysql/mysql.log'; # 注意global general_log_file在Linux中只能设置到 /tmp 或 /var 文件夹下，设置其他路径会报错. general_log_file是相对路径时在data dir目录下(`/var/lib/mysql`)
 ```
 
+#### 查询mysql使用到的目录
+```sql
+SHOW VARIABLES WHERE Variable_Name LIKE "%dir";
+```
+
 #### 修改用户密码
 
 ```shell
@@ -369,3 +374,50 @@ reset master;
 
 ### 一个表中可以有多个自增列?
 一个表中只能有一个自增列
+
+### mariadb(>=10.1.48)备份还原
+ref:
+ - [Full Backup and Restore with Mariabackup](https://mariadb.com/kb/en/full-backup-and-restore-with-mariabackup/)
+ - [Incremental Backup and Restore with Mariabackup](https://mariadb.com/kb/en/incremental-backup-and-restore-with-mariabackup/)
+
+    mariadb 10.1和>=10.2的增量还原有区别, 见`Incremental Backup and Restore with Mariabackup`
+
+关键[选项](https://www.hanzz.red/archives/mysql%E5%A4%87%E4%BB%BD%E4%B8%8E%E6%81%A2%E5%A4%8D):
+- --copy-back : 做数据恢复时将备份数据文件拷贝到MySQL服务器的datadir. 使用该选项, 则下次还可用其还原数据且不用再`--prepare`, 因此再次prepare全备时不报错, 但prepare增量时会报`This target seems to be already prepared.`
+- --move-back : 这个选项与–copy-back相似, 唯一的区别是它不拷贝文件, 而是移动文件到目的地. 这个选项会移除backup文件，用时候必须小心.
+
+    `mariabackup --move-back`后再次使用时`mariabackup --prepare`会报错(我这里是直接core dump)
+
+其他:
+1. 备份文件中的`xtrabackup_checkpoints`的`backup_type`可表明当次备份是全备还是增量
+1. **还原时mariabackup需要root权限**. `--prepare`是检查用于还原的备份的数据文件一致性
+
+```bash
+# --- 全量备份
+mariabackup --backup --target-dir=/var/mariadb/backup/ --user=root --password=123456
+
+systemctl stop mariadb
+rm -rf /var/lib/mysql/* # 确保还原前为空目录
+mariabackup --prepare --target-dir=/var/mariadb/backup
+mariabackup --copy-back --target-dir=/var/mariadb/backup/
+chown -R mysql:mysql /var/lib/mysql/
+systemctl start mariadb
+
+# --- 增量备份
+mariabackup --backup --target-dir=/var/mariadb/backup/ --user=root --password=123456
+mariabackup --backup --target-dir=/var/mariadb/inc1/ --incremental-basedir=/var/mariadb/backup/ --user=root --password=123456
+# 基于上次增量备份做增量备份
+mariabackup --backup --target-dir=/var/mariadb/inc2/ --incremental-basedir=/var/mariadb/inc1/ --user=root --password=123456
+
+systemctl stop mariadb
+rm -rf /var/lib/mysql/* # 确保还原前为空目录
+# 准备全量备份文件
+mariabackup --prepare --target-dir=/var/mariadb/backup
+# 准备增量备份文件
+mariabackup --prepare --target-dir=/var/mariadb/backup --incremental-dir=/var/mariadb/inc1 # 检查增备前必须检查全备, 否则会报错`applying incremental backup need a prepared target`
+# 恢复数据
+mariabackup --copy-back --target-dir=/var/mariadb/backup/ --incremental-dir=/var/mariadb/inc1
+# 修改数据文件权限
+chown -R mysql:mysql /var/lib/mysql/
+systemctl start mariadb
+```

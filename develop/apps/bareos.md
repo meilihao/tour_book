@@ -149,7 +149,7 @@ ref:
 # --- 准备环境
 yum install cmake3 # 在repo `ol7_developer_EPEL`
 ls -s /usr/bin/cmake3 /usr/bin/cmake
-yum install redhat-lsb redhat-release jannson-devel # jannson-devel在repo `ol7_optional_latest`需启用
+yum install redhat-lsb redhat-release jannson-devel # jannson-devel在repo `ol7_optional_latest`需启用. kylin:`yum install kylin-lsb kylin-release jannson-devel`
 yum-builddep bareos.spec --define "centos_version 790"
 yum-builddep python-bareos.spec --define "centos_version 790"
 # --- 开始构建
@@ -416,8 +416,6 @@ ref:
 
 ```bash
 * reload # 重载配置
-* status client # 测试client connection
-* status storage
 * show client=l130 [verbose]
 * show fileset[=xxx]
 * show storage # 从conf配置获取数据
@@ -479,7 +477,7 @@ show message
 
 # --- status当着状态信息
 status #查看状态信息
-status client=t3-fd  #客户端名称t3-fd的状态信息
+status client=t3-fd  #客户端名称t3-fd的状态信息, 如果支持plugin, 则还会显示plugin相关信息. 可用于测试client connection
 status client   # 查看 client  的状态
 status dir      # 查看director 的状态
 status storage  # 查看 storage 的状态 
@@ -1325,9 +1323,12 @@ quit
 END_OF_DATA
 ```
 
-## 备份
+## 备份还原
 env:
 - bareos 21.0.0
+
+均假设指定的client已注册
+除非特别说明, 否则下面还原验证均不涉及分区表(当前就是没有涉及分区表).
 
 ### pg
 ref:
@@ -1342,7 +1343,7 @@ target:
 - pg >=9 : current is pg12
 
 操作步骤:
-1. 准备测试pg 9@centos 7
+1. 准备pg@centos 7
 ```bash
 # yum install postgresql-server
 # apt install postgresql-12 postgresql-client-12
@@ -1393,7 +1394,6 @@ archive_command = 'test ! -f /var/lib/postgresql/12/wal_archive/%f && cp %p /var
 # yum install python3 python3-pip
 # pip3 install python-dateutil pg8000 # python-dateutil是pg8000的依赖
 # yum install bareos-filedaemon-python-plugins-common bareos-filedaemon-python3-plugin bareos-filedaemon-postgresql-python-plugin
-# systemctl restart bareos-fd
 # vim /etc/bareos/bareos-fd.d/client/myself.conf
 Client {
   ...
@@ -1413,10 +1413,11 @@ Client {
                     self.dbuser, database=self.dbname, host=self.dbHost, port=self.dbport, password=self.dbpassword
                 )
 ...
+# systemctl restart bareos-fd
 ```
 
 1. 配置bareos dir
-```
+```bash
 # vim /etc/bareos/bareos-dir.d/fileset/postgrs.conf
 FileSet {
     Name = "postgres"
@@ -1435,16 +1436,19 @@ FileSet {
                  ":dbHost=localhost"
                  ":dbpassword=postgres"
                  ":dbport=5432"
+                 ":switchWalTimeout=300"
     }
 }
+# --- bconsole reload
 ```
+
 1. 验证
 ref:
 - [postgresql-plugin](https://docs.bareos.org/bareos-21/TasksAndConcepts/Plugins.html#postgresql-plugin)
 
     备份步骤:
     1. 通过bareos webui全备一次, 并通过bareos还原得到pg_f1目录
-    1. 查找pg, 再次插入一条数据`insert into t(id) values (2);`, 并再次通过bareos webui增备一次, 并通过还原得到pg_i1目录
+    1. 再次插入一条数据`insert into t(id) values (2);`, 并再次通过bareos webui增备一次, 并通过还原得到pg_i1目录
 
 pg9:
 ```bash
@@ -1458,6 +1462,7 @@ restore_command = 'cp /var/lib/pgsql/wal_archive/%f %p'
 # systemctl start postgresql
 # cat /var/lib/pgsql/data/recovery.done # 文件后缀变化
 # su postgres -c psql
+=# \l -- 发现test1
 =# \c test
 =# \c select * from t; -- 只看到id=1的记录
 =# \q
@@ -1488,6 +1493,7 @@ restore_command = 'cp /var/lib/postgresql/12/wal_archive/%f %p'
 # systemctl start postgresql
 # ll /var/lib/postgresql/12/main/recovery.signal # 该文件会消失
 # su postgres -c psql
+=# \l -- 发现test1
 =# \c test
 =# \c select * from t; -- 只看到id=1的记录
 =# \q
@@ -1506,7 +1512,240 @@ restore_command = 'cp /var/lib/postgresql/12/wal_archive/%f %p'
 =# \c select * from t; -- 看到id=1和id=2的记录
 ```
 
+### mariadb
+ref:
+- [mariabackup](https://docs.bareos.org/bareos-21/TasksAndConcepts/Plugins.html)
+- [部分备份(partial backup)](https://www.jianshu.com/p/ae8437dcc441)
+
+    use `mariabackup --databases='testbak' --tables='tab_*'`, 但bareos-fd-mariabackup不支持
+
+仅innodb支持增量备份, 其他table format的增量实际都是全备.
+
+dep:
+- bareos-filedaemon-mariabackup-python-plugin : 必须与mariadb server同机器
+
+target:
+- mariadb >=10.1.48 : [mariabackup is stable since MariaDB 10.1.48](https://docs.bareos.org/bareos-21/TasksAndConcepts/Plugins.html)
+
+    xtrabackup 是percona 公司开发的Mysql物理备份开源工具. 因为Mariadb的新特性 xtrabackup 目前不支持10.1.23之后的版本. 所以Mariadb在xtrabackup的基础上进行了二次开发即mariabackup, 并集成到安装包mariadb-backup里, 该工具支持Mariadb的全备和增量备份.
+
+操作步骤:
+1. 准备mariadb 10.3@ubuntu 20.04
+
+```bash
+# apt install mariadb-server mariadb-client mariadb-backup
+# mysql -h localhost -u root
+> set password for 'root'@'localhost' = PASSWORD('xxx');
+> SHOW VARIABLES WHERE Variable_Name LIKE "%dir"; -- 用于查找data目录
+> exit
+# mysql -h localhost -u root -p
+> create database test;
+> create database test1; --- 测试会备份哪些dbname
+> use test
+> create table t(id int);
+> insert into t(id) values (1);
+```
+
+1. 配置bareos fd
+启用bareos-fd plugin同pg, 省略.
+
+```bash
+# vim /root/.my.cnf
+[client]
+host=localhost
+port=3306
+user=root
+password=password
+
+[mysqld]
+datadir=/var/mycustomdatadir # 自定义数据目录, 使用默认时删除即可
+```
+
+1. 配置bareos dir
+```bash
+# vim /etc/bareos/bareos-dir.d/fileset/mariadb.conf
+FileSet {
+    Name = "mariadb"
+    Include  {
+        Options {
+            compression=LZ4
+            signature = MD5
+        }
+        Plugin = "python3"
+                 ":module_path=/usr/lib64/bareos/plugins"
+                 ":module_name=bareos-fd-mariabackup"
+                 ":mycnf=/root/.my.cnf" # mariabackup的defaults-extra-file选项
+                 ":strictIncremental=false" # 对非innodb比如MYISAM/ARIA/Rocks启用, 避免其增量备份没有备份到数据, 因为为true时, 只有LSN增加才会执行增量备份
+    }
+}
+# --- bconsole reload
+```
+
+1. 验证
+    ref:
+    - [py2plug-fd-mariabackup/testrunner](https://github.com/bareos/bareos/blob/Release/21.1.2/systemtests/tests/py2plug-fd-mariabackup/testrunner)
+    - [使用 Mariabackup 工具恢复数据](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/8/html/deploying_different_types_of_servers/restoring-data-using-the-mariabackup-tool_backing-up-mariadb-data)
+    - [Full Backup and Restore with Mariabackup](https://mariadb.com/kb/en/full-backup-and-restore-with-mariabackup/)
+    - [Incremental Backup and Restore with Mariabackup](https://mariadb.com/kb/en/incremental-backup-and-restore-with-mariabackup/)
+
+    备份步骤:
+    1. 通过bareos webui全备一次, 并通过bareos还原得到mariadb_f1目录
+    1. 再次插入一条数据`insert into t(id) values (2);`, 并再次通过bareos webui增备一次, 并通过还原得到mariadb_i1目录
+
+    > 备份文件中的`xtrabackup_checkpoints`的`backup_type`可表明当次备份是全备还是增量
+
+    注意:
+    1. 使用`--copy-back`选项, 下次还可用其还原数据且不用再`--prepare`
+
+```bash
+# --- 还原时mariabackup需要root权限. `--prepare`是检查用于还原的备份的数据文件一致性
+# --- 验证全量
+# systemctl stop mariadb
+# mv /var/lib/myql /var/lib/myql.bak
+# mkdir -p /var/lib/myql # 确保为空
+# cd /mariadb_f1/_mariabackup
+# mariabackup --prepare --target-dir=45/<fromLSN_toLSN_jobid> # fromLSN_toLSN_jobid(jobid是备份时的id)是备份目录的命名. 而45是还原时的jobid
+... completed OK!
+# mariabackup --copy-back --target-dir=45/<fromLSN_toLSN_jobid>
+... completed OK!
+# chown -R mysql:mysql /var/lib/mysql/
+# mysql -h localhost -u root -p
+> show databases; -- 可看到test和test1
+> use test
+> select * from t; --  可看到id=1
+# --- 验证增量还原. mariadb 10.1和>=10.2的增量还原有区别, 见`Incremental Backup and Restore with Mariabackup`
+# systemctl stop mariadb
+# rm -rf /var/lib/myql
+# mkdir -p /var/lib/myql # 确保为空
+# cd /mariadb_i1/_mariabackup
+# mariabackup --prepare --target-dir=46/<fromLSN_toLSN_jobid> # 检查全备
+... completed OK!
+# mariabackup --prepare --target-dir=46/<fromLSN_toLSN_jobid> --incremental-dir=46/<fromLSN_toLSN_jobid> [--incremental-dir=46/<fromLSN_toLSN_jobid>] # 检查增备前必须检查全备, 否则会报错`applying incremental backup need a prepared target`
+... completed OK!
+# mariabackup --copy-back --target-dir=46/<fromLSN_toLSN_jobid> --incremental-dir=46/<fromLSN_toLSN_jobid> [--incremental-dir=46/<fromLSN_toLSN_jobid>]
+# chown -R mysql:mysql /var/lib/mysql/
+# mysql -h localhost -u root -p
+> show databases; -- 可看到test和test1
+> use test
+> select * from t; --  可看到id=1和id=2
+```
+
+### mssql
+ref:
+- [Backup of MSSQL Databases with Bareos Plugin](https://docs.bareos.org/bareos-21/Appendix/Howtos.html#backup-of-mssql-databases-with-bareos-pluginn)
+- [SQL Server教程 - SQL Server 备份与恢复（BACKUP&RESTORE）](https://www.cnblogs.com/cqpanda/p/16539344.html)
+
+dep:
+- [winbareos-21.0.0-release-64-bit.exe](https://download.bareos.org/bareos/release/21/windows/) : 必须与mssql同机器, 需要使用Administrator权限安装
+
+target:
+- mssql 11.0.300 : 未找到版本规定, 这里使用11.0.300来验证
+
+1. 准备mssql 11.0.300@windows server 2012
+```sql
+ALTER LOGIN sa ENABLE;  
+GO  
+ALTER LOGIN sa WITH PASSWORD = 'password@123' ;  
+GO
+
+select @@SERVERNAME; 获取实例名. 或`sp_helpserver`
+
+create database test;
+create database test1; --- 测试会备份哪些dbname
+use test;
+create table t(id int);
+insert into t(id) values (1);
+```
+
+1. 配置bareos-fd
+```
+# --- 启用plugin
+# vim C:/ProgramData/Bareos/bareos-fd.d/client/myself.conf
+...
+ Plugin Directory = "C:\Programe Files\Bareos\Plugins"
+...
+# --- 重启bareos-fd
+```
+
+1. 配置bareos-dir
+```bash
+# vim /etc/bareos/bareos-dir.d/fileset/mssql.conf
+FileSet {
+    Name = "mssql"
+    Enable VSS = no
+    Include  {
+        Options {
+            compression=LZ4
+            signature = MD5
+        }
+        Plugin = "mssqlvdi"
+                 ":instance=default" # 默认实例用`default`, 否则用`SQL Server 配置管理器 -> SQL Server 服务 -> SQL Server(<instance_name>)`获取的实例名
+                 ":database=test" # mssqlvdi是只备份指定dbname
+                 ":username=sa"
+                 ":password=password@123"
+    }
+}
+# --- bconsole reload
+```
+
+1. 验证
+    ref:
+    - [MSSQL Plugin Installation](https://docs.bareos.org/bareos-21/Appendix/Howtos.html#mssql-plugin-installation)
+
+    备份步骤:
+    1. 通过bareos webui全备一次, 并通过bareos还原得到`C:/mssql_f1`(**注意斜线方向**)目录
+    1. 再次插入一条数据`insert into t(id) values (2);`, 并再次通过bareos webui增备一次, 并通过还原得到`C:/mssql_i1`目录
+
+全备验证:
+1. 打开Microsoft SQL Server Managerment Studio, 删除旧test.
+
+    删除前将当前操作对象执行其他db对象(比如双击其他dbname), 保证不再使用test, 否则删除test可能报错.
+1. 选中`数据库`右键->还原数据库
+
+    配置:
+    1. 源: 设备, 添加`C:/mssql_f1/@MSSQL/default/test/db-20221228-210902-full.bak`
+    2. 还原计划: 勾选`要还原的备份集`
+    3. 点击右下角的`验证备份介质`
+1. 点击`确定`, 会发现多出一个test, 且表t存在id=1
+
+增备验证:
+1. 打开Microsoft SQL Server Managerment Studio, 删除旧test
+1. 选中`数据库`右键->还原数据库
+
+    配置:
+    1. 源: 设备, 添加`C:/mssql_i1/@MSSQL/default/test/{db-20221228-210902-full.bak, db-20221228-211017-log.trn}`, trn应该是增量文件
+    2. 还原计划: 勾选`要还原的备份集`
+    3. 点击右下角的`验证备份介质`
+1. 点击`确定`, 会发现多出一个test, 且表t存在id=1和id=2
+
 ## FAQ
+
+### mssqlvdi全备报错
+fileset: `Plugin = "mssqlvdi:instance=SQLSERVER:database=test:username=sa:password=password@123"`
+
+1. windows 日志-应用程序
+
+    ```log
+    SQLVDI: Loc=IdentifySQLServer. Desc=MSSQL$SQLSERVER. ErrorCode=(1060)The specified service does not exist as an installed service.
+    . Process=5288. Thread=6428. Client. Instance=SQLSERVER. VD=.
+    ```
+
+    > VDI=Virtual Device Interface
+1. `list joblog jobid=53`
+
+    ```log
+    2022-12-28 04:54:38 sqlserver-fd JobId 50:      Cannot open "/@MSSQL/SQLSERVER/test/db-20221228-045438-full.bak": ERR=Cannot create a file when that file already exists.
+    ...
+    SD Bytes Written:  193
+    ...
+    Termination:       Backup OK -- with warnings
+    ```
+
+    storage
+
+解决方法: 将fileset中的`instance=SQLSERVER`改为`instance=default`.
+
+> 按照`服务(services.msc) -> `SQL Server(<实例名>)`, 默认实例为(MSSQLSERVER)`, 但使用`instance=MSSQLSERVER`也会报错.
 
 ### job执行过程中报`BnetHost2IpAddrs() for host "ubuntu-18" failed: ERR=`
 ubuntu-18是storage daemon的参数在`/etc/bareos/bareos-dir.d/storage/File.conf`的`Address`.

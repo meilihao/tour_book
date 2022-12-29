@@ -30,3 +30,6 @@ sudo sysctl -p
 
 ### extension log
 `cmd-shift-p -> Search Show Logs -> Extension Host`
+
+### ssh远程ui
+`code --no-sandbox --user-data-dir=/root`
