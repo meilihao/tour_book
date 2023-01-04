@@ -263,3 +263,28 @@ RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS="+S 1:1"
 > 顺便调大file limit, 太小也会导致问题: `ulimit -n 65536`
 
 修改后在Ubuntu kernel 4.4上仍会出现.
+
+### `access to vhost '/' refused for user 'mq'`
+```bash
+# rabbitmqctl list_users
+# rabbitmqctl list_permissions --vhost / # 查看vhost上的权限
+# rabbitmqctl set_permissions -p / mq '.*' '.*' '.*' # 使用户mq具有`/`这个virtual host中所有资源的配置、写、读权限, 以便管理其中的资源
+```
+
+### `access to vhost '/' refused for user 'guest': vhost '/' is down`
+ref:
+- [Why do I get “no access to this vhost” when trying to start the RabbitMQ?](https://jfrog.com/knowledge-base/why-do-i-get-no-access-to-this-vhost-when-trying-to-start-the-rabbitmq/)
+
+	reset rabbitmq
+
+根fs满, 扩容成功并reboot server后出现.
+
+```bash
+curl --user guest:guest http://localhost:15672/api/vhosts
+rabbitmqctl restart_vhost # 会报错
+# --- 修复方法: 重建该vhost
+rabbitmqctl list_permissions --vhost /
+rabbitmqctl delete_vhost /
+rabbitmqctl add_vhost /
+rabbitmqctl set_permissions -p / guest '.*' '.*' '.*'
+```

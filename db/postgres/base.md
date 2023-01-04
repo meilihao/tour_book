@@ -26,10 +26,19 @@ PG数据存储结构分为：逻辑存储结构和物理存储存储. 其中：�
 
 - 表空间-tablespace
 
-  数据库在逻辑上分成多个存储单元，称作表空间。表空间用作把逻辑上相关的结构放在一起。数据库逻辑上是由一个或多个表空间组成。初始化的时候，会自动创建pg_default和pg_global两个表空间.
+  数据库在逻辑上分成多个存储单元，称作表空间. 表空间用作把逻辑上相关的结构放在一起. 数据库逻辑上是由一个或多个表空间组成. 初始化的时候，会自动创建pg_default和pg_global两个表空间.
+
+  在PostgreSQL中, 表空间是一个目录, 里面存储的是它所包含的数据库的各种物理文件.
 - 模式-Schema
 
-  当创建一个数据库时，会为其创建一个名为public的默认Schema. Schema是数据库中的命名空间，在数据库中创建的所有对象都是在Schema中创建，一个用户可以从同一个客户端连接中访问不同的Schema。而不同的Schema中可以有多个同名的Table、Index、View、Sequence、Function等等数据库对象。可以通过`\dn`来查看当前数据库的Schema.
+  当创建一个数据库时，会为其创建一个名为public的默认Schema. Schema是数据库中的命名空间，在数据库中创建的所有对象都是在Schema中创建, 一个用户可以从同一个客户端连接中访问不同的Schema. 而不同的Schema中可以有多个同名的Table、Index、View、Sequence、Function等等数据库对象, 可以通过`\dn`来查看当前数据库的Schema.
+
+  因为**在PostgreSQL中, 数据库的创建是通过克隆数据库模板来实现的, 这与SQL SERVER是同样的机制**. 由于CREATE DATABASE dbname并没有指明数据库模板, 所以系统将默认克隆template1数据库, 得到新的数据库dbname.
+
+  ```sql
+  CREATE DATABASE dbname TEMPLATE template1 TABLESPACE tablespacename;
+  ALTER DATABASE dbname OWNER TO custom;
+  ```
 
 - 段-segment
 
@@ -473,6 +482,10 @@ PostgreSQL使用表空间映射逻辑名称和磁盘物理位置, 默认提供�
 CREATE TABLESPACE tablespace_name
 OWNER user_name
 LOCATION directory_path;
+
+create database testdb tablespace tablespace_name; -- 此时删除tablespace需要先删除testdb
+CREATE TABLE foo(i int) TABLESPACE tablespace_name;
+CREATE INDEX newtab_val_idx ON newtab (val) TABLESPACE mytbsp;
 ```
 表空间名称不能以pg开头，因为这些名称为系统表空间保留. directory_path是表空间使用空目录的绝对路径，PostgreSQL的用户必须拥有该目录的权限可以进行读写操作.
 

@@ -5,12 +5,14 @@
 - `psql -U user -d dbname -W` : 没有`-h`即连接数据库 by unix socket
 - `\encoding [编码名称]` : 显示或设定用户端编码
 - `\?` : help
+- `\h [NAME]` : help
 - `\q` : 退出 psql
 - `\c dbname` : 切换数据库
 - `\l` : 列举数据库
 - `\dt` : 列举表
 - `\d tblname` : 查看表结构
 - `\di` : 查看索引
+- `\db+` : 查看表空间
 - `\x` : 以列显示的开关
 - `\timing on/off` : 显示执行时长
 - `\conninfo` : 显示连接信息
@@ -25,7 +27,7 @@
 - `\dt` : 只查看数据库中的所有表
 - `\d tb_name` : 查看表结构定义
 - `\dt+ tb_name` : 查看表大小等属性
-- `\db` : 查看表空间
+- `\db[+]` : 查看表空间
 - `\du` : 列出所有用户及其用户权限
 - `\ds` : 查看用户自定义序列
 - `\df` : 查看用户自定义函数
@@ -108,6 +110,7 @@ cat $PGDATA/tablespace_map # 查看表空间映射位置, from pg 9.5. 在10.5�
 ```sql
 # create tablespace tbs_test owner postgres location '/usr/local/pgdata'; # 会在$PGDATA/pg_tblspc下有一个连接文件xxx, 指向/usr/local/pgdata
 # CREATE DATABASE logistics TABLESPACE ts_primary; -- 在表空间内建库
+# select d.datname,p.spcname from pg_database d, pg_tablespace p where d.datname='lottu01' and p.oid = d.dattablespace; --查看dbname的默认表空间
 # create table test(a int) tablespace tbs_test; --在表空间内建表
 # \db[+] [<tablespace_name>] --罗列表空间, `+`表示更多细节, 比如空间大小
 # select * from pg_tablespace; -- 查看表空间
@@ -115,9 +118,20 @@ cat $PGDATA/tablespace_map # 查看表空间映射位置, from pg 9.5. 在10.5�
 # select spcname, pg_size_pretty(pg_tablespace_size(spcname)) from pg_tablespace; -- 查看各个表空间的大小
 # alter table test_tsp03 set tablespace tsp01; -- 将表从一个表空间移到另一个表空间, 期间会锁表(在这个期间涉及到的对象将被锁定, 不可访问)
 # drop tablespace if exists tbs_test; -- 删除表空间. 删除表空间前必须要删除该表空间下的所有数据库对象，否则无法删除
+-- 为表和索引指定新的表空间
+postgres=> ALTER TABLE foo SET TABLESPACE pg_default;
+postgres=> ALTER INDEX foo_idx SET TABLESPACE pg_default;
+-- 使用如下语句将一个表空间中的所有表或索引移至另一个表空间, 相应对象会被锁定, 直至完成
+postgres=> ALTER TABLE ALL IN TABLESPACE myspace SET TABLESPACE pg_default;
+postgres=> ALTER INDEX ALL IN TABLESPACE myspace SET TABLESPACE pg_default;
 ```
 
 ## 元数据
 ```sql
 SELECT u.datname  FROM pg_catalog.pg_database u where u.datname='xxx'; # 检查是否存在数据库xxx
+```
+
+## dump
+```bash
+pg_dump -h localhost -U postgres testdb
 ```

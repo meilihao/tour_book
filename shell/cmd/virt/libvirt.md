@@ -431,6 +431,18 @@ qemu构建时没有选中spice.
 
 ### [vm 磁盘扩容](https://opengers.github.io/openstack/openstack-instance-disk-resize-and-convert/)
 
+
+```bash
+# qemu-img info /data/test/centos7.qcow2
+image: /data/test/centos6.qcow2
+file format: qcow2
+virtual size: 40G (85899345920 bytes)
+disk size: 1.2G
+# qemu-img resize centos7.qcow2 +40G # 如果virtual size以足够, 就忽略这步
+```
+
+扩容vdisk上的fs见[/shell/cmd/suit/part/resize.md]
+
 ### vm disk测试性能容易卡死
 ref:
 - [Virtualization Tuning and Optimization Guide7.2. Caching](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_tuning_and_optimization_guide/sect-virtualization_tuning_optimization_guide-blockio-caching)
