@@ -458,3 +458,9 @@ Host github.com
     Port 443
 # ssh -T git@github.com -v
 ```
+
+### 比较分支文件差异
+```bash
+git diff branch1 branch2 [--stat] # 显示差异. `--stat`: 仅显示差异的文件列表
+git diff branch1 branch2 <file_path> # 比较指定文件差异
+```

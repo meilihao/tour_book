@@ -114,6 +114,10 @@ Cannot find device "cilium_net@cilium_host"
 
 用来管理 network namespace
 
+# vxlan
+ref:
+- [使用 VXLAN 为虚拟机创建虚拟第 2 层域](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/9/html/configuring_and_managing_networking/assembly_using-a-vxlan-to-create-a-virtual-layer-2-domain-for-vms_configuring-and-managing-networking)
+
 ## FAQ
 ### 能ping通, 但对端不能接受数据包(包括SYN)
 本机的ARP表中的对端mac可能错误
@@ -291,11 +295,6 @@ $ ip rule add from 60.30.128.15 table cnc
 # --- 以上就基本配置好了电信和联通的多线原路返回路由
 ```
 
-## vxlan
-ref:
-- [使用 VXLAN 为虚拟机创建虚拟第 2 层域](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/9/html/configuring_and_managing_networking/assembly_using-a-vxlan-to-create-a-virtual-layer-2-domain-for-vms_configuring-and-managing-networking)
-
-## FAQ
 ### `ip route`配置gateway时报`Nexthop has invalid gateway`
 解决方法: 先将网卡up并给其配上ip再配置gateway即可.
 
@@ -321,7 +320,6 @@ RHEL9使用`/usr/lib/systemd/network/99-default.link`中的 NamePolicy 设置设
 ### Oracle linux 7.9网络配置
 gateway: /etc/sysconfig/network
 ip: /etc/sysconfig/network-scripts/ifcfg-xxx # 这里的GATEWAY会被忽略, 因此最好时删除它
-
 
 ### net device online要求
 1. 已插入网线且链路ok

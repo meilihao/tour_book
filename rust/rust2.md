@@ -1,5 +1,10 @@
 # rust
-rust是一门系统编程语言, 没有gc.
+rust是一门系统编程语言, 特点:
+1. 高性能: 没有gc
+1. 高可靠: 所有权模型保证了内存安全和线程安全
+1. 生产力: 拥有出色的文档、友好的编译器和清晰的错误提示信息, 还集成了一流的工具 cargo, 智能地自动补全和类型检验的多编辑器支持, 以及自动格式化代码等等
+
+Rust 中最大的思维转换就是变量的所有权和生命周期，这是几乎所有编程语言都未曾涉及的领域.
 
 > 系统编程语言是相对于应用级编程语言, 它处于更底层, 更接近硬件层次, 其特点有:
 > 1. 可在资源非常受限环境运行
@@ -31,7 +36,7 @@ Rust 相对重大的设计必须经过 RFC(Request For Comments ）设计步骤.
 
 rust的`RFC -> Nightly -> Beta -> Stable`策略成功实践了快速迭代、敏捷交付以及 视用户反馈的特点，同时也保证了核心设计的稳定性--用户可以根据自己的要和风险偏好，选择合适的版本.
 
-2017 年下半年， rust 设计组又提出了一个基于 poch 演进策略（后来也被称为edition). 它要解决的问题是`如何让 Rust 平稳地进化`. 简单来说就是让 Rust 的兼容性保证是一个有时限的长度, 而不是永久.
+2017 年下半年, rust 设计组又提出了一个基于 poch 演进策略（后来也被称为edition). 它要解决的问题是`如何让 Rust 平稳地进化`. 简单来说就是让 Rust 的兼容性保证是一个有时限的长度, 而不是永久.
 
 ## 内存安全
 ref:
@@ -89,8 +94,7 @@ Rust 表达式又可以分为‘左值’ （lvalue ）和‘右值’（rvalue)
 
 	Rust 中，每个变量必须被合理初始化之后才能被使用, 使用未初始化变量这样的错误，在Rust 是不可能出现的 （利用 unsafe hack 除外）.
 
-	Rust 允许在同一个代码块中声明同样名字的变量, 如果这样做, 后面声明的变量会将前面声明的变量“遮蔽”（ Shadowing ）起来. 实际上，传统编程语 C/C＋＋ 中也存在类似的功能，只不过它们只允许嵌套的代码块内部
-变量出现遮蔽, 而 Rust 在这方面放得稍微宽一点, 同一语句块内部声明的变量也可以发生遮蔽.
+	Rust 允许在同一个代码块中声明同样名字的变量, 如果这样做, 后面声明的变量会将前面声明的变量“遮蔽”(Shadowing)起来. 实际上，传统编程语 C/C＋＋ 中也存在类似的功能，只不过它们只允许嵌套的代码块内部变量出现遮蔽, 而 Rust 在这方面放得稍微宽一点, 同一语句块内部声明的变量也可以发生遮蔽.
 
 	rust变量声明的类型后置更方便类型推导.
 
@@ -196,11 +200,15 @@ Rust 表达式又可以分为‘左值’ （lvalue ）和‘右值’（rvalue)
 
 		```rust
 		// 由于它实在是太常用, 标准库将 Option 以及它的成员 Some,None 都加入到了Prelude, 它表示的含义是`要么存在、要么不存在`
+		// Rust 在语言层面彻底不允许空值 null 的存在，但无奈null 可以高效地解决少量的问题，所以 Rust 引入了 Option 枚举类. Option 是 Rust 标准库中的枚举类，这个类用于填补 Rust 不支持 null 引用的空白.
+		// 由于 Option 是 Rust 编译器默认引入的，在使用时可以省略 `Option::` 直接写 None 或者 Some().
 		enum Option<T>{
 			Some(T),
 			None,
 		}
 		```
+
+		> 很多语言默认不允许 null，但在语言层面支持 null 的出现（常在类型前面用`?`符号修饰）.
 
 	如果说`tuple, struct, tuple struct`, 在Rust 中代表的是多个类型的“与”关系，那么 enum 类型在 Rust 中代表的就是多个类型的“或”关系.
 
@@ -266,6 +274,8 @@ rust复合类型支持递归定义, 但需要使用指针, 否则计算其大小
     > 整数自动推导时**默认是i32**
 
     > 字面量后面可以跟后缀，可代表该数字的具体类型，从而省略掉显示类型标记, **个人不推荐**.
+
+    > rust不支持`++/--`
 
     c中无符号算术运算永远不会overflow, 如果超出范围则自动舍弃高位数据; 有符号如果发生了overflow, 则是undefined behavior, 由编译器处理. 
 
@@ -333,6 +343,12 @@ Rust使用as用于类型转换, 前提是编译器认为是合理的转换.
 ## 流程控制
 Rust 的循环和大部分语言都一致, 支持死循环`loop {}`、条件循环`while expr {}`，以及对迭代器的循环`for x in iter {}`. 循环可以通过 break 提前终止，或者 continue 来跳到下一轮循环.
 
+> 可用比如`let number = if a > 0 { 1 } else { -1 };`的 if-else 结构实现类似于三元条件运算表达式 (A ? B : C) 的效果
+
+> 在 C 语言中 for 循环使用三元语句控制循环，但是 Rust 中没有这种用法，需要用 while 循环来代替. 且没有 do-while 的用法(do 被规定为保留字)
+
+> loop 循环可以通过 break 关键字类似于 return 一样使整个循环退出并给予外部一个返回值.
+
 > 可在loop/while/for 循环前面加上`生命周期标识符`(该标识符以单引号开头), 其在内部的循环中可以使用 break/continue 语句来选择跳出到哪一层.
 
 > 如果一个 loop 永远不返回，那么它的类型就是“发散类型”. 编译器可以判断出发散类型, 其后代码是永远不会执行的死代码.
@@ -340,6 +356,8 @@ Rust 的循环和大部分语言都一致, 支持死循环`loop {}`、条件循�
 > `loop{}`和`while true{}` 循环有何区别, 为什么 Rust 设计了loop, 难道不是完全多余的吗？实际上不是, 主要原因在于, 相比于其他的许多语言, Rust 要做更多的静态分析它俩在运行时是没有什么区别, 它们主要是会影响编译器内部的静态分析. `let x; loop { x = 1; break; }`可以执行, `let x; while true { x = 1; break ; }`会报错, 因为编译器认为while语句的执行跟条件表达式在运行阶段的值有关, 因此不确定x是否一定会初始化而报错.
 
 > for 循环的主要用处是利用迭代器对包含同样类型的多个元素的容器执行遍历，如数组,链表,HashMap,HashSet等.
+
+> rust不支持switch, 而是使用match. 很多语言摒弃 switch 的原因都是因为 switch 容易存在因忘记添加 break 而产生的串接运行问题，Java 和 C# 这类语言通过安全检查杜绝这种情况出现.
 
 Rust 的 for 循环可以用于任何实现了  IntoIterator trait 的数据结构. 在执行过程中，IntoIterator 会生成一个迭代器，for 循环不断从迭代器中取值，直到迭代器返回 None 为止。因而，**for 循环实际上只是一个语法糖，编译器会将其展开使用 loop 循环对迭代器进行循环访问，直至返回 None**
 
@@ -463,6 +481,10 @@ impl Circle {
 ```
 可以把这段代码看作是为 Circle 类型 impl 了一个匿名的 trait. 用这种方式定义的方法叫作这个类型的`内在方法`（ inherent methods).
 
+> 结构体方法的第一个参数必须是 &self，不需声明类型，因为 self 不是一种风格而是关键字. 而在调用结构体方法的时候不需要填写 self, 这是出于对使用方便性的考虑.
+
+> 结构体关联函数: 在 impl 块中却没有 &self 参数, 这种函数不依赖实例，但是使用它需要声明是在哪个 impl 块中的, 比如`String::from`.
+
 trait 中可以包含方法的默认实现, 如果需要针对特殊类型作特殊处理，也可以选择重新实现来`override`默认的实现方式.
 
 impl 的对象甚至可以是 trait, 如下:
@@ -503,3 +525,91 @@ fn main() {
 上面的`impl Shape for Round`和`impl<T: Round> Shape for T`是不一样的, 在前一种写法中, self 是`&Round`类型, 它是一个 trait object ，是胖指针. 在后一种写法中, self 是&T, T是具体类型 前一种写法是为 trait object增加一个成员方法; 而后一种写法是为所有的满足`T: Round`的具体类型增加一个成员方法. 所以上面的示例中，我们只能构造一个 trait object 之后才能调用 area()成员方法.
 
 Rust 2018 edition开始, trait object 的语法会被要求加上 dyn 关键字即`impl Shape for dyn Round`.
+
+## 面向对象
+### 封装
+封装就是对外显示的策略，在 Rust 中可以通过模块的机制来实现最外层的封装，并且每一个 Rust 文件都可以看作一个模块，模块内的元素可以通过 pub 关键字对外明示.
+
+```rust
+// --- second.rs
+pub struct ClassName {
+    field: i32,
+}
+
+impl ClassName {
+    pub fn new(value: i32) -> ClassName {
+        ClassName {
+            field: value
+        }
+    }
+
+    pub fn public_method(&self) {
+        println!("from public method");
+        self.private_method();
+    }
+
+    fn private_method(&self) {
+        println!("from private method");
+    }
+}
+
+// --- main.rs
+mod second;
+use second::ClassName;
+
+fn main() {
+    let object = ClassName::new(1024);
+    object.public_method();
+}
+```
+
+### 继承
+继承是多态（Polymorphism）思想的实现, 多态指的是编程语言可以处理多种类型数据的代码. 在 Rust 中，通过特性（trait）实现多态.
+
+总结地说，Rust 没有提供跟继承有关的语法糖，也没有官方的继承手段（完全等同于 Java 中的类的继承），但灵活的语法依然可以实现相关的功能.
+
+## 闭包
+闭包是可以保存进变量或作为参数传递给其他函数的匿名函数, 闭包相当于 Rust 中的 Lambda 表达式:
+```rust
+|参数1, 参数2, ...| -> 返回值类型 {
+    // 函数体
+}
+```
+
+## 并发
+move:
+```rust
+use std::thread;
+
+fn main() {
+    let s = "hello";
+   
+    let handle = thread::spawn(move || {
+        println!("{}", s);
+    });
+
+    handle.join().unwrap();
+}
+```
+
+channel:
+```rust
+// 子线程获得了主线程的发送者 tx，并调用了它的 send 方法发送了一个字符串，然后主线程就通过对应的接收者 rx 接收到了
+use std::thread;
+use std::sync::mpsc;
+
+fn main() {
+    let (tx, rx) = mpsc::channel();
+
+    thread::spawn(move || {
+        let val = String::from("hi");
+        tx.send(val).unwrap();
+    });
+
+    let received = rx.recv().unwrap();
+    println!("Got: {}", received);
+}
+```
+
+## unsafe
+unsafe不过是把 Rust 编译器在编译器做的严格检查退步成为 C++ 的样子, 由开发者自己为其所撰写的代码的正确性做担保.

@@ -16,8 +16,6 @@ rust无疑是迈向这个目标的更近一步.
 
 > 在之前的年代, 计算资源匮乏, 为追求性能, 牺牲了部分安全性.
 
-> 类型包含了值在内存中的长度、对齐以及值可以进行的操作等信息, 值是无法脱离具体的类型讨论的. 不管是强类型的语言还是弱类型的语言，语言内部都有其类型的具体表述。一般而言，编程语言的类型可以分为原生类型和组合类型两大类.
-
 rust是一门同时追求安全,并发和性能的现代系统级编程语言.
 rust三大设计哲学:
 1. 内存安全
@@ -165,6 +163,16 @@ rust语言组成:
 ### 语句和表达式
 Rust 是一门基于表达式（expression-based）的语言. 语句（Statements）是执行一些操作但不返回值的指令. 表达式（Expressions）计算并产生一个值.
 
+rust使用`{}`表示复杂表达式, 比如:
+```rust
+    // 在块中可以使用函数语句, 最后一个步骤是表达式, 此表达式的结果值是整个表达式块所代表的值, 这种表达式块叫做函数体表达式.
+    // 函数体表达式并不能等同于函数体, 它不能使用 return 关键字
+    let y = {
+        let x = 3;
+        x + 1
+    };
+```
+
 > 使用 let 关键字创建变量并绑定一个值是一个语句, 因为语句不返回值， 因此，不能把 let 语句赋值给另一个变量. 在C语言或Ruby语言中的赋值语句会返回所赋的值, 因此`x = y = 6`是正确的, 它使得x和y变量同时拥有6这个值; 而rust不能这样写.
 
 > Rust 源代码的后缀名使用`.rs`表示, 且必须使用 utf-8 编码.
@@ -296,6 +304,8 @@ pub fn two_times_impl() -> impl Fn(i32) -> i32 {
 - E ⇒ UpperExp : `println!("{:E}",2)`
 - 命名参数       : `println!("{a} {b} {b}",a = "x", b="y")`
 
+> 想把 a 输出两遍可用: `println!("a is {0}, a again is {0}", a);`
+
 ### 控制流
 > 代码中的条件表达式必须产生一个bool类型的值，否则就会触发编译错误. 不像 Ruby 或 JavaScript 这样的语言，Rust 并不会尝试自动地将非布尔值转换为布尔值.
 
@@ -364,9 +374,29 @@ rust支持match, 其使用了模式匹配(pattern matching)技术, 支持绑定�
 match表达式要求所有的分支都必须返回相同的类型,且如果是一个单独的match表达式而不是赋值给变量时，每个分支必须返回()类型.
 rust提供if let和while let表达式, 分别在某些场合代替match表达式.
 
+对非枚举类进行分支选择时必须注意处理例外情况, 即使在例外情况下没有任何要做的事. 例外情况用`_`表示.
+
 > if let 是 match 的一个语法糖，它当值匹配某一模式时执行代码而忽略所有其他值. 在 if let 中可包含一个 else, else 块中的代码与 match 表达式中的 `_` 分支块中的代码相同.
 
 > 因为 if 是一个表达式，我们可以在 let 语句的右侧使用它.
+
+如果把枚举类附加属性定义成元组，在 match 块中需要临时指定一个名字:
+```rust
+enum Book {
+    Papery(u32),
+    Electronic {url: String},
+}
+let book = Book::Papery(1001);
+
+match book {
+    Book::Papery(i) => { // i就是临时名字
+        println!("{}", i);
+    },
+    Book::Electronic { url } => {
+        println!("{}", url);
+    }
+}
+```
 
 ### 操作符
 rust操作符优先级与类C语言(c/c++)类似.
@@ -381,7 +411,7 @@ unsafe块: rust编译器将内存安全交由开发者自行负责.
 
 泛型允许开发者编写一些在使用时才制定类型的代码. rust编译器会在编译期间自动为具体类型生成实现代码, 即采用单态化（monomorphization）实现.
 
-在 Rust 里, 数据的行为通过 trait 来定义. 一般用 impl  关键字为数据结构实现 trait, 但 Rust 贴心地提供了派生宏（derive macro）, 可以大大简化一些标准接口的定义. 比如`#[derive(Debug)]` 为数据结构实现了 Debug trait, 提供了 debug 能力，这样可以通过`{:?}`, 用`println!`打印出来.
+在 Rust 里, 数据的行为通过 trait 来定义. 一般用 impl  关键字为数据结构实现 trait, 但 Rust 贴心地提供了派生宏（derive macro）, 可以大大简化一些标准接口的定义. 比如`#[derive(Debug)]` 为数据结构实现了 Debug trait, 提供了 debug 能力，这样可以通过`{:?}/{:#?}`(后者会按字段换行, 适合更多字段的数据结构), 用`println!`打印出来.
 
 > Clone 让数据结构可以被复制，而 Copy 则让数据结构可以在参数传递的时候自动按字节拷贝.
 
@@ -491,6 +521,8 @@ fn some_function<T, U>(t: T, u: U) -> i32
 
 
 ### 错误处理
+Rust 有一套独特的处理异常情况的机制，它并不像其它语言中的 try 机制那样.
+
 Rust 将错误组合成两个主要类别：可恢复错误（recoverable）和 不可恢复错误（unrecoverable）. 可恢复错误通常代表向用户报告错误和重试操作是合理的情况，比如未找到文件. 不可恢复错误通常是 bug 的同义词, 比如尝试访问超过数组结尾的位置.
 
 Rust 并没有异常, 但是有可恢复错误 Result<T, E> 和不可恢复(遇到错误时停止程序执行)错误 panic!.
@@ -517,6 +549,39 @@ Result<T, E> 类型定义了很多辅助方法来处理各种情况:
 
 这种传播错误的模式在 Rust 中很常见，以至于 Rust 提供了 ? 问号运算符来使其更易于处理. ? 运算符可被用于返回值类型为 Result 的函数.
 
+`?`的实际作用是将 Result 类非异常的值直接取出, 如果有异常就将异常 Result 返回出去. 所以, `?`仅用于返回值类型为 Result<T, E> 的函数，其中 E 类型必须和 ? 所处理的 Result 的 E 类型一致.
+
+example:
+```rust
+fn f(i: i32) -> Result<i32, bool> {
+    if i >= 0 { Ok(i) }
+    else { Err(false) }
+}
+
+fn g(i: i32) -> Result<i32, bool> {
+    let t = f(i)?; // 出现error时, ?已将异常 Result 返回了
+    Ok(t) // 因此确定 t 不是 Err, t 在这里已经是 i32 类型
+}
+
+fn g2(i: i32) -> Result<i32, bool> { // 等价于g
+    let t = f(i);
+
+    match t {
+        Ok(i) => Ok(i),
+        Err(b) => Err(b)
+    }
+}
+
+fn main() {
+    let r = g(10000);
+    if let Ok(v) = r {
+        println!("Ok: g(10000) = {}", v);
+    } else {
+        println!("Err");
+    }
+}
+```
+
 match 表达式与`?`运算符所做的有一点不同：? 运算符所收到的错误值被隐式传递给了 from 函数，它定义于标准库的 From trait 中，其用来将错误从一种类型转换为另一种类型. 当 ? 运算符调用 from 函数时，收到的错误类型被转换为由当前函数返回类型所指定的错误类型. 这在当函数返回单个错误类型来代表所有可能失败的方式时很有用，即使其可能会因很多种原因失败. 只要每一个错误类型都实现了 from 函数来定义如何将自身转换为返回的错误类型，? 运算符会自动处理这些转换.
 
 ?运算符消除了大量样板代码并使得函数的实现更简单, 甚至可以在 ? 之后直接使用链式方法调用来进一步缩短代码.
@@ -526,6 +591,37 @@ panic场景选择:
 - 当开发者比编译器知道更多的情况
 
     `let home: IpAddr = "127.0.0.1".parse().unwrap();`, 确定`127.0.0.1`是一个有效的 IP 地址, 无需处理`Result`
+
+判断 Result 的 Err 类型，获取 Err 类型的函数是`kind()`:
+```rust
+use std::io;
+use std::io::Read;
+use std::fs::File;
+
+fn read_text_from_file(path: &str) -> Result<String, io::Error> {
+    let mut f = File::open(path)?;
+    let mut s = String::new();
+    f.read_to_string(&mut s)?;
+    Ok(s)
+}
+
+fn main() {
+    let str_file = read_text_from_file("hello.txt");
+    match str_file {
+        Ok(s) => println!("{}", s),
+        Err(e) => {
+            match e.kind() {
+                io::ErrorKind::NotFound => {
+                    println!("No such file");
+                },
+                _ => {
+                    println!("Cannot read the file");
+                }
+            }
+        }
+    }
+}
+```
 
 ## 类型系统
 在类型系统中, 一切皆类型. 基于类型定义的一系列组合,运算和转换等方法, 可以看做类型的行为.
@@ -589,10 +685,6 @@ rust没有gc, 内存首先由编译器分配, rust代码被编译成llvm ir, 其
 rust多大部分是在编译期可确定内存大小的类型(sized type), 但也支持少量的动态大小类型(Dynamic sized type, DST), 比如str类型的字符串字面量; 以及零大小类型(zero sized type, zst), 比如单元类型和单元结构体, 同时由该类型组成的数组大小也为零. ZST类型的特点是, 它们的值就是其本身, 运行时并不占用内存空间.
 
 > Rust 的核心语言中只有一种字符串类型：`str`, 字符串 slice(是一些储存在别处的 UTF-8 编码字符串数据的引用)，它通常以被借用的形式出现即`&str`. `&str`是引用类型(包含指针和长度信息), 存储在栈上, str字符串是存储在堆上.
-
-胖指针(fat pointer): 比正常指针携带更多信息的指针, 比如包含了动态大小类型地址信息和携带了长度信息的指针, 比如`&str`, `数组[T]`.
-
-`&[u32;5]`为普通指针, `&mut [32]`为胖指针.
 
 动态大小类型(Dynamic sized type, dst)是指编译阶段无法确定占用空间的类型, 为了安全, 指向dst的指针一般是胖指针. 胖指针的设计, 避免了数组类型作为参数传递时自动退化为裸指针类型，丢失了长度信息的问题, 保证了类型安全.
 
@@ -731,6 +823,23 @@ char : 单个字符, 大小为四个字节(four bytes)，并代表了一个 Unic
     - 记录堆中字节序列的字节长度（len方法）
     - 堆分配的容量（capacity方法）
 
+    基础类型变String:
+    ```rust
+    let one = 1.to_string();         // 整数到字符串
+    let float = 1.3.to_string();     // 浮点数到字符串
+    let slice = "slice".to_string(); // 字符串切片到字符串
+    ```
+
+    其他用法:
+    ```rust
+    fn main() {
+        let s = String::from("hello中文");
+        for c in s.chars() { // 等同go的 `range []rune(s)`
+            println!("{}", c);
+        }
+    }
+    ```
+
 `& 'static str`是静态生命周期字符串. 静态生命周期即程序生命周期.
 
 rust字符串的本质是一段有效的utf8字节序列.
@@ -810,7 +919,7 @@ rust提供5种复合类型:
     let user2 = User {
         email: String::from("another@example.com"),
         username: String::from("anotherusername567"),
-        ..user1
+        ..user1 //  `..user1`后面不可以有逗号
     };
     ```
 
@@ -837,6 +946,9 @@ rust提供5种复合类型:
     在rust中函数和方法是有区别的, 不在impl块中定义的函数是自由函数, 而在impl块中定义的函数是方法, 第一个参数通常是`&self/&mut self`, 表示对结构体实例自身的引用.
 
     > 生命周期可确保结构体引用的数据有效性跟结构体本身保持一致, 如果尝试在结构体中存储一个引用而不指定生命周期将是无效的即会报错.
+
+    > 引用结构体成员给其他变量赋值时, 要注意：所有权的转移可能会破坏结构体变量的完整性.
+
 1. 枚举体(Enum)
 
     分三类:
@@ -873,7 +985,7 @@ rust提供5种复合类型:
 
         enum Message {
             Quit,
-            Move { x: i32, y: i32 },
+            Move { x: i32, y: i32 }, // 此时并不能像访问结构体字段一样访问枚举类绑定的属性, 而是需要使用`match`
             Write(String),
             ChangeColor(i32, i32, i32),
         }
@@ -903,6 +1015,23 @@ rust提供5种复合类型:
                     int32_t _1, _2, _3;
                 } ChangeColor;
             } cases;
+        }
+
+        enum Book {
+            Papery {index: u32},
+            Electronic {url: String},
+        }
+       
+        let book = Book::Papery{index: 1001};
+        let ebook = Book::Electronic{url: String::from("url...")};
+       
+        match book {
+            Book::Papery { index } => {
+                println!("Papery book {}", index);
+            },
+            Book::Electronic { url } => {
+                println!("E-book {}", url);
+            }
         }
         ```
 
@@ -969,6 +1098,8 @@ std::collections提供了4种通用集合类型:
     // let v = vec![1, 2, 3]; // 使用vec!宏, 让rust自动推导类型
     v.push(5); // 在 vector 的结尾增加新元素时，在没有足够空间将所有所有元素依次相邻存放的情况下，可能会要求分配新内存并将老的元素拷贝到新的空间中
 
+    let vector = vec![1, 2, 4, 8];     // 通过数组创建向量
+
     let third: &i32 = &v[2]; // 当引用一个不存在的元素时 Rust 会造成 panic
     println!("The third element is {}", third);
 
@@ -1004,6 +1135,13 @@ std::collections提供了4种通用集合类型:
 
     scores.insert(String::from("Blue"), 11); // 覆盖value
     scores.entry(String::from("Yellow")).or_insert(50); // entry 函数的返回值是一个枚举，Entry，它代表了可能存在也可能不存在的值. Entry 的 or_insert 方法在键对应的值存在时就返回这个值的可变引用，如果不存在则将参数作为新值插入并返回新值的可变引用.
+
+    let mut map = HashMap::new();
+    map.insert(1, "a");
+   
+    if let Some(x) = map.get_mut(&1) {
+        *x = "b";
+    }
     ```
 
     > 对于像 i32 这样的实现了 Copy trait 的类型，其值可以拷贝进哈希 map。对于像 String 这样拥有所有权的值，其值将被移动而哈希 map 会成为这些值的所有者
@@ -1033,6 +1171,8 @@ impl 块的另一个有用的功能是: 允许在 impl 块中定义不以 self �
 ### 泛型
 泛型就是把一个泛化的类型作为参数.
 
+> C++ 语言中用"模板"来实现泛型. 泛型机制是编程语言用于表达类型抽象的机制，一般用于功能确定、数据类型待定的类，如链表、映射表等.
+
 与枚举类型额函数一样,结构体名称旁边的`<T>`叫做泛型声明. 泛型只有被声明之后才可以实现.
 
 ```rust
@@ -1059,6 +1199,28 @@ trait是在行为上对类型的约束即对类型行为的抽象, 是Rust实现
 - trait是Rust唯一的接口抽象方式
 - 可以静态分发，也可以动态分发
 - 可以当做标记类型拥有某些特定行为的"标签"来使用
+
+impl格式为`impl <特性名> for <所实现的类型名>`:
+```rust
+trait Descriptive {
+    fn describe(&self) -> String;
+}
+
+struct Person {
+    name: String,
+    age: u8
+}
+
+impl Descriptive for Person {
+    fn describe(&self) -> String {
+        format!("{} {}", self.name, self.age)
+    }
+}
+```
+
+Rust 同一个类可以实现多个特性，每个 impl 块只能实现一个.
+
+默认trait: 接口只能规范方法而不能定义方法，但特性可以定义方法作为默认方法，因为是"默认"，所以对象既可以重新定义方法，也可以不重新定义方法使用默认的方法. 这是trait与接口的不同点
 
 trait有4中用法:
 - 接口抽象
@@ -1107,6 +1269,16 @@ trait有4中用法:
     trait限定(trait bound) : 泛型的行为被trait限定在更有限的范围内, 多个trait限定用`+`连接.
 
     ```rust
+    fn notify(item: impl Summary + Display)
+    fn notify<T: Summary + Display>(item: T) // 等价于同上
+
+    fn some_function<T: Display + Clone, U: Clone + Debug>(t: T, u: U)
+    fn some_function<T, U>(t: T, u: U) -> i32 // 等价于同上
+    where T: Display + Clone,
+          U: Clone + Debug
+    ```
+
+    ```rust
     use std::ops::Add;
     // 表示sum函数的参数必须实现Add trait
     fn sum<T: Add<T, Output=T>>(a: T, b:T) -> T{
@@ -1119,30 +1291,51 @@ trait有4中用法:
 - 抽象类型
 
     在运行时作为一种间接的抽象类型来使用, 动态地分发给具体的类型.
--标签trait
+- 标签trait
 
     对类型的约束, 即直接作为一种"标签"使用.
 
 rust规定函数在参数传递, 返回值传递中类型必须是编译阶段可确定大小的, 而trait的大小在编译时是不固定的, 因此它无法作为实例变量, 参数, 返回值, 这与go的interface不同.
 
+特性做返回值:
+```rust
+// 会报错: 特性做返回值只接受实现了该特性的对象做返回值且在同一个函数中所有可能的返回值类型必须完全一样, 比如即使结构体 A 与结构体 B 都实现了Descriptive
+fn some_function(bl: bool) -> impl Descriptive {
+    if bl {
+        return A {};
+    } else {
+        return B {};
+    }
+}
+```
+
+有条件实现方法:
+```rust
+struct A<T> {}
+
+impl<T: B + C> A<T> { // 声明了 A<T> 类型必须在 T 已经实现 B 和 C 特性的前提下才能有效实现此 impl 块
+    fn d(&self) {}
+}
+```
+
 ### 宏
 宏语句可以使用圆括号, 中括号, 花括号, 一般使用中括号表示数组.
 
 ### 语法
-用 C 语言系列风格的`//`和`/**/`表示注释. Rust 还有另一种注释，称为文档注释.
+用 C 语言系列风格的`//`和`/**/`表示注释. Rust 还有另一种注释(以`///`开始)，称为文档注释.
 
 字符串 slice（string slice）是 String 中一部分值的引用. 字符串 slice range 的索引必须位于有效的 UTF-8 字符边界内，如果尝试从一个多字节字符的中间位置创建字符串 slice，则程序将会因错误而退出.
 字符串字面值就是 slice, 是一个指向二进制程序特定位置的 slice.
 通用slice跟字符串 slice 的工作方式一样，通过存储第一个集合元素的引用和一个集合总长度.
 
 #### 函数
-在Rust中，函数定义以fn关键字开始并紧随函数名称与一对圆括号，另外还有一对花括号用于标识函数体开始和结尾的地方. 使用函数名加圆括号的方式来调用函数.
+在Rust中，函数定义以fn关键字开始并紧随函数名称(按小写字母以下划线分割)与一对圆括号，另外还有一对花括号用于标识函数体开始和结尾的地方. 使用函数名加圆括号的方式来调用函数.
 
 > 函数体由一系列的语句和一个可选的结尾表达式构成.
 
 > Rust不关心在何处定义函数，只要这些定义对于使用区域是可见的即可, 这与go相同, 与c不同.
 
-在函数签名中，必须 声明每个参数的类型.
+在函数签名中，必须声明每个参数的类型. 函数不支持自动返回值类型判断, 如果没有明确声明函数返回值的类型, 函数将被认为是"纯过程"即不允许产生返回值, 因此return 后面不能有返回值表达式.
 
 > **参数变量和传入的具体参数值有自己分别对应的名称parameter和argument, 即形参和实参**.
 
@@ -1171,6 +1364,12 @@ fn plus_one(x: i32) -> i32 {
 
 所有运行的程序都必须管理其使用计算机内存的方式. 一些语言中具有垃圾回收机制(go, java等)，在程序运行时不断地寻找不再使用的内存；在另一些语言中(c, c++等)，开发者必须亲自分配和释放内存. Rust 则选择了第三种方式：通过所有权系统管理内存，编译器在**编译时**会根据一系列的规则进行检查, 在运行时，所有权系统的任何功能都不会减慢程序.
 
+所有权本质上就是在语言层面禁止了同一个可变数据会有多个变量引用的情况, 一旦作为参数传递了, 就会发生所有权的移动（Move）或借用（Borrow）, 即从根本上杜绝了并发情景下的数据共享冲突.
+
+> 变量范围是变量的一个属性, 其代表变量的可行域, 默认从声明变量开始有效直到变量所在域结束.
+
+> Rust 之所以没有明示释放变量的步骤是因为在变量范围结束的时候, 其编译器自动添加了调用释放资源函数的步骤.
+
 > rust的栈中的所有数据都必须占用已知且固定的大小, 在编译时大小未知或大小可能变化的数据会分配到堆上.
 
 Rust中分配的每块内存都有其所有者，所有者负责该内存的释放和读写权限，并且每次每个值只能有唯一的所有者.
@@ -1192,9 +1391,80 @@ rust 内存回收策略：内存在拥有它的变量离开作用域后就被自
 1. move
 
     设计选择: **Rust 永远也不会自动创建数据的 “深拷贝”. 因此，任何 自动 的复制可以被认为对运行时性能影响较小.**
+
+    仅在栈中的基本数据类型的数据的"移动"方式是直接复制, 这不会花费更长的时间或更多的存储空间, "基本数据"类型有这些：
+
+    - 所有整数类型: i32 、 u32 、 i64 等
+    - 布尔类型 bool: true 或 false
+    - 所有浮点类型: f32 和 f64
+    - 字符类型 char
+    - 仅包含以上类型数据的元组(Tuples)
+
+    Rust会尽可能地降低程序的运行成本, 所以默认情况下, 长度较大的数据存放在堆中, 且采用移动的方式进行数据交互.
 1. clone
 
+    克隆仅在需要复制的情况下使用, 毕竟复制数据会花费更多的时间.
     由于其运行时消耗，许多 Rustacean 之间有一个趋势是倾向于避免使用 clone 来解决所有权问题.
+
+涉及函数入参的所有权机制:
+```rust
+fn main() {
+    let s = String::from("hello");
+    // s 被声明有效
+
+    takes_ownership(s);
+    // s 的值被当作参数传入函数
+    // 所以可以当作 s 已经被移动，从这里开始已经无效
+
+    let x = 5;
+    // x 被声明有效
+
+    makes_copy(x);
+    // x 的值被当作参数传入函数
+    // 但 x 是基本类型，依然有效
+    // 在这里依然可以使用 x 却不能使用 s
+
+} // 函数结束, x 无效, 然后是 s. 但 s 已被移动, 所以不用被释放
+
+
+fn takes_ownership(some_string: String) {
+    // 一个 String 参数 some_string 传入，有效
+    println!("{}", some_string);
+} // 函数结束, 参数 some_string 在这里释放
+
+fn makes_copy(some_integer: i32) {
+    // 一个 i32 参数 some_integer 传入，有效
+    println!("{}", some_integer);
+} // 函数结束, 参数 some_integer 是基本类型, 无需释放
+```
+
+涉及函数返回值的所有权机制:
+```rust
+fn main() {
+    let s1 = gives_ownership();
+    // gives_ownership 移动它的返回值到 s1
+
+    let s2 = String::from("hello");
+    // s2 被声明有效
+
+    let s3 = takes_and_gives_back(s2);
+    // s2 被当作参数移动, s3 获得返回值所有权
+} // s3 无效被释放, s2 被移动, s1 无效被释放.
+
+fn gives_ownership() -> String {
+    let some_string = String::from("hello");
+    // some_string 被声明有效
+
+    return some_string;
+    // some_string 被当作返回值移动出函数
+}
+
+fn takes_and_gives_back(a_string: String) -> String {
+    // a_string 被声明有效
+
+    a_string  // a_string 被当作返回值移出函数
+}
+```
 
 Rust 有一个叫做 Copy trait(类似深拷贝)的特殊注解，可以用在类似整型这样的**存储在栈上的类型上. 如果一个类型拥有 Copy trait，一个旧的变量在将其赋值给其他变量后仍然可用**. Rust 不允许自身或其任何部分实现了 Drop trait 的类型使用 Copy trait.
 
@@ -1209,7 +1479,56 @@ Rust 有一个叫做 Copy trait(类似深拷贝)的特殊注解，可以用在�
 
 变量的所有权总是遵循相同的模式：将值赋给另一个变量时**移动**它 . 当持有堆中数据值的变量离开作用域时，其值将通过 drop 被清理掉，除非数据被移动为另一个变量所有.
 
-引用(`&`)语法可创建一个 指向 值 的引用，但是**并不拥有它**, **因为并不拥有这个值，当引用离开作用域时其指向的值也不会被丢弃**.
+引用(`&`)语法可创建一个 指向 值 的引用，但是**并不拥有它**, **因为并不拥有这个值，当引用离开作用域时其指向的值也不会被丢弃**. 实质上"引用"是变量的间接访问方式, 且"引用"并没有在栈中复制变量的值. 引用本身也是一个类型并具有一个值，这个值记录的是别的值所在的位置，但引用不具有所指值的所有权.
+
+引用举例:
+```rust
+fn main() {
+    let s1 = String::from("hello");
+    let s2 = &s1; // s2是s1的引用`&String`
+    s2.push_str("oob"); // 错误，禁止修改租借的值
+    let s3 = s1; //  报错. s2 租借的 s1 已经将所有权移动到 s3，所以 s2 将无法继续租借使用 s1 的所有权。如果需要使用 s2 使用该值，必须重新租借
+    println!("{}", s2);
+}
+
+// 改为:
+fn main() {
+    let s1 = String::from("hello");
+    let mut s2 = &s1;
+    let s3 = s1;
+    s2 = &s3; // 使用前重新从 s3 租借所有权
+    println!("{}", s2);
+}
+
+fn main() {
+    let mut s1 = String::from("run");
+    // s1 是可变的
+
+    let s2 = &mut s1;
+    // s2 是可变的引用
+
+    s2.push_str("oob");
+    println!("{}", s2);
+}
+```
+
+可变引用与不可变引用相比除了权限不同以外, **可变引用不允许多重引用**, 但不可变引用可以.
+
+Rust 对可变引用的这种设计主要出于对并发状态下发生数据访问碰撞的考虑，在编译阶段就避免了这种事情的发生. 由于发生数据访问碰撞的必要条件之一是数据被至少一个使用者写且同时被至少一个其他使用者读或写，所以在一个值被可变引用时不允许再次被任何引用.
+
+垂悬引用（Dangling References）: 没有实际指向一个真正能访问的数据的指针（注意: 不一定是空指针，还有可能是已经释放的资源）, 比如:
+```rust
+fn main() {
+    // 伴随着 dangle 函数的结束，其局部变量的值本身没有被当作返回值, 被释放了, 但它的引用却被返回, 这个引用所指向的值已经不能确定的存在, 因此会报错
+    let reference_to_nothing = dangle();
+}
+
+fn dangle() -> &String {
+    let s = String::from("hello");
+
+    &s
+}
+```
 
 **获取引用作为函数参数称为`借用(borrowing)`**.
 
@@ -1245,7 +1564,24 @@ Rust 有一个叫做 Copy trait(类似深拷贝)的特殊注解，可以用在�
 
 > rust 有一个叫 自动引用和解引用（automatic referencing and dereferencing）的功能, 这与golang相同.
 
+## slice
+切片（Slice）是对数据值的部分引用.
+
+```rust
+x..y // [x, y) 的数学含义
+
+..y // 等价于 0..y
+x.. // 等价于位置 x 到数据结束
+.. // 等价于位置 0 到结束
+```
+
+> str 是 Rust 核心语言类型, 就是字符串切片（String Slice）, 常常以引用的形式出现（&str）. String 类型是 Rust 标准公共库提供的一种数据类型, 它的功能更完善——它支持字符串的追加、清空等实用的操作. String 和 str 除了同样拥有一个字符开始位置属性和一个字符串长度属性以外还有一个容量（capacity）属性. String 和 str 都支持切片，切片的结果是 &str 类型的数据.
+
 ## 生命周期
+Rust 生命周期机制是与所有权机制同等重要的资源管理机制, 引入这个概念主要是应对复杂类型系统中资源管理的问题.
+
+> 引用是对待复杂类型时必不可少的机制，毕竟复杂类型的数据不能被处理器轻易地复制和计算. 但引用往往导致极其复杂的资源管理问题.
+
 Rust 中的每一个引用都有其 生命周期（lifetime），也就是引用保持有效的作用域. 大部分时候生命周期是隐含并可以推断的，正如大部分时候类型也是可以推断的一样. 但当引用的生命周期可能以一些不同方式相互关联时，Rust 需要开发者使用泛型生命周期参数来注明它们的关系，这样就能确保运行时实际使用的引用绝对是有效的.
 
 它是一类允许开发者向编译器提供引用如何相互关联的泛型. Rust 的生命周期功能允许在很多场景下借用值的同时仍然使编译器能够检查这些引用的有效性. 它是 Rust 最与众不同的功能.
@@ -1253,6 +1589,8 @@ Rust 中的每一个引用都有其 生命周期（lifetime），也就是引用
 Rust 编译器有一个 借用检查器（borrow checker），它比较作用域来确保所有的借用都是有效的.
 
 #### 生命周期注解语法
+生命周期注释是描述引用生命周期的办法.
+
 **生命周期注解并不改变任何引用的生命周期的长短**. 与当函数签名中指定了泛型类型参数后就可以接受任何类型一样，当指定了泛型生命周期后函数也能接受任何生命周期的引用. 生命周期注解描述了多个引用生命周期相互的关系，而不影响其生命周期.
 
 生命周期注解有着一个不太常见的语法：生命周期参数名称必须以撇号（'）开头，其名称通常全是小写，类似于泛型其名称非常短. `'a` 是大多数人默认使用的名称. 生命周期参数注解位于引用的 & 之后，并有一个空格来将引用类型与生命周期注解分隔开.
@@ -1262,7 +1600,44 @@ Rust 编译器有一个 借用检查器（borrow checker），它比较作用域
 &'a mut i32 // 带有显式生命周期的可变引用
 ```
 
+example:
+```rust
+fn longer<'a>(s1: &'a str, s2: &'a str) -> &'a str { // 让函数返回值的生命周期将与两个参数的生命周期一致
+    if s2.len() > s1.len() {
+        s2
+    } else {
+        s1
+    }
+}
+
+fn main() {
+    let r;
+    {
+        let s1 = "rust";
+        let s2 = "ecmascript";
+        r = longer(s1, s2);
+        println!("{} is longer", r);
+    }
+}
+```
+
 单个的生命周期注解本身没有多少意义，因为生命周期注解告诉 Rust 多个引用的泛型生命周期参数如何相互联系的.
+
+泛型、特性与生命周期协同:
+```rust
+use std::fmt::Display;
+
+fn longest_with_an_announcement<'a, T>(x: &'a str, y: &'a str, ann: T) -> &'a str
+    where T: Display
+{
+    println!("Announcement! {}", ann);
+    if x.len() > y.len() {
+        x
+    } else {
+        y
+    }
+}
+```
 
 **生命周期也是泛型**.
 
@@ -1363,6 +1738,7 @@ struct Foo<'a> {
 struct的生命周期参数标记，实际上是和编译器约定了一个规则：结构体实例的生命周期应短于或等于任意一个成员的生命周期.
 
 > 注：枚举体和结构体对生命周期参数的处理方式是一样的
+
 ##### 静态生命周期参数
 静态生命周期 'static：是Rust内置的一种特殊的生命周期. **'static生命周期存活于整个程序运行期间**. 所有的字符串字面量都有生命周期，类型为`& 'static str`
 

@@ -33,17 +33,22 @@ cargo build
 cargo test
 cargo test -- --test-threads=1
 cargo build # 编译项目. 用于开发，它允许快速地反复执行构建操作
-cargo build --release # 这种模式会以更长的编译时间为代价来优化代码, 从而使代码拥 有更好的运行时性能
-cargo run # 运行项目
+cargo build --release # 这种模式会以更长的编译时间为代价来优化代码, 从而使代码拥有更好的运行时性能, 但不会显示 panic backtrace 的具体行号
+cargo run [--release] # 运行项目
 cargo install --path
 cargo uninstall first_pro_create
+cargo fmt: 类似gofmt, 格式化代码
+cargo clippy: 类似eslint, 检查代码规范
+cargo tree: 查看第三方库的版本和依赖关系
+cargo bench: 运行benchmark(基准测试,性能测试)
+cargo udeps(第三方): 检查项目中未使用的依赖
 ```
 
 ## 代码组织
 Rust 有许多功能可用于组织和管理代码, 包括哪些内容可以被公开, 哪些内容作为私有部分, 以及程序每个作用域中的名字. 这些功能有时被称为`模块系统(the module system)`包括:
 - 包（Packages） : Cargo 的一个功能，它允许构建、测试和分享 crate
 
-    一个包会包含有一个 Cargo.toml 文件，阐述如何去构建这些 crate.
+    一个包会包含有一个 Cargo.toml 文件，描述了包的基本信息以及依赖项以及如何去构建这些 crate.
 
     包中所包含的内容由几条规则来确立:
     1. 一个包中至多只能包含一个库 crate(library crate)
@@ -54,10 +59,12 @@ Rust 有许多功能可用于组织和管理代码, 包括哪些内容可以被�
 
     如果一个包同时含有 src/main.rs 和 src/lib.rs，则它有两个 crate：一个库和一个二进制项，且名字都与包相同. 通过将文件放在 src/bin 目录下，一个包可以拥有多个二进制 crate：每个 src/bin 下的文件都会被编译成一个独立的二进制 crate.
 
-- Crates : 一个模块的树形结构，它形成了库或二进制项目
+- Crates : 一个模块的树形结构，它形成了库或二进制项目, 存在于`包`中.
 
     crate root 是一个源文件, Rust 编译器以它为起始点, 同时也是 crate 的根模块.
 - 模块（Modules即mod）和 use : 允许控制作用域和路径的私有性
+
+    > Java 组织功能模块的主要单位是类; JavaScript 组织模块的主要方式是 function.
 
     模块可以将一个 crate 中的代码进行分组, 以提高可读性与重用性. 模块还可以控制项的 私有性，即项是可以被外部代码使用的（public），还是作为一个内部实现的内容，不能被外部代码使用（private）.
 
@@ -83,6 +90,9 @@ Rust 有许多功能可用于组织和管理代码, 包括哪些内容可以被�
     嵌套路径可消除大量的 use 行.
 
     通过 glob 运算符将所有的公有定义引入作用域, 比如`use std::collections::*;`. 使用 glob 运算符时请多加小心！Glob 会使得难以推导作用域中有什么名称和它们是在何处定义的. glob 运算符经常用于测试模块 tests 中，这时会将所有内容引入作用域.
+
+    Rust 中有两种简单的访问权：公共（public）和私有（private）. 默认情况下，如果不加修饰符，模块中的成员访问权将是私有的. 对于私有的模块，只有在与其平级的位置或下级的位置才能访问，不能从其外部访问.
+
 - 路径（path）: 一个命名例如结构体、函数或模块等项的方式
 
     路径有两种形式：
@@ -93,10 +103,9 @@ Rust 有许多功能可用于组织和管理代码, 包括哪些内容可以被�
 
 对于一个由一系列相互关联的包组合而成的超大型项目, Cargo 提供了`工作空间`这一解决方案.
 
-> crate是rust最小的编译单元, package是若干crate的集合, 它们都可被称为包. 只在两者同时出现且需要区别对
-待时，将crate译为单元包，将package译为包.
+> crate是rust最小的编译单元, package是若干crate的集合, 它们都可被称为包. 只在两者同时出现且需要区别对待时，将crate译为单元包，将package译为包.
 
-Rust的代码从逻辑上是分 crate 和 mod 管理的. crate 可以理解为"项目". 每个 crate 是一个完整的编译单元，它可以生成为一个 lib 或者可执行文件. 而在 crate 内部则由 mod 管理, mod 大家可以理解为 namespace. 可以使用 use 语句把其他模块中的内容引入到当前模块中来.
+Rust的代码从逻辑上是分 crate 和 mod 管理的. crate 可以理解为"项目". 每个 crate 是一个完整的编译单元，它可以生成为一个 lib 或者可执行文件. 而在 crate 内部则由 mod 管理, mod 大家可以理解为 namespace. 可以使用 use 语句把其他模块中的内容引入到当前模块中来, 这样就解决了局部模块路径过长的问题. 对于同名导入可用`use ... as ...`解决.
 
 Rust 有一个极简标准库， 叫作 std ，除了极少数嵌入式系统下无法使用标准库之外，绝大部分情况下，我们都需要用到标准库里面的东西. 为了给大家减少麻烦， Rust 编译器对标准库有特殊处理. 默认情况下，用户不需要手动添加对标准库的依赖 ，编译器会自动引人对标准库的依赖. 除此之外 ，标准库中的某些 type, trait、 function, macro 等实在是太常用了, 每次都写 use 语句确实非常无聊，因此标准库提供了一个[`std::prelude`'](https://github.com/rust-lang/rust/blob/master/library/std/src/prelude/mod.rs)模块(doc在[这](https://doc.rust-lang.org/std/prelude/index.html))，在这个模块中导出了一些最常见的类型, trait 等东西, 编译器会为用户写的每个 crate 自动插入一句话：`use std::prelude::*;`, 这样，标准库里面的这些最重要的类型, trait 等名字就可以直接使用，而无须每次都写全称或者 use 语句. 如果需要的类型不在 prelude 中，则必须使用 use 语句显式地将其引入作用域.
 

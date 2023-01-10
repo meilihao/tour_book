@@ -1,6 +1,7 @@
 # opencurve
 ## 部署
-
+ref:
+- [Curve 分布式存储在 KubeSphere 中的实践](https://my.oschina.net/u/4197945/blog/5782698)
 
 ### 单机部署
 ref:

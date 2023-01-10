@@ -263,7 +263,7 @@ backstores分类:
     如果新建的FILEIO 中，参数 buffered =True，就可以使用buffer cache ，将明显提高其有效性能
     同时伴随的风险是一系列数据的整体风险：如果系统崩溃，一个 unflushed buffer cache将导致整个后
     备存储不能挽回的损坏.
-- [pscsi(parallel SCSI)](https://en.wikipedia.org/wiki/Parallel_SCSI): pscsi支持透传scsi命令, 因此支持比如(虚拟磁)带库/(虚拟)磁带驱动器, Asymmetric Logical Unit Assignment (ALUAs) 或 Persistent Reservations (for example, those used by VMware ESX, and vSphere)
+- [pscsi(parallel SCSI)](https://en.wikipedia.org/wiki/Parallel_SCSI): 允许共享任何类型的本地SCSI设备. pscsi支持透传scsi命令, 因此支持比如光盘, (虚拟磁)带库/(虚拟)磁带驱动器, Asymmetric Logical Unit Assignment (ALUAs) 或 Persistent Reservations (for example, those used by VMware ESX, and vSphere)
 
     /backstores> pscsi/ create name=pscsi_backend dev=/dev/sr0
 - ramdisk : RAM 硬盘后备存储
@@ -425,10 +425,10 @@ Online
 ```
 
 ### 光纤initiator发现的方法
-1. `echo 1 > /sys/class/fc_host/host<N>/issue_lip`, **推荐** # 此时会通过issue_lip重置HBA链路，重新扫描整个链路并配置SCSI target. 该操作是一种异步操作类型，具体完成时间需要参考system log.
+1. `echo 1 > /sys/class/fc_host/host<N>/issue_lip`, **推荐** # 此时会通过issue_lip重置HBA链路，重新扫描整个链路并配置SCSI target. 该操作是一种异步操作类型，具体完成时间需要参考system log. Linux操作系统自带的lpfc和qla2xxx 驱动支持issue_lip命令.
 1. `echo "- - -" |tee -a /sys/class/scsi_host/*/scan` # `- - -`分别代表通道，SCSI目标ID和LUN, 此时破折号充当通配符，表示"重新扫描所有内容"
 
-> 有时明明fc target配置正确但fc client还是不能扫出新盘: 有坏的fc链路占用了相同的盘符(比如sdc), 导致不能扫出. 解决方法:1. `rescan-scsi-bus.sh -r`; 2. `reboot`
+> 有时明明fc target配置正确但fc client还是不能扫出新盘: 有坏的fc链路占用了相同的盘符(比如sdc), 导致不能扫出. 解决方法:1. `rescan-scsi-bus.sh -r`即移除失效的设备; 2. `reboot`
 
 ### Could not create Qla2xxxFabricModule in configFS | Could not create Target in configFS | 看不到FC fabric
 `modprobe tcm_qla2xxx`
@@ -545,6 +545,9 @@ nqn.2014-08.org.nvmexpress:uuid:75953f3b-77fe-4e03-bf3c-09d5a156fbcd
 通过targetcli将磁带柜(`/dev/sch0`)当做pscsi导出时, initiator挂载后只能看到mediumx, 没有tape. 推测需将sch0的tape也作为pscsi同时导出.
 
 将本地磁带柜通过上述方式重新分配给本机, 发现`/dev/tape/by-id`里是新发现设备的路径**覆盖**了原有设备的路径.
+
+### fc target无法发现
+fc直连可能导致fc target无法发现, 过光纤交换机后正常.
 
 # tgtadm
 参考:
