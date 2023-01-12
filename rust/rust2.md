@@ -80,7 +80,7 @@ Rust 表达式又可以分为‘左值’ （lvalue ）和‘右值’（rvalue)
 - 变量
 
 	- 不可变: `let x:T;`
-	- 可变: `let mut x:T;`
+	- 可变: `let mut x:T;`, 当声明为可变变量时, x的内容可被修改, 且允许可变引用.
 
 		```rust
 		let (mut a, mut b) = (1, 2); 
@@ -100,6 +100,8 @@ Rust 表达式又可以分为‘左值’ （lvalue ）和‘右值’（rvalue)
 
 	Rust 只允许**`局部变量/全局变量`实现类型推导，而函数签名等场景则是不允许, 这是特意这样设计的**:
 	局部变量只有局部的影响; 全局变量必须当场初始化; 而函数名具有全局性影响. 函数签名如果使用自动挡类型推导, 可能导致某个调用的地方使用方式发生变化, 它的参数、返回值类型就发生了变化, 进而导致其他调用地方的编译错误，这是设计者不希望看到的情况.
+
+	> 在编译器能够推导类型的情况下，变量类型一般可以省略，但常量（const）和静态变量（static）必须声明类型
 
 - 静态变量
 
@@ -132,6 +134,7 @@ Rust 表达式又可以分为‘左值’ （lvalue ）和‘右值’（rvalue)
 - 函数: `func x(a1:T1,...)-> T{}`
 
 	rust函数使用fn标识, 其参数列表与let一样也可模式解构.
+
 	在rust中， 如果函数没有返回值， 那么其返回值是unit即空元组`()`
 
 	Rust 中, 每个函数具有自己单独的类型，但是这个类型可以自动转换成fn类型. 因此两个有同样的参数类型和同样的返回值类型的函数, 但它们是不同类型因而不能赋值给相同变量, 解决方案是让先转为通用的fn类型即可.
@@ -148,7 +151,30 @@ Rust 表达式又可以分为‘左值’ （lvalue ）和‘右值’（rvalue)
 	Rust 设计组扩展了 main 函数的签名，使它变成了一个泛型函数，这个函数的返回类型可以是任何一个满足 Terminationtrait的类型，其中`（）,booL Result` 是满足这个约束的，它们都可以作为 main 函数的返回
 类型.
 
-	函数可以用 co st 键字修饰，这样的函数可以在编译阶段被编译器执行，返回值也被视为编译期常量.
+	函数可以用 const 键字修饰，这样的函数可以在编译阶段被编译器执行，返回值也被视为编译期常量.
+
+	Rust 函数参数的类型和返回值的类型都必须显式定义，如果没有返回值可以省略，返回 unit。函数内部如果提前返回，需要用 return 关键字，否则最后一个表达式就是其返回值。如果最后一个表达式后添加了; 分号，隐含其返回值为 unit.
+
+	example:
+	```rust
+	fn pi() -> f64 {
+	  3.1415926
+	}
+
+	fn not_pi() {
+	  3.1415926;
+	}
+
+	fn main() {
+	  let is_pi = pi();
+	  let is_unit1 = not_pi();
+	  let is_unit2 = {
+	    pi();
+	  };
+	  
+	  println!("is_pi: {:?}, is_unit1: {:?}, is_unit2: {:?}", is_pi, is_unit1, is_unit2);
+	}
+	```
 
 - 元组: 它通过圆括号包含一组表达式构成
 
@@ -399,7 +425,7 @@ fn fib_while(n: u8) {
 fn fib_for(n: u8) {
     let (mut a, mut b) = (1, 1);
     
-    for _i in 2..n { // Range 的下标上标都是 usize 类型，不能为负数
+    for _i in 2..n { // 2…n == `2<= x < n`. Range 的下标上标都是 usize 类型，不能为负数
         let c = a + b;
         a = b;
         b = c;
@@ -419,7 +445,7 @@ fn main() {
 - 分支跳转: `if/else`
 - 模式匹配: Rust 的模式匹配可以通过匹配表达式或者值的某部分的内容，来进行分支跳转
 	
-	需要根据表达式所有可能的值进行匹配, 并进行相应的处理.
+	需要根据表达式**所有可能**的值进行匹配, 并进行相应的处理.
 
 	`match expr {}`或`if let pat = expr {}`, `if let`是match的简写, 表示仅关心某种模式匹配的情况
 
@@ -453,7 +479,18 @@ rust支持使用mod 来组织代码.
 
 集成测试一般放在 tests 目录下，和 src 平行. 和单元测试不同，**集成测试只能测试 crate 下的公开接口，编译时编译成单独的可执行文件**. 在 crate 下，如果要运行测试用例，可以使用`cargo test`.
 
-当代码规模继续增长，把所有代码放在一个 crate 里就不是一个好主意了，因为任何代码的修改都会导致这个 crate 重新编译，这样效率不高. 此时可以使用 workspace, 一个 workspace 可以包含一到多个 crates，当代码发生改变时，只有涉及的 crates 才需要重新编译. 当要构建一个 workspace  时，需要先在某个目录下生成一个 Cargo.toml，包含 workspace 里所有的 crates，然后可以  cargo new 生成对应的 crates.
+当代码规模继续增长，把所有代码放在一个 crate 里就不是一个好主意了，因为任何代码的修改都会导致这个 crate 重新编译，这样效率不高. 此时可以使用 workspace, 一个 workspace 可以包含一到多个 crates，当代码发生改变时，只有涉及的 crates 才需要重新编译. 当要构建一个 workspace  时，需要先在某个目录下生成一个 Cargo.toml，包含 workspace 里所有的 crates，然后再通过  cargo new 生成对应的 crates.
+
+workspace Cargo.toml例子:
+```toml
+[workspace]
+
+members = [
+	"core",
+	...
+	"server",
+]
+```
 
 ## trait
 所有的 trait 中都有一个隐藏的类型 Self （大写），代表当前这个实现了此 trait 的具体类型. trait 中定义的函数，也可以称作关联函数（ associated function). 函数的第一个参数如果是 Self 相关的类型，且命名为 self（小写），这个参数可以被称为“receiver ”（接收者）. 具有 receiver 参数的函数，称为“方法”（method), 可以通过变量实例使用小数点来调用. 没有 receiver 参数的函数，称为“静态函数”（static function ），可以通过类型加`::`的方式来调用.

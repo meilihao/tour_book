@@ -1,4 +1,7 @@
 # cargo
+ref:
+- [Rust Cargo 官书（非官方翻译)](https://llever.com/cargo-book-zh/index.zh.html)
+
 Cargo是Rust中的包管理工具，第三方包叫做crate.
 
 Cargo一共做了四件事：
@@ -32,7 +35,7 @@ cargo build
 外的时间去真正生成可执行程序：
 cargo test
 cargo test -- --test-threads=1
-cargo build # 编译项目. 用于开发，它允许快速地反复执行构建操作
+cargo build # 编译项目. 用于开发，它允许快速地反复执行构建操作. 默认情况下，cargo build 编译出来的二进制，在项目根目录的 target/debug 下.
 cargo build --release # 这种模式会以更长的编译时间为代价来优化代码, 从而使代码拥有更好的运行时性能, 但不会显示 panic backtrace 的具体行号
 cargo run [--release] # 运行项目
 cargo install --path
@@ -142,4 +145,16 @@ replace-with = 'tuna'
 
 [source.tuna]
 registry = "https://mirrors.tuna.tsinghua.edu.cn/git/crates.io-index.git"
+```
+
+### Caret requirements(跳脱条件)
+```
+^1.2.3 := >=1.2.3 <2.0.0
+^1.2 := >=1.2.0 <2.0.0
+^1 := >=1.0.0 <2.0.0
+^0.2.3 := >=0.2.3 <0.3.0
+^0.2 := >= 0.2.0 < 0.3.0
+^0.0.3 := >=0.0.3 <0.0.4
+^0.0 := >=0.0.0 <0.1.0
+^0 := >=0.0.0 <1.0.0
 ```

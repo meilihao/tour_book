@@ -1327,7 +1327,7 @@ END_OF_DATA
 env:
 - bareos 21.0.0
 
-均假设指定的client已注册
+均假设指定的client已注册, 且client端均需安装python3
 除非特别说明, 否则下面还原验证均不涉及分区表(当前就是没有涉及分区表).
 
 ### pg
@@ -1576,10 +1576,13 @@ FileSet {
                  ":module_name=bareos-fd-mariabackup"
                  ":mycnf=/root/.my.cnf" # mariabackup的defaults-extra-file选项
                  ":strictIncremental=false" # 对非innodb比如MYISAM/ARIA/Rocks启用, 避免其增量备份没有备份到数据, 因为为true时, 只有LSN增加才会执行增量备份
+                 ":log=bareos-plugin-mariabackup.log" # 不设置默认没有log
     }
 }
 # --- bconsole reload
 ```
+
+> 自己编译安装的mariadb, bareos-fd.service启动时可能获取不到mariabackup,mbstream和mysql的path, 需要自己软连接到`/usr/bin`. 试过将mariadb bin path追加到`/etc/profile`的`$PATH`但还是无用.
 
 1. 验证
     ref:
@@ -1587,6 +1590,8 @@ FileSet {
     - [使用 Mariabackup 工具恢复数据](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/8/html/deploying_different_types_of_servers/restoring-data-using-the-mariabackup-tool_backing-up-mariadb-data)
     - [Full Backup and Restore with Mariabackup](https://mariadb.com/kb/en/full-backup-and-restore-with-mariabackup/)
     - [Incremental Backup and Restore with Mariabackup](https://mariadb.com/kb/en/incremental-backup-and-restore-with-mariabackup/)
+
+        `>=10.2`的完整性检查和`10.1`的不同, 具体看文档.
 
     备份步骤:
     1. 通过bareos webui全备一次, 并通过bareos还原得到mariadb_f1目录
@@ -1795,6 +1800,15 @@ client在win10上.
 
 ### 如果`status slots storage=Tape`报`not found or cloud not be opened`
 restart bareos-sd后可看到该磁带库
+
+### 备份到tape成功但有警告:`No medium found`
+已验证数据, 没有问题.
+
+### 备份到tape失败: `Please mount append Volume or label a new one`
+在其他bareos环境比较过的tape无法在新bareos环境使用.
+
+### 清洗带
+[`CleaningPrefix=xxx`](https://docs.bareos.org/TasksAndConcepts/AutochangerSupport.html)
 
 ### 修改Director邮件发送命令
 参考:

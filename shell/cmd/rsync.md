@@ -26,7 +26,9 @@ rsync [OPTION]... SRC [USER@]HOST::DEST
 rsync [OPTION]... rsync://[USER@]HOST[:PORT]/SRC [DEST]
 ```
 
- 对应于以上六种命令格式，rsync有六种不同的工作模式：
+> 两个冒号的用法是服务器将rsync作为服务启动, 这样协议不再是ssh, 而是走的rsync协议, 两个冒号跟的是rsync服务配置的路径模块, 该配置在`/etc/rsyncd.conf`.
+
+对应于以上六种命令格式，rsync有六种不同的工作模式：
 - 拷贝本地文件. 当SRC和DES路径信息都不包含有单个冒号":"分隔符时就启动这种工作模式。如：rsync -a /data /backup
 - 使用一个远程shell程序(如rsh、ssh)来实现将本地机器的内容拷贝到远程机器。当DST路径地址包含单个冒号":"分隔符时启动该模式。如：rsync -avz *.c foo:src
 - 使用一个远程shell程序(如rsh、ssh)来实现将远程机器的内容拷贝到本地机器。当SRC地址路径包含单个冒号":"分隔符时启动该模式。如：rsync -avz foo:src/bar /data
