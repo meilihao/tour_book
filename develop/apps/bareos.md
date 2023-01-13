@@ -490,6 +490,8 @@ cancel jobid=xxx yes
 enable jobid=xxx yes
 disable jobid=xxx yes
 
+delete storage=xxx // 需在api json下运行. 原有`delete  storage storage=xxx`有交互式要求, 且会报错
+
 # ---- restore
 restore # 开始进入交互式restore流程
 1 # 选择最近20个job
@@ -528,7 +530,7 @@ printf ".api json\nlist clients" | bconsole
 - 客户端：从下拉菜单中选择备份所属的客户端
 - 备份作业：从下拉菜单中选择需要的备份作业
 - 合并所有客户端文件集：自动把该客户端该作业和该作业以前的所有备份（**含不同作业**）集合在一起供恢复文件使用; 如选"否", 只从选择的备份中恢复文件
-- 合并所有相关作业：如选"是", 自动把该客户端该作业和该作业以前的所有**同一作业**的备份集合在一起供恢复文件使用; 如选"否", 只从选择的备份中恢复文件
+- 合并所有相关作业：如选"是", 自动把该客户端该作业和该作业以前的所有**同一作业**的备份集合在一起供恢复文件使用, 通常用于还原增量备份场景; 如选"否", 只从选择的备份中恢复文件
 - 还原到客户端：从下拉菜单中选择恢复文件的目标客户端
 - 还原作业：从下拉菜单中选择预定义的还原作业
 - 替换客户端上的文件：选择同名文件的覆盖规则. 可选规则为：总是、从不、比现有文件旧和比现有文件新
@@ -670,17 +672,20 @@ ref:
 1. 配置bareos dir
     1. 在storage添加磁带库的配置
     1. bconsole + reload
-1. 在bareos webui标记磁带库中的磁带即可
+1. 在bareos webui标记磁带库中的磁带后即可用于备份
 
 
 注意: 配置时使用by-id, 因为/dev/sgN名称可能会变
+
+> 根据官方文档提示, 可用btape的auto命令测试autochanger.
 
 相关命令:
 ```bash
 # bconsole
 * status slots[=1] storage=Tape # 获取槽位信息. 遇到过某个已加载tape的drive, 在bareos-sd log显示`omode=3 ofloags=0 errno=16: ERR=设备或资源忙`而导致获取磁盘柜状态失败
 * update slots storage=Tape # 更新槽位信息
-* update slots [storage=Tape] [drive=1] scan # 条码扫描. = label [storage=Tape] [pool=xxx] [drive=1] barcodes # 此时bareso操作mhvtl容易卡住???, 操作飞康vtl正常. 不推荐使用`label barcodes`因为其要设置多个选项
+* label storage=Tape pool=Scartch barcodes yes # 条码扫描 
+* update slots [storage=Tape] [drive=1] scan # 条码扫描, 有时该命令不能成功, 但label命令可以; bareso标记操作mhvtl容易卡住???, 操作飞康vtl正常.
 * release storage=Tape drive=0 # 卸载磁带
 # /usr/lib/bareos/scripts/mtx-changer /dev/sg3 listall # list时不包括driver和邮件槽
 D:0:F:16:E01016L8 # 16表示该磁带原先是16槽位的
@@ -1653,8 +1658,6 @@ GO
 ALTER LOGIN sa WITH PASSWORD = 'password@123' ;  
 GO
 
-select @@SERVERNAME; 获取实例名. 或`sp_helpserver`
-
 create database test;
 create database test1; --- 测试会备份哪些dbname
 use test;
@@ -1809,6 +1812,11 @@ restart bareos-sd后可看到该磁带库
 
 ### 清洗带
 [`CleaningPrefix=xxx`](https://docs.bareos.org/TasksAndConcepts/AutochangerSupport.html)
+
+### 标记磁带报`Requested Volume "" on "autochanger_xxx" (/dev/tape/by-id/xxx) is not a Bareos labled Volume, because: ERR=stored/block.c:1001 Read error on fd=6 at file:blk 0:0 on device "autochanger_xxx" (/dev/tape/by-id/xxx). ERR=Input/output error.`
+> 已开启bareos-sd日志
+
+使用`label storage=Tape pool=Scartch barcodes yes`标记, 而不是`update slots storage=Tape drive=1 scan`
 
 ### 修改Director邮件发送命令
 参考:

@@ -13,6 +13,7 @@
 - [张汉东的Rust实战课-课件](https://github.com/ZhangHanDong/inviting-rust)
 - [加餐｜这个专栏你可以怎么学，以及Rust是否值得学？](https://time.geekbang.org/column/article/411089)
 - [ruiers/os-tutorial-cn](https://github.com/ruiers/os-tutorial-cn)
+- [Rust Primer](https://hardocs.com/d/rustprimer)
 
 ## 课件
 - [陈天 · Rust 编程第一课](https://github.com/tyrchen/geektime-rust)
