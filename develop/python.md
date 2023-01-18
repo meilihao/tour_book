@@ -136,7 +136,7 @@ $ pip config set global.index-url https://mirrors.aliyun.com/pypi/simple # 推�
 $ pip config set global.trusted-host "mirrors.aliyun.com"
 $ python -m pip -V # 检查是否安装pip成功
 $ mkdir -p ~/.pip
-$ vim ~/.pip/pip.conf # [为pip换源](https://blog.csdn.net/xuezhangjun0121/article/details/81664260), 会用到sudo时建议添加到`/etc/pip.conf`
+$ vim ~/.pip/pip.conf # [为pip换源](https://blog.csdn.net/xuezhangjun0121/article/details/81664260), 会用到sudo时建议添加到`/etc/pip.conf`. 高版本使用`~/.config/pip/pip.conf`
 [global]
 index-url = https://pypi.tuna.tsinghua.edu.cn/simple
 $ vim ~/.pip/pip.conf # aliyun pip mirror

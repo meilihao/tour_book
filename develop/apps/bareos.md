@@ -296,6 +296,10 @@ oracle linux 7.9 x86启用vmware插件:
 
     其实就是将vmware官方提供的so打包成rpm
 
+    `rpmbuild -bb bareos-vmware-vix-disklib.spec --define "rhel_version 790"`
+
+> 如果是centos, 将rhel_version换成centos_version即可.
+
 ## 概念
 - volume : Bareos将在其上写入备份数据的单个物理磁带（或可能是单个文件）
 - pool : 定义接收备份数据的多个volume（磁带或文件）组成的逻辑组
@@ -723,6 +727,8 @@ I:24:E
 测试:
 1. ~~当一个磁带库的磁带写满后, bareos会自动切换到另一个空磁带. 如果磁带的剩余空间不够本次备份时, 它切换磁带而不是先写一部分再切换磁带~~(待测试).
 1. 将虚拟磁带加入vtl, bareos需要等待一会才能看到新磁带
+1. 如果未找到相应pool的未满tape, 那么bareos会选择pool=Scratch的新tape进行备份, 此时还是找不到就会一直卡在运行中.
+1. 备份job完成前tape的mr_lastwritten不实时更新, 完成后再更新.
 
 ## 配置
 ref:
@@ -1163,6 +1169,8 @@ ref:
 
     > Device, Media Type项必须与bareos-sd定义的一致
 - pool : pool配置
+
+    cap = Maximum Volume Bytes * Maximum Volumes
 
     - full : 完整备份
 
@@ -1805,13 +1813,43 @@ client在win10上.
 restart bareos-sd后可看到该磁带库
 
 ### 备份到tape成功但有警告:`No medium found`
-已验证数据, 没有问题.
+已验证数据, 没有问题, 推测是当时驱动器上没有tape. 如果bareos再次使用该驱动器备份则警告消失.
+
+### 备份时一直卡在运行中
+报错:
+```log
+Fatal error: TwoWayAuthenticate failed, because job is canceled.
+Fatal error: Director unable to authenticate with Storage daemon at "192.168.16.169:9103". Possible causes:
+Passwords or names not the same or
+TLS negotiation problem or
+Maximum Concurrent Jobs exceeded on th SD or
+SD networking messed up (restart daemon).
+```
+
+修改bareos-fd配置后未重启导致.
+
+### 文件备份到tape全量成功, 增量和差异会一直运行中
+joblog报`No slot defined in catalog (slot=0) for Volume "Incremental-0015" on "autochanger_xxx" (dev/tape/by-id/xxx-nst)`
+
+可能的问题:
+1. tape pool初始是Scratch, 一旦备份入相应level的数据后就会变成指定level的pool, 无法再备入其他level的数据.
+1. tape的mr_volstatus=Full说明tape满了.
+
+本次遇到的情况是多次全量备份5.3G没问题, 但增量备份时85G虚拟磁带写入1G多就变Full了, 日志有提示`User defined maximum volume capacity 1,073,741,824 exceeded on device "autochanger_xxx" (dev/tape/by-id/xxx-nst)` , 应该是受`bare-dir.d/pool/Incremental.conf#Maximum Volume Bytes`限制了.
+
+在job.conf使用了自定义pool, 但执行`run job=xxx level=xxx yes`未指定pool, 结果job log显示使用了level pool(`"Incremental" (from Job IncrementalPool override)`)
+
+还有首次增量备份时指定了pool, 因此第一次增量是全量, job log显示其实用了Full池(`"Full (from Job FullPoll override)"`)
+
+pool覆盖逻辑在`core/src/dird/job.cc#ApplyPoolOverrides`, 可以让其直接return, 发现tape首次非全备+多次其他备份已ok, 但其他功能是否有影响待测试.
 
 ### 备份到tape失败: `Please mount append Volume or label a new one`
 在其他bareos环境比较过的tape无法在新bareos环境使用.
 
 ### 清洗带
 [`CleaningPrefix=xxx`](https://docs.bareos.org/TasksAndConcepts/AutochangerSupport.html)
+
+> 大多数现代磁带库都内置了自动清理功能, bareos不支持驱动器清洁. Bareos has no build-in functionality for tape drive cleaning. Fortunately this is not required as most modern tape libraries have build in auto-cleaning functionality.
 
 ### 标记磁带报`Requested Volume "" on "autochanger_xxx" (/dev/tape/by-id/xxx) is not a Bareos labled Volume, because: ERR=stored/block.c:1001 Read error on fd=6 at file:blk 0:0 on device "autochanger_xxx" (/dev/tape/by-id/xxx). ERR=Input/output error.`
 > 已开启bareos-sd日志
@@ -2007,7 +2045,9 @@ BVFS（Bareos虚拟文件系统）提供了一个API来浏览目录中的备份�
 
 在`/usr/share/bareos-webui`执行`grep -r "send_command" |grep -v "bsock"`, 在`vendor/Bareos/library/Bareos/BSock/BareosBSock.php`找到其实现(需考虑send_command有参数列表). 在找到它的上层函数send(), 发现它是操作`fwrite($this->socket,...)`, 找到socket定义: [`stream_socket_client()`](https://php.golaravel.com/function.stream-socket-client.html).
 
-截获bareos cmd: 在BareosBSock.php的send()开头添加打印语句:`error_log("[". date("Y-m-d H:i:s", time()) ."] : $msg \n", 3, "/tmp/bareos_cmd.log");`.
+截获bareos cmd: 在BareosBSock.php的send()开头添加打印语句:`error_log("[". date("Y-m-d H:i:s", time()) ."] : $msg \n", 3, "/tmp/bareos_cmd.log");`。
+
+上述方法可能在bareos v21上不起作用. 此时`error_log("[". date("Y-m-d H:i:s", time()) ."] : $msg \n");`不指定目标文件, 则日志出现在php-fpm 配置的err log中, 比如`/etc/php-fpm.d/www.conf#php_admin_value[error_log] = /var/log/php-fpm/www-error.log`.
 
 ### bareos python sdk截获cmd
 1. 根据bareos-restapi.py的`current_user.jsonDirector.call()`找到`self.jsonDirector = bareos.bsock.DirectorConsoleJson`
@@ -2102,10 +2142,10 @@ env: php-fpm 7.2
 `cat /etc/xdg/autostart/bareos-tray-monitor.desktop`
 
 ### oracle linux 7.9构建bareos 21.1.2报`Target xxx requires the language dialect "CXX17"`
-gcc版本不够.
+gcc版本不够(GCC/C++17 > 5.1.0).
 
 ```bash
-yum install centos-release-scl -y
+yum install centos-release-scl -y # yum -y install oracle-softwarecollection-release-el7
 yum install devtoolset-9 -y
 
 # 临时覆盖系统原有的gcc引用

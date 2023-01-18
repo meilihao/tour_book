@@ -1,4 +1,6 @@
 # macro
+宏编程的主要流程就是实现若干 From和 TryFrom.
+
 ## 展开宏
 ref:
 - [How do I see the expanded macro code that's causing my compile error?](https://stackoverflow.com/questions/28580386/how-do-i-see-the-expanded-macro-code-thats-causing-my-compile-error)
