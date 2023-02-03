@@ -103,6 +103,8 @@ Rust 表达式又可以分为‘左值’ （lvalue ）和‘右值’（rvalue)
 
 	> 在编译器能够推导类型的情况下，变量类型一般可以省略，但常量（const）和静态变量（static）必须声明类型
 
+	> Rust 的类型推断基于 Hindly-Milner 类型系统.
+
 - 静态变量
 
 	- 不可变: `static X:T = T::new();`
@@ -263,7 +265,7 @@ Rust 表达式又可以分为‘左值’ （lvalue ）和‘右值’（rvalue)
 
 	在实际中, enum 的内存布局未必是这个样子， 编译器有许多优化，可以保证语义正确的同时减少内存使用，并加快执行速度. 如果是在 FFI 下， 要保证 Rust 里面的 enum 的内存布局和C语言兼容的话, 可以给这个 enum 添加一个`#[repr(C, Int)]`属性标签.
 
-	> rust的enum其实是一种代数类型系统(Algebraic Data Type, ADT), 即enum内部的variant(用于区分enum里面的数据类型)的类型是函数类型. 因此Some可以当成函数作为参数传递给迭代器的`map()`.
+	> rust的enum其实是一种代数类型系统(Algebraic Data Type, ADT), 即enum内部的variant(用于区分enum里面的数据类型)的类型是函数类型. 因此Some可以当成函数作为参数传递给迭代器的`map()`. 其实struct也是ADT, 枚举被称为求和类型, 是因为它可以容纳的值的范围基本上是其变体的取值范围的总和; 而结构体被称为乘积类型, 是因为它的取值区间是其每个字段取值区间的笛卡儿积.
 
 Rust 里的合法标识符（包括变量名、函数名、 trait 名等） 必须由数字、字母、 下划线组成， 且不能以数字开头, 这个规定和许多现有的编程语言是一样.
 
@@ -425,7 +427,7 @@ fn fib_while(n: u8) {
 fn fib_for(n: u8) {
     let (mut a, mut b) = (1, 1);
     
-    for _i in 2..n { // 2…n == `2<= x < n`. Range 的下标上标都是 usize 类型，不能为负数
+    for _i in 2..n { // 2…n == `2<= x < n`. Range 的下标上标都是 usize 类型，不能为负数. 如果`for _i in 2..=n`那么是`2<= x <= n`
         let c = a + b;
         a = b;
         b = c;
@@ -612,6 +614,8 @@ fn main() {
     // 函数体
 }
 ```
+
+闭包主要用作高阶函数的参数。 高阶函数是一个以另一个函数或闭包作为参数的函数.
 
 ## 并发
 move:

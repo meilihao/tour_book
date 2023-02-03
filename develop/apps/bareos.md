@@ -2,6 +2,7 @@
 参考:
 - [备份/恢复系统BAREOS的安装、设置和使用（二）](https://blog.csdn.net/laotou1963/article/details/82711776)
 - [OSBConf 2015 | Backup of VMware snapshots with Bareos by Philipp Storz & Stephan Dühr](https://www.youtube.com/watch?v=pDNhfK9MO0g)
+- [支持的os](https://github.com/bareos/bareos/blob/master/.matrix.yml)
 
 Bareos 由 bacula fork而來.
 
@@ -87,7 +88,7 @@ ref:
 
     ![](/misc/img/develop/apps/1236661_158384678850987.png)
 
-- 增量备份（Incremental Backup）: 一种传统的数据备份技术，它以上一次完全备份或增量备份为基础，此后每次只备份相对于上一次备份操作以来变更(新创建,更新过或删除)的数据
+- 增量备份（Incremental Backup）: 一种传统的数据备份技术，它**以上一次完全备份或增量备份为基准**，此后每次只备份相对于上一次备份操作以来变更(新创建,更新过或删除)的数据
     
     缺点:
     1. 每次增量备份都依赖于前一个备份副本，中间一个副本出了问题可能影响整个备份链，因此不如全量备份可靠
@@ -97,7 +98,7 @@ ref:
 
     ![](/misc/img/develop/apps/1236661_158384681086375.png)
 
-- 差异备份（Differential Backup）: 备份自从上次完全备份后被修改过的文件, 即指除第一次全量备份外，后面的备份都只备份上次全量到当前时间点的变化数据
+- 差异备份（Differential Backup）: 备份自从上次完全备份后被修改过的文件, 即指除第一次全量备份外，后面的备份都只备份上次全量到当前时间点的变化数据, 即以上一次完全备份为基准.
 
     从差量备份中恢复也是很快的，因为只需要两份磁带——最后一次完全备份和最后一次差异备份.
 
@@ -158,7 +159,7 @@ cd /root/rpmbuild/SPECS
 # 修正:
 # - `droplet 0`, droplet已不在维护
 # - `# BuildRequires: lsb-release`, 没有lsb-release包. 查看Ubuntu 20.04的该包, 其提供了命令lsb_release, 但它已在oracle linux的redhat-lsb-core包里. 
-rpmbuild -bb bareos.spec --define "centos_version 790"
+rpmbuild -bb bareos.spec --define "centos_version 790" [--define "vmware 1"] # 如果需要vmware插件
 rpmbuild -bb python-bareos.spec --define "centos_version 790"
 cp -r ../RPMS/noarch/* ../RPMS/x86_64
 ll ../RPMS/x86_64 # 所需rpms
@@ -484,7 +485,10 @@ status #查看状态信息
 status client=t3-fd  #客户端名称t3-fd的状态信息, 如果支持plugin, 则还会显示plugin相关信息. 可用于测试client connection
 status client   # 查看 client  的状态
 status dir      # 查看director 的状态
-status storage  # 查看 storage 的状态 
+status storage  # 查看 storage 的状态
+
+# truncate
+truncate volstatus=Purged storage=<storage> pool=<pool> volume=<volume> [drive=<drivenum>] yes
 
 # --- run执行job任务. bareos storage空间满后会阻塞分配到其上的job
 run  # 未指定job时需要选择job, 即进入交互模式操作
@@ -518,10 +522,16 @@ list JobId=79    #查看就没有这个备份包了,但在status中还是会出�
 .pools    #查看定义的pool池属性名称
 .storage  #查看定义的storage数据的存储方式的名称
 
-# --- 清理
+# --- 清理. [bconsole 命令影响目录（数据库）. 它不会触及磁盘上的卷](https://dan.langille.org/2013/03/07/deleting-old-bacula-volumes/)
 purge # 是一个危险命令, 能清除一个客户端的所有备份任务，文件，和卷
+purge files job=xxx # 清理备份文件, 需要选择jobid但是即使有jobid实际执行每效果
 purge volume storage=File pool=Full + "*<mediaid>" # 清理指定volume
-prune # 这个命令和 purge 相似，但安全很多，它只会清除过期的文件，任务，和卷 
+prune # 这个命令和 purge 相似，但安全很多，它只会清除过期的文件，任务，和卷
+
+# --- 清理volume
+list volumes pool=xxx # 按pool获取volume, 没法按照job获取volume
+delete volume=xxx yes # tape会变成未标记, 但再次标记会报错, 需要先[`mt -f /dev/st0 rewind && mt -f /dev/st0 weof && mt -f /dev/st0 rewind`](https://blog.ls-al.com/bacula-relabel-tape/)即清空tape再标记. 按照[官方文档 label](https://docs.bareos.org/TasksAndConcepts/BareosConsole.html)先purge再label不可行: 要改变卷名, 但磁带柜使用条码作为卷名, 重命名后, 原tape状态还是未标记. 其他可用方法: 1. `purge volume=xxx`, 2. `truncate volstatus=Purged storage=<storage> volume=<volume> yes`, 3. `update volume=xxx pool=Scratch`即可重用, 经验证这些步骤后再追加delete并label还是会报错即此方法无需delete再label.
+rm -rf <volume> # 底层执行删除volume
 ```
 
 ```bash
@@ -1172,6 +1182,8 @@ ref:
 
     cap = Maximum Volume Bytes * Maximum Volumes
 
+    [`Maximum Volume Bytes`, `Maximum Volume Jobs`, `Volume Use Duration`会影响autoprune](https://docs.bareos.org/TasksAndConcepts/VolumeManagement.html#automatic-volume-recycling): 因为未满的卷(status=append)不触发autoprune.
+
     - full : 完整备份
 
         ```conf
@@ -1180,9 +1192,12 @@ ref:
           Pool Type = Backup
           Recycle = yes                       # Bareos 自动回收重复使用 Volumes（Volume备份文件标记）
           AutoPrune = yes                     # 自动清除过期的Volumes
-          Volume Retention = 365 days         # Volume有效时间
-          Maximum Volume Bytes = 50G          # Volume最大尺寸
+          Volume Retention = 365 days         # 备份文件保留的时间
           Maximum Volumes = 100               # 单个存储池允许的Volume数量
+          Maximum Volume Bytes = 50G          # Volume最大尺寸
+          # Maximum Volume Jobs = 2           # 在每个卷上仅写入指定数量的作业
+          # Volume Use Duration = 23h         # 限制第一次和最后一次数据写入卷之间的时间, 超过则使用新卷
+          # Use Volume Once = yes             # 每个卷仅使用一次
           Label Format = "Full-"              # Volumes 将被标记为 "Full-<volume-id>", 其他`db-${Year}-${Month:p/2/0/r}-${Day:p/2/0/r}-id${JobId}`
           Storage = VTL                       # 指定storage
         }
@@ -1589,7 +1604,7 @@ FileSet {
                  ":module_name=bareos-fd-mariabackup"
                  ":mycnf=/root/.my.cnf" # mariabackup的defaults-extra-file选项
                  ":strictIncremental=false" # 对非innodb比如MYISAM/ARIA/Rocks启用, 避免其增量备份没有备份到数据, 因为为true时, 只有LSN增加才会执行增量备份
-                 ":log=bareos-plugin-mariabackup.log" # 不设置默认没有log
+                 ":log=bareos-plugin-mariabackup.log" # 不设置默认没有log, 日志在bareos-fd所在机器上
     }
 }
 # --- bconsole reload
@@ -1808,7 +1823,6 @@ client在win10上.
 ### 备份光驱文件报`Fatal error: No drive letters found for generating VSS snapshots...Error: VSS API failure calling "BackupComplete". ERR=Object is not initialized; called during restore or not called in correct sequence.`
 备份光驱文件时可能需要关闭vss.
 
-
 ### 如果`status slots storage=Tape`报`not found or cloud not be opened`
 restart bareos-sd后可看到该磁带库
 
@@ -1843,6 +1857,13 @@ joblog报`No slot defined in catalog (slot=0) for Volume "Incremental-0015" on "
 
 pool覆盖逻辑在`core/src/dird/job.cc#ApplyPoolOverrides`, 可以让其直接return, 发现tape首次非全备+多次其他备份已ok, 但其他功能是否有影响待测试.
 
+### `cancel jobid=xxx`成功, 但job还是运行中
+情况:
+1. storage空间不足
+
+### job一直运行中
+1. storage=tape, joblog有No medium found: 没有磁带可用了
+
 ### 备份到tape失败: `Please mount append Volume or label a new one`
 在其他bareos环境比较过的tape无法在新bareos环境使用.
 
@@ -1853,8 +1874,10 @@ pool覆盖逻辑在`core/src/dird/job.cc#ApplyPoolOverrides`, 可以让其直接
 
 ### 标记磁带报`Requested Volume "" on "autochanger_xxx" (/dev/tape/by-id/xxx) is not a Bareos labled Volume, because: ERR=stored/block.c:1001 Read error on fd=6 at file:blk 0:0 on device "autochanger_xxx" (/dev/tape/by-id/xxx). ERR=Input/output error.`
 > 已开启bareos-sd日志
+> [Please note, when labeling a blank tape, Bareos will get read I/O error when it attempts to ensure that the tape is not already labeled.](https://docs.bareos.org/TasksAndConcepts/BareosConsole.html)
 
 使用`label storage=Tape pool=Scartch barcodes yes`标记, 而不是`update slots storage=Tape drive=1 scan`
+
 
 ### 修改Director邮件发送命令
 参考:
