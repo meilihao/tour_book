@@ -39,6 +39,7 @@ rust有stable和nightly两个版本, 默认版本可通过`rustup show`查看.
 	- `rustup default <stable|nightly>` : 切换rust版本
 	- `rustup show`: 查看默认设置
 	- `rustup component add clippy` # 用`cargo clipy`格式化rust代码, 类似eslint
+	- `rustup update nightly` && ` rustup override set nightly` : 为项目指定使用的rust版本 
 - rustdoc : 文档工具
 - rustfmt : 格式化工具
 - rust-gdb : 调试工具

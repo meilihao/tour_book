@@ -120,6 +120,8 @@ rust语言组成:
         **Rust 的字符串不支持索引**.
 
         遍历: `for c in "नमस्ते".chars()`或`for b in "नमस्ते".bytes()`.
+
+        Rust 的原始字符串语法是在`r`后跟一个或多个`#`和一个双引号, 然后是字符串内容, 最后以另一个双引号及相同个数的`#`结尾. 原始字符串中的任何字符都无须转义，包括双引号. 为避免歧义，通过在双引号两侧添加更多的`#`，总是可以明确标识字符串的结束位置
     1. 常用的宏定义, 如println()!, assert!, panic!, vec!
 
         Rust 中的宏(`!`)与C/C＋＋ 中的宏是完全不一样的东西. 简单点说，可以把它理解为一种安全版的编译期语法扩展, 这里之所以使用宏，而不是函数，是因为标准输出宏可以完成编译期格式检查. 更加安全. 这个宏最终还是调用了`std::io`模块内提供的一些函数来完成的. 如果需要更精细地控制标准输出操作, 也可以直接调用标准库来完成.
@@ -258,6 +260,8 @@ rust编译器像C++或D语言一些, 支持编译时函数执行(compile-time fu
 rust中固定长度的数组必须在编译期就知道长度, 否知会报错, 这就用了CTFE的能力.
 
 `const fn`强制编译器在编译期执行函数, 其中const一般用于定义全局常量.
+
+const 函数是纯函数，必须是可重现的。这意味着它们不能将可变参数带入任何类型，也不能包含动态的操作，例如堆分配.
 
 当前rust支持的常量有: 字面量, 元组, 数组, 字段结构体, 枚举, 只包含单行代码的块表达式, 范围等.
 
@@ -414,6 +418,10 @@ unsafe块: rust编译器将内存安全交由开发者自行负责.
 在 Rust 里, 数据的行为通过 trait 来定义. 一般用 impl  关键字为数据结构实现 trait, 但 Rust 贴心地提供了派生宏（derive macro）, 可以大大简化一些标准接口的定义. 比如`#[derive(Debug)]` 为数据结构实现了 Debug trait, 提供了 debug 能力，这样可以通过`{:?}/{:#?}`(后者会按字段换行, 适合更多字段的数据结构), 用`println!`打印出来.
 
 > Clone 让数据结构可以被复制，而 Copy 则让数据结构可以在参数传递的时候自动按字节拷贝.
+
+>  Clone 类型的不可变引用转换为自有值(owned values)，即 &T -> T。Clone 没有对这种转换的效率做出承诺，所以它可能是缓慢和昂贵的。为了快速地在一个类型上实现 Clone, 可以使用派生宏.
+
+> ToOwned 是 Clone 的一个更通用的版本. Clone 允许把一个 &T 变成一个 T，但 ToOwned 允许把一个 &Borrowed 变成一个 Owned，其中 `Owned: Borrow<Borrowed>`. 换句话说就是，不能把一个 &str 克隆成一个 String，或者把一个 &Path 克隆成一个 PathBuf，或者把一个 &OsStr 克隆成一个 OsString，因为 clone 方法签名不支持这种跨类型克隆，而这正是 ToOwned 的用途.
 
 trait 告诉 Rust 编译器某个特定类型拥有可能与其他类型共享的功能. 可以通过 trait 以一种抽象的方式定义共享的行为. 可以使用 trait bounds 指定泛型是任何拥有特定行为的类型.
 
@@ -661,13 +669,13 @@ fn main() {
 
     一般用在面向对象语言中, 比如java. 它代表一种包含关系, 父类型的值包含了子类型的值, 所以子类型的值有时也可以看作父类型的值, 反之则不然.
 
-按多态发生的时间又可分为:
-1. 静多态(static polymorphism)
+多态的上下文中的方法解析过程被称为分发, 调用该方法被称为分发化（ dispatching）. 因此按多态发生的时间又可分为:
+1. 静多态(static polymorphism), 也叫静态分发
 
     发生在编译期.
     参数化多态和ad-hoc多态一般是静多态.
     静多态牺牲灵活性获取性能.
-1. 动多态(dynamic polymorphism)
+1. 动多态(dynamic polymorphism), 也叫动态分发, 类似golang的接口
 
     发生在运行时.
     子类型多态一般是动多态.
@@ -786,6 +794,15 @@ String ：to_string() 可以将字符串字面量转换为String
 ## 类型
 Rust 支持类型推导，在编译器能够推导类型的情况下，变量类型一般可以省略，但常量（const）和静态变量（static）必须声明类型.
 
+静态值不像常量那样是内联的，当读取和写入静态值时，需要用到 unsafe 代码块. 静态值通常与同步原语搭配使用，它们还用于实现全局锁定，以及与 C 程序库集成.
+
+通常，如果不需要依赖静态的单例属性及其预定义的内存位置，而只需要其具体值，那么应该更倾向于使用常量。它们允许编译器进行更好的优化，并且更易于使用.
+
+全局值只能在初始化时声明非动态的类型，并且在编译期，它在堆栈上的大小是已知的。但 lazy_static!宏，可用于初始化任何能够从程序
+中的任何位置全局访问的动态类型。
+
+使用 lazy_static!宏声明的元素需要实现 Sync 特征。这意味着如果某个静态值可变，那么必须使用诸如 Mutex 或 RwLock 这样的多线程类型，而不是 RefCell.
+
 Rust 函数参数的类型和返回值的类型都必须显式定义, 如果没有返回值可以省略, 返回`unit即空元组`. 函数内部如果提前返回, 需要用 return 关键字, 否则最后一个表达式就是其返回值. 如果最后一个表达式后添加了`;`, 隐含其返回值为 unit.
 
 ### 标量(scalar)数据类型
@@ -812,6 +829,8 @@ char : 单个字符, 大小为四个字节(four bytes)，并代表了一个 Unic
     2. 记录长度的值
 
     `&str`存储于栈上, str字符串序列存储于程序的静态只读数据段, 栈或者堆内存中. `&str`是一种胖指针.
+
+    > str 是编译器能够识别的内置类型, 表示有限但大小未知的 UTF-8 编码的连续字节序列, 因此str在堆上, 并且不属于标准库.
 - String字符串, 长度可变的字符串, 在堆上分配, 与`&str`的主要区别是它有管理内存空间的能力, 而`&str`没有.
 
     创建方法: `let s = String::from("hello")`, 两个冒号（::）是运算符，允许将特定的 from 函数置于 String 类型的命名空间（namespace）下，而不需要使用类似 string_from 这样的名字.
@@ -856,6 +875,10 @@ Rust提供了另外两种方法：get和get_mut来通过指定索引范围来获
 裸指针(原生指针):`*const T和*mut T`, 可以在unsafe块下任意使用, 不受Rust的安全检查规则的限制.
 
 智能指针实际上是一种结构体，只是行为类似指针, 智能指针是对指针的一层封装，提供了一些额外的功能，比如自动释放堆内存.
+
+> rust在堆上分配内存的唯一方法是通过智能指针类型.
+
+> rustc自身使用jemalloc,而其构建的lib和bin使用系统内存分配器.
 
 智能指针区别于常规结构体的特性在于：它实现了Deref和Drop这两个trait:
 - Deref：提供了解引用能力
@@ -1098,6 +1121,11 @@ std::collections提供了4种通用集合类型:
     > Rust提供的链表是双向链表，允许在任意一端插入或弹出元素.
 
     ```rust
+    // 声明
+    let mut v2 = Vec::new();
+    v2.push(2); // 现在 v2 的类型是 Vec<i32>
+    let v3 = Vec::<u8>::new(); // 使用 turbofish 符号, 泛型函数中的 turbofish 运算符出现在函数名之后和圆括号之前
+
     let mut v: Vec<i32> = Vec::new();
     // let v = vec![1, 2, 3]; // 使用vec!宏, 让rust自动推导类型
     v.push(5); // 在 vector 的结尾增加新元素时，在没有足够空间将所有所有元素依次相邻存放的情况下，可能会要求分配新内存并将老的元素拷贝到新的空间中
@@ -1165,14 +1193,14 @@ std::collections提供了4种通用集合类型:
 ### 方法
 不过方法与函数是不同的, 因为它们在结构体的上下文中被定义(或者是枚举或 trait 对象的上下文).
 
-impl 块的另一个有用的功能是: 允许在 impl 块中定义不以 self 作为参数的函数, 这被称为 关联函数（associated functions）, 因为它们与结构体相关联. 它们仍是函数而不是方法, 因为它们并不作用于一个结构体的实例. 比如`String::from`关联函数. 它类似于面向对象编程语言中的静态方法. 这些方法在类型自身上即可调用, 并且不需要类型的实例来调用, 调用方法是`<类型名>::<函数名>`
+impl 块的另一个有用的功能是: 允许在 impl 块中定义不以 self 作为参数的函数, 这被称为 关联函数（associated functions, 在主流的编程语言中, 这也被称为静态方法）, 因为它们与结构体相关联. 它们仍是函数而不是方法, 因为它们并不作用于一个结构体的实例. 比如`String::from`关联函数. 它类似于面向对象编程语言中的静态方法. 这些方法在类型自身上即可调用, 并且不需要类型的实例来调用, 调用方法是`<类型名>::<函数名>`
 
 > 结构体允许拥有多个 impl 块.
 
-impl实例方法的变体:
-- self 作为第一个参数, 在这种情况下，调用此方法将不允许后续使用该类型
+impl实例方法的变体, 根据限制由少到多排列的:
 - &self 作为第一个参数, 此方法仅提供对类型实例的读取访问权限
 - &mut self 作为第一个参数, 此方法提供对类型实例的可变访问
+- self 作为第一个参数, 这些方法拥有调用它的实例的所有权，并且类型在后续调用时将失效
 
 ### enumerations、enums枚举
 > Rust 的枚举与 F#、OCaml 和 Haskell 这样的函数式编程语言中的 代数数据类型（algebraic data types）最为相似
@@ -1198,6 +1226,10 @@ fn main() {
 ```
 
 ### trait
+trait定义了一组类型可以选择性实现的`契约`或共享行为.
+
+> trait和泛型通过单态化（静多态）或运行时多态（动多态）提供了两种代码复用的方式.
+
 接口是一个软件系统开发的核心部分，它反映了系统的设计者对系统的抽象理解。作为一个抽象层，接口将使用方和实现方隔离开来，使两者不直接有依赖关系，大大提高了复用性和扩展性.
 
 很多编程语言都有接口的概念，允许开发者面向接口设计，比如 Java 的 interface、Elixir 的 behaviour、Swift 的 protocol 和 Rust 的 trait.
@@ -1278,7 +1310,7 @@ trait有4中用法:
     trait限定(trait bound) : 泛型的行为被trait限定在更有限的范围内, 多个trait限定用`+`连接.
 
     ```rust
-    fn notify(item: impl Summary + Display)
+    fn notify(item: impl Summary + Display) // 使用 impl 特征语法`impl Summary + Display`
     fn notify<T: Summary + Display>(item: T) // 等价于同上
 
     fn some_function<T: Display + Clone, U: Clone + Debug>(t: T, u: U)
@@ -1290,11 +1322,49 @@ trait有4中用法:
     ```rust
     use std::ops::Add;
     // 表示sum函数的参数必须实现Add trait
-    fn sum<T: Add<T, Output=T>>(a: T, b:T) -> T{
+    fn sum<T: Add<T, Output=T>>(a: T, b:T) -> T{ // Add<T, Output=T>: Add表示和T类型相加, 并将产生T类型作为输出即输入输出具有相同类型. T 是实现此特征的类型别名
         a+b
     }
     fn foo<T, K, R>(a: T, b:K, c:R) where T: A, K:B+C, R:D {...}// where用于为泛型增加较多的trait限定, 提高代码可读性.
+
+    #[derive(Default, Debug, PartialEq, Copy, Clone)]
+    struct Complex<T> {
+        //实部
+        re: T,
+        //虚部
+        im: T
+    }
+    impl<T> Complex<T> {
+        fn new(re: T, im: T) -> Self {
+            Complex { re, im }
+        }
+    }
+
+    impl<T: Add<T, Output=T>> Add for Complex<T> { // T:Add 表示必须实现 Add trait. 如果没有实现, 那么无法对`T`使用`+`运算符
+        type Output = Complex<T>;
+        fn add(self, rhs: Complex<T>) -> Self::Output {
+            Complex { re: self.re + rhs.re, im: self.im + rhs.im }
+        }
+    }
+
+    let a = Complex::new(1,-2);
+    let b = Complex::default();
+    let res = a + b;
     ```
+
+    类型上的泛型约束:
+    ```rust
+    use std::fmt::Display;
+    struct Foo<T: Display> {
+        bar: T
+    }
+
+    struct Bar<F> where F: Display {
+        inner: F
+    }
+    ```
+
+    不推荐在类型上使用泛型约束， 因为它对类型自身施加了限制. 通常, 希望类型尽可能是泛型，从而允许使用任何类型创建实例.
 
     trait限定给予了开发者更大的自由度, 因为不再需要类型间的继承, 也简化了编译器的检查操作. 包含trait限定的泛型属于**静态分发**, 在编译期通过单态化分别生成具体类型的实例, 所以调用trait限定中的方法也都是运行时零成本的, 因为不需要在运行时再进行方法查找.
 - 抽象类型
@@ -1303,6 +1373,8 @@ trait有4中用法:
 - 标签trait
 
     对类型的约束, 即直接作为一种"标签"使用.
+
+    Sized 特征是一种标记性特征，用于表示编译期已知大小的类型, 并且可以将该类型的实例放在栈上.
 
 rust规定函数在参数传递, 返回值传递中类型必须是编译阶段可确定大小的, 而trait的大小在编译时是不固定的, 因此它无法作为实例变量, 参数, 返回值, 这与go的interface不同.
 
@@ -1327,12 +1399,15 @@ impl<T: B + C> A<T> { // 声明了 A<T> 类型必须在 T 已经实现 B 和 C �
 }
 ```
 
+### 常见trait
+- std::ops 模块的 Add : 允许使用`+`运算符将两个复数相加。
+- std::convert 模块的 Into 和 From : 使用户能够根据其他类型创建复数类型。
+- Display : 使用户能够输出人类可读版本的复数类型
+
 ### 宏
 宏语句可以使用圆括号, 中括号, 花括号, 一般使用中括号表示数组.
 
 ### 语法
-用 C 语言系列风格的`//`和`/**/`表示注释. Rust 还有另一种注释(以`///`开始)，称为文档注释.
-
 字符串 slice（string slice）是 String 中一部分值的引用. 字符串 slice range 的索引必须位于有效的 UTF-8 字符边界内，如果尝试从一个多字节字符的中间位置创建字符串 slice，则程序将会因错误而退出.
 字符串字面值就是 slice, 是一个指向二进制程序特定位置的 slice.
 通用slice跟字符串 slice 的工作方式一样，通过存储第一个集合元素的引用和一个集合总长度.
@@ -1392,8 +1467,9 @@ Rust中分配的每块内存都有其所有者，所有者负责该内存的释�
 
     内存在拥有它的变量离开作用域后就被自动释放(调用`drop`方法)
 
-    在 C++ 中，这种 item 在生命周期结束时释放资源的模式有时被称作 资源获取即初始化（Resource Acquisition Is Initialization (RAII)）, 即本质是将资源的生命周
-期和对象的生命周期绑定.
+    在 C++ 中，这种 item 在生命周期结束时释放资源的模式有时被称作 资源获取即初始化（Resource Acquisition Is Initialization (RAII)）, 即本质是将资源的生命周期和对象的生命周期绑定.
+
+    > 在推断所有权规则时，作用域是一个非常重要的属性, 它也会被用来推断借用和生命周期
 
 这三条规则很好理解, 核心就是保证单一所有权. 其中第二条规则讲的所有权转移是 Move 语义, Rust 从 C++ 那里学习和借鉴了这个概念.
 
@@ -1401,15 +1477,57 @@ rust 内存回收策略：内存在拥有它的变量离开作用域后就被自
 
 所有权规则解决了谁真正拥有数据的生杀大权问题，让堆上数据的多重引用不复存在，这是它最大的优势.
 
+```rust
+#[derive(Debug)]
+struct Foo(u32);
+
+fn main() {
+    let foo = Foo(2048);
+    let bar = foo;
+    println!("Foo is {:?}", foo); // 报错: foo已被move给bar
+    println!("Bar is {:?}", bar);
+}
+```
+
+```rust
+fn main() {
+    let foo = 4623;
+    let bar = foo;
+    println!("{:?} {:?}", foo, bar); // 正常
+}
+```
+
+```rust
+#[derive(Copy, Clone, Debug)]
+struct Dummy;
+
+fn main() {
+    let a = Dummy;
+    let b = a;
+    println!("{}", a); // 正常, 因此Dummy有实现Copy
+    println!("{}", b);
+}
+```
+
 所有权也让代码变得复杂, 如果要**避免所有权转移之后不能访问**的情况, 一般需要手动复制, 编写麻烦且效率不高, 因此rust提供了两种解决方法:
 1. Rust 提供了 Copy 语义. 如果一个数据结构实现了 Copy trait，那么它就会使用 Copy 语义. 这样, **在赋值或者传参**时, 值会自动**按位拷贝**（浅拷贝）.
 
+    Copy: 默认情况下，通过变量分配或访问，以及从函数返回时复制的值（例如按位复制）具有复制语义. 这意味着该值可以使用任意次数，每个值都是全新的. 
+
     等同于go的值传递.
+
+    > Clone是Copy的父trait.
+
+    > 默认情况下, C++具有复制语义. 后来的C++ 11 版本提供了对移动语义的支持.
 
 1. 无法使用 Copy 语义，那可以`借用`数据
 
 变量与数据交互的方式:
 1. move
+
+    移动: 通过变量访问或重新分配给变量时移动到接收项的值表示移动语义. 由于Rust 的仿射类型系统，它默认会采用移动语义. 仿射类型系统的一个突出特点是值或资源只能使用一次，而 Rust 通过所有权规则展示此属性.
+
+    默认情况下，所有类型都有“移动语义”，但是一旦一个类型实现了 `Copy'，它就会得到`复制语义`.
 
     设计选择: **Rust 永远也不会自动创建数据的 “深拷贝”. 因此，任何 自动 的复制可以被认为对运行时性能影响较小.**
 
@@ -1422,10 +1540,22 @@ rust 内存回收策略：内存在拥有它的变量离开作用域后就被自
     - 仅包含以上类型数据的元组(Tuples)
 
     Rust会尽可能地降低程序的运行成本, 所以默认情况下, 长度较大的数据存放在堆中, 且采用移动的方式进行数据交互.
+
+    > 在 match 表达式中，移动类型默认也会被移动.
 1. clone
 
     克隆仅在需要复制的情况下使用, 毕竟复制数据会花费更多的时间.
     由于其运行时消耗，许多 Rustacean 之间有一个趋势是倾向于避免使用 clone 来解决所有权问题.
+
+Copy是一种自动化特征，大多数堆栈上的数据类型都自动实现了它. 它通常用于数据完全在栈上的变量的复制, 比如基元类型和不可变引用(&T); 否则Copy开销很大, 因为它需要从堆中复制数据. Copy 特征复制类型的方式与 C 语言中的 memcpy 函数类似，后者用于按位复制值。默认情况下不会为自定义类型实现 Copy 特征，因为 Rust 希望显式指定复制操作，并且要求开发人员必须选择实现该特征. 没有实现 Copy 特征的类型包括`Vec<T>、 String 和可变引用`等.
+
+Clone 特征用于显式复制, 并附带 clone 方法， 类型可以实现该方法以获取自身的副本.
+
+Clone 与 Copy 的不同之处在于, 其中的赋值操作时Copy是隐式复制值, 要复制 Clone值，就必须显式调用 clone 方法. clone 方法是一种更通用的复制机制, Copy 是它的一个
+特例，即总是按位复制.
+
+String 和 Vec 这类元素很难进行复制, 只实现了 Clone 特征. 智能指针类型也实现了 Clone 特征, 它只是在指向堆上相同数据的同时复制指针和额外的元数据（例如引用
+计数）.
 
 涉及函数入参的所有权机制:
 ```rust
@@ -1596,16 +1726,24 @@ x.. // 等价于位置 x 到数据结束
 .. // 等价于位置 0 到结束
 ```
 
-> str 是 Rust 核心语言类型, 就是字符串切片（String Slice）, 常常以引用的形式出现（&str）. String 类型是 Rust 标准公共库提供的一种数据类型, 它的功能更完善——它支持字符串的追加、清空等实用的操作. String 和 str 除了同样拥有一个字符开始位置属性和一个字符串长度属性以外还有一个容量（capacity）属性. String 和 str 都支持切片，切片的结果是 &str 类型的数据.
+> str 是 Rust 核心语言类型, 就是字符串切片（String Slice）, 常常以引用的形式出现（&str）. String 类型是 Rust 标准公共库提供的一种数据类型, 它有所有权, 它的功能更完善——它支持字符串的追加、清空等实用的操作. String 和 str 除了同样拥有一个字符开始位置属性和一个字符串长度属性以外还有一个容量（capacity）属性. String 和 str 都支持切片，切片的结果是 &str 类型的数据.
 
 ## 生命周期
 Rust 生命周期机制是与所有权机制同等重要的资源管理机制, 引入这个概念主要是应对复杂类型系统中资源管理的问题.
 
+生命周期用于处理引用, 即Rust 中的所有**引用**都附加了生命周期信息. 生命周期定义了引用相对值的原始所有者的生存周期，以及引用
+作用域的范围.
+
 > 引用是对待复杂类型时必不可少的机制，毕竟复杂类型的数据不能被处理器轻易地复制和计算. 但引用往往导致极其复杂的资源管理问题.
+
+大多数情况下它是隐式的, 编译器通过分析代码来确定变量的生命周期. 在某些情况下, 编译器却不能确定变量的生命周期而需要开发者指明.
 
 Rust 中的每一个引用都有其 生命周期（lifetime），也就是引用保持有效的作用域. 大部分时候生命周期是隐含并可以推断的，正如大部分时候类型也是可以推断的一样. 但当引用的生命周期可能以一些不同方式相互关联时，Rust 需要开发者使用泛型生命周期参数来注明它们的关系，这样就能确保运行时实际使用的引用绝对是有效的.
 
 它是一类允许开发者向编译器提供引用如何相互关联的泛型. Rust 的生命周期功能允许在很多场景下借用值的同时仍然使编译器能够检查这些引用的有效性. 它是 Rust 最与众不同的功能.
+
+**生命周期纯粹是一个编译期构造**, 它可以帮助编译器确定某个引用有效的作用域, 并确保它遵循借用规则. 它可以跟踪诸如引用的来源，以及它们是否比借用值生命周期更长
+这类事情. Rust 中的生命周期能够确保引用的存续时间不超过它指向的值.
 
 Rust 编译器有一个 借用检查器（borrow checker），它比较作用域来确保所有的借用都是有效的.
 
@@ -1742,6 +1880,15 @@ impl<'a> Foo<'a> {
         …
     }
 }
+
+struct Decoder<'a, 'b, S, R> {
+    schema: &'a S,
+    reader: &'b R
+}
+
+impl<'a, 'b, S, R> Decoder<'a, 'b, S, R>
+    where 'a: 'b { // 'a:'b表示'a 的生命周期比'b 长
+}
 ```
 
 在添加生命周期参数'a之后，结束了输入引用的生命周期长度要长于结构体Foo实例的生命周期长度.
@@ -1871,8 +2018,65 @@ Rust 的 闭包（closures）是可以保存进变量或作为参数传递给其
 ### 闭包与所有权
 闭包可以通过三种方式捕获其环境，他们直接对应函数的三种获取参数的方式：获取所有权，可变借用和不可变借用. 即闭包表达式会由编译器自动翻译为结构体实例，并为其实现Fn、FnMut、FnOnce三个trait中的一个:
 - `FnOnce`：会转移方法接收者的所有权。没有改变环境的能力，只能调用一次。
+
+    FnOnce 需要**取得其参数的所有权**，只能调用一次.
+
+    从执行环境中获取数据的所有权的闭包实现了 FnOnce 特征. 该名称表示此闭包只能被调用一次。因此，相关的变量只能使用一次。这是构造和使用闭包最不推荐的方法，因为后续不能使用其引用的变量
+
+    ```rust
+    fn main() {
+        let mut a = Box::new(23);
+        let call_me = || {
+            let c = a;
+            _ = c;
+        };
+        call_me(); // 成功
+        // call_me(); // 报错
+    }
+
+    fn main() {
+        let range = 0..10;
+        let get_range_count = || range.count();
+        assert_eq!(get_range_count(), 10); // ✅
+        get_range_count(); // ❌
+    }
+    ```
 - FnMut:会对方法接收者进行可变借用。有改变环境的能力，可以多次调用。
+
+    FnMut 只需要**取得可变的引用**，可以多次调用.
+    
+    当编译器检测出闭包改变了执行环境中引用的某个值时，它实现了 FnMut 特征.
+
+    FnMut 可以在任何可以使用 FnOnce 的地方使用.
+
+    ```rust
+    fn main() {
+        let mut a = String::from("Hey!");
+        let mut fn_mut_closure = || {
+            a.push_str("Alice");
+        };
+        fn_mut_closure();
+        println!("Main says: {}", a);
+    }
+    ```
 - Fn:会对方法接收者进行不可变借用。没有改变环境的能力，可以多次调用。
+
+    Fn只需要不可变的引用并可多次调用, 且不改变它从环境中捕获的任何变量, 即 Fn 闭包没有副作用或无状态.
+
+    Fn 可以用在任何可以使用 FnMut 的地方，包括可以使用 FnOnce 的地方.
+
+    仅为读取访问变量的闭包实现 Fn 特征。它们访问的任何值都是引用类型（ &T）。这是使用闭包的默认模式.
+
+    ```rust
+    fn main() {
+        let a = String::from("Hey!");
+        let fn_closure = || {
+            println!("Closure says: {}", a);
+        };
+        fn_closure();
+        println!("Main says: {}", a);
+    }
+    ```
 
 如果要实现Fn，就必须实现FnMut和FnOnce
 如果要实现FnMut，就必须实现FnOnce
@@ -1911,7 +2115,30 @@ Rust使用move关键字来强制让闭包所定义环境中的自由变量转移
 
 迭代器都实现了一个叫做 Iterator 的定义于标准库的 trait. next 是 Iterator 实现者被要求定义的唯一方法. next 一次返回迭代器中的一个项，封装在 Some 中，当迭代器结束时，它返回 None.
 
-> iter 方法生成一个不可变引用的迭代器. 如果需要一个获取所有权并返回拥有所有权的迭代器，则可以调用 into_iter. 类似的, 如果希望迭代可变引用，则可以调用 iter_mut.
+> iter()生成一个不可变引用的迭代器. 如果需要一个获取所有权并返回拥有所有权的迭代器，则可以调用 into_iter. 类似的, 如果希望迭代可变引用，则可以调用 iter_mut().
+
+<table>
+<thead>
+<tr>
+<th><code>Vec&lt;T&gt;</code> 方法</th>
+<th>返回</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.iter()</code></td>
+<td><code>Iterator&lt;Item = &amp;T&gt;</code></td>
+</tr>
+<tr>
+<td><code>.iter_mut()</code></td>
+<td><code>Iterator&lt;Item = &amp;mut T&gt;</code></td>
+</tr>
+<tr>
+<td><code>.into_iter()</code></td>
+<td><code>Iterator&lt;Item = T&gt;</code></td>
+</tr>
+</tbody>
+</table>
 
 这些调用 next 方法的方法被称为 消费适配器（consuming adaptors），因为调用它们会消费迭代器.
 
@@ -2032,6 +2259,8 @@ Rust 中的测试函数是用来验证非测试代码是否按照期望的方式
 
 Rust 社区倾向于根据测试的两个主要分类来考虑问题：单元测试（unit tests）与 集成测试（integration tests）. 单元测试倾向于更小而更集中，在隔离的环境中一次测试一个模块，或者是测试私有接口. 而集成测试对于开发者的库来说则完全是外部的. 它们与其他外部代码一样，通过相同的方式使用开发者的代码，只测试公有接口而且每个测试都有可能会测试多个模块.
 
+在编写代码方面, 编写集成测试和单元测试没有太大的区别, 唯一的区别是目录结构和其中的项目需要公开, 开发人员已经根据软件包的设计原则公开了这些项目.
+
 Rust 的私有性规则确实允许你测试私有函数.
 
 Rust 二进制项目的结构明确采用 src/main.rs 调用 src/lib.rs 中的逻辑的方式: 因为通过这种结构，集成测试 就可以 通过 extern crate 测试库 crate 中的主要功能了, 根本原因是只有库 crate 才会向其他 crate 暴露了可供调用和使用的函数, 而二进制 crate 只意在单独运行.
@@ -2041,7 +2270,8 @@ Rust 二进制项目的结构明确采用 src/main.rs 调用 src/lib.rs 中的�
 
 测试模块的 #[cfg(test)] 注解告诉 Rust 只在执行 cargo test 时才编译和运行测试代码，而在运行 cargo build 时不这么做.
 
-cfg 属性代表 configuration ，它告诉 Rust 其之后的项只应该被包含进特定配置选项中. 通常配置选项是 test，即 Rust 所提供的用于编译和运行测试的配置选项. 通过使用 cfg 属性，Cargo 只会在我们主动使用 cargo test 运行测试时才编译测试代码.
+cfg 属性代表 configuration ，它告诉 Rust 其之后的项只应该被包含进特定配置选项中, 通常用于条件编译，但不限于测试代码, 比如它可以为不同体系结
+构或配置标记引用或排除某些代码. 通常配置选项是 test，即 Rust 所提供的用于编译和运行测试的配置选项. 通过使用 cfg 属性，Cargo 只会在我们主动使用 cargo test 运行测试时才编译测试代码.
 
 ### 集成测试
 在 Rust 中，集成测试对于需要测试的库来说完全是外部的. 同其他使用库的代码一样使用库文件，也就是说它们只能调用一部分库中的公有 API 。集成测试的目的是测试库的多个部分能否一起正常工作. 一些单独能正确运行的代码单元集成在一起也可能会出现问题，所以集成测试的覆盖率也是很重要的. 为了创建集成测试，需要先创建一个 tests 目录, 与 src 同级. Cargo 知道如何去寻找这个目录中的集成测试文件。接着可以随意在这个目录中创建任意多的测试文件，Cargo 会将每一个文件当作单独的 crate 来编译.
@@ -2063,7 +2293,13 @@ assert! 宏由标准库提供，在希望确保测试中一些条件为 true 时
 
 测试功能的一个常用方法是将需要测试代码的值与期望值做比较，并检查是否相等. 可以通过向 assert! 宏传递一个使用 == 运算符的表达式来做到。不过这个操作实在是太常见了，以至于标准库提供了一对宏来更方便的处理这些操作 —— assert_eq! 和 assert_ne!, 这两个宏分别比较两个值是相等还是不相等.
 
+
+> `assert!(a == b)`中的`==`, 实际上会转变成一个方法调用`a.eq(&b)`, eq 方法来自特征 PartialEq. PartialEq 定义了
+局部排序，而 Eq 需要全局排序.
+
 > assert_eq! 和 assert_ne! 宏在底层分别使用了 == 和 !=。当断言失败时，这些宏会使用调试格式打印出其参数，这意味着被比较的值必需实现了 PartialEq 和 Debug trait.
+
+> debug_assert!: 类似assert!, 仅在debug模式中, 主要用于代码运行时，对应该保存的任何契约或不变性进行断言的情况, 有助于在调试模式下运行代码时捕获断言异常. 类似的还有debug_assert_eq!和 debug_assert_ne!.
 
 还可以向 assert!、assert_eq! 和 assert_ne! 宏传递一个可选的失败信息参数， 以便在测试失败时将自定义失败信息一同打印出来.
 
@@ -2134,18 +2370,92 @@ mod tests {
 }
 ```
 
+`#[ignore]`: 使用#[ignore]属性标记告知测试工具在执行 cargo test 命令时忽略此类测试功能, 然后可以向测试工具或 cargo test 命令传递`--ignored` 参数来单独运行这些测试.
+
 ### 执行测试
+`rustc --test first_unit_test.rs`即测试first_unit_test.rs, 默认测试都是并行的, 除非设置了`RUST_TEST_THREADS=1`.
+
 cargo test 在测试模式下编译代码并运行生成的测试二进制文件， 但可以指定命令行参数来改变 cargo test 的默认行为. cargo test 生成的二进制文件的默认行为是并行的运行所有测试，并截获测试运行过程中产生的输出, 这与golang类同.
 
 当运行多个测试时， Rust 默认使用线程来并行运行. `cargo test -- --test-threads=1`可传递 --test-threads 参数和希望使用线程的数量给测试二进制文件, 这里将测试线程设置为 1，告诉程序不要使用任何并行机制.
 
-如果希望能看到通过的测试中打印的值，截获输出的行为可以通过 --nocapture 参数来禁用.
+如果希望能看到通过的测试中打印的值，截获输出的行为可以通过 --nocapture 参数来禁用, 比如` cargo test test_with_fixture --
+--nocapture`, test_with_fixture是测试函数.
 
 可以向 cargo test 传递任意测试的名称来只运行这个测试, 比如`cargo test one_hundred`.
 
 指定部分测试的名称，任何名称匹配这个名称的测试会被运行, 比如`cargo test add`, 只运行了所有名字中带有 add 的测试.
 
 可以使用 ignore 属性来标记耗时的测试并排除他们. 当需要运行 ignored 的测试时，可以执行`cargo test -- --ignored`.
+
+### 基准测试
+`cargo bench`
+
+基准测试基于:
+1. 函数上方的#[bench]注释，这表示该函数是一个基准测试
+1. 内部编译器软件包 libtest 包含一个 Bencher 类型，基准函数通过它在多次迭代中运行相同的基准代码，此类型是针对编译器内部的，只适用于测试模式
+
+```rust
+// bench_example/src/lib.rs
+#![feature(test)]
+extern crate test;
+
+use test::Bencher;
+
+pub fn do_nothing_slowly() {
+    print!(".");
+    for _ in 1..10_000_000 {};
+}
+
+pub fn do_nothing_fast() {
+}
+
+#[bench]
+fn bench_nothing_slowly(b: &mut Bencher) {
+    b.iter(|| do_nothing_slowly());
+}
+
+#[bench]
+fn bench_nothing_fast(b: &mut Bencher) {
+    b.iter(|| do_nothing_fast());
+}
+```
+
+在标有#[bench]注释的函数内部， iter 的参数是一个没有参数的闭包函数.
+
+输出格式是每次迭代花费的时间，括号内的数字表示每次运行之间的差异. 性能较差的实现的运行速度非常慢, 并且运行时间不固定（用+/−符号所示）.
+
+criterion-rs可生成比内置基准测试框架更多的统计报告, 并使用 gnuplot 生成实用的图形和报表, 使用户更容易理解, 使用方法是:
+```
+# cat Cargo.toml
+...
+[dev-dependencies]
+criterion = "0.1"
+
+[[bench]]
+name = "fibonacci"
+harness = false
+...
+
+# cat criterion_demo/benches/fibonacci.rs
+#[macro_use] // 意味着要使用来自此软件包的任何宏时，我们需要使用此属性来选择它，因为默认情况下它们是非公开的
+extern crate criterion;
+extern crate criterion_demo;
+
+use criterion_demo::{fast_fibonacci, slow_fibonacci};
+use criterion::Criterion;
+
+fn fibonacci_benchmark(c: &mut Criterion) { // c可保存基准代码的运行状态
+    c.bench_function("fibonacci 8", |b| b.iter(|| slow_fibonacci(8)));
+}
+
+criterion_group!(fib_bench, fibonacci_benchmark); // 将fib_bench 的基准名称分配给基准组
+criterion_main!(fib_bench);
+```
+添加了一个名为`[[bench]]`的新属性， 它向 Cargo 表明我们有一个名为 fibonacci的新基准测试，并且它不使用内置的基准测试工具（ harness=false）, 因为我们正在使用
+criterion 软件包的测试工具.
+
+使用
 
 ## FAQ
 ### 并发与并行

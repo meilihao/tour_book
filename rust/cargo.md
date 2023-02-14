@@ -78,6 +78,10 @@ Rust 有许多功能可用于组织和管理代码, 包括哪些内容可以被�
 
     > 只是如果有多个bin类型的crate，一个src/main.rs就不行了，就得放到 src/bin 下面，每个crate一个文件，换句话说，每个文件都是一个不同的crate
 
+    > `extern crate iron`: 将 Cargo.toml 文件中指定的 iron 引入程序中
+
+    > `#[macro_use] extern crate mime;` : 将 Cargo.toml 文件中指定的 mine 引入程序中, 并会使用mine导出的宏
+
 - 模块（Modules即mod）和 use : 允许控制作用域和路径的私有性
 
     > Java 组织功能模块的主要单位是类; JavaScript 组织模块的主要方式是 function.
@@ -110,6 +114,8 @@ Rust 有许多功能可用于组织和管理代码, 包括哪些内容可以被�
     通过 glob 运算符将所有的公有定义引入作用域, 比如`use std::collections::*;`. 使用 glob 运算符时请多加小心！Glob 会使得难以推导作用域中有什么名称和它们是在何处定义的. glob 运算符经常用于测试模块 tests 中，这时会将所有内容引入作用域.
 
     Rust 中有两种简单的访问权：公共（public）和私有（private）. 默认情况下，如果不加修饰符，模块中的成员访问权将是私有的. 对于私有的模块，只有在与其平级的位置或下级的位置才能访问，不能从其外部访问.
+
+    > `use iron::prelude::*;`: 把 iron::prelude 模块中所有的公有名称直接暴露在代码中
 
 - 路径（path）: 一个命名例如结构体、函数或模块等项的方式
 

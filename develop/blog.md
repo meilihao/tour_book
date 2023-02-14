@@ -37,3 +37,6 @@
 
 ## ha
 - [让我明白了 Keepalived 高可用的三种路由方案](https://mp.weixin.qq.com/s?__biz=MzAwMjI0ODk0NA==&mid=2451964001&idx=1&sn=9b2562228697b4aa9c4188b10ce4cb8a)
+
+## 高并发
+- [高并发的哲学原理](https://github.com/johnlui/PPHC)

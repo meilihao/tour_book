@@ -155,8 +155,13 @@ journalctl -f -o verbose
 systemd-machine-id-setup # = dbus-uuidgen --ensure=/etc/machine-id
 
 # 清空systemd log
-journalctl --rotate # 要求日志守护进程轮换日志文件. 日志文件轮换的效果是所有当前**活动的日志文件**都被标记为已归档并重命名，以便将来永远不会写入它们, 然后在它们的位置创建新的（空的）日志文件. **注意: 活动日志文件不会被`--vacuum*=`命令删除.
+journalctl --flush --rotate # 要求日志守护进程轮换日志文件. 日志文件轮换的效果是所有当前**活动的日志文件**都被标记为已归档并重命名，以便将来永远不会写入它们, 然后在它们的位置创建新的（空的）日志文件. **注意: 活动日志文件不会被`--vacuum*=`命令删除.
 journalctl --vacuum-time=1s # 使所有日志文件不包含早于 1s 的数据
+journalctl --vacuum-size=400M # 清除所有存档的日志文件，并保留最后 400MB 的文件. 只对存档的文件有效
+journalctl --vacuum-files=2 # 只有最后两个日志文件被保留，其他的都被删除. 只对存档的文件有效
+
+# 检查日志文件的完整性
+journalctl --verify
 ```
 
 ## FAQ
@@ -165,3 +170,47 @@ journalctl --vacuum-time=1s # 使所有日志文件不包含早于 1s 的数据
 - [systemd-journald missing crash logs](https://unix.stackexchange.com/questions/414871/systemd-journald-missing-crash-logs)
 
 [查看 panic 信息](https://wiki.archlinux.org/index.php/General_troubleshooting_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)#%E6%95%85%E9%9A%9C%E6%81%A2%E5%A4%8D%E6%8E%A7%E5%88%B6%E5%8F%B0)
+
+### 配置自动删除
+/etc/systemd/journald.conf:
+<table border="1" cellpadding="4">
+<thead>
+<tr>
+<th>journald.conf 参数</th>
+<th>描述</th>
+<th>实例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SystemMaxUse</code></td>
+<td style="white-space: normal;">指定日志在持久性存储中可使用的最大磁盘空间</td>
+<td><code>SystemMaxUse=500M</code></td>
+</tr>
+<tr>
+<td><code>SystemKeepFree</code></td>
+<td style="white-space: normal;">指定在将日志条目添加到持久性存储时，日志应留出的空间量。</td>
+<td><code>SystemKeepFree=100M</code></td>
+</tr>
+<tr>
+<td><code>SystemMaxFileSize</code></td>
+<td style="white-space: normal;">控制单个日志文件在被轮换之前在持久性存储中可以增长到多大。</td>
+<td style="white-space: normal;"><code>SystemMaxFileSize=100M</code></td>
+</tr>
+<tr>
+<td><code>RuntimeMaxUse</code></td>
+<td style="white-space: normal;">指定在易失性存储中可以使用的最大磁盘空间（在&nbsp;<code>/run</code>&nbsp;文件系统内）。</td>
+<td><code>RuntimeMaxUse=100M</code></td>
+</tr>
+<tr>
+<td><code>RuntimeKeepFree</code></td>
+<td style="white-space: normal;">指定将数据写入易失性存储（在&nbsp;<code>/run</code>&nbsp;文件系统内）时为其他用途预留的空间数量。</td>
+<td><code>RuntimeMaxUse=100M</code></td>
+</tr>
+<tr>
+<td><code>RuntimeMaxFileSize</code></td>
+<td style="white-space: normal;">指定单个日志文件在被轮换之前在易失性存储（在&nbsp;<code>/run</code>&nbsp;文件系统内）所能占用的空间量。</td>
+<td style="white-space: normal;"><code>RuntimeMaxFileSize=200M</code></td>
+</tr>
+</tbody>
+</table>

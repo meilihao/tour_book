@@ -382,6 +382,8 @@ listen.acl_users = apache,nginx # listen.owner=listen.group=nobody. 默认不允
 
 ### spa更新后请求资源仍使用旧资源
 [nginx-spa-index-disable-cache-v2](https://gist.github.com/xuxihai123/fb3f358a8196fc8d143324b0f1b6866b), 未测试:
+nginx匹配不到route会兜底到`/`.
+
 ```conf
 # 不带前缀区分静态资源
 
@@ -427,6 +429,8 @@ location @index {
 
 或
 ```
+index index.html;
+
 location / {
   try_files $uri $uri/ /index.html;
 }
@@ -467,3 +471,8 @@ proxy_set_header Authority $host
                   uwsgi_param X-Forwarded-Proto $http_x_forwarded_proto;
             }
 ```
+
+### resp有`Transfer-Encoding:chunked`, 前端没有获取进度所需的content-length
+解决方法:
+1. 使用`chunked_transfer_encoding off;`
+1. proxy_http_version使用1.0

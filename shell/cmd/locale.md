@@ -1,6 +1,7 @@
 # locale
 参考:
 - [glibc locale使用简析](https://openeuler.org/zh/blog/wangshuo/glibc%20locale%E4%BD%BF%E7%94%A8%E7%AE%80%E6%9E%90/glibc+locale%E4%BD%BF%E7%94%A8%E7%AE%80%E6%9E%90.html)
+- [Locale](https://wiki.archlinuxcn.org/wiki/Locale?rdfrom=https%3A%2F%2Fwiki.archlinux.org%2Findex.php%3Ftitle%3DLocale_%28%25E7%25AE%2580%25E4%25BD%2593%25E4%25B8%25AD%25E6%2596%2587%29%26redirect%3Dno)
 
 软件在运行时的语言环境.
 
@@ -37,7 +38,7 @@ locale 定义文件一般位于 /usr/share/i18n/locales 目录中, 不用担心,
 - locale -a 列出系统中已经安装的所有locale
 - locale -m 列出系统中已经安装的所有charmap
 - locale-gen --purge 将/usr/lib/locale/里面的locale文件删掉
-- localedef --list-archive: 列出文件/usr/lib/locale/locale-archive中所有可用的locale的名字
+- localedef --list-archive: 列出文件/usr/lib/locale/locale-archive中所有可用的locale的名字 = `localectl list-locales`
 
 ## example
 ```bash
@@ -147,3 +148,18 @@ $ sudo dpkg-reconfigure locales
 
 ### 清除无用的locale
 [`apt install localepurge`](https://sleeplessbeastie.eu/2018/09/03/how-to-remove-useless-localizations/)
+
+### 设置区域设置
+前提: 对应的locale已生成
+
+#### 整个系统使用
+方法有2:
+1. /etc/locale.conf 中写入 LANG 变量
+
+    ```bash
+    # cat /etc/locale.conf
+    LANG=zh_CN.UTF-8
+    ```
+1. `localectl set-locale LANG=zh_CN.UTF-8`
+#### 用户会话中
+通过用户编辑自己的 ~/$XDG_CONFIG_HOME/locale.conf (通常为 ~/.config/locale.conf) 来覆盖. 这些 locale.conf 文件的优先级定义在 /etc/profile.d/locale.sh 中.

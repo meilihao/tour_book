@@ -539,6 +539,21 @@ printf "list clients\nquit" | bconsole
 printf ".api json\nlist clients" | bconsole
 ```
 
+## 辅助命令
+ref:
+- [Volume Utility Tools](https://www.bacula.org/11.0.x-manuals/en/utility/Volume_Utility_Tools.html)
+
+    相关命令均需在bareos-sd上执行
+
+> 根据`bls -d 500`, bls需要在bareos-sd上执行
+
+bareos-sd:
+```bash
+# bls -k/-j -v /tmp/File002 [-d 500] # 需使用绝对路径, 检查volume是否有错误, 发现错误后会交互提示挂载
+# bls -k/-j -p /tmp/File002 # 需使用绝对路径, 检查volume是否有错误, 发现错误后不会交互提示挂载, 而是输出错误, 且此时命令的status=0
+# bls -k/-j -p -V <volume name> <storage name> # 同时, 可在dir端执行
+```
+
 ## webui
 ### 还原
 - 客户端：从下拉菜单中选择备份所属的客户端
@@ -1841,6 +1856,16 @@ SD networking messed up (restart daemon).
 ```
 
 修改bareos-fd配置后未重启导致.
+
+### 还原一直排队中
+环境:
+1. Maximum Concurrent Job: director=10;client=20
+
+复现:
+1. 创建一个还原任务, 还原过程中重启client所在机器, 等待其重启完成且client在线
+2. 重新创建相同参数的还原任务
+
+原因: 未知
 
 ### 文件备份到tape全量成功, 增量和差异会一直运行中
 joblog报`No slot defined in catalog (slot=0) for Volume "Incremental-0015" on "autochanger_xxx" (dev/tape/by-id/xxx-nst)`

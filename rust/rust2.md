@@ -15,7 +15,7 @@ Rust 中最大的思维转换就是变量的所有权和生命周期，这是几
 > 其他系统编程语言有c,c++等.
 
 
-Rust 编译器的版本号采用了`语义化版本号（ Semantic Versioning ）`规划, 版本格式为: `主版本号．次版本号.修订号`.
+Rust 编译器的版本号采用了`语义化版本号（ Semantic Versioning ）`规划, 版本格式为: `主版本号.次版本号.修订号`.
 
 为了兼顾更新速度以及稳定性, Rust 使用了多渠道发布的策略:
 - nightly
@@ -31,7 +31,6 @@ Rust 编译器的版本号采用了`语义化版本号（ Semantic Versioning �
 
 	stable 版本则是正式版，它定期发布一个新版本，一些实验性质的新功能在此版本上无法使用, 因此它也是最稳定、最可靠的, 保证向前兼容的版本. 
 
-
 Rust 相对重大的设计必须经过 RFC(Request For Comments ）设计步骤. 这个步骤主要是用于讨论如何“设计”语言. [这个项目](https://github.com/rust-lang/rfcs)旨在于所有大功能必须先写好设计文挡，讲清楚设计的目标、实现方式 优缺点等，让整个社区参与讨论，然后由“核心组”(Core Team)的成员参与定夺是否接受这个设计. 许多深层次的设计思想问题可以在这个项目中找到答案.
 
 rust的`RFC -> Nightly -> Beta -> Stable`策略成功实践了快速迭代、敏捷交付以及 视用户反馈的特点，同时也保证了核心设计的稳定性--用户可以根据自己的要和风险偏好，选择合适的版本.
@@ -44,14 +43,62 @@ ref:
 
 Rust通过使用借用检查器(borrow checker)、所有权(ownership)、借用(borrow)这三个概念来管理和确保跨堆栈和堆的内存安全来管理内存，从而实现内存管理.
 
+所有权有点类似核心原则, 而借用和生命周期是对语言类型系统的扩展.
+
 # base
+## 文档
+`cargo doc --no-deps --open`, `--no-deps`是告诉cargo忽略生成依赖项的文档.
+
+> 可以将 cargo doc 与 cargo watch 搭配使用, 以获得无缝编写文档的体验，并在生成的页面上获得对项目中任何文档更改的实时反馈.
+
+> 通过cargo-travis可在在 GitHub 项目的 gh-pages 分支页面上托管项目文档
 ## 代码
 rust代码使用`.rs`扩展名, 且必须是utf-8编码.
 
-注释支持:
-1. `//` : 行注释
-1. `/**/`: 块注释
-1. 文档注释
+注释由rustdoc解析, 支持:
+- 元素级：这些注释适用于模块中的元素, 例如结构体、枚举声明、函数及特征常量等. 它们应该出现在元素的上方. 对于单行注释, 它们以`///`开头, 而对于多行
+注释, 则以`/*`开头，以`*/`结尾.
+- 模块级：这些是出现在根层级的注释, 例如 main.rs、 lib.rs, 以及其他任意模块, 可使用`//!`表示单行注释的开始, 使用`/*!`表示多行注释的开始, 并将`*/`
+作为结尾标记. 它们适用于概述软件包和某些示例.
+
+这些注释会被转成文档属性`#[doc(key=value)]`.
+
+常见文档属性:
+- #![doc(html_logo_url = "image url")：用于在文档页面的左上角添加徽标（ logo）
+- #![doc(html_root_url = "https://docs.rs/slotmap/0.2.1")]：用于设置文档页面的统一资源定位器（ Uniform Resource Locator， URL）
+- #![doc(html_playground_url = "https://play.rust-lang.org/")]： 用于在文档中的代码示例附近放置一个“ Run”按钮，以便能够通过在线 Rust 工作台运行它
+元素级属性
+- #[doc(hidden)]：假定你已经为公共函数 foo 编写了文档作为自己的注释，但是不希望该函数的使用者查看这些文档，那么可以使用此属性告知 rustdoc 忽略为 foo 生
+成文档
+- #[doc(include)]：用于引用来自其他文件的文档。如果文档很长，这有助于你将文档和代码分开
+
+Rust 允许在文档注释中使用`'`来嵌入代码:
+```rust
+// doctest_demo/src/lib.rs
+
+//! This crate provides functionality for adding things
+//!
+//! # Examples
+//! ```
+//! use doctest_demo::sum;
+//!
+//! let work_a = 4;
+//! let work_b = 34;
+//! let total_work = sum(work_a, work_b);
+//! ```
+
+/// Sum two arguments
+///
+/// # Examples
+///
+/// ```
+
+/// assert_eq!(doctest_demo::sum(1, 1), 2);
+/// ```
+pub fn sum(a: i8, b: i8) -> i8 {
+a + b
+}
+```
 
 ## 语句/表达式
 Rust 程序里, 表达式（ Expressio ）和语句（ Statement ）是完成流程控制、计算求值的主要工具. 在Rust 里, 表达式可以是语句的一部分，反过来，语句也可以是表达式的一部分. 一个表达式总是会产生 个值，因此它必然有类型; 语句不产生值，它的类型永远是`()`. 如果把一个表达式加上分号，那么它就变成了一个语句；如果把语句放到一个语句块中包起来, 那么它就可以被当成一个表达式使用.
@@ -132,6 +179,39 @@ Rust 表达式又可以分为‘左值’ （lvalue ）和‘右值’（rvalue)
 	常量的初始化表达式也一定是一个编译期常量, 不能是运行期的.
 
 	它与 static 大区别在于: 编译器并不一定会给const常量分配内存空间, 在编译过程中，它很可能会被内联优化. 因此, 千万不要用 hack 的方式, 通过 unsafe 代码去修改常量的值, 这么做是没有意义的. const也不具备类似 let 模式匹配功能.
+
+	结构体、枚举和特征中的常量:
+	```rust
+	enum Item {
+	    One,
+	    Two,
+	}
+	struct Food {}
+
+	impl Item {
+	    const DEFAULT_COUNT: u32 = 34;
+	}
+	impl Food {
+	    const FAVORITE_FOOD: &str = "Cake";
+	}
+
+	trait Circular {
+	    const PI: f64 = 3.14;
+	    fn area(&self) -> f64;
+	}
+	struct Circle {
+	    rad: f64,
+	}
+	impl Circular for Circle {
+	    fn area(&self) -> f64 {
+	        Circle::PI * self.rad * self.rad
+	    }
+	}
+	fn main() {
+	    let c_one = Circle { rad: 4.2 };
+	    println!("Area of circle one: {}", c_one.area());
+	}
+	```
 
 - 函数: `func x(a1:T1,...)-> T{}`
 
@@ -276,6 +356,12 @@ Rust 中, enum和struct均为内部成员创建了新的名字空间, 如果要�
 
 rust复合类型支持递归定义, 但需要使用指针, 否则计算其大小时因递归而无解.
 
+
+type alias:
+```rust
+type Carry = u8;
+```
+
 ## 基本数据类型
 - bool : true, false
 - char : 单个字符, 大小为四个字节(four bytes)，并代表了一个 Unicode 标量值（Unicode Scalar Value）, 等价于go的rune. char 由单引号包裹, 不同于字符串使用双引号.
@@ -296,6 +382,8 @@ rust复合类型支持递归定义, 但需要使用指针, 否则计算其大小
     64 bit  i64     u64
     128 bit     i128    u128
     Arch    isize   usize // arch 是由 CPU 构架决定的大小的整型类型, 与指针占用的空间大小一致, 在 x86 机器上为 32 位，在 x64 机器上为 64 位. 即isize和usize是自适应类型, 它们主要作为某些集合的索引.
+
+    > Rust 要求数组索引必须是 usize 值.
 
     > 所有数值字面量支持任意位置添加`_`以方便阅读, 并且支持后缀表示类型, 比如`0x_ff_u8`
 
@@ -345,28 +433,87 @@ rust复合类型支持递归定义, 但需要使用指针, 否则计算其大小
 	- 甚至可能在复合数据类型末尾嵌入不定长数据构造出不定长的复合数据类型
 
 	Rust 有不止一种指针类型, 常见的几种指针类型:
-	- `Box<T>` : 指向类型T的, 具有所有权的指针, 有权释放内存
+	- `Box<T>` : 指向类型T(在堆中)的, 具有所有权的指针, 有权释放内存
 
     	Rust中的值默认被分配到栈内存, 可通过`Box<T>`将值装箱(在堆内存中分配). 可通过解引用来获取`Box<T>`中的T. 因为`Box<T>`的行为像引用, 并且可以自动释放内存, 因此将其称为智能指针.
 
+    	Box 类型的所有权语义取决于包装类型。如果基础类型为Copy, 那么 Box 实例将成为副本，否则默认情况下将发生移动.
+
     	String类型和Vec类型的值都是被分配到堆内存并返回指针的，通过将返回的指针封装来实现Deref和Drop.
 
+    	```rust
+    	struct Node {
+			data: u32,
+			next: Option<Box<Node>>
+		}
+    	```
+
     	Box<T>是指向类型为T的堆内存分配值的智能指针. 当Box<T>超出作用域范围时，将调用其析构函数，销毁内部对象，并自动释放堆中的内存.
-	- `&T` : 指向类型T的借用指针, 也称为引用, 无权释放内存, 无权写数据
+	- `&T` : 指向类型T的借用指针, 也称为引用, 无权释放内存, 无权写数据. &T 指针就是一种 Copy 类型.
 	- `&mnut T` : 指向类型T的mut型借用指针, 无权释放内存, 有权写数据
-	- `*const T` : 指向类型T的只读裸指针, 没有生命周期信息, 无权写数据
-	- `*mut T` : 指向类型T的可读写裸指针, 没有生命周期信息, 有权写数据
+	- `*const T` : 指向类型T的只读裸指针, 没有生命周期信息, 无权写数据. 它是 Copy 类型。这类似于&T，只是它可以为空值.
+	- `*mut T` : 指向类型T的可读写裸指针, 没有生命周期信息, 有权写数据.  它不支持 Copy 特征（ non-Copy）.
+
+	```rust
+	fn main() {
+		// 可将引用强制转换为原始指针
+	    let a = &56;
+	    let a_raw_ptr = a as *const i32;
+	    // or
+	    let b = &mut 5634.3;
+	    let b_mut_ptr = b as *mut f64;
+	}
+	```
 
 	此之外，在标准库中还有一种封装起来的可以当作指针使用的类型, 即智能指针(smart pointer, 来自c++):
 	- `Rc<T>` : 指向类型T的引用计数指针, 共享所有权, 线程不安全
 
 	    通过clone方法共享的引用所有权称为强引用，RC<T>是强引用.
+
+	    当与一个 Rc 类型交互时，其内部会发生如下变化:
+		- 当通过调用 Clone()获取对 Rc 的一个新共享引用时， Rc 会增加其内部引用计数。Rc 内部使用 Cell 类型处理其引用计数。
+		- 当引用超出作用域时，它会对引用计数器执行递减操作。
+		- 当所有共享引用计数超出作用域时， refcount 会变成 0。 此时， Rc 上的最后一次 drop	调用会执行相关的资源清理工作
+
+		Rc<T>主要通过两种方式使用:
+		- 静态方法 Rc::new 会生成一个新的引用计数器。
+		- clone 方法会增加强引用计数并分发一个新的 Rc<T>
+
+		Rc 内部会保留两种引用：强引用（ Rc<T>）和弱引用（ Weak<T>）。二者都会维护每种类型的引用数量的计数，但是仅在强引用计数值为零时，才会释放该值. 它的弱引用可打破引用循环.
 	- `Arc<T>` : 指向类型T的原子型引用计数指针, 共享所有权, 线程安全
 	- `Cow<’a, T>` : Clone-on-write, 写时复制指针. 可能是借用指针, 也可能是具有所有权的指针 
 
     	Cow<T>的功能是：以不可变的方式访问借用内容，以及在需要可变借用或所有权的时候再克隆一份数据. Cow<T>旨在减少复制操作，提高性能，一般用于读多写少的场景. Cow<T>的另一个用处是统一实现规范.
+    - Cell<T>：提供实现了 Copy 特征的类型的内部可变性. 换句话说，有可能获得多个可变引用
+
+    	Cell<T>可以为值提供可变性，甚至允许值位于不可引用之后。它以极低的开销提供此功能:
+		- Cell::new 方法允许你通过传递任意类型 T 来创建 Cell 类型的新实例。
+		- get:get 方法允许你复制单元（ cell）中的值。仅当包装类型 T 为 Copy 时，该方法
+		才有效。
+		- set：允许用户修改内部的值，即使该值位于某个不可变引用的后面
+	- RefCell<T>：提供了类型的内部可变性，并且不需要实现 Copy 特征. 它用于运行时的锁定以确保安全性
+
+		为某个非 Copy 类型支持 Cell 的功能
+
+		RefCell 类型提供了以下两种借用方法:
+		- 使用 borrow 方法会接收一个新的不可变引用
+		- 使用 borrow_mut 方法会接收一个新的可变引用
+
+	`Rc<T>和Arc<T>`多用于gui编程. Cell和RefCell提供了共享可变性, 此时会将借用检查从编译时移动到运行时. 这是通过内部可变性实现的.
+
+	> 内部可变性：在这种可变性中，即使你有一个引用某种类型的&SomeStruct，如果其中的字段类型为 Cell<T>或 RefCell<T>，那么仍然可以修改其字段.
 
 Rust使用as用于类型转换, 前提是编译器认为是合理的转换.
+
+
+智能指针是因为它们还具有与之相关联的额外元数据和代码, 它们会在创建和销毁指针时被调用和执行. 智能指针超出作用域时能够自动释放底层资源是采用它们的主要原因之一.
+智能指针的大部分特性要归功于两个特征Drop 和 Deref:
+- Drop: 释放资源, 通常由Rust编译器在编译后的代码中每个作用域结束的位置插入 drop 方法调用.
+
+	它包含一个 drop 方法, 当对象超出作用域时就会被调用。该方法将&mut self 作为参数。使用 drop 释放值是以LIFO 的方式进行的.
+- Deref: 它定义了一个名为 Deref 的方法，并会通过引用获取 self 参数，然后返回对底层类型的不可变引用
+
+	DerefMut可提供对底层类型的可变引用.
 
 ## 流程控制
 Rust 的循环和大部分语言都一致, 支持死循环`loop {}`、条件循环`while expr {}`，以及对迭代器的循环`for x in iter {}`. 循环可以通过 break 提前终止，或者 continue 来跳到下一轮循环.
@@ -453,22 +600,150 @@ fn main() {
 
 	Rust 的模式匹配吸取了函数式编程语言的优点，强大优雅且效率很高. 它可以用于 struct / enum 中匹配部分或者全部内容.
 
+	```rust
+	use std::str::FromStr;
+	/// 解析字符串s，格式为一对坐标值，如"400x600"或"1.0,0.5"
+	///
+	/// 特别地， s的格式应该是"<左值><分隔符><右值>"的形式，其中<分隔符>
+	/// 就是separator参数传入的字符，而<左值>和<右值>都是字符串，可以通过
+	/// T::from_str来解析
+	///
+	/// 如果s的格式没错，就返回Some<(x, y)>。如果解析出错，则返回None
+	fn parse_pair<T: FromStr>(s: &str, separator: char) -> Option<(T, T)> {
+		match s.find(separator) {
+			None => None,
+			Some(index) => {
+				match (T::from_str(&s[..index]), T::from_str(&s[index + 1..])) {
+					(Ok(l), Ok(r)) => Some((l, r)),
+					_ => None
+				}
+			}
+		}
+	}
+
+	#[test]
+	fn test_parse_pair() {
+		assert_eq!(parse_pair::<i32>(",10", ','), None);
+		assert_eq!(parse_pair::<i32>("10,20", ','), Some((10, 20)));
+		assert_eq!(parse_pair::<f64>("0.5x1.5", 'x'), Some((0.5, 1.5)));
+	}
+	```
+
 - 错误跳转: 在错误跳转中，当调用的函数返回错误时，Rust 会提前终止当前函数的执行，向上一层返回错误
 
 	`expr?`, 比如`fs::write("/tmp/1.log", b"hello")?;`
+
+	```rust
+	let output = match File::create(filename) {
+		Ok(f) => { f }
+		Err(e) => { return Err(e); }
+	};
+	// 同上
+	let output = File::create(filename)?;
+	```
 - 异步跳转: 在 Rust 的异步跳转中, 当 async 函数执行 await 时, 程序当前上下文可能被阻塞, 执行流程会跳转到另一个异步任务执行, 直至 await 不再阻塞.
 
 	`expr.await`, 比如`socket.write(data).await?`
 
 ## 错误处理
-Rust 没有沿用 C++/Java 等诸多前辈使用的异常处理方式, 而是借鉴 Haskell，把错误封装在  `Result<T, E>` 类型中, 同时提供了`?`操作符来传播错误, 方便开发. `Result<T, E>` 类型是一个泛型数据结构，T 代表成功执行返回的结果类型, E 代表错误类型.
+常见错误处理方式:
+1. 返回代码
+
+	在发生错误时，大量的 C 函数会返回−1 或 NULL。当进行系统调用时出现错误， C 语言会设置全局变量 errno 表示调用失败
+1. 异常
+
+	Java 和 C#之类的高级编程语言就是采用`try...catch`方式处理错误的
+
+Rust 没有沿用上述两种处理方式, 而是借鉴 Haskell定义了Option和Result.
+
+Option表示是否有值.
+
+Option:
+```rust
+use std::collections::HashMap;
+
+fn main() {
+	let mut map = HashMap::new();
+	map.insert("one", 1);
+	map.insert("two", 2);
+
+	let incremented_value = match map.get("one") {
+		Some(val) => val + 1,
+		None => 0
+	};
+	println!("{}", incremented_value);
+
+	let incremented_value2 = if let Some(v) = map.get("one") {
+		v + 1
+	} else {
+		0
+	};
+	println!("{}", incremented_value2);
+
+	let incremented_value3 = map.get("three").unwrap() + 1; // 会panic
+	println!("{}", incremented_value3);
+}
+```
+
+另一种不太安全的方法是在 Option 上调用解压缩方法，即`unwrap()和expect()`(panic时, expect可传递信息)。如果返回的结果是 Some，那么调用这些方法后将提取内部的值；如果返回
+的结果是 None，则会发生异常。仅当我们确定 Option 值确实包含某个值时，才推荐使用这些方法.
+
+Result 和 Option 类似，但具有一些额外的优点，即能够存储和错误上下文有关的任意异常值，而不只是 None.
+
+Result把错误封装在  `Result<T, E>` 类型中, 同时提供了`?`操作符来传播错误, 方便开发. `Result<T, E>` 类型是一个泛型数据结构，T 代表成功执行返回的结果类型, E 代表错误类型.
+
+Result:
+```rust
+fn main() {
+	let _my_result: Result<_, ()> = Ok(64);
+	// or
+	let _my_result = Ok::<_, ()>(64);
+
+	// 同样，我们可以创建 Err 类型的变量
+	let _my_err = Err::<(), f32>(345.3);
+	let _other_err: Result<bool, String> = Err("Wait, what ?".to_string());
+}
+```
+
+Option 和 Result 类型之间的转换:
+- ok:  Result -> Option, 丢弃Err
+- ok_or: Option -> Result
+
+std::panic::catch_unwind 会接收一个闭包并处理其中发生的灾难性故障. 它不会阻止灾难性故障的发生，它只是停止发生灾难性故障
+的线程中的堆栈展开. 且catch_unwind 不是 Rust 中处理错误的推荐方案, 因为它不能确保捕获所有灾难性故障， 例如让程序终止运行的故障.
+
+发生灾难性故障后默认的展开行为会导致内存开销过于昂贵的极端情况, 单片机禁用该展开的方法是在Cargo.toml添加属性:
+```toml
+[profile.release]
+panic = "abort"
+```
 
 ## 宏
+元编程是改变程序中指令和数据方式的一种编程技术. 它允许像处理任何其他数据那样通过指令生成新的代码. 许多语言都支持元编程，例如 Lisp 的宏、 C 的#define 构造及 Python 的元类.
+
 rust宏和c/c++中的宏完全不是一个概念. 它是一种安全版的编译期语法扩展, 之所以使用宏, 而不是函数, 是因为宏可以完成编译期格式检查, 更加安全.
 
 > 函数则不具备字符串格式化的静态检查功能，如果出现了不匹配的情况, 只能是运行期报错.
 
 > `format!, write!`最终还是调用`std::io`模块提供的一些函数来完成的. 如果用户需要更精细地控制标准输出操作, 也可以直接调用标准库来完成.
+
+> derive可以根据名称实现一个或多个特征, 是一个过程宏，它只是简单地为实现它的类型的 impl 块生成代码, 并实现特征方法或任何
+关联函数.
+
+一般的经验法则是，宏可以在函数无法提供所需解决方案的情况下使用，其中的代码具有相当的重复性，或者在需要检查类型结构体并在编译期生成代码的情况下使用宏.
+
+同时应该谨慎地使用宏，它们会使代码难以维护和理解. 同时大量使用宏会导致性能损失, 因为会产生大量重复的代码，这会影响 CPU 指令缓存.
+
+rust支持的宏:
+1. 声明式宏
+
+	这些是宏的最简单形式。它们是使用 macro_rules!宏创建的，其本身就是一个宏。它们提供与调用函数类似的功能，但是很容易通过名称末尾的!予以区
+分。它们是在项目中快速编写小型宏的首选方法. 此时不需要考虑如何生成代码，因为 DSL 会替代劳.
+1. 过程宏
+
+	过程宏是宏的一种更高级形式，可以完全控制代码的操作和生成。这些宏没有任何 DSL 支持，并在某种意义上是程序性的，你必须为给定的标记树输入编
+写如何生成或转换代码的指令。其缺点是实现起来很复杂，需要对编译器的内部机制，以及程序如何在编译器的内存中表示有一些了解。 macro_rules!宏可以在项目
+的任何位置定义， 而过程宏需要通过将 Cargo.toml 文件中的属性设置为 proc−macro= true 来生成独立的软件包
 
 ## 代码管理
 rust支持使用mod 来组织代码.
@@ -495,7 +770,10 @@ members = [
 ```
 
 ## trait
-所有的 trait 中都有一个隐藏的类型 Self （大写），代表当前这个实现了此 trait 的具体类型. trait 中定义的函数，也可以称作关联函数（ associated function). 函数的第一个参数如果是 Self 相关的类型，且命名为 self（小写），这个参数可以被称为“receiver ”（接收者）. 具有 receiver 参数的函数，称为“方法”（method), 可以通过变量实例使用小数点来调用. 没有 receiver 参数的函数，称为“静态函数”（static function ），可以通过类型加`::`的方式来调用.
+ref:
+- [Rust 的标准库 Trait 之旅](https://ohmyweekly.github.io/notes/2021-05-19-a-tour-of-rust-standard-library-traits/)
+
+所有的 trait 中都有一个隐藏的类型 Self，代表当前这个实现了此 trait 的具体类型. trait 中定义的函数，也可以称作关联函数（ associated function). 函数的第一个参数如果是 Self 相关的类型，且命名为 self（小写），这个参数可以被称为“receiver ”（接收者）. 具有 receiver 参数的函数，称为“方法”（method), 可以通过变量实例使用小数点来调用. 没有 receiver 参数的函数，称为“静态函数”（static function ），可以通过类型加`::`的方式来调用.
 
 ```rust
 trait T { 
@@ -514,7 +792,6 @@ trait T {
 直接对它 impl 来增加成员方法, 无须 trait 名字, 比如：
 ```rust
 impl Circle { 
-
 	fn get radius(&self) -> f64 { self.radius } 
 }
 ```
@@ -529,11 +806,11 @@ trait 中可以包含方法的默认实现, 如果需要针对特殊类型作特
 impl 的对象甚至可以是 trait, 如下:
 ```rust
 trait Shape { 
-	fn area(&self) - > f64;
+	fn area(&self) -> f64;
 }
 
 trait Round { 
-	fn get_radius(&self) - > f64;
+	fn get_radius(&self) -> f64;
 }
 
 struct Circle { 
@@ -545,7 +822,7 @@ impl Round for Circle {
 }
 
 // impl Trait for Trait 
-impl Shape for Round { 
+impl Shape for dyn Round {
 	fn area(&self) -> f64 { 
 		std::f64::consts::PI * self.get_radius() * self.get_radius() 
 	}
@@ -556,14 +833,770 @@ fn main() {
 	// build err
 	// c. area ( ) ; 
 
-	let b = Box::new(Circle {radius : 4f64}) as Box<Round>;
+	let b = Box::new(Circle {radius : 4f64}) as Box<dyn Round>;
 	b.area();
 }
 ```
 
 上面的`impl Shape for Round`和`impl<T: Round> Shape for T`是不一样的, 在前一种写法中, self 是`&Round`类型, 它是一个 trait object ，是胖指针. 在后一种写法中, self 是&T, T是具体类型 前一种写法是为 trait object增加一个成员方法; 而后一种写法是为所有的满足`T: Round`的具体类型增加一个成员方法. 所以上面的示例中，我们只能构造一个 trait object 之后才能调用 area()成员方法.
 
-Rust 2018 edition开始, trait object 的语法会被要求加上 dyn 关键字即`impl Shape for dyn Round`.
+trait 对象给了我们运行时的多态性. Trait 对象是不确定大小的，所以它们必须总是在指针后面.
+
+并非所有的 trait 都可以转换为 trait 对象。如果一个 trait 满足这些要求，它就是对象安全的:
+1. trait 不需要 Self: Sized。
+1. 所有 trait 的方法都是对象安全的
+
+	如果 trait 方法满足这些要求，它就是对象安全的:
+	- 方法需要 Self: Sized 或
+	- 该方法只在接收器位置使用 Self 类型
+
+**Rust 2018 edition开始, trait object 的语法会被要求加上 dyn 关键字即`impl Shape for dyn Round`**, 2015可用`impl Shape for Round`.
+
+dyn(动多态, 类似golang的接口):
+```rust
+use std::fmt::Debug;
+
+#[derive(Debug)]
+struct Square(f32);
+#[derive(Debug)]
+struct Rectangle(f32, f32);
+
+trait Area: Debug {
+	fn get_area(&self) -> f32;
+}
+
+impl Area for Square {
+	fn get_area(&self) -> f32 {
+		self.0 * self.0
+	}
+}
+
+impl Area for Rectangle {
+	fn get_area(&self) -> f32 {
+		self.0 * self.1
+	}
+}
+fn main() {
+	let shapes: Vec<&dyn Area> = vec![&Square(3f32), &Rectangle(4f32,2f32)]; //  `&dyn Area` 表示的，意味着它是指向 Area 某些实现的指针
+	for s in shapes {
+		println!("{:?}", s);
+	}
+}
+```
+
+trait依赖:
+```rust
+trait Vehicle {
+	fn get_price(&self) -> u64;
+}
+
+trait Car: Vehicle {
+	fn model(&self) -> String;
+}
+```
+
+Car 特征指定了约束，任何实现特征的类型必须实现 Vehicle 特征.
+
+
+trait形式:
+1.  marker trait
+
+	在 std::marker 模块中定义的特征被称为标记特征（ marker trait）。这种特征不包含任何方法，声明时只是提供特征名称和空的函数体.
+
+	标准库中的示例包括 Copy、 Send、 Sync也是标记特征，因为它们用于简单地将类型标记为属于特定的组群，以获得一定程度的编译期保障.
+
+	自动 trait 是指如果一个类型的所有成员都实现了这个 trait，那么这个 trait 就会被自动实现. 所有的自动 trait 都是标记 trait，但不是所有的标记 trait 都是自动 trait. 自动trait有Send、 Sync.
+1. 简单trait
+
+	```rust
+	trait Foo {
+		fn foo();
+	}
+	```
+
+	标准库中的一个示例是 Default 特征，它主要是针对可以使用默认值初始化的类型实现的.
+1. 泛型trait
+
+	```rust
+	pub trait From<T> { // 将 T 转换为 Self
+		fn from(T) -> Self;
+	}
+
+	trait Into<T> { // 将 Self 转换为 T
+	    fn into(self) -> T;
+	}
+	```
+
+	TryFrom 和 TryInto 是 From 和 Into 的不可靠版本.
+1. 关联类型trait
+
+	当需要在函数签名中使用 Self 以外的其他类型, 但又希望类型由实现者选择, 而不是在 trait 声明中硬编码
+
+	```rust
+	trait Foo {
+		type Out;
+		fn get_value(self) -> Self::Out;
+	}
+
+	// ----
+	trait Trait {
+	    type AssociatedType;
+	    fn func(arg: Self::AssociatedType);
+	}
+
+	struct SomeType;
+
+	impl Trait for SomeType {
+	    type AssociatedType = i8; // chooses i8
+	    fn func(arg: Self::AssociatedType) {}
+	}
+
+	fn main() {
+	    SomeType::func(-1_i8); // can only call func with i8 on SomeType
+	}
+	```
+
+	它在trait中声明了相关类型.
+1. trait依赖
+
+	`trait Subtrait: Supertrait {}`: 所有实现 Subtrait 的类型都是所有实现 Supertrait 的类型的子集
+
+	```rust
+	trait Vehicle {
+		fn get_price(&self) -> u64;
+	}
+
+	trait Car: Vehicle {
+		fn model(&self) -> String;
+	}
+	```
+
+	没有规定一个类型必须同时实现一个 subtrait 和一个 supertrait. 它可以在另一个类型的实现中使用其中一个类型的方法:
+	```rust
+		trait Supertrait {
+	    fn super_method(&mut self);
+	}
+
+	trait Subtrait: Supertrait {
+	    fn sub_method(&mut self);
+	}
+
+	struct CallSuperFromSub;
+
+	impl Supertrait for CallSuperFromSub {
+	    fn super_method(&mut self) {
+	        println!("in super");
+	    }
+	}
+
+	impl Subtrait for CallSuperFromSub {
+	    fn sub_method(&mut self) {
+	        println!("in sub");
+	        self.super_method();
+	    }
+	}
+
+	struct CallSubFromSuper;
+
+	impl Supertrait for CallSubFromSuper {
+	    fn super_method(&mut self) {
+	        println!("in super");
+	        self.sub_method();
+	    }
+	}
+
+	impl Subtrait for CallSubFromSuper {
+	    fn sub_method(&mut self) {
+	        println!("in sub");
+	    }
+	}
+
+	struct CallEachOther(bool);
+
+	impl Supertrait for CallEachOther {
+	    fn super_method(&mut self) {
+	        println!("in super");
+	        if self.0 {
+	            self.0 = false;
+	            self.sub_method();
+	        }
+	    }
+	}
+
+	impl Subtrait for CallEachOther {
+	    fn sub_method(&mut self) {
+	        println!("in sub");
+	        if self.0 {
+	            self.0 = false;
+	            self.super_method();
+	        }
+	    }
+	}
+
+	fn main() {
+	    CallSuperFromSub.super_method(); // prints "in super"
+	    CallSuperFromSub.sub_method(); // prints "in sub", "in super"
+	    
+	    CallSubFromSuper.super_method(); // prints "in super", "in sub"
+	    CallSubFromSuper.sub_method(); // prints "in sub"
+	    
+	    CallEachOther(true).super_method(); // prints "in super", "in sub"
+	    CallEachOther(true).sub_method(); // prints "in sub", "in super"
+	}
+	```
+
+### trait泛型参数
+```rust
+// trait declaration generalized with lifetime & type parameters
+trait Trait<'a, T> {
+    // signature uses generic type
+    fn func1(arg: T);
+
+    // signature uses lifetime
+    fn func2(arg: &'a i32);
+
+    // signature uses generic type & lifetime
+    fn func3(arg: &'a T);
+}
+
+struct SomeType;
+
+impl<'a> Trait<'a, i8> for SomeType {
+    fn func1(arg: i8) {}
+    fn func2(arg: &'a i32) {}
+    fn func3(arg: &'a i8) {}
+}
+
+fn main() {
+    SomeType::func1(-1_i8); // can only call func with i8 on SomeType
+}
+```
+
+```rust
+// make T = Self by default
+trait Trait<T = Self> {
+    fn func(t: T) {}
+}
+
+// any type can be used as the default
+trait Trait2<T = i32> {
+    fn func2(t: T) {}
+}
+
+struct SomeType;
+
+// omitting the generic type will
+// cause the impl to use the default
+// value, which is Self here
+impl Trait for SomeType {
+    fn func(t: SomeType) {}
+}
+
+// default value here is i32
+impl Trait2 for SomeType {
+    fn func2(t: i32) {}
+}
+
+// the default is overridable as we'd expect
+impl Trait<String> for SomeType {
+    fn func(t: String) {}
+}
+
+// overridable here too
+impl Trait2<String> for SomeType {
+    fn func2(t: String) {}
+}
+```
+
+### 泛型类型 vs 关联类型
+泛型类型和关联类型都将决定权交给了实现者, 让他们决定在 trait 的函数和方法中应该使用哪种具体类型. 一般的经验法则是
+1. 当每个类型只能有一个 trait 的实现时, 使用关联类型
+1. 当每个类型可以有许多可能的 trait 的实现时, 使用泛型类型
+
+关联类型:
+```rust
+trait Add {
+    type Rhs;
+    type Output;
+    fn add(self, rhs: Self::Rhs) -> Self::Output;
+}
+
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+impl Add for Point {
+    type Rhs = Point;
+    type Output = Point;
+    fn add(self, rhs: Point) -> Point {
+        Point {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+// 支持 Point + Point, 而不支持Point + i32
+fn main() {
+    let p1 = Point { x: 1, y: 1 };
+    let p2 = Point { x: 2, y: 2 };
+    let p3 = p1.add(p2);
+    assert_eq!(p3.x, 3);
+    assert_eq!(p3.y, 3);
+}
+```
+
+泛型类型:
+```rust
+trait Add<Rhs> {
+    type Output;
+    fn add(self, rhs: Rhs) -> Self::Output;
+}
+
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+impl Add<Point> for Point {
+    type Output = Self;
+    fn add(self, rhs: Point) -> Self::Output {
+        Point {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+impl Add<i32> for Point {
+    type Output = Self;
+    fn add(self, rhs: i32) -> Self::Output {
+        Point {
+            x: self.x + rhs,
+            y: self.y + rhs,
+        }
+    }
+}
+
+// 将 Rhs 从关联类型重构为泛型类型 支持 Point + Point, 也支持Point + i32
+fn main() {
+    let p1 = Point { x: 1, y: 1 };
+    let p2 = Point { x: 2, y: 2 };
+    let p3 = p1.add(p2);
+    assert_eq!(p3.x, 3);
+    assert_eq!(p3.y, 3);
+    
+    let p1 = Point { x: 1, y: 1 };
+    let int2 = 2;
+    let p3 = p1.add(int2);
+    assert_eq!(p3.x, 3);
+    assert_eq!(p3.y, 3);
+}
+```
+
+允许Point+Point=Line:
+```rust
+trait Add<Rhs, Output> {
+    fn add(self, rhs: Rhs) -> Output;
+}
+
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+impl Add<Point, Point> for Point {
+    fn add(self, rhs: Point) -> Point {
+        Point {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+impl Add<i32, Point> for Point {
+    fn add(self, rhs: i32) -> Point {
+        Point {
+            x: self.x + rhs,
+            y: self.y + rhs,
+        }
+    }
+}
+
+struct Line {
+    start: Point,
+    end: Point,
+}
+
+impl Add<Point, Line> for Point {
+    fn add(self, rhs: Point) -> Line {
+        Line {
+            start: self,
+            end: rhs,
+        }
+    }
+}
+
+fn main() {
+    let p1 = Point { x: 1, y: 1 };
+    let p2 = Point { x: 2, y: 2 };
+    let p3: Point = p1.add(p2);
+    assert!(p3.x == 3 && p3.y == 3);
+
+    let p1 = Point { x: 1, y: 1 };
+    let int2 = 2;
+    let p3 = p1.add(int2);
+    assert!(p3.x == 3 && p3.y == 3);
+
+    let p1 = Point { x: 1, y: 1 };
+    let p2 = Point { x: 2, y: 2 };
+    let l: Line = p1.add(p2);
+    assert!(l.start.x == 1 && l.start.y == 1 && l.end.x == 2 && l.end.y == 2)
+}
+```
+
+### 作用域
+```rust
+use std::fs::File;
+use std::io;
+use std::io::Read;
+
+fn main() -> Result<(), io::Error> {
+    let mut file = File::open("Cargo.toml")?;
+    let mut buffer = String::new();
+    file.read_to_string(&mut buffer)?; // read_to_string(buf: &mut String) 由 std::io::Read trait 声明，并由 std::fs::File 结构体实现，但为了调用它，std::io::Read 必须在作用域内
+    Ok(())
+}
+```
+
+标准库中的 prelude 是标准库中的一个模块, 即 std::prelude::v1, 它在每个其他模块的顶部被自动导入即`use std::prelude::v1::*`. 因此, 相关 trait 总是在作用域内，永远不需要显式导入它们.
+
+
+### 默认实现
+```rust
+trait Trait {
+    fn method(&self) {
+        println!("default impl");
+    }
+}
+
+struct SomeType;
+struct OtherType;
+
+// use default impl for Trait::method
+impl Trait for SomeType {}
+
+impl Trait for OtherType {
+    // use our own impl for Trait::method
+    fn method(&self) {
+        println!("OtherType impl");
+    }
+}
+
+fn main() {
+    SomeType.method(); // prints "default impl"
+    OtherType.method(); // prints "OtherType impl"
+}
+```
+
+
+```rust
+use std::fmt::Debug;
+use std::convert::TryInto;
+use std::ops::Rem;
+
+trait Even {
+    fn is_even(self) -> bool;
+}
+
+impl<T> Even for T
+where
+    T: Rem<Output = T> + PartialEq<T> + Sized,
+    u8: TryInto<T>,
+    <u8 as TryInto<T>>::Error: Debug,
+{
+    fn is_even(self) -> bool {
+        self % 2.try_into().unwrap() == 0.try_into().unwrap()
+    }
+}
+
+impl Even for u8 { // 通用的全面实现和特定实现冲突. 因为rust保证了Trait 一致性即任何给定类型的 trait 最多存在一个实现的属性
+    fn is_even(self) -> bool {
+        self % 2_u8 == 0_u8
+    }
+}
+
+#[test]
+fn test_is_even() {
+    assert!(2_i8.is_even());
+    assert!(4_u8.is_even());
+    assert!(6_i16.is_even());
+    // etc
+}
+```
+
+### Any
+这个 trait 很少需要使用，因为在大多数情况下，参数化多态性要优于临时多态性，后者也可以用枚举来模拟，因为枚举的类型更安全，需要的迂回更少.
+
+```rust
+use std::any::Any;
+
+#[derive(Default)]
+struct Point {
+    x: i32,
+    y: i32,
+}
+
+impl Point {
+    fn inc(&mut self) {
+        self.x += 1;
+        self.y += 1;
+    }
+}
+
+fn map_any(mut any: Box<dyn Any>) -> Box<dyn Any> {
+    if let Some(num) = any.downcast_mut::<i32>() {
+        *num += 1;
+    } else if let Some(string) = any.downcast_mut::<String>() {
+        *string += "!";
+    } else if let Some(point) = any.downcast_mut::<Point>() {
+        point.inc();
+    }
+    any
+}
+
+fn main() {
+    let mut vec: Vec<Box<dyn Any>> = vec![
+        Box::new(0),
+        Box::new(String::from("a")),
+        Box::new(Point::default()),
+    ];
+    // vec = [0, "a", Point { x: 0, y: 0 }]
+    vec = vec.into_iter().map(map_any).collect();
+    // vec = [1, "a!", Point { x: 1, y: 1 }]
+}
+```
+
+### Operator Traits
+Rust 中的所有运算符都与 trait 相关, 如果想为自定义类型实现运算符，就必须实现相关的 trait.
+
+<table>
+<thead>
+<tr>
+<th>Trait(s)</th>
+<th>Category</th>
+<th>Operator(s)</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Eq</code>, <code>PartialEq</code></td>
+<td>comparison</td>
+<td><code>==</code></td>
+<td>equality</td>
+</tr>
+<tr>
+<td><code>Ord</code>, <code>PartialOrd</code></td>
+<td>comparison</td>
+<td><code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></td>
+<td>comparison</td>
+</tr>
+<tr>
+<td><code>Add</code></td>
+<td>arithmetic</td>
+<td><code>+</code></td>
+<td>addition</td>
+</tr>
+<tr>
+<td><code>AddAssign</code></td>
+<td>arithmetic</td>
+<td><code>+=</code></td>
+<td>addition assignment</td>
+</tr>
+<tr>
+<td><code>BitAnd</code></td>
+<td>arithmetic</td>
+<td><code>&amp;</code></td>
+<td>bitwise AND</td>
+</tr>
+<tr>
+<td><code>BitAndAssign</code></td>
+<td>arithmetic</td>
+<td><code>&amp;=</code></td>
+<td>bitwise assignment</td>
+</tr>
+<tr>
+<td><code>BitXor</code></td>
+<td>arithmetic</td>
+<td><code>^</code></td>
+<td>bitwise XOR</td>
+</tr>
+<tr>
+<td><code>BitXorAssign</code></td>
+<td>arithmetic</td>
+<td><code>^=</code></td>
+<td>bitwise XOR assignment</td>
+</tr>
+<tr>
+<td><code>Div</code></td>
+<td>arithmetic</td>
+<td><code>/</code></td>
+<td>division</td>
+</tr>
+<tr>
+<td><code>DivAssign</code></td>
+<td>arithmetic</td>
+<td><code>/=</code></td>
+<td>division assignment</td>
+</tr>
+<tr>
+<td><code>Mul</code></td>
+<td>arithmetic</td>
+<td><code>*</code></td>
+<td>multiplication</td>
+</tr>
+<tr>
+<td><code>MulAssign</code></td>
+<td>arithmetic</td>
+<td><code>*=</code></td>
+<td>multiplication assignment</td>
+</tr>
+<tr>
+<td><code>Neg</code></td>
+<td>arithmetic</td>
+<td><code>-</code></td>
+<td>unary negation</td>
+</tr>
+<tr>
+<td><code>Not</code></td>
+<td>arithmetic</td>
+<td><code>!</code></td>
+<td>unary logical negation</td>
+</tr>
+<tr>
+<td><code>Rem</code></td>
+<td>arithmetic</td>
+<td><code>%</code></td>
+<td>remainder</td>
+</tr>
+<tr>
+<td><code>RemAssign</code></td>
+<td>arithmetic</td>
+<td><code>%=</code></td>
+<td>remainder assignment</td>
+</tr>
+<tr>
+<td><code>Shl</code></td>
+<td>arithmetic</td>
+<td><code>&lt;&lt;</code></td>
+<td>left shift</td>
+</tr>
+<tr>
+<td><code>ShlAssign</code></td>
+<td>arithmetic</td>
+<td><code>&lt;&lt;=</code></td>
+<td>left shift assignment</td>
+</tr>
+<tr>
+<td><code>Shr</code></td>
+<td>arithmetic</td>
+<td><code>&gt;&gt;</code></td>
+<td>right shift</td>
+</tr>
+<tr>
+<td><code>ShrAssign</code></td>
+<td>arithmetic</td>
+<td><code>&gt;&gt;=</code></td>
+<td>right shift assignment</td>
+</tr>
+<tr>
+<td><code>Sub</code></td>
+<td>arithmetic</td>
+<td><code>-</code></td>
+<td>subtraction</td>
+</tr>
+<tr>
+<td><code>SubAssign</code></td>
+<td>arithmetic</td>
+<td><code>-=</code></td>
+<td>subtraction assignment</td>
+</tr>
+<tr>
+<td><code>Fn</code></td>
+<td>closure</td>
+<td><code>(...args)</code></td>
+<td>immutable closure invocation</td>
+</tr>
+<tr>
+<td><code>FnMut</code></td>
+<td>closure</td>
+<td><code>(...args)</code></td>
+<td>mutable closure invocation</td>
+</tr>
+<tr>
+<td><code>FnOnce</code></td>
+<td>closure</td>
+<td><code>(...args)</code></td>
+<td>one-time closure invocation</td>
+</tr>
+<tr>
+<td><code>Deref</code></td>
+<td>other</td>
+<td><code>*</code></td>
+<td>immutable dereference</td>
+</tr>
+<tr>
+<td><code>DerefMut</code></td>
+<td>other</td>
+<td><code>*</code></td>
+<td>mutable derenence</td>
+</tr>
+<tr>
+<td><code>Drop</code></td>
+<td>other</td>
+<td>-</td>
+<td>type destructor</td>
+</tr>
+<tr>
+<td><code>Index</code></td>
+<td>other</td>
+<td><code>[]</code></td>
+<td>immutable index</td>
+</tr>
+<tr>
+<td><code>IndexMut</code></td>
+<td>other</td>
+<td><code>[]</code></td>
+<td>mutable index</td>
+</tr>
+<tr>
+<td><code>RangeBounds</code></td>
+<td>other</td>
+<td><code>..</code></td>
+<td>range</td>
+</tr>
+</tbody>
+</table>
+
+所有的 PartialEq<Rhs> 实现必须确保相等是对称的和传递的。这意味着对于所有的 a, b, 和 c:
+- 对称性: a == b => b == a
+- 传递性: a == b && b == c => a == c
+
+根据定义`trait Eq: PartialEq<Self> {}`, Eq 是一个标记 trait，是 PartialEq<Self> 的子 trait. 它还保证了自反性即 对所有 a都有a == a. 在这个意义上，Eq 完善了 PartialEq，因为它代表了一个更严格的相等性版本。如果一个类型的所有成员都是Eq 的，那么 Eq 实现就可以为该类型派生
+
+几乎所有其他的 PartialEq 类型都是 Eq, 但浮点类型是 PartialEq 的，但不是 Eq 的，因为 NaN != NaN.
+
+所有的 PartialOrd 实现必须确保比较是不对称的和传递的。这意味着对于所有的 a, b, 和 c:
+- 不对称性 : a < b => !(a > b)
+- 传递性: a < b && b < c => a < c
+
+PartialOrd 是 PartialEq 的一个子 trait，它们的实现必须总是相互一致.
+
+Ord在 PartialOrd 所要求的不对称性和传递性的基础上，还保证不对称性是完全的，即对于任何给定的 a 和 b，a == b 或 a > b 中只有一个是真的. 在这个意义上，Ord 完善了 Eq 和 PartialOrd，因为它代表了一个更严格的比较版本。如果一个类型实现了 Ord，就可以用这个实现来实现 PartialOrd、PartialEq 和 Eq.
+
+PartialOrd 类型都是 Ord, 但浮点数实现了 PartialOrd，但不是 Ord，因为 NaN < 0 == false 和 NaN >= 0 == false 同时为真.
 
 ## 面向对象
 ### 封装
@@ -654,3 +1687,208 @@ fn main() {
 
 ## unsafe
 unsafe不过是把 Rust 编译器在编译器做的严格检查退步成为 C++ 的样子, 由开发者自己为其所撰写的代码的正确性做担保.
+
+## 并发
+```rust
+use std::thread;
+fn main() {
+    let child = thread::spawn(|| {
+        println!("Thread!");
+        String::from("Much concurrent, such wow!")
+    });
+    print!("Hello ");
+    let value = child.join().expect("Failed joining child thread");
+    println!("{}", value);
+}
+```
+
+对 spawn 的调用会创建线程并立即返回, 线程开始并发执行而不会阻塞后面的指令. 子线程是以分离状态创建的.
+
+spawn 函数会返回一个 JoinHandle 类型的值, 可用于连接线程——换句话说就是等待它的终止.
+
+调用 join 会阻塞当前线程，并在执行 join 调用之后的任何代码行之前等待子线程完成, 它返回一个 Result 值. 但如果一个线程正在连接自身或者遇到死锁，那么连接线程可能会失败, 在这种情况下，它会返回一个 Err 变量, 且里面返回的值是 Any 类型.
+
+自定义线程:
+```rust
+use std::thread::Builder;
+fn main() {
+    let my_thread = Builder::new()
+        .name("Worker Thread".to_string())
+        .stack_size(1024 * 4);
+    let handle = my_thread.spawn(|| {
+        panic!("Oops!");
+    });
+    let child_status = handle.unwrap().join();
+    println!("Child status: {:#?}", child_status);
+}
+
+/* output:
+Child status: Err(
+    Any { .. },
+)
+*/
+```
+
+上例使用了 Builder::new 方法, 调用 name 和 stack_size 方法为线程分配名称和设置堆栈大小.
+
+### 并发模型
+Rust 并不会倾向于使用任何固有的并发模型, 允许开发者使用自己的模型, 并根据需要使用第三方软件包来解决自己的问题.
+
+Rust 内置了两种流行的并发模型：通过同步共享数据和通过消息传递共享数据.
+
+#### 同步共享数据
+```rust
+use std::sync::Arc;
+use std::thread;
+fn main() {
+    let nums = Arc::new(vec![0, 1, 2, 3, 4]);
+    let mut childs = vec![];
+    for n in 0..5 {
+        let ns = Arc::clone(&nums); // ns是一个包含所有权的 Arc<Vec<i32>>值, 该值引用相同的 Vec
+        let c = thread::spawn(move || {
+            println!("{}", ns[n]);
+        });
+        childs.push(c);
+    }
+
+    for c in childs {
+        c.join().unwrap();
+    }
+}
+/* output:
+4
+2
+1
+0
+3
+*/
+```
+
+通过 Arc 和 Mutex 实现共享可变性:
+```rust
+use std::sync::{Arc, Mutex};
+use std::thread;
+fn main() {
+    let vec = Arc::new(Mutex::new(vec![]));
+    let mut childs = vec![];
+    for i in 0..5 {
+        let v = vec.clone();
+        let t = thread::spawn(move || {
+            let mut v = v.lock().unwrap();
+            v.push(i);
+        });
+        childs.push(t);
+    }
+    for c in childs {
+        c.join().unwrap();
+    }
+    println!("{:?}", vec);
+}
+/* output:
+Mutex { data: [0, 1, 2, 3, 4], poisoned: false, .. }
+*/
+```
+#### 通过消息传递进行通信
+std::sync::mpsc 模块提供了一个无锁定的**多生产者、单订阅者（消费者）队列**, 作为希望彼此通信的线程的共享消息队列.
+
+mpsc 模块标准库包含两种通道:
+1. channel：一个异步的无限缓冲通道
+
+	使用默认的异步通道时, send 方法永远不会阻塞, 这是因为通道缓冲区是无限的(实际受限于内存).
+1. sync_channel：一个同步的有界缓冲通道
+
+	同步通道有一个有界缓冲区, 当它被填满时, send 方法会被阻塞, 直到通道中出现更多空间.
+
+对于这两种通道类型，如果通道是空的，那么 recv 调用会返回 Err 值.
+
+channel:
+```rust
+use std::sync::mpsc::channel;
+use std::thread;
+fn main() {
+    let (tx, rx) = channel(); // tx 是包含 Sender<T>类型的发送端, rx 是包含 Receiver<T>类型的接收端
+    let join_handle = thread::spawn(move || {
+        while let Ok(n) = rx.recv() {
+            println!("Received {}", n);
+        }
+    });
+    for i in 0..10 {
+        tx.send(i).unwrap();
+    }
+    join_handle.join().unwrap();
+}
+/* output:
+Received 0
+Received 1
+Received 2
+Received 3
+Received 4
+Received 5
+Received 6
+Received 7
+Received 8
+Received 9
+*/
+```
+
+sync_channel:
+```rust
+use std::sync::mpsc;
+use std::thread;
+fn main() {
+    let (tx, rx) = mpsc::sync_channel(1);
+    let tx_clone = tx.clone();
+    let _ = tx.send(0);
+    thread::spawn(move || {
+        let _ = tx.send(1);
+    });
+    thread::spawn(move || {
+        let _ = tx_clone.send(2);
+    });
+    println!("Received {} via the channel", rx.recv().unwrap());
+    println!("Received {} via the channel", rx.recv().unwrap());
+    println!("Received {} via the channel", rx.recv().unwrap());
+    println!("Received {:?} via the channel", rx.recv());
+}
+/* output:
+Received 0 via the channel
+Received 2 via the channel
+Received 1 via the channel
+Received Err(RecvError) via the channel
+*/
+```
+
+#### 线程安全
+```rust
+pub fn spawn<F, T>(f: F) -> JoinHandle<T>
+where
+    F: FnOnce() -> T + Send + 'static,
+    T: Send + 'static,
+```
+
+spawn 是一个包含 F 和 T 的泛型函数, 并且会接收一个参数 f, 返回的泛型是JoinHandle<T>. 随后的 where 子句指定了多个trait限制:
+- F:FnOnce() -> T + Send + 'static：这表示 F 实现了一个只能被调用一次的闭包. 换句话说， f 是一个闭包，通过值获取所有内容并移动从环境中引用的项. 同时表示闭包必须是发送型（ Send），并且必须具有'static 的生命周期，同时执行环境中闭包内引用的任何类型必须是发送型，必须在程序的整个生命
+周期内存活。
+- T:Send + 'static：来自闭包的返回类型 T 必须实现 Send+'static 特征
+
+Send 是一种标记性特征。它只用于类型级标记，意味着可以安全地跨线程发送值即在线程之间发送是安全的；并且大多数类型都是发送型。未实现 Send 特征的类型是指针、引用等。此外， Send 是自动
+型特征或自动派生的特征。复合型数据类型，例如结构体，如果其中的所有字段都是 Send型，那么该结构体实现了 Send 特征.
+
+在 Rust 中，编译器可保证在线程中安全使用和引用类型. 这些保证被实现为特征，即 Send 和 Sync 特征.
+
+Send 类型可以安全地发送到多个线程，这表明该类型是一种移动类型. 非 Send 类型的是指针类型，例如&T，除非 T 是 Sync 类型.
+
+如果某些类型是 Sync 类型，那么指向它的引用即相关的&T 是 Send 类型, 这意味着可以将对它的引用传递给多线程即在线程之间共享它的引用是安全的.
+
+几乎所有类型都是 Send 和 Sync 的。唯一值得注意的 Send 异常是 Rc，唯一值得注意的 Sync 异常是 Rc、Cell 和 RefCell。如果我们需要一个 Rc 的 Send 版本，我们可以使用 Arc。如果我们需要 Cell 或 RefCell 的 Sync 版本，我们可以 Mutex 或 RwLock。虽然如果我们使用 Mutex 或 RwLock 只是包裹一个原语类型，通常最好使用标准库提供的原子原语类型，如 AtomicBool、AtomicI32、AtomicUsize 等.
+
+## unsafe
+rust只允许少数几个地方用 unsafe 关键字进行标记:
+- 函数和方法
+- 不安全的代码块表达式，例如 unsafe{}
+- 特征
+
+	动机:
+	1. 标记无法发送到线程或在线程之间共享的类型.
+	1. 封装一系列类型可能具有未定义行为的操作
+- 实现代码块
