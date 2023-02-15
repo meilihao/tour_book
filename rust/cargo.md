@@ -49,6 +49,7 @@ cargo tree: 查看第三方库的版本和依赖关系
 cargo bench: 运行benchmark(基准测试,性能测试)
 cargo udeps(第三方): 检查项目中未使用的依赖
 cargo update [-p <crate>] : 更新全部或某个依赖
+cargo publish : 将包发布到 crates.io
 ```
 
 ## 代码组织

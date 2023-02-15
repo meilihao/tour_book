@@ -743,6 +743,8 @@ rust和go类似, 只能对局部变量/全局变量进行类型推导, 而函数
     - 普通引用类型(裸指针), 比如go的指针
     - 原生指针类型, 比如go的slice, map, chan
 
+    Rust 引用永远不为空. 没有跟 C 的 NULL 或 C++ 的 nullptr 对应的东西存在。引用没有默认的初始值（无论什么类型的变量，在其初始化之前都不能使用）。而且， Rust（在 unsafe代码外部）不会将整数转换为引用，因此不能把 0 转换成引用.
+
 随着类型越来越丰富, 值类型和引用类型难以描述全部情况, rust所以引入了：
 - 值语义（Value Semantic）
 
@@ -805,16 +807,10 @@ Rust 支持类型推导，在编译器能够推导类型的情况下，变量类
 
 Rust 函数参数的类型和返回值的类型都必须显式定义, 如果没有返回值可以省略, 返回`unit即空元组`. 函数内部如果提前返回, 需要用 return 关键字, 否则最后一个表达式就是其返回值. 如果最后一个表达式后添加了`;`, 隐含其返回值为 unit.
 
-### 标量(scalar)数据类型
-rust有四种标量数据类型(即基本数据类型, 表示只能存储单个值的类型):
+### 标量类型(scalar type)数据
 #### 整型
-
-
 #### 浮点型
-
-
 #### 布尔类型
-
 #### 字符类型
 
 char : 单个字符, 大小为四个字节(four bytes)，并代表了一个 Unicode 标量值（Unicode Scalar Value）.
@@ -870,7 +866,7 @@ Rust提供了另外两种方法：get和get_mut来通过指定索引范围来获
 #### 引用/指针
 引用是用`&`和`& mut`操作符来创建, 受Rust的安全检查规则的限制.
 
-引用是Rust提供的一种指针语义. 引用是基于指针的实现，它与指针的区别是：指针保存的是其指向内存的地址，而引用可以看做某块内存的别名（Alias）.
+引用是Rust提供的一种无所有权的指针语义, 引用的生命期不能超过其引用的资源. 引用是基于指针的实现，它与指针的区别是：指针保存的是其指向内存的地址，而引用可以看做某块内存的别名（Alias）.
 
 裸指针(原生指针):`*const T和*mut T`, 可以在unsafe块下任意使用, 不受Rust的安全检查规则的限制.
 
@@ -891,223 +887,11 @@ rust指针包括 引用(reference), 原生指针(raw pointer), 函数指针(fn p
 
 解引用deref: 解引用会获得所有权, 解引用操作符是`*`.
 
-### 复合(compound)类型
-复合类型（Compound types）可以将多个标量组合成一个类型. Rust 有两个原生的复合类型：元组（tuple）和数组（array）.
-
-rust提供5种复合类型:
-1. 元组(Tuple) : 一种**异构有限**序列, 即元素类型可能不同的**固定长度**的序列. 
-
-    **如果元组中只包含一个元素，应该在后面添加一个逗号，以区分括号表达式和元组**.
-
-    通过`tuple_name.<N>`的形式访问.
-    因为let支持模式匹配(pattern destructuring), 因此可用let解构元组.
-    单元值(unit)就是空元组`()`, 不占用内存空间, 可用`std::mem::size_of::<()>()`查看.
-1. 数组(array) : 与元组不同，数组中的每个元素的类型必须相同. Rust 中的**数组是固定长度**的：一旦声明，它们的长度不能增长或缩小.
-
-    定义: `let a: [T; n] = {}`
-    vector 类型是标准库提供的一个 允许 增长和缩小长度的类似数组的集合类型.
-
-    将所有元素初始化为相同值的语法: `let ys: [i32;500] = [1;500]`
-
-    在rust中, 两个元素类型和成员个数相同的数组才是同类型的.
-
-    多维数组: `[[T;m];n]`
-
-    Rust 中关于数组越界的行为, 定义得非常清晰. 相比于 C/C+, Rust消除的是`"未定义行为"(Undefin Behaviour)`
-
-    > 当想要在栈（stack）而不是在堆（heap）上为数据分配空间, 或者是想要确保总是有固定数量的元素时，数组非常有用. 但是数组并不如 vector 类型灵活.
-1. 结构体(Struct)
-
-    Rust 允许 struct 类型的初始化使用一种简化的的写法: 如果有局部变量名字与成员变量名字恰好一致, 那么可以省略掉重复的冒号初始化`: `, 比如:
-    ```rust
-    fn build_user(email: String, username: String) -> User {
-        User {
-            email,
-            username,
-            active: true,
-            sign_in_count: 1,
-        }
-    }
-    ```
-
-    结构体更新语法（struct update syntax）: 使用旧实例的大部分值但改变其部分值来创建一个新的结构体实例, 比如:
-    ```rust
-    let user2 = User {
-        email: String::from("another@example.com"),
-        username: String::from("anotherusername567"),
-        active: user1.active,
-        sign_in_count: user1.sign_in_count,
-    };
-    // 使用结构体更新语法为一个 User 实例设置新的 email 和 username 值，不过其余值来自 user1 变量中实例的字段
-    let user2 = User {
-        email: String::from("another@example.com"),
-        username: String::from("anotherusername567"),
-        ..user1 //  `..user1`后面不可以有逗号
-    };
-    ```
-
-    结构体名称需遵从驼峰式命名规则.
-    结构体上方的`#[derive(Debug, PartialEq)]`是[属性(类似于代码生成)](https://doc.rust-lang.org/reference/attributes/derive.html), 可让结构体自行实现Debug trait 和 PartialEq trait, 即允许对struct实例进行打印(通过`{:?}或{:#?}`)和比较.
-
-    分三种:
-    1. 具名结构体(named-field struct)
-
-        它是rust面向对象思想的一种体现.
-    1. 元组结构体(tuple-like struct)
-
-        没有字段名称, 仅有类型. 比如`struct Color(i32, i32, i32);`
-        当一个元组结构体只有一个字段时, 比如`struct UserId(u64);`, 称为New Type模式. 因为它把一种类型封装成了新类型.
-
-        > 对于具有 3 个以上字段的数据类型，建议具名结构体.
-    1. 单元结构体(unit-like struct)
-
-        没有任何字段的结构体, 比如`strcut Empty{}`.
-        `std::ops::RangeFull`就是一个单元结构体.
-
-        在Release编译模式下, 单元结构体实例会被优化为同一个对象; 而在Debug模式下, 则不会进行这样的优化.
-
-        类单元结构体常常在想要在某个类型上实现 trait 但不需要在类型中存储数据的时候发挥作用.
-
-    在rust中函数和方法是有区别的, 不在impl块中定义的函数是自由函数, 而在impl块中定义的函数是方法, 第一个参数通常是`&self/&mut self`, 表示对结构体实例自身的引用.
-
-    > impl方法分关联方法和实例方法, 区别是关联方法没有self类型参数, 而实例方法有. 其实`instance.foo()`是一种语法糖, 等价于`<InstanceType>::foo(&instance)`
-
-    > 生命周期可确保结构体引用的数据有效性跟结构体本身保持一致, 如果尝试在结构体中存储一个引用而不指定生命周期将是无效的即会报错.
-
-    > 引用结构体成员给其他变量赋值时, 要注意：所有权的转移可能会破坏结构体变量的完整性.
-
-1. 枚举体(Enum)
-
-    分三类:
-    1. 无参数枚举体
-
-        ```rust
-        enum Number {
-            Zero,
-            One,
-        }
-
-        let a = Number::One;
-        ```
-    1. 类C枚举体
-
-        ```rust
-          enum Number {
-            Zero = 1 ,
-            One = 2,
-        }
-
-        let a = Number::One as i32;
-        ```
-    1. 带类型参数的枚举体
-
-        ```rust
-          enum IpAddr {
-            V4(u8,u8,u8,u8),
-            V6(String),
-        }
-
-        let a = IpAddr::V4(127,0,0,1);
-        let b : fn(String) -> IpAddr = IpAddr::V6;//  IpAddr::V6是 `fn(String) -> IpAddr` 函数指针.
-
-        enum Message {
-            Quit,
-            Move { x: i32, y: i32 }, // 此时并不能像访问结构体字段一样访问枚举类绑定的属性, 而是需要使用`match`
-            Write(String),
-            ChangeColor(i32, i32, i32),
-        }
-
-        // 上面那个枚举等同于有四个含有不同类型的成员
-        struct QuitMessage; // 类单元结构体
-        struct MoveMessage {
-            x: i32,
-            y: i32,
-        }
-        struct WriteMessage(String); // 元组结构体
-        struct ChangeColorMessage(i32, i32, i32); // 元组结构体
-
-
-        // 等价的c定义
-        struct Message {
-            int tag;
-            union {
-                struct {} Quit;
-                struct {
-                    int32_t x, y;
-                } Move;
-                struct {
-                    char* a;
-                } Write;
-                struct {
-                    int32_t _1, _2, _3;
-                } ChangeColor;
-            } cases;
-        }
-
-        enum Book {
-            Papery {index: u32},
-            Electronic {url: String},
-        }
-       
-        let book = Book::Papery{index: 1001};
-        let ebook = Book::Electronic{url: String::from("url...")};
-       
-        match book {
-            Book::Papery { index } => {
-                println!("Papery book {}", index);
-            },
-            Book::Electronic { url } => {
-                println!("E-book {}", url);
-            }
-        }
-        ```
-
-        **结构体和枚举还有另一个相似点：可以使用 impl 在枚举上定义方法**.
-
-        Rust的enum与C++ 的enum和union都不同. 它是一种更安全的类型, 可以被称为["tagged union"](https://www.zhihu.com/question/452956370). 这个情况下, rust一般再加一个整型（一般是4 byte，有例外）用作tag, 然后每个case都是一个struct，最后在union起来. enum的某些情况是可以优化的, 优化方法: niche optimization.
-
-
-        ```rust
-        enum Number { 
-            Int(i32),
-            Float(f32), 
-        }
-        ```
-        用c理解即是:
-        ```c
-        struct IpAddr { 
-            enum {Int, Float} tag; 
-            union { 
-                int32_t int_value; 
-                float float_value; 
-            } value; 
-        };
-
-        enum Foo {
-            C1(&i32, bool),
-            C2,
-            C3
-        }
-
-        // 可被优化成: 当_2为0或者1时Foo表示C1，为2时表示C2，为3时表示C3。 后两种情况下的_1的值未定义.
-        struct Foo {
-            int32_t *_1;
-            uint8_t _2;
-        }
-        ```
-
-        Rust enum 类型的变量需要区分它里面的数据究竟是哪种变体, 所以它包含了一个内部的`tag 标记`来描述当前变量属于哪种类型. 这个标记对用户是不可见的, 通过恰当的语法设计, 保证标记与类型始终是匹配的，以防止用户错误地使用内部数据, 可用`std::mem::size_of::<Number>()`输出大小来验证.
-1. 联合体(Union) 
-    rust也支持 union 类型, 这个类型与C中的 union 完全一致, 但在 Rust 里面, 读取它内部的值被认为是 unsafe 行为, 一般情况下不使用这种类型, 而它存在的主要目的是为了方便与C语言进行交互.
-
-
-> tuple, struct, tuple struct 这几种类型，实质上是同样的内存布局，区别仅仅在于是否给类型及成员起了名字.
-
 ### 常用集合类型
 Rust 标准库中包含一系列被称为 集合（collections）的非常有用的数据结构. 大部分其他数据类型都代表一个特定的值，不过集合可以包含多个值. 不同于内建的数组和元组类型，这些集合指向的数据是储存在堆上的，这意味着数据的数量不必在编译时就已知，并且还可以随着程序的运行增长或缩小.
 
 std::collections提供了4种通用集合类型:
-1. 线性序列: 向量(Vec, 堆上分配的数组), 双端队列(VecDeque), 链表(LinkedList)
+1. 线性序列: 向量(Vec, **堆上分配**的数组), 双端队列(VecDeque), 链表(LinkedList)
 
     向量也是一种数组, 但可动态增长.
     `vec!`是一个宏, 用来创建向量字面量.
@@ -1119,6 +903,8 @@ std::collections提供了4种通用集合类型:
     > 双端队列（Double-ended Queue，缩写Deque）是一种同时具有队列（先进先出）和栈（后进先出）性质的数据结构. 双端队列中的元素可以从两端弹出，插入和删除操作被限定在队列的两端进行.
 
     > Rust提供的链表是双向链表，允许在任意一端插入或弹出元素.
+
+    > 当缓冲区达到其容量上限后，再给向量添加元素会导致一系列操作：分配一个更大的缓冲区，将现有内容复制过去，基于新缓冲区更新向量的指针和容量，最后释放旧缓冲区.
 
     ```rust
     // 声明
@@ -1525,6 +1311,10 @@ fn main() {
 变量与数据交互的方式:
 1. move
 
+    > 当以转移所有权的方式给函数传参时，称其为传值（by value）。如果传给函数的是对值的引用，则称其为传引用（by reference）.
+
+    在 Rust 中，对多数类型而言，给变量赋值、给函数传值或从函数返回值这样的操作不会复制值, 而是转移（move）值.
+
     移动: 通过变量访问或重新分配给变量时移动到接收项的值表示移动语义. 由于Rust 的仿射类型系统，它默认会采用移动语义. 仿射类型系统的一个突出特点是值或资源只能使用一次，而 Rust 通过所有权规则展示此属性.
 
     默认情况下，所有类型都有“移动语义”，但是一旦一个类型实现了 `Copy'，它就会得到`复制语义`.
@@ -1548,6 +1338,10 @@ fn main() {
     由于其运行时消耗，许多 Rustacean 之间有一个趋势是倾向于避免使用 clone 来解决所有权问题.
 
 Copy是一种自动化特征，大多数堆栈上的数据类型都自动实现了它. 它通常用于数据完全在栈上的变量的复制, 比如基元类型和不可变引用(&T); 否则Copy开销很大, 因为它需要从堆中复制数据. Copy 特征复制类型的方式与 C 语言中的 memcpy 函数类似，后者用于按位复制值。默认情况下不会为自定义类型实现 Copy 特征，因为 Rust 希望显式指定复制操作，并且要求开发人员必须选择实现该特征. 没有实现 Copy 特征的类型包括`Vec<T>、 String 和可变引用`等.
+
+> 有一条经验规则，就是任何在值被清除后需要特殊处理的类型都不能是 Copy 类型。比如，Vec 需要释放其元素， File 需要关闭其文件勾柄，而 MutexGuard 需要解锁其互斥量。
+
+> 用户定义的类型默认属于非 Copy 类型。如果自定义结构体的所有字段本身都是 Copy 类型，那可以在定义上方添加 #[derive(Copy, Clone)] 属性把这个类型标注成 Copy 类型;对于并非所有字段都是 Copy 类型的结构体，就算加这个属性也不管用, 编译器会报错.
 
 Clone 特征用于显式复制, 并附带 clone 方法， 类型可以实现该方法以获取自身的副本.
 
@@ -1716,7 +1510,7 @@ fn dangle() -> &String {
 > rust 有一个叫 自动引用和解引用（automatic referencing and dereferencing）的功能, 这与golang相同.
 
 ## slice
-切片（Slice）是对数据值的部分引用. 切片用`&[T]`表示，其中 T 表示任意类型.
+切片（Slice）是对数据值的部分引用. 切片用`&[T]`表示，其中 T 表示任意类型. 切片的引用是一个胖指针（fat pointer）.
 
 ```rust
 x..y // [x, y) 的数学含义
@@ -1727,6 +1521,8 @@ x.. // 等价于位置 x 到数据结束
 ```
 
 > str 是 Rust 核心语言类型, 就是字符串切片（String Slice）, 常常以引用的形式出现（&str）. String 类型是 Rust 标准公共库提供的一种数据类型, 它有所有权, 它的功能更完善——它支持字符串的追加、清空等实用的操作. String 和 str 除了同样拥有一个字符开始位置属性和一个字符串长度属性以外还有一个容量（capacity）属性. String 和 str 都支持切片，切片的结果是 &str 类型的数据.
+
+> 与go不同, rust slice没有cap, 且没法直接创建, 必须依赖数组或 Vec并通过引用来创建; Go 中使用`:`来引用片段, 而 Rust 使用 `..`.
 
 ## 生命周期
 Rust 生命周期机制是与所有权机制同等重要的资源管理机制, 引入这个概念主要是应对复杂类型系统中资源管理的问题.

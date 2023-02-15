@@ -72,6 +72,9 @@
 ## kernel
 - [内核如何管理内存](https://linux.cn/article-9393-1.html)
 
+## unix
+- [Unix 已落幕，Unix 仍长存](https://linux.cn/article-15457-1.html)
+
 ## English
 - [程序员英语学习指引](https://linux.cn/article-6358-1.html)
 

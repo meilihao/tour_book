@@ -101,6 +101,8 @@ a + b
 ```
 
 ## 语句/表达式
+> Rust 中一切皆表达式，当某个地方需要一个表达式，但实际却是一个语句时，编译器会自动补上`单元值()`，这算是一个特殊的表达式.
+
 Rust 程序里, 表达式（ Expressio ）和语句（ Statement ）是完成流程控制、计算求值的主要工具. 在Rust 里, 表达式可以是语句的一部分，反过来，语句也可以是表达式的一部分. 一个表达式总是会产生 个值，因此它必然有类型; 语句不产生值，它的类型永远是`()`. 如果把一个表达式加上分号，那么它就变成了一个语句；如果把语句放到一个语句块中包起来, 那么它就可以被当成一个表达式使用.
 
 rust中语句块也可以是表达式的一部分. 语句和表达式的区分是后者不带`;`. 如果带了分号, 意味着这是一条语句，它的类型是`()`; 如果不带分号，它的类型就是表达式的类型.
@@ -152,7 +154,7 @@ Rust 表达式又可以分为‘左值’ （lvalue ）和‘右值’（rvalue)
 
 	> Rust 的类型推断基于 Hindly-Milner 类型系统.
 
-- 静态变量
+- 静态变量:  需要明确指定常量的数据类型
 
 	- 不可变: `static X:T = T::new();`
 	- 可变: `static mut X:T = T::new();`
@@ -165,20 +167,30 @@ Rust 表达式又可以分为‘左值’ （lvalue ）和‘右值’（rvalue)
 	1. 全局变量必须在声明的时候马上初始化
 
 		**局部变量声明后只要在使用前初始化即可**.
-	1. 全局变量的初始化必须是编译期可确定的常量，不能包括执行期才能确定的表达式、语句和函数调用
+	1. 全局变量的初始化必须是**编译期常量**，不能包括执行期才能确定的表达式、语句和函数调用
 	1. 带有 mut 修饰的全局变量，在使用的时候必须使用 unsafe 关键字
 
 	rust禁止在声明static变量的时候调用普通函数, 或者利用语句块调用其他非const代码. const fn是允许的, 因为它是在编译期执行的.
 
-- 常量: 不允许用mut修饰.
+	> 名称要求使用大写，否则编译器会报 Warning
+
+- 常量: 不允许用mut修饰, 且需要明确指定常量的数据类型.
 
 	`const X:T = <value>;`
 
 	常量是一个右值, 它不能被修改. 常量编译后会被放在可执行文件的数据段, 全局可访问.
 
-	常量的初始化表达式也一定是一个编译期常量, 不能是运行期的.
+	常量的初始化表达式也一定是一个**编译期常量**, 不能是运行期的.
 
 	它与 static 大区别在于: 编译器并不一定会给const常量分配内存空间, 在编译过程中，它很可能会被内联优化. 因此, 千万不要用 hack 的方式, 通过 unsafe 代码去修改常量的值, 这么做是没有意义的. const也不具备类似 let 模式匹配功能.
+
+	常量不支持重定义（遮蔽），这和变量是不同的.
+
+	> 常量名一般使用大写字母，否则编译器会报 Warning.
+
+	与静态变量的区别:
+	1. 常量在编译时被内联，但静态变量不会。在整个程序中静态变量只有一个实例，也就是说所有引用都指向同一个地址
+	1. 常量不可变，而静态变量和普通变量一样，默认不可变，但可以通过 mut 关键字定义为可变
 
 	结构体、枚举和特征中的常量:
 	```rust
@@ -214,6 +226,12 @@ Rust 表达式又可以分为‘左值’ （lvalue ）和‘右值’（rvalue)
 	```
 
 - 函数: `func x(a1:T1,...)-> T{}`
+
+	> Rust 函数名一般建议使用下划线风格（小写字母），即 蛇形命名法（snake_case），否则编译器会警告；而 Go 使用驼峰风格
+
+	> 函数参数和变量一样，默认是不可变的，当需要可变参数时，可使用 mut 修饰.
+
+	> 虽然 Rust 不支持多返回值，但因为有元组类型，因此返回元组相当于支持多返回值.
 
 	rust函数使用fn标识, 其参数列表与let一样也可模式解构.
 
@@ -264,6 +282,8 @@ Rust 表达式又可以分为‘左值’ （lvalue ）和‘右值’（rvalue)
 	访问元组内部元素有两种方法, 一种是“模式匹配”（ pattern destructuring ）, 另外一种是“数字索引”.
 
 	unit 类型是 Rust 最简单的类型之一， 是占用空间最小的类型之一. 空元组与空结构体 struct Foo 一样，都是占用0字节空间. `std::mem::size_of`函数可以计算一个类型所占用的内存空间.
+
+	> 元组只允许用常量作为索引
 
 - 结构体: `struct S{...}`, 不能使用自动类型推导功能, 必须显式指定.
 
@@ -362,7 +382,9 @@ type alias:
 type Carry = u8;
 ```
 
-## 基本数据类型
+## 基本数据类型(也叫标量类型(scalar type), 表示只能存储单个值的类型)
+rust有四种标量类型:整型, 浮点, 布尔, 字符型.
+
 - bool : true, false
 - char : 单个字符, 大小为四个字节(four bytes)，并代表了一个 Unicode 标量值（Unicode Scalar Value）, 等价于go的rune. char 由单引号包裹, 不同于字符串使用双引号.
 
@@ -387,7 +409,7 @@ type Carry = u8;
 
     > 所有数值字面量支持任意位置添加`_`以方便阅读, 并且支持后缀表示类型, 比如`0x_ff_u8`
 
-    > 整数自动推导时**默认是i32**
+    > 整数自动推导时**默认是i32**, 即使在 64 位机器上也是 i32.
 
     > 字面量后面可以跟后缀，可代表该数字的具体类型，从而省略掉显示类型标记, **个人不推荐**.
 
@@ -425,6 +447,7 @@ type Carry = u8;
 
 	> 非0数除以0是inf; 0除以0是Nan; `inf * 0.0`=Nan; `inf/inf`=NaN.
 - 指针
+	> 与 C 指针不同的是， Rust 引用永远不会是空值，因为在安全 Rust 代码中根本不可能产生空引用, 而且 Rust 引用默认是不可修改的.
 
 	无GC 的编程语言， C/C++以及 Rust, 对数据的组织操作有更多的自由度, 表现为:
 	- 同一个类型，某些时候可以指定它在栈上, 某些时候可以指定它在堆上. 内存分配方式可以取决于使用方式, 与类型本身无关.
@@ -433,7 +456,7 @@ type Carry = u8;
 	- 甚至可能在复合数据类型末尾嵌入不定长数据构造出不定长的复合数据类型
 
 	Rust 有不止一种指针类型, 常见的几种指针类型:
-	- `Box<T>` : 指向类型T(在堆中)的, 具有所有权的指针, 有权释放内存
+	- `Box<T>` : 指向**在堆上分配**的类型T的, 具有所有权的指针, 有权释放内存
 
     	Rust中的值默认被分配到栈内存, 可通过`Box<T>`将值装箱(在堆内存中分配). 可通过解引用来获取`Box<T>`中的T. 因为`Box<T>`的行为像引用, 并且可以自动释放内存, 因此将其称为智能指针.
 
@@ -449,10 +472,16 @@ type Carry = u8;
     	```
 
     	Box<T>是指向类型为T的堆内存分配值的智能指针. 当Box<T>超出作用域范围时，将调用其析构函数，销毁内部对象，并自动释放堆中的内存.
-	- `&T` : 指向类型T的借用指针, 也称为引用, 无权释放内存, 无权写数据. &T 指针就是一种 Copy 类型.
-	- `&mnut T` : 指向类型T的mut型借用指针, 无权释放内存, 有权写数据
-	- `*const T` : 指向类型T的只读裸指针, 没有生命周期信息, 无权写数据. 它是 Copy 类型。这类似于&T，只是它可以为空值.
-	- `*mut T` : 指向类型T的可读写裸指针, 没有生命周期信息, 有权写数据.  它不支持 Copy 特征（ non-Copy）.
+	- `&T` : 指向类型T的借用指针, 也称为引用, 无权释放内存, 无权写数据, 是 Copy 类型.
+
+		类似C中的`const T*`
+	- `&mnut T` : 指向类型T的mut型借用指针, 无权释放内存, 有权写数据, 不是Copy类型.
+
+		类似C中的`T*`
+	- `*const T` : 指向类型T的只读裸(即原始)指针, 没有生命周期信息, 无权写数据. 它是 Copy 类型。这类似于&T，只是它可以为空值.
+	- `*mut T` : 指向类型T的可读写裸(即原始)指针, 没有生命周期信息, 有权写数据.  它不支持 Copy 特征（ non-Copy）.
+
+	> Rust 的原始指针实际上就是 C++ 中的那种指针, 使用原始指针是不安全的，因为 Rust 不会跟踪它指向哪里.
 
 	```rust
 	fn main() {
@@ -514,6 +543,234 @@ Rust使用as用于类型转换, 前提是编译器认为是合理的转换.
 - Deref: 它定义了一个名为 Deref 的方法，并会通过引用获取 self 参数，然后返回对底层类型的不可变引用
 
 	DerefMut可提供对底层类型的可变引用.
+
+打印类型:
+```rust
+fn print_type_of<T>(_: &T) {
+		println!("{}", std::any::type_name::<T>())
+}
+
+fn main() {
+    let x = 32;
+    print_type_of(&x);
+  	// 输出：i32
+}
+```
+
+## 复合(compound)类型
+复合类型（Compound types）可以将多个标量组合成一个类型. Rust 有两个原生的复合类型：元组（tuple）和数组（array）.
+
+rust提供5种复合类型:
+1. 元组(Tuple) : 一种**异构有限**序列, 即元素类型可能不同的**固定长度**的序列. 
+
+    **如果元组中只包含一个元素，应该在后面添加一个逗号，以区分括号表达式和元组**.
+
+    通过`tuple_name.<N>`的形式访问.
+    因为let支持模式匹配(pattern destructuring), 因此可用let解构元组.
+    单元值(unit)就是空元组`()`, 不占用内存空间, 可用`std::mem::size_of::<()>()`查看.
+
+    当元组中只有一个元素时（即元组长度是 1），唯一的元素后面必须加上逗号, 这是避免将小括号当做计算的优先级.
+1. 数组(array) : 与元组不同，数组中的每个元素的类型必须相同. Rust 中的**数组是固定长度**的：一旦声明，它们的长度不能增长或缩小. **数组的大小是在编译时确定
+的常量**.
+
+    定义: `let a: [T; n] = {}`
+    vector 类型是标准库提供的一个 允许 增长和缩小长度的类似数组的集合类型.
+
+    将所有元素初始化为相同值的语法: `let ys: [i32;500] = [1;500]`
+
+    在rust中, 两个元素类型和成员个数相同的数组才是同类型的.
+
+    多维数组: `[[T;m];n]`
+
+    Rust 中关于数组越界的行为, 定义得非常清晰. 相比于 C/C+, Rust消除的是`"未定义行为"(Undefin Behaviour)`
+
+    > 当想要在栈（stack）而不是在堆（heap）上为数据分配空间, 或者是想要确保总是有固定数量的元素时，数组非常有用. 但是数组并不如 vector 类型灵活.
+1. 结构体(Struct)
+
+    Rust 允许 struct 类型的初始化使用一种简化的的写法: 如果有局部变量名字与成员变量名字恰好一致, 那么可以省略掉重复的冒号初始化`: `, 比如:
+    ```rust
+    fn build_user(email: String, username: String) -> User {
+        User {
+            email,
+            username,
+            active: true,
+            sign_in_count: 1,
+        }
+    }
+    ```
+
+    结构体更新语法（struct update syntax）: 使用旧实例的大部分值但改变其部分值来创建一个新的结构体实例, 比如:
+    ```rust
+    let user2 = User {
+        email: String::from("another@example.com"),
+        username: String::from("anotherusername567"),
+        active: user1.active,
+        sign_in_count: user1.sign_in_count,
+    };
+    // 使用结构体更新语法为一个 User 实例设置新的 email 和 username 值，不过其余值来自 user1 变量中实例的字段
+    let user2 = User {
+        email: String::from("another@example.com"),
+        username: String::from("anotherusername567"),
+        ..user1 //  `..user1`后面不可以有逗号
+    };
+    ```
+
+    结构体名称需遵从驼峰式命名规则.
+    结构体上方的`#[derive(Debug, PartialEq)]`是[属性(类似于代码生成)](https://doc.rust-lang.org/reference/attributes/derive.html), 可让结构体自行实现Debug trait 和 PartialEq trait, 即允许对struct实例进行打印(通过`{:?}或{:#?}`)和比较.
+
+    分三种:
+    1. 具名结构体(named-field struct)
+
+        它是rust面向对象思想的一种体现.
+    1. 元组结构体(tuple-like struct)
+
+        没有字段名称, 仅有类型. 比如`struct Color(i32, i32, i32);`
+        当一个元组结构体只有一个字段时, 比如`struct UserId(u64);`, 称为New Type模式. 因为它把一种类型封装成了新类型.
+
+        > 对于具有 3 个以上字段的数据类型，建议具名结构体.
+    1. 单元结构体(unit-like struct)
+
+        没有任何字段的结构体, 比如`strcut Empty{}`.
+        `std::ops::RangeFull`就是一个单元结构体.
+
+        在Release编译模式下, 单元结构体实例会被优化为同一个对象; 而在Debug模式下, 则不会进行这样的优化.
+
+        类单元结构体常常在想要在某个类型上实现 trait 但不需要在类型中存储数据的时候发挥作用.
+
+    在rust中函数和方法是有区别的, 不在impl块中定义的函数是自由函数, 而在impl块中定义的函数是方法, 第一个参数通常是`&self/&mut self`, 表示对结构体实例自身的引用.
+
+    > impl方法分关联方法和实例方法, 区别是关联方法没有self类型参数, 而实例方法有. 其实`instance.foo()`是一种语法糖, 等价于`<InstanceType>::foo(&instance)`
+
+    > 生命周期可确保结构体引用的数据有效性跟结构体本身保持一致, 如果尝试在结构体中存储一个引用而不指定生命周期将是无效的即会报错.
+
+    > 引用结构体成员给其他变量赋值时, 要注意：所有权的转移可能会破坏结构体变量的完整性.
+
+1. 枚举体(Enum)
+
+    分三类:
+    1. 无参数枚举体
+
+        ```rust
+        enum Number {
+            Zero,
+            One,
+        }
+
+        let a = Number::One;
+        ```
+    1. 类C枚举体
+
+        ```rust
+          enum Number {
+            Zero = 1 ,
+            One = 2,
+        }
+
+        let a = Number::One as i32;
+        ```
+    1. 带类型参数的枚举体
+
+        ```rust
+          enum IpAddr {
+            V4(u8,u8,u8,u8),
+            V6(String),
+        }
+
+        let a = IpAddr::V4(127,0,0,1);
+        let b : fn(String) -> IpAddr = IpAddr::V6;//  IpAddr::V6是 `fn(String) -> IpAddr` 函数指针.
+
+        enum Message {
+            Quit,
+            Move { x: i32, y: i32 }, // 此时并不能像访问结构体字段一样访问枚举类绑定的属性, 而是需要使用`match`
+            Write(String),
+            ChangeColor(i32, i32, i32),
+        }
+
+        // 上面那个枚举等同于有四个含有不同类型的成员
+        struct QuitMessage; // 类单元结构体
+        struct MoveMessage {
+            x: i32,
+            y: i32,
+        }
+        struct WriteMessage(String); // 元组结构体
+        struct ChangeColorMessage(i32, i32, i32); // 元组结构体
+
+
+        // 等价的c定义
+        struct Message {
+            int tag;
+            union {
+                struct {} Quit;
+                struct {
+                    int32_t x, y;
+                } Move;
+                struct {
+                    char* a;
+                } Write;
+                struct {
+                    int32_t _1, _2, _3;
+                } ChangeColor;
+            } cases;
+        }
+
+        enum Book {
+            Papery {index: u32},
+            Electronic {url: String},
+        }
+       
+        let book = Book::Papery{index: 1001};
+        let ebook = Book::Electronic{url: String::from("url...")};
+       
+        match book {
+            Book::Papery { index } => {
+                println!("Papery book {}", index);
+            },
+            Book::Electronic { url } => {
+                println!("E-book {}", url);
+            }
+        }
+        ```
+
+        **结构体和枚举还有另一个相似点：可以使用 impl 在枚举上定义方法**.
+
+        Rust的enum与C++ 的enum和union都不同. 它是一种更安全的类型, 可以被称为["tagged union"](https://www.zhihu.com/question/452956370). 这个情况下, rust一般再加一个整型（一般是4 byte，有例外）用作tag, 然后每个case都是一个struct，最后在union起来. enum的某些情况是可以优化的, 优化方法: niche optimization.
+
+
+        ```rust
+        enum Number { 
+            Int(i32),
+            Float(f32), 
+        }
+        ```
+        用c理解即是:
+        ```c
+        struct IpAddr { 
+            enum {Int, Float} tag; 
+            union { 
+                int32_t int_value; 
+                float float_value; 
+            } value; 
+        };
+
+        enum Foo {
+            C1(&i32, bool),
+            C2,
+            C3
+        }
+
+        // 可被优化成: 当_2为0或者1时Foo表示C1，为2时表示C2，为3时表示C3。 后两种情况下的_1的值未定义.
+        struct Foo {
+            int32_t *_1;
+            uint8_t _2;
+        }
+        ```
+
+        Rust enum 类型的变量需要区分它里面的数据究竟是哪种变体, 所以它包含了一个内部的`tag 标记`来描述当前变量属于哪种类型. 这个标记对用户是不可见的, 通过恰当的语法设计, 保证标记与类型始终是匹配的，以防止用户错误地使用内部数据, 可用`std::mem::size_of::<Number>()`输出大小来验证.
+1. 联合体(Union) 
+    rust也支持 union 类型, 这个类型与C中的 union 完全一致, 但在 Rust 里面, 读取它内部的值被认为是 unsafe 行为, 一般情况下不使用这种类型, 而它存在的主要目的是为了方便与C语言进行交互.
+
+
+> tuple, struct, tuple struct 这几种类型，实质上是同样的内存布局，区别仅仅在于是否给类型及成员起了名字.
 
 ## 流程控制
 Rust 的循环和大部分语言都一致, 支持死循环`loop {}`、条件循环`while expr {}`，以及对迭代器的循环`for x in iter {}`. 循环可以通过 break 提前终止，或者 continue 来跳到下一轮循环.
@@ -1687,6 +1944,8 @@ fn main() {
 
 ## unsafe
 unsafe不过是把 Rust 编译器在编译器做的严格检查退步成为 C++ 的样子, 由开发者自己为其所撰写的代码的正确性做担保.
+
+>  unsafe 块是 Rust 提供的可选机制，专为安全责任自负的程序员使用高级语言特性提供
 
 ## 并发
 ```rust
