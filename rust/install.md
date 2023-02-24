@@ -15,6 +15,7 @@ $ rustc --version
 ```
 
 > [rust 使用国内镜像，快速安装方法](https://www.cnblogs.com/hustcpp/p/12341098.html)
+> [字节跳动新的 Rust 镜像源](https://rsproxy.cn/)
 > [rust ustc mirror](https://lug.ustc.edu.cn/wiki/mirrors/help/rust-static)
 > [rust tsinghua mirror](https://mirrors.tuna.tsinghua.edu.cn/help/rustup/)
 
@@ -26,6 +27,13 @@ $ rustc --version
 rust有stable和nightly两个版本, 默认版本可通过`rustup show`查看.
 
 修改rustup默认安装位置, 配置RUSTUP_HOME(默认`~/.rustup`, 保存工具链和配置文件)和CARGO_HOME(默认`~/.cargo`,保存cargo的cache)即可. 卸载rust用`rustup self uninstall`.
+
+## nightly
+```bash
+# rustup install nightly
+# rustup default nightly
+# rustup toolchain remove stable
+```
 
 ## 安装rls
 `rustup component add rls rust-analysis rust-src`

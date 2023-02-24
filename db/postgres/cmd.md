@@ -108,12 +108,13 @@ cat $PGDATA/tablespace_map # 查看表空间映射位置, from pg 9.5. 在10.5�
 ```
 
 ```sql
-# create tablespace tbs_test owner postgres location '/usr/local/pgdata'; # 会在$PGDATA/pg_tblspc下有一个连接文件xxx, 指向/usr/local/pgdata
+# create tablespace tbs_test owner postgres location '/usr/local/pgdata'; # 会在$PGDATA/pg_tblspc下有一个连接文件xxx, 指向/usr/local/pgdata. pgdata的所有者必须是postgres
 # CREATE DATABASE logistics TABLESPACE ts_primary; -- 在表空间内建库
 # select d.datname,p.spcname from pg_database d, pg_tablespace p where d.datname='lottu01' and p.oid = d.dattablespace; --查看dbname的默认表空间
 # create table test(a int) tablespace tbs_test; --在表空间内建表
 # \db[+] [<tablespace_name>] --罗列表空间, `+`表示更多细节, 比如空间大小
 # select * from pg_tablespace; -- 查看表空间
+# select pg_tablespace_location(16385); -- 查看表空间的location
 # select pg_tablespace_size('pg_default'); -- 查看表空间大小
 # select spcname, pg_size_pretty(pg_tablespace_size(spcname)) from pg_tablespace; -- 查看各个表空间的大小
 # alter table test_tsp03 set tablespace tsp01; -- 将表从一个表空间移到另一个表空间, 期间会锁表(在这个期间涉及到的对象将被锁定, 不可访问)

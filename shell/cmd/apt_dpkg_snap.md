@@ -300,3 +300,21 @@ sudo apt update
 sudo apt install mainline
 mainline-gtk    
 ```
+
+### [Key is stored in legacy trusted.gpg keyring](https://linux.cn/article-15565-1.html)
+apt-key已废弃, 并改用`/etc/apt/trusted.gpg.d`存储GPG 密钥.
+
+方法1:
+```bash
+$ sudo apt-key list
+...
+pub   rsa4096 2016-02-18 [SCEA]
+      DB08 5A08 CA13 B8AC B917  E0F6 D938 EC0D 0386 51BD
+uid           [ unknown] https://packagecloud.io/slacktechnologies/slack (https://packagecloud.io/docs#gpg_signing) <abhishek@itsfoss>
+$ sudo apt-key export 038651BD | sudo gpg --dearmour -o /etc/apt/trusted.gpg.d/slack.gpg # 038651BD 是 pub的最后8个字符
+```
+
+方法2:
+```bash
+$ sudo cp /etc/apt/trusted.gpg /etc/apt/trusted.gpg.d # **推荐**
+```

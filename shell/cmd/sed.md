@@ -54,6 +54,7 @@ $ sed 's/text/replace_text/' file  # 替换每一行的第一处匹配的text
 $ sed 's/text/replace_text/g' file  # 全局替换
 $ sed '/^$/d' file # 移除空白行
 $ sed '/qq/d' file # 移除包含"qq"的行
+$ sed '/\(\s*\)PKI/d' file # 移除"PKI"开头的行
 $ echo this is en example | sed 's/\w+/[&]/g' # 已匹配的字符串通过标记&来引用
 $ p=patten
 $ r=replaced

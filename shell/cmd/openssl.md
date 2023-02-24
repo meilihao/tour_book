@@ -24,6 +24,7 @@ $ openssl s_client -starttls smtp -connect email.example.com:587
 This is a test email.
 .
 > quit
+# openssl req -new -key example-fd.priv.key -x509 -out example-fd.pub.key -days 365 -subj "/C=CN/ST=LiaoNing/L=DaLian/O=devops/OU=unicorn/CN=devops.com" # 非交互
 ```
 
 ## rsa

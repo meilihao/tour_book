@@ -1903,6 +1903,8 @@ pool覆盖逻辑在`core/src/dird/job.cc#ApplyPoolOverrides`, 可以让其直接
 
 使用`label storage=Tape pool=Scartch barcodes yes`标记, 而不是`update slots storage=Tape drive=1 scan`
 
+### joglog: `Storage daemon didn't accept Device "FifoStorage" command`
+job运作中bareos sd被重启了.
 
 ### 修改Director邮件发送命令
 参考:

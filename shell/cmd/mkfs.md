@@ -8,6 +8,11 @@
 ## 选项
 - -t <fstype> : 系统自动寻找`mkfs.fstype`来执行, 比如`mkfs.ext4`
 
+## example
+```bash
+# mkfs.xfs -V # 获取xfs版本
+```
+
 ## FAQ
 ### mke2fs
 mke2fs是专门用于管理ext系列文件系统的一个专门的工具.

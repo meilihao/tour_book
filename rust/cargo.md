@@ -29,7 +29,7 @@ Rust还提供了包管理器Cargo来管理整个工作流程:
 cargo new first_pro_create [--vcs none] # 创建一个编写可执行文件的项目 = `cargo new --bin first_pro_create`. vcs默认是git
 cargo new --lib first_lib_create # 创建用于编写库的项目
 cargo doc
-cargo doc --open # 构建所有本地依赖提供的文档，并在浏览器中打开
+cargo doc --open --no-deps # 构建文档(在`target/doc`)，并在浏览器中打开. `--no-deps`即忽略生成依赖项的文档
 cargo check # 快速检查当前代码是否可以通过编译，而不需要构建程序, 比cargo build快. 因此大部分Rust用户在编写程序的过程中都会周期性地调用cargo check以保证自己的程序可以通过编译，只有真正需要生成可执行程序时才会调用.
 cargo build
 外的时间去真正生成可执行程序：
@@ -37,7 +37,7 @@ cargo test
 cargo test -- --test-threads=1
 cargo check # 它基本上跳过了编译器的代码生成部分，只通过前端阶段运行代码, 即编译器的解析和语义分析
 cargo build # 编译项目. 用于开发，它允许快速地反复执行构建操作. 默认情况下，cargo build 编译出来的二进制，在项目根目录的 target/debug 下.
-cargo build --release # 这种模式会以更长的编译时间为代价来优化代码, 从而使代码拥有更好的运行时性能, 但不会显示 panic backtrace 的具体行号
+cargo build --release # 这种模式会以更长的编译时间为代价来优化代码, 从而使代码拥有更好的运行时性能, 但不会显示 panic backtrace 的具体行号; 不会检查整数溢出; 会跳过 debug_assert!() 断言
 cargo run [--release] # 运行项目
 cargo run --examples <file_name> #  examples/目录下的代码
 cargo run -- assets/ferris.png # `--`表示将之后的内容传递给当前项目的可执行程序
@@ -49,6 +49,9 @@ cargo tree: 查看第三方库的版本和依赖关系
 cargo bench: 运行benchmark(基准测试,性能测试)
 cargo udeps(第三方): 检查项目中未使用的依赖
 cargo update [-p <crate>] : 更新全部或某个依赖
+cargo package : 创建一个文件(`target/package/xxx-<version>.crate`）, 其中包含库的所有源文件，以及 Cargo.toml
+cargo package --list : 查看其中包含什么文件
+cargo login <apikey> : 登录crates.io
 cargo publish : 将包发布到 crates.io
 ```
 
@@ -57,6 +60,8 @@ Rust 有许多功能可用于组织和管理代码, 包括哪些内容可以被�
 - workspace：项目复杂时，管理多个package
 
     工作区只是一个包含 Cargo.toml 文件的目录. 整个workspace共享一个Cargo.lock，也只有一个target目录
+
+    使用 Cargo workspace可以节省编译时间和磁盘空间.
 
 - 包（Packages） : **Cargo 的一个功能概念**, 用于管理crate, 比如允许构建、测试和分享 crate
 
@@ -84,6 +89,8 @@ Rust 有许多功能可用于组织和管理代码, 包括哪些内容可以被�
     > `#[macro_use] extern crate mime;` : 将 Cargo.toml 文件中指定的 mine 引入程序中, 并会使用mine导出的宏
 
 - 模块（Modules即mod）和 use : 允许控制作用域和路径的私有性
+
+    模块既是 Rust 的命名空间，也是函数、类型、常量等构成 Rust 程序或库的容器.
 
     > Java 组织功能模块的主要单位是类; JavaScript 组织模块的主要方式是 function.
 
@@ -120,6 +127,8 @@ Rust 有许多功能可用于组织和管理代码, 包括哪些内容可以被�
 
 - 路径（path）: 一个命名例如结构体、函数或模块等项的方式
 
+    模块与文件不是一码事, 但 Unix 文件系统的文件和目录结构与模块具有天然的对应关系.
+
     路径有两种形式：
     - 绝对路径（absolute path）从 crate 根开始，以 crate 名或者字面值 crate 开头
     - 相对路径（relative path）从当前模块开始，以 self、super 或当前模块的标识符开头
@@ -127,7 +136,11 @@ Rust 有许多功能可用于组织和管理代码, 包括哪些内容可以被�
         - self: 指向与当前模块相关的元素。该前缀用于任何代码想要引用自身包含的模块时. 这主要用于在父模块中重新导出子模块中的元素
         - super: 可用于从父模块导入元素, 诸如 tests 这类子模块将使用它从父模块导入元素
 
+        self 和 super 与特殊目录 `.`和`..`类似.
+
     绝对路径和相对路径都后跟一个或多个由双冒号（::）分割的标识符
+
+包主要解决项目间代码共享的问题，而模块主要解决项目内代码组织的问题.
 
 对于一个由一系列相互关联的包组合而成的超大型项目, Cargo 提供了`工作空间`这一解决方案.
 
@@ -192,6 +205,9 @@ Rust也不建议以`-rs`或`_rs`为后缀来命名包名, 而且会强制性的�
 - authors：它列出了该项目的主要作者。
 - build：它定义了一段 Rust 代码（通常是 build.rs），它在编译其余程序之前编译并运行. 这通常用于生成代码或者构建项目程序所依赖的原生库.
 - edition：它主要用于指定编译项目时使用的 Rust 版本
+- `profile.release`:
+
+    - `debug = true`: 控制 rustc 中的 -g 选项, `cargo build --release`会得到一个带有调试符号的二进制文件, 优化设置不受影响.
 
 `[package.metadata.settings]`:
 
