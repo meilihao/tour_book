@@ -44,3 +44,6 @@ ref:
 
 ### [构建时报`Unknown CMake command "target_link_options"`](https://github.com/seetafaceengine/SeetaFace2/issues/108)
 该功能由3.13开始提供, 升级Cmake至3.17后解决问题
+
+### cmake执行报`Does not match the generator used previously: xxx`
+之前编译过CMakeLists.txt后，产生了缓存文件CMakeCache.txt, 执行"rm -f `find -name CMakeCache.txt`"删除即可.

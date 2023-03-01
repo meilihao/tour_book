@@ -224,3 +224,6 @@ google-chrome-stable --proxy-server="socks5://127.0.0.1:1080" // 需梯子
 或使用`软件更新器`->`设置`->`附加驱动`
 
 注意: 第一代笔记本用`软件更新器`安装nvidia-driver-515后无法进入图形界面, ctrl+alt+f1切换到terminal, 再安装nvidia-driver-510重启后恢复正常.
+
+### sogou linux不能输入中文(已在`拼音`输入模式), 英文正常
+`rm -rf ~/.config/sogou*`, 再重启fcitx输入法即可, 推测是配置损坏.

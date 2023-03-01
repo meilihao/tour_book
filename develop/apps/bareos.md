@@ -186,6 +186,83 @@ DAEMON_GROUP = root
 # ll ../*.deb # 生成的deb在当前目录的上级目录
 ```
 
+#### windows
+
+##### by linux
+by [`core/platforms/win32/winbareos-nsi.spec`](https://github.com/bareos/bareos/blob/master/core/platforms/win32/winbareos-nsi.spec)
+
+存在未知来源的package: bareos-addons.
+
+> mingw32/mingw64-winbareos-release来自winbareos32.spec/winbareos64.spec
+
+##### by windows
+ref:
+- [mingw-w64-x86_64-openssl](https://packages.msys2.org/package/mingw-w64-x86_64-openssl)
+- [mingw-w64-x86_64 from huaweicloud](https://mirrors.huaweicloud.com/msys2/mingw/x86_64/index.html)
+    可找到比packages.msys2.org版本稍低的deps
+
+bareos windows备份客户端是在MinGW(`from https://github.com/bareos/bareos/blob/master/core/src/win32/README.OBS`)下编译的, 因此安装[x86_64-posix-seh](https://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/).
+
+> 参考了官方bareos windows client安装包的文件, 推断是使用了x86_64-posix-seh.
+
+deps(解压内容合并的到mingw64目录即可):
+1. [mingw-w64-x86_64-openssl-1.1.1.s-1-any.pkg.tar.zst](https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-openssl-1.1.1.s-1-any.pkg.tar.zst)
+1. [mingw-w64-x86_64-readline-8.2.001-6-any.pkg.tar.zst](https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-readline-8.2.001-6-any.pkg.tar.zst)
+1. [mingw-w64-x86_64-zlib-1.2.13-3-any.pkg.tar.zst](https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-zlib-1.2.13-3-any.pkg.tar.zst)
+1. [mingw-w64-x86_64-jansson-2.14-2-any.pkg.tar.zst](https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-jansson-2.14-2-any.pkg.tar.zst)
+1. [mingw-w64-x86_64-lzo2-2.10-2-any.pkg.tar.zst](https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-lzo2-2.10-2-any.pkg.tar.zst)
+1. vss 见`<bacula-13.0.2源码>/src/win32/README.mingw`, 安装[Volume Shadow Copy Service SDK 7.2](https://www.microsoft.com/en-us/download/details.aspx?id=23490)
+1. [SQL Server 2005 Virtual Backup Device Interface (VDI) Specification](https://www.microsoft.com/en-us/download/details.aspx?id=17282)
+
+```cmd
+> cd $bareos-source
+> mdkir build
+> cd build
+> <fix issue by `可能的问题`>
+> cmake .. -G "MinGW Makefiles" -Dclient-only=on -DOPENSSL_ROOT_DIR=C:\mingw-w64-x86_64-openssl-1.1.1.s-1-any.pkg\mingw64 # 也可将mingw-w64-x86_64-openssl-1.1.1.s-1-any.pkg.tar.zst解压内容合并的到mingw64目录, 这样就不用指定OPENSSL_ROOT_DIR
+> mingw32-make
+> 
+```
+
+如果编译成功在`build/core/src/filed`下会生成bareos-fd.exe
+
+可能的问题:
+1. 使用mingw-w64-x86_64-binutils-2.40-2-any.pkg.tar.zst(解压时选覆盖)会导致mingw32-make报[0xc0000135](https://stackoverflow.com/questions/11432940/what-does-error-code-0xc0000135-or-1073741515-exit-code-mean-when-starting-a)
+    不是该包即可
+1. mingw32-make报`error: unknown conversion type character 'z' in format`
+
+    问题不在于编译器而是C库, mingw使用windows的"visual c运行时"(msvcrt), 它只符合C89, 因此不支持`z`格式(C99支持该格式).
+
+    在报错的`core/src/lmdb/mdb.c`的最开头添加了`#define __USE_MINGW_ANSI_STDIO 1`
+1. mingw32-make报`undefined reference to 'json_delete'`
+
+    通过`mingw32-make -d > build.log`, 类比openssl发现编译时引入了`jansson.h`, 但没有引入`jansson.dll.a`.
+
+    推测是cmake在查找jansson和liblzo2时有问题导致的.
+
+    根据build.log, 链接脚本时是`build/core/src/lib/CMakeFiles/bareos.dir/link.txt`(by cmake), 其引用的`dll.a`定义在同目录的linkLibs.rsp中, 追加进去`...libz.dll.a C/mingw64/lib/libjansson.dll.a  C/mingw64/lib/liblzo2.dll.a...`即可
+
+    类似的还有`build/core/src/filed/CMakeFiles/bareos-fd.dir/linkLibs.rsp`追加`C/mingw64/lib/libjansson.dll.a`
+1. `WinXP/vss.h: No such file or directory`
+
+    通过bacula win32的README.mingw, 安装VSSSDK72, 之后将其`c:\Program Files\Microsoft\VSSSDK72`的inc/lib拷贝到mingw64
+1. `vdi.h: No such file or directory`
+
+    将`SQL Server 2005 Virtual Backup Device Interface (VDI) Specification`解压的include内容拷贝到mingw64
+1. `cc1plus: all warnings being treated as errors`
+    
+    通过`mingw32-make -d > build_vss.log`找到具体执行的`build/core/src/filed/CMakeFiles/fd_objects.dir/flags.make`将其中的` -Werror `替换为` -Wno-error `
+
+    类似的有:
+    - `build/core/src/plugins/filed/CMakeFiles/mssqlvdi-fd.dir/flags.make`
+1. `multiple definition of '_Unwind_Resume'`
+
+    在`build/core/src/filed/CMakeFiles/bareos-fd.dir/link.txt`的`-static-liggcc -static-libstdc++`后追加`-Wl,-allow-multiple-definition`
+
+    类似的有:
+    - `build/core/src/findlib/CMakeFiles/bareosfind.dir/link.txt`
+    - `build/core/src/plugins/filed/CMakeFiles/mssqlvdi-fd.dir/link.txt`
+
 ### v20.0.3
 env: Ubuntu 20.04/Kylin 4.0.2
 

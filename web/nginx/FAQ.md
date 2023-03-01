@@ -50,6 +50,18 @@ fetch('/topics/' + id, {
 server {
     listen 80;
     server_name openhello.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 80;
+    server_name openhello.com;
+    rewrite ^(.*) https://$server_name$1 permanent;
+}
+
+server {
+    listen 80;
+    server_name openhello.com;
 
     location / {
         return 301 https://$server_name$request_uri;
@@ -476,3 +488,12 @@ proxy_set_header Authority $host
 解决方法:
 1. 使用`chunked_transfer_encoding off;`
 1. proxy_http_version使用1.0
+
+### http访问nginx https报400
+将http重定向到https:
+```conf
+server {
+    ...
+    error_page 497 https://$server_name$request_uri;
+}
+```

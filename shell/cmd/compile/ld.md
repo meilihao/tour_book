@@ -8,6 +8,21 @@
 - -L : 将比如lib32-glibc的库加入库搜索路径
 - -lc : 连接标准 C 语言库， 比如printf
 
+## example
+```bash
+# ld [-L/usr/lib64] -luring --verbose # test liburing, like `gcc -lhdf5 --verbose`
+```
+
 ## FAQ
 ### os启动起点
 由ld链接器决定
+
+### `ld cannot find library but it exists`
+```bash
+# ninjia
+...
+/usr/bin/c++ ... -lcurl  -Wl,-Bstatic  -luring  -Wl,-Bdynamic  ../thirdParty/isa-l_crypto/.libs/libisal_crypto.a  bin/libhashtable.a  -lm  -lrt  -ldl  -lrdmacm  -libverbs  -lpthread ...
+/usr/bin/ld: cannot find -luring
+```
+
+liburing is so, use `-lcurl  -Wl,-Bdynamic  -luring`
