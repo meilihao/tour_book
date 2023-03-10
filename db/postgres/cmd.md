@@ -103,6 +103,8 @@ postgres=# \o
 ```
 
 ## 表空间
+database在表空间里时, 其表,索引,序列等对象默认在该表空间里.
+
 ```bash
 cat $PGDATA/tablespace_map # 查看表空间映射位置, from pg 9.5. 在10.5上是用$PGDATA/pg_tblspc, 但pg_basebackup备份的base.tar.gz里有tablespace_map
 ```
@@ -116,6 +118,7 @@ cat $PGDATA/tablespace_map # 查看表空间映射位置, from pg 9.5. 在10.5�
 # select * from pg_tablespace; -- 查看表空间
 # select pg_tablespace_location(16385); -- 查看表空间的location
 # select pg_tablespace_size('pg_default'); -- 查看表空间大小
+# select pg_relation_filepath('<表名/索引名/etc...>'); # 先进入database
 # select spcname, pg_size_pretty(pg_tablespace_size(spcname)) from pg_tablespace; -- 查看各个表空间的大小
 # alter table test_tsp03 set tablespace tsp01; -- 将表从一个表空间移到另一个表空间, 期间会锁表(在这个期间涉及到的对象将被锁定, 不可访问)
 # drop tablespace if exists tbs_test; -- 删除表空间. 删除表空间前必须要删除该表空间下的所有数据库对象，否则无法删除

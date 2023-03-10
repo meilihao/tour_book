@@ -32,7 +32,7 @@ binwalk选项:
 ### 制作bin
 linux 下制作二进制`.bin`的文件的方法是使用cat 命令将执行脚本和打包文件同时放到一个文件里, 在给它可执行权限. 这样安装的时候只要使用一个包, 直接执行该包即可安装完毕, 简单方便.
 
-env:
+准备demo:
 ```bash
 # tree demo
 demo
@@ -84,7 +84,7 @@ ref:
 # cat setup2.sh
 #!/bin/bash
 #set -x
-tmpdir=`mktemp`
+tmpdir=`mktemp --suffix=xxx`
 /bin/rm -f $tmpdir
 mkdir -p $tmpdir
 sed -n -e '1,/^exit 0$/!p' $0 |tar -x -C $tmpdir --strip-components 1
@@ -98,3 +98,5 @@ exit 0
 ```
 
 **setup2.sh必须存在最后一行空行, 便于sed提取, 否则sed会匹配不到需要截断的行, 因此没有最后一行空行时, sed会匹配到整个upgrade.bin**
+
+> 也遇到过setup2.sh最后一行空行不能有换行, 当时是直接cat了rpm包(没用tar封装), 否则sed提取结果开头多了一个换行.

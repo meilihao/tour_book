@@ -47,3 +47,10 @@ ref:
 
 ### cmake执行报`Does not match the generator used previously: xxx`
 之前编译过CMakeLists.txt后，产生了缓存文件CMakeCache.txt, 执行"rm -f `find -name CMakeCache.txt`"删除即可.
+
+### `all warnings being treated as errors`
+`cmake --compile-no-warning-as-error` from cmake 3.24
+
+或`cmake -DCOMPILE_WARNING_AS_ERROR=no`
+
+或在CMakeLists.txt里找`-Werror`并去掉它

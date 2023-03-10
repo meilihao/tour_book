@@ -217,6 +217,9 @@ serial key其实是由sequence实现的，当手动给serial列赋值的时候�
 ### postgresql.auto.conf
 从PostgreSQL 9.4版本开始，新引入了postgresql.auto.conf配置文件，它作为postgresql.conf文件的补充，在参数配置格式上，它和postgresql.conf保持一致, 并优先于postgresql.conf, 能被`ALTER SYSTEM`语句修改.
 
+### insert 报`cannot insert multiple commands into a prepared statement`
+一个prepared statement只能有一个sql.
+
 ## 模拟操作
 ### 插入可产生约2G wal日志的数据
 ```psql

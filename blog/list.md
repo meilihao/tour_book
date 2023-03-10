@@ -112,6 +112,7 @@
 - [区块链和 HyperLedger 系列](https://www.ibm.com/developerworks/community/blogs/3302cc3b-074e-44da-90b1-5055f1dc0d9c/entry/opentech-blockchain?lang=zh)
 - [区块链合集](https://gocn.io/question/1691)
 - [k8s/docker](https://jimmysong.io/)
+- [小林 x 图解计算机基础](https://xiaolincoding.com/)
 
 ## 源码
 - [Elasticsearch 架构以及源码概览](http://mp.weixin.qq.com/s?__biz=MzA4NjgwMDQ0OA==&mid=2652445487&idx=1&sn=fb99fac1db2ad8120e98f00165323b2a)

@@ -126,6 +126,7 @@
 - [dropbox/godropbox](https://github.com/dropbox/godropbox)
 - [Golang底层实现系列——map的底层实现](https://segmentfault.com/a/1190000040269520)
 - [golang cron 定时任务](https://cloud.tencent.com/developer/article/1422445)
+- [gnet: 一个轻量级且高性能的 Go 网络框架](https://strikefreedom.top/archives/go-event-loop-networking-library-gnet)
 
 ## mirror
 - [go sdk](https://mirrors.ustc.edu.cn/golang/)

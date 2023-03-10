@@ -313,6 +313,18 @@ brotli_min_length 20; # 设置需要进行压缩的最小响应大小
     } 
 ```
 
+让nginx不使用tmp还需追加:
+```conf
+client_body_buffer_size 20m; // client_body_buffer_size = client_max_body_size
+proxy_max_temp_file_size 0;
+```
+
+建议对上传/下载的url单独配置url以节省内存.
+
+> Nginx分配给请求数据的Buffer大小，如果请求的body数据小于client_body_buffer_size直接将数据先在内存中存储。如果请求的body大于client_body_buffer_size小于client_max_body_size，就会将数据部分或全部先存储到临时文件(client_body_temp)中.
+
+> client_max_body_size 默认 1M，表示 客户端请求服务器最大允许大小，在“Content-Length”请求头中指定。如果请求的正文数据大于client_max_body_size，HTTP协议会报错 413 Request Entity Too Large
+
 ### conf.d/sites-enabled/sites-available
 > 新版nginx的目录设置与httpd类似.
 

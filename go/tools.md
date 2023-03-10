@@ -104,6 +104,14 @@ dot -Tpng -o a.png a.dot
 ## crypto
 - [go-dongle](github.com/golang-module/dongle)
 
+## encoding
+### xlsx
+- [github.com/xuri/excelize/v2](https://github.com/qax-os/excelize)
+
+	- 当且仅有一个sheet时, 其无法删除
+### pdf
+- [github.com/johnfercher/maroto](https://github.com/johnfercher/maroto)
+
 ## IDE
 ### FAQ
 #### vscode 智能提示突然消失

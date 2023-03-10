@@ -83,7 +83,7 @@ do
  newfile=`echo $file | sed 's/\([a-z]\+\)\([0-9]\+\)/\1-\2/'`
  mv $file $newfile
 done
-$ sed -n  -e '1,/^exit 0$/!p' ./upgrade.bin # 提取1~`exit 0`外的所有行, `//`是sed用于标记正则
+$ sed -n  -e '1,/^exit 0$/!p' ./upgrade.bin # 提取1~`exit 0`外的所有行, `!`表示取反, `//`是sed用于标记正则
 $ nmcli --mode multiline dev | cut -d" " -f 2- | sed "s/^[ \t]*//"
 $ cat /sys/class/fc_host/host*/port_name | sed -e s/0x// -e 's/../&:/g' -e s/:$// # 1. 去掉开头的"0x"; 2. 每两个字符用":"分割; 3. 取消末尾多余的":"
 ```

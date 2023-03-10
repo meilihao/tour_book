@@ -44,6 +44,9 @@ snapshot : 快照, 是文件系统或卷的只读副本. 在zfs中，快照几�
 scrub : 用于一致性检验. 其他文件系统会使用fsck.
 thin: zfs支持thin provisioning
 
+## 优化
+- [Running PostgreSQL using ZFS and AWS EBS](https://bun.uptrace.dev/postgres/tuning-zfs-aws-ebs.html)
+
 ## reg
 - [dataset name](https://openzfs.github.io/openzfs-docs/man/8/zfs.8.html)
 
@@ -248,7 +251,7 @@ zfs list的属性可参考[freebsd zfs#Native Properties](https://www.freebsd.or
 - createtxg : 创建时的事务id. bookmark与snapshot有相同的createtxg. 该属性常用于`zfs send/recv`
 - creation : 创建时间, unix时间戳
 - REFER : 即referenced
-- recordsize: fs块大小. 更改记录大小只会对新文件产生影响, 它不会对现有文件产生任何影响.
+- recordsize: fs块大小. 更改记录大小只会对新文件产生影响, 它不会对现有文件产生任何影响. 之前将recordsize从128k改到16k, 发现其fs性能没变化(212M/s); 但创建fs时recordsize初始为16k, 性能为144M/s.
 
 > 物理卷(Physical Volume, PV)：操作系统识别到的物理磁盘(或者RAID提交的逻辑磁盘LUN), 物理卷可以是一个磁盘，也可以是磁盘中的一个分区.
 > volume : 通常是指逻辑卷, 是逻辑卷组(VG, 由若干PV组成)上的一块空间, 上面没有文件系统.

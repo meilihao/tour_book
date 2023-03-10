@@ -22,6 +22,7 @@
 - [linux命令](https://wangchujiang.com/linux-command/hot.html)
 - [log color - ANSI escape code](https://en.wikipedia.org/wiki/ANSI_escape_code#Colors)
 - [在 Linux 上用 zram 替代传统交换空间](https://linux.cn/article-15487-1.html)
+- [tealdeer 轻量级 Linux 命令行手册](https://www.oschina.net/p/tealdeer)
 
 ## example
 - [**zstack install**](https://gitee.com/zstackio/zstack-utility/blob/master/installation/install.sh)

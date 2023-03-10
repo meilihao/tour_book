@@ -133,6 +133,18 @@ EOF
 fio fio.conf
 ```
 
+[fs测试](https://juicefs.com/docs/zh/cloud/single_node_benchmark):
+```bash
+$ fio --name=big-file-sequential-read \
+    --directory=/jfs \
+    --rw=read --refill_buffers \
+    --bs=256k --size=4G
+$ fio --name=big-file-sequential-write \
+    --directory=/jfs \
+    --rw=write --refill_buffers \
+    --bs=256k --size=4G
+```
+
 ## FAQ
 ### io scheduler noop not found
 `cat /sys/block/sda/queue/scheduler`, 查看当前系统是否没选中noop. 修改即可:`echo 'noop' > /sys/block/sda/queue/scheduler`.

@@ -191,9 +191,165 @@ DAEMON_GROUP = root
 ##### by linux
 by [`core/platforms/win32/winbareos-nsi.spec`](https://github.com/bareos/bareos/blob/master/core/platforms/win32/winbareos-nsi.spec)
 
-存在未知来源的package: bareos-addons.
+根据mingw64-libdb-devel在[rpm.pbone.net](http://rpm.pbone.net)的信息, 推测官方使用了opensuse 12.x构建bareos windows client. [Building Windows client from source](https://groups.google.com/g/bareos-devel/c/GEXnhQp9y00)也佐证使用了SUSE. 同时根据`mingw64-cross-pkg-config/mingw64-libgcc`未在[`windows:/mingw:/win64/openSUSE_Leap_15.4/x86_64/`](http://download.opensuse.org/repositories/windows:/mingw:/win64/openSUSE_Leap_15.4)上找到, 但[`windows:/mingw:/win64/openSUSE_12.3`](http://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/windows:/mingw:/win64/openSUSE_12.3/noarch/)上有, 也可验证是使用opensuse 12.x
+
+**需用opensuse 15.4**
+
+存在未知来源的package: bareos-addons. [bareos-addons is more tricky, as it contains MS header files. Its license don't allow redistribution, so you have to collect them yourself from MS.](https://groups.google.com/g/bareos-devel/c/GEXnhQp9y00)
 
 > mingw32/mingw64-winbareos-release来自winbareos32.spec/winbareos64.spec
+
+> mingw64-cross-pkgconf(15.4) = mingw64-cross-pkg-config(12.x); mingw64-libgcc_s_seh1(15.4) = mingw64-libgcc(12.x); mingw64-libmpc3(15.4) = mingw64-libmpc(12.x);mingw64-libmpfr4(15.4) = mingw64-libmpfr(12.x); mingw64-libstdc++6(15.4) = mingw64-libstdc++(12.x); mingw64-zlib1(15.4) = mingw64-zlib(12.x). **实际上repodata已有兼容信息, 比如在15.4安装mingw64-cross-pkg-config, 实际是安装了mingw64-cross-pkgconf**
+
+> mingw64-termcap-debug/mingw64-termcap-devel(15.4) ~= mingw64-termcap(12.x); mingw64-libsqlite3(15.4) ~= mingw64-libsqlite-devel(12.x);
+
+> 根据repodata primary.xml/other.xml 有些包在`windows:/mingw:/win32/openSUSE_12.3`里, 比如mingw64-cross-nsis, 根据[mingw64-cross-nsis](https://build.opensuse.org/package/show/windows:mingw:win64/mingw64-cross-nsis)的`Build Results`罗列`mingw32-cross-nsis*.rpm`也可验证该结果.
+
+
+opensusu 12.3(**失败**):
+```bash
+# 配置http://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/windows:/mingw:/win32/openSUSE_12.3/windows:mingw:win32.repo和http://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/windows:/mingw:/win64/openSUSE_12.3/windows:mingw:win64.repo, 均需要修正baseurl.
+# zypper install rpm-build
+# cp bareos-21.1.2.tar.gz /usr/src/packages/SOURCES/
+# cd /usr/src/packages/SPECS
+# cp ~/bareos-Release-21.1.2/core/platforms/win32/winbareos64.spec .
+# rpmbuild -bb winbareos64.spec > deps.log 2>&1
+# zypper install $(cat deps.log |grep "is needed by"|awk '{print $1}')
+```
+
+还需手动安装:
+- [mingw64-cross-libqt5-qmake](http://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home%3A/rhabacker%3A/branches%3A/windows%3A/mingw%3A/win64%3A/Qt54/openSUSE_13.2/x86_64/mingw64-cross-libqt5-qmake-5.4.0-5.96.x86_64.rpm)
+- [mingw64-libpng16-16](ftp://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/home%3A/Ximi1970%3A/Toolchains%3A/Qt%3A/MinGW%3A/latest%3A/win64/openSUSE_Leap_42.2/noarch/mingw64-libpng16-16-1.6.19-2.26.noarch.rpm)
+
+用opensuse 12.3 + [`windows:/mingw:/win{32,64}/openSUSE_12.3`]试安装发现缺近十个包且和官方bareos windows client的dll版本存在差异, 需尝试`opensuse 15.4`.
+
+opensusu 15.4:
+ref:
+- [https://packages.msys2.org/package/?repo=mingw64](https://packages.msys2.org/package/?repo=mingw64)
+
+```bash
+# tar -xf bareos-Release-21.1.2.tar.gz
+# mv bareos-Release-21.1.2 bareos-21.1.2
+# vim bareos-21.1.2/core/CMakeLists.txt
+- `set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")` # 去掉两处` -Werror `
+- `set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")`
+- `set(Python2_LIBRARIES python2.7.dll)` # 解决错误链接`-lpython27`
+- `set(Python3_LIBRARIES python3.9.dll)` # 解决错误链接`-lpython39`
+- `set(Python2_INCLUDE_DIRS /usr/${cross-prefix}/sys-root/mingw/include/python2.7/)`
+- `set(Python3_INCLUDE_DIRS /usr/${cross-prefix}/sys-root/mingw/include/python3.9/)`
+# vim bareos-21.1.2/core/src/win32/filed/vss_generic.cc 将4个vss相关的`VSS_E_xxx`变量的类型都转为`((HRESULT)(VSS_E_...))`
+# tar -czf bareos-21.1.2.tar.gz bareos-21.1.2
+# 配置https://download.opensuse.org/repositories/windows:/mingw:/win32/openSUSE_Leap_15.4/windows:mingw:win32.repo和https://download.opensuse.org/repositories/windows:/mingw:/win64/openSUSE_Leap_15.4/windows:mingw:win64.repo
+# zypper install rpm-build mingw64-python-devel mingw64-python3-devel
+# cp bareos-21.1.2.tar.gz /usr/src/packages/SOURCES/
+# cd /usr/src/packages/SPECS
+# cp ~/bareos-Release-21.1.2/core/platforms/win32/winbareos64.spec .
+# vim winbareos64.spec
+- `Version:        21.1.2`
+- `Source0:        bareos-%{version}.tar.gz`
+- `#BuildRequires:  bareos-addons`
+- `#BuildRequires:  %{mingw}-lzo`
+- `#BuildRequires:  %{mingw}-lzo-devel`
+- `#BuildRequires:  %{mingw}-libfastlz`
+- `#BuildRequires:  %{mingw}-libfastlz-devel`
+- `#BuildRequires:  %{mingw}-gtest-devel`
+- `#BuildRequires:  %{mingw}-libgtest0`
+- `#BuildRequires:  %{mingw}-libjansson`
+- `#BuildRequires:  %{mingw}-libjansson-devel`
+- ```conf
+    # for i in `ls %addonsdir`; do
+    #    tar xvf %addonsdir/$i
+    # done
+  ```
+# env LANG=C rpmbuild -bb winbareos64.spec > deps.log 2>&1
+# zypper install $(cat deps.log |grep "is needed by"|awk '{print $1}')
+# 安装缺失包, 见下面的`手动安装缺失包`
+# cp -r ~/VSSSDK72/* /usr/x86_64-w64-mingw32/sys-root/mingw/include # VSSSDK72见下面
+# 将`SQL Server 2005 Virtual Backup Device Interface (VDI) Specification`解压的include内容拷贝到mingw64
+# pushd .
+# cd /usr/x86_64-w64-mingw32/sys-root/mingw/include
+# ln -s winxp WinXP
+# ln -s win2003 Win2003
+# cd ../lib/pkgconfig # 修复pc配置的prefix, 不知道为什么python3/egl.pc/glesv2.pc的prexfix是错误的
+# rpmbuild -bb winbareos64.spec
+```
+
+缺失包:
+- bareos-addons
+- mingw64-gtest-devel/mingw64-libgtest0 : mingw-w64-x86_64-gtest-1.13.0
+- mingw64-libfastlz/mingw64-libfastlz-devel
+- mingw64-libjansson/mingw64-libjansson-devel : mingw-w64-x86_64-jansson-2.14
+- mingw64-lzo/mingw64-lzo-devel : mingw-w64-x86_64-lzo2-2.10
+
+手动安装缺失包:
+- [mingw-w64-x86_64-jansson-2.14-2-any.pkg.tar.zst](https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-jansson-2.14-2-any.pkg.tar.zst)
+
+    `https://repo.msys2.org/mingw/mingw64/`里的gcc与`https://download.opensuse.org/repositories/windows:/mingw:/win64/openSUSE_Leap_15.4/windows:mingw:win64.repo`相同, 都是`12.2.0`.
+
+    依赖mingw-w64-x86_64-libwinpthread-git, 其内文件libwinpthread-1.dll已安装.
+
+    ```bash
+    # tar -xf mingw-w64-x86_64-jansson-2.14-2-any.pkg.tar.zst
+    # cd mingw64/
+    # cp -r * /usr/x86_64-w64-mingw32/sys-root/mingw
+    ```
+- [mingw-w64-x86_64-gtest-1.13.0-1-any.pkg.tar.zst](https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-gtest-1.13.0-1-any.pkg.tar.zst)
+
+    依赖:
+    - [mingw-w64-x86_64-gcc-libs-12.2.0-10-any.pkg.tar.zst](https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-gcc-libs-12.2.0-10-any.pkg.tar.zst)
+- [mingw-w64-x86_64-lzo2-2.10-2-any.pkg.tar.zst](https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-lzo2-2.10-2-any.pkg.tar.zst)
+- [fastlz-0.1.0-0.19.20070619svnrev12.fc38](https://koji.fedoraproject.org/koji/buildinfo?buildID=2115230)
+
+    ```bash
+    # rpm2cpio fastlz-0.1.0-0.19.20070619svnrev12.fc38.src.rpm |cpio -div
+    # tar -xf fastlz-12.tar.bz2 && cd fastlz-12
+    # x86_64-w64-mingw32-gcc -shared -o libfastlz.dll -Wl,--out-implib,libfastlz.dll.a fastlz.c fastlz.h
+    # x86_64-w64-mingw32-gcc -s -Wall -c fastlz.c fastlz.h # get fastlz.o # from [`A script from Lua 5.1 to compile Lua with MSVC, modified to fit Lua 5.2`](https://gist.github.com/starwing/4756700)
+    # x86_64-w64-mingw32-ar rcs libfastlz.a fastlz.o
+    # vim fastlz.pc # Name/Description from fastlz-12/README.TXT; Version from fastlz.h
+    prefix=/usr/x86_64-w64-mingw32/sys-root/mingw # 与packages.msys2.org获取的`/mingw64`不同
+    exec_prefix=${prefix}
+    libdir=${exec_prefix}/lib
+    includedir=${prefix}/include
+
+    Name: FastLZ
+    Description: lightning-fast lossless compression library
+    Version: 0.1.0
+    Libs: -L${libdir} -lfastlz
+    Cflags: -I${includedir}
+    ```
+
+    > `mingw-w64-jansson/PKGBUILD`的环境变量在[`filesystem/msystem`](https://github.com/msys2/MSYS2-packages/blob/master/filesystem/msystem)
+
+    > 参照[`mingw-w64-lzo2/PKGBUILD`](https://github.com/msys2/MINGW-packages/blob/master/mingw-w64-lzo2/PKGBUILD), 通过`lzo-2.10`学习mingw64构建发现: `./configure --prefix=/mingw64 --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 --target=x86_64-w64-mingw32`会通过`x86_64-w64-mingw32-gcc -o conftest.exe    conftest.c`测试编译器, 测试时会执行conftest.exe, 因为执行环境不是windows而报`cannot execute binary file: Exec format error`并抛出错误提示`cannot run C compiled programs`
+- [mingw-w64-x86_64-postgresql-15.1-2-any.pkg.tar.zst](https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-postgresql-15.1-2-any.pkg.tar.zst)
+
+可能的问题:
+- `Python.h: No such file or directory`
+
+    ```bash
+    # zypper install rpm-build mingw64-python-devel mingw64-python3-devel
+    # vim bareos-21.1.2/core/CMakeLists.txt
+    - `set(Python2_LIBRARIES python2.7.dll)` # 解决错误链接`-lpython27`
+    - `set(Python3_LIBRARIES python3.9.dll)` # 解决错误链接`-lpython39`
+    - `set(Python2_INCLUDE_DIRS /usr/${cross-prefix}/sys-root/mingw/include/python2.7/)`
+    - `set(Python3_INCLUDE_DIRS /usr/${cross-prefix}/sys-root/mingw/include/python3.9/)`
+    ```
+
+- `/usr/src/packages/BUILD/bareos-21.1.2/core/src/win32/filed/vss_generic.cc:135:10: error: narrowing conversion of '2147754769' from 'long unsigned int' to 'long int' [-Wnarrowing]`
+
+    ```bash
+    # cmake生成构建文件
+    # [ 29%] Building CXX object core/src/filed/CMakeFiles/fd_objects.dir/__/win32/filed/vss_Vista.cc.obj
+    cd /usr/src/packages/BUILD/bareos-21.1.2/release/core/src/filed && /usr/bin/x86_64-w64-mingw32-g++ -DHAVE_MINGW -DHAVE_VSS64 -DHAVE_WIN32 -DMINGW64 -DWIN32_VSS -D_WIN32_WINNT=0x600 @CMakeFiles/fd_objects.dir/includes_CXX.rsp -Wsuggest-override -Wformat -Werror=format-security -fdebug-prefix-map=/usr/src/packages/BUILD/bareos-21.1.2/core=. -fmacro-prefix-map=/usr/src/packages/BUILD/bareos-21.1.2/core=. -Wno-unknown-pragmas -Wall -m64 -mwin32 -mthreads -O2 -g -DNDEBUG -std=gnu++17 -MD -MT core/src/filed/CMakeFiles/fd_objects.dir/__/win32/filed/vss_Vista.cc.obj -MF CMakeFiles/fd_objects.dir/__/win32/filed/vss_Vista.cc.obj.d -o CMakeFiles/fd_objects.dir/__/win32/filed/vss_Vista.cc.obj -c /usr/src/packages/BUILD/bareos-21.1.2/core/src/win32/filed/vss_Vista.cc
+    ```
+
+    试着将/usr/x86_64-w64-mingw32/sys-root/mingw/include下所有相关变量类型改为`UL`, 编译时还是报错.
+
+    将`core/src/win32/filed/vss_generic.cc`里vss相关的错误变量的类型都转为`((HRESULT)(VSS_E_...))`
+- `libpq-fe.h: No such file or directory`
+
+    将[mingw-w64-x86_64-postgresql-15.1-2-any.pkg.tar.zst](https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-postgresql-15.1-2-any.pkg.tar.zst)解压到mingw64, 并修正pc配置
 
 ##### by windows
 ref:
@@ -245,7 +401,9 @@ deps(解压内容合并的到mingw64目录即可):
     类似的还有`build/core/src/filed/CMakeFiles/bareos-fd.dir/linkLibs.rsp`追加`C/mingw64/lib/libjansson.dll.a`
 1. `WinXP/vss.h: No such file or directory`
 
-    通过bacula win32的README.mingw, 安装VSSSDK72, 之后将其`c:\Program Files\Microsoft\VSSSDK72`的inc/lib拷贝到mingw64
+    通过bacula win32的README.mingw, 安装VSSSDK72, 之后将其`c:\Program Files(x86)\Microsoft\VSSSDK72`的inc/lib拷贝到mingw64
+
+    **windows不区分大写, 但linux区分, 因此在linux环境构建时需要创建相应的软链接.**
 1. `vdi.h: No such file or directory`
 
     将`SQL Server 2005 Virtual Backup Device Interface (VDI) Specification`解压的include内容拷贝到mingw64
@@ -495,6 +653,7 @@ exit
 ## bconsole cmd
 ref:
 - [bacula备份终端操作bconsole指令](https://www.cnblogs.com/nulige/p/7891161.html)
+- [bareos-cleaner](https://github.com/elonen/bareos-cleaner/blob/master/bareos-cleanup)
 
 ```bash
 * reload # 重载配置
