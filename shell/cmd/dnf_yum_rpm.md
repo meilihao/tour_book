@@ -292,6 +292,7 @@ repo:
 # zypper modifyrepo -d openSUSE-12.3-1.7 # 禁用repo openSUSE-12.3-1.7
 # zypper refresh # 刷新repo
 # zypper info rpm-build
+# zypper --no-gpg-checks install ./mingw64-winbareos-21.1.2-0.noarch.rpm # 跳过签名检查
 # zypper install rpm-build # 安装软件
 ```
 
