@@ -29,6 +29,13 @@
 - [`.run/.bin`制作 - makeself](https://github.com/megastep/makeself)
 - [flatpak](https://linux.cn/article-15007-1.html)
 
+windows:
+- [NSIS](https://nsis.sourceforge.io/Download)
+
+    - [安装程序打包工具NSIS](https://wuziqingwzq.github.io/other/2018/01/08/NSIS1.html)
+- [HM NIS EDIT](http://hmne.sourceforge.net/)
+    NSIS脚本编辑器
+
 ## desktop
 ### UbuntuDDE
 参考:

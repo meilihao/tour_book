@@ -28,6 +28,17 @@ binwalk选项:
 	1. 该选项将提取包含字符串“zip archive”,文件扩展名为“zip”的文件，然后执行“unzip”命令. 请注意使用’％e’占位符。执行unzip命令时，此占位符将替换为解压缩文件的相对路径
 	1. 此外，PNG图像按原样提取，带有’png’文件扩展名。
 
+## nsis
+ref:
+- [Can I decompile an existing installer?](https://nsis.sourceforge.io/Can_I_decompile_an_existing_installer)
+
+```bash
+# zypper install p7zip-full
+# 7z e winbareos-21.0.0-release-64-bit.exe # 解压出来没有目录层级
+```
+
+或使用[Universal Extractor 2](https://github.com/Bioruebe/UniExtract2)
+
 ## FAQ
 ### 制作bin
 linux 下制作二进制`.bin`的文件的方法是使用cat 命令将执行脚本和打包文件同时放到一个文件里, 在给它可执行权限. 这样安装的时候只要使用一个包, 直接执行该包即可安装完毕, 简单方便.

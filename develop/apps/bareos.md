@@ -187,17 +187,24 @@ DAEMON_GROUP = root
 ```
 
 #### windows
+ref:
+- [mingw64](https://packages.msys2.org/repos)
+- [msys2 Environments选择](https://www.msys2.org/docs/environments/)
+
+    UCRT在构建时和运行时比 MSVC 的兼容性更好, 但它仅默认在 Windows 10 及以上提供.
+
+官方bareos windows client使用nsis打包, 可用`Easy 7-Zip`解压, 部分缺失文件可从这里提取
 
 ##### by linux
 by [`core/platforms/win32/winbareos-nsi.spec`](https://github.com/bareos/bareos/blob/master/core/platforms/win32/winbareos-nsi.spec)
 
-根据mingw64-libdb-devel在[rpm.pbone.net](http://rpm.pbone.net)的信息, 推测官方使用了opensuse 12.x构建bareos windows client. [Building Windows client from source](https://groups.google.com/g/bareos-devel/c/GEXnhQp9y00)也佐证使用了SUSE. 同时根据`mingw64-cross-pkg-config/mingw64-libgcc`未在[`windows:/mingw:/win64/openSUSE_Leap_15.4/x86_64/`](http://download.opensuse.org/repositories/windows:/mingw:/win64/openSUSE_Leap_15.4)上找到, 但[`windows:/mingw:/win64/openSUSE_12.3`](http://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/windows:/mingw:/win64/openSUSE_12.3/noarch/)上有, 也可验证是使用opensuse 12.x
+~~根据mingw64-libdb-devel在[rpm.pbone.net](http://rpm.pbone.net)的信息, 推测官方使用了opensuse 12.x构建bareos windows client. [Building Windows client from source](https://groups.google.com/g/bareos-devel/c/GEXnhQp9y00)也佐证使用了SUSE. 同时根据`mingw64-cross-pkg-config/mingw64-libgcc`未在[`windows:/mingw:/win64/openSUSE_Leap_15.4/x86_64/`](http://download.opensuse.org/repositories/windows:/mingw:/win64/openSUSE_Leap_15.4)上找到, 但[`windows:/mingw:/win64/openSUSE_12.3`](http://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/windows:/mingw:/win64/openSUSE_12.3/noarch/)上有, 也可验证是使用opensuse 12.x~~
 
-**需用opensuse 15.4**
+**需用opensuse 15.4**, 此时mingw64-libqt5-qtbase依赖openssl 1.0与官方使用openssl 1.1不符.
 
-存在未知来源的package: bareos-addons. [bareos-addons is more tricky, as it contains MS header files. Its license don't allow redistribution, so you have to collect them yourself from MS.](https://groups.google.com/g/bareos-devel/c/GEXnhQp9y00)
+存在未知来源的package: bareos-addons. [bareos-addons is more tricky, as it contains MS header files. Its license don't allow redistribution, so you have to collect them yourself from MS.](https://groups.google.com/g/bareos-devel/c/GEXnhQp9y00), 根据实际编译报错和帖子中的提示, bareos-addons应是包含`SQL Server 2005 Virtual Backup Device Interface (VDI) Specification`和`VSSSDK72`相关的头文件和lib.
 
-> mingw32/mingw64-winbareos-release来自winbareos32.spec/winbareos64.spec
+> mingw32/mingw64-winbareos-release包来自winbareos32.spec/winbareos64.spec
 
 > mingw64-cross-pkgconf(15.4) = mingw64-cross-pkg-config(12.x); mingw64-libgcc_s_seh1(15.4) = mingw64-libgcc(12.x); mingw64-libmpc3(15.4) = mingw64-libmpc(12.x);mingw64-libmpfr4(15.4) = mingw64-libmpfr(12.x); mingw64-libstdc++6(15.4) = mingw64-libstdc++(12.x); mingw64-zlib1(15.4) = mingw64-zlib(12.x). **实际上repodata已有兼容信息, 比如在15.4安装mingw64-cross-pkg-config, 实际是安装了mingw64-cross-pkgconf**
 
@@ -288,6 +295,7 @@ ref:
 # 下载[LogEx.dll](https://nsis.sourceforge.io/LogEx_plug-in)
 # scp LogEx.dll aliyun:/usr/src/packages/BUILD
 # cp /bareos-21.1.2/core/platforms/win32{winbareos.nsi,clientdialog.ini,directordialog.ini,storagedialog.ini,bareos.ico,databasedialog.ini} /usr/src/packages/SOURCES
+# 下载[mingw32-cross-nsis-3.08-1.187.src.rpm](https://software.opensuse.org/download.html?project=windows%3Amingw%3Awin32&package=mingw32-cross-nsis), 再根据[Special Builds](https://nsis.sourceforge.io/Special_Builds)追加`NSIS_CONFIG_LOG=yes`以开启nsis的log功能.
 # vim /usr/src/packages/SOURCES/winbareos.nsi
 - File "libQt5Core.dll"
 - File "libQt5Gui.dll"
@@ -295,8 +303,8 @@ ref:
 - File "libqwindows.dll"
 - File "libhistory6.dll"
 - File "libreadline6.dll"
-- 注释所有LogSet和LogText行, 因为mingw32-cross-nsis `NSIS_CONFIG_LOG not defined`即本身编译时没开日志功能
-- 删除webui
+- 如果已重新构建mingw32-cross-nsis则忽略该行, 否则注释所有LogSet和LogText行, 因为mingw32-cross-nsis `NSIS_CONFIG_LOG not defined`即本身编译时没开日志功能
+- ~~删除webui~~, **不能删除**, 可用[`Easy 7-Zip(windows)解压官方exe提取`. 起先我因为没有php.ini就直接删除了winbareos-nsi.spec php片段和winbareos.nsi如下的webui片段, 最终导致构建出的exe报`Installer corrupted: invalid opcode`
  
   ```
   # webui
@@ -313,6 +321,10 @@ ref:
 - `Source0:        bareos-%{version}.tar.gz`
 # rpmbuild -bb mingw-debugsrc-devel.spec
 # zypper --no-gpg-checks install /usr/src/packages/RPMS/noarch/mingw-debugsrc-devel-21.1.2-0.noarch.rpm
+# 参考[pkcs12](/shell/cmd/openssl.md)创建pkcs12证书, osslsigncode会用到
+# cp certificate.p12 /usr/src/packages/BUILD/ia.p12
+# cp certificate.pem /usr/src/packages/BUILD/certificate.pem
+# echo "123456" > /usr/src/packages/BUILD/signpassword # 创建ia.p12用到的密码
 # vim winbareos-nsi.spec
 %define __strip %{_mingw64_strip}
 %define __objdump %{_mingw64_objdump}
@@ -552,6 +564,14 @@ for flavor in %{flavors}; do
 
 
       # php
+      cp -a /usr/lib/windows/php/ .
+      cp php/php.ini .
+      echo "" >> %_sourcedir/LICENSE
+      echo "PHP: http://php.net/" >> %_sourcedir/LICENSE
+      echo "##### LICENSE FILE OF PHP START #####" >> %_sourcedir/LICENSE
+      cat php/license.txt >> %_sourcedir/LICENSE
+      echo "##### LICENSE FILE OF PHP END #####" >> %_sourcedir/LICENSE
+      echo "" >> %_sourcedir/LICENSE
 
       popd
 
@@ -608,7 +628,7 @@ for flavor in %{flavors}; do
                     -in  $RPM_BUILD_ROOT/winbareos-%version-$flavor-${BITS}-bit-r%release-unsigned.exe \
                     -out $RPM_BUILD_ROOT/winbareos-%version-$flavor-${BITS}-bit-r%release.exe
 
-      osslsigncode verify -in $RPM_BUILD_ROOT/winbareos-%version-$flavor-${BITS}-bit-r%release.exe
+      osslsigncode verify -CAfile %{_builddir}/certificate.pem -in $RPM_BUILD_ROOT/winbareos-%version-$flavor-${BITS}-bit-r%release.exe
 
       rm $RPM_BUILD_ROOT/winbareos-%version-$flavor-${BITS}-bit-r%release-unsigned.exe
 
@@ -631,7 +651,7 @@ done
 #{_mingw64_bindir}
 
 %changelog
-# rpmbuild -bb winbareos-nsi-release.spec
+# rpmbuild -bb winbareos-nsi.spec
 ```
 
 缺失包:
@@ -2511,6 +2531,11 @@ pool覆盖逻辑在`core/src/dird/job.cc#ApplyPoolOverrides`, 可以让其直接
 
 ### joglog: `Storage daemon didn't accept Device "FifoStorage" command`
 job运作中bareos sd被重启了.
+
+### `vmware_cbt_tool.py`报`cannot import name 'SmartConnectNoSSL'`
+高版本PyVim删除了SmartConnectNoSSL, 仅保留SmartConnect.
+
+用最新版本[vmware_cbt_tool.py](https://github.com/bareos/bareos/blob/master/core/src/vmware/vmware_cbt_tool/vmware_cbt_tool.py)或手动修正vmware_cbt_tool.py.
 
 ### 修改Director邮件发送命令
 参考:

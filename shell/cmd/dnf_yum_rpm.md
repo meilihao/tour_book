@@ -170,6 +170,25 @@ rehat开发的包管理软件, 已被dnf取代.
 # yum localinstall *.rpm
 ```
 
+# zypper
+配置文件在`/etc/zypp`
+repo:
+- `https://download.opensuse.org/repositories/`
+- `https://mirrors.opensuse.org/`
+- `http://download.opensuse.org/update/12.3/`
+- `http://download.opensuse.org/distribution/12.3/repo/oss/`
+
+```bahs
+# zypper lr # list resp
+# zypper modifyrepo -d openSUSE-12.3-1.7 # 禁用repo openSUSE-12.3-1.7
+# zypper refresh # 刷新repo
+# zypper info [ --requires] rpm-build # requires显示依赖项
+# zypper se --requires mingw64-libqt5-qtbase # 哪个包使用了mingw64-libqt5-qtbase
+# zypper --no-gpg-checks install ./mingw64-winbareos-21.1.2-0.noarch.rpm # 跳过签名检查
+# zypper install rpm-build # 安装软件
+# zypper lifecycle libopenssl1_0_0
+```
+
 # rpmlint
 检查rpm spec 的信息，给予提示以及改进，同时也支持对于rpm 文件处理. 比如rpmlint 会在将 ELF 以外的文件保存至 /usr/lib 目录时返回警告.
 
@@ -277,23 +296,6 @@ scripts section:
 %doc %{src_dir}/Docs/ChangeLog                      ← 表明这个是文档
 %attr(644, root, root) %{_mandir}/man8/mysqld.8*    ← 分别是权限，属主，属组
 %attr(755, root, root) %{_sbindir}/mysqld
-```
-
-## zypper
-配置文件在`/etc/zypp`
-repo:
-- `https://download.opensuse.org/repositories/`
-- `https://mirrors.opensuse.org/`
-- `http://download.opensuse.org/update/12.3/`
-- `http://download.opensuse.org/distribution/12.3/repo/oss/`
-
-```bahs
-# zypper lr # list resp
-# zypper modifyrepo -d openSUSE-12.3-1.7 # 禁用repo openSUSE-12.3-1.7
-# zypper refresh # 刷新repo
-# zypper info rpm-build
-# zypper --no-gpg-checks install ./mingw64-winbareos-21.1.2-0.noarch.rpm # 跳过签名检查
-# zypper install rpm-build # 安装软件
 ```
 
 ## FAQ

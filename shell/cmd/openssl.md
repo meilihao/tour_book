@@ -31,3 +31,14 @@ This is a test email.
 ```bash
 # openssl rsautl -inkey my_private_key -decrypt -oaep -in my_encrypted_file # default is PKCS#1 v1.5
 ```
+
+## pkcs12
+ref:
+- [使用 OpenSSL 生成自签名证书](https://www.ibm.com/docs/zh/api-connect/2018.x?topic=overview-generating-self-signed-certificate-using-openssl)
+
+```bash
+openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 365 -out certificate.pem
+openssl x509 -text -noout -in certificate.pem # 检查已创建的证书
+openssl pkcs12 -inkey key.pem -in certificate.pem -export -out certificate.p12 # 将密钥和证书组合在 PKCS#12 (P12) 中, 此过程需要输入密码
+openssl pkcs12 -in certificate.p12 -noout -info # 验证P12 文件
+```
