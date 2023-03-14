@@ -195,12 +195,22 @@ ref:
 
 官方bareos windows client使用nsis打包, 可用`Easy 7-Zip`解压, 部分缺失文件可从这里提取
 
+配置替换字符串逻辑:
+1. 收集变量, 将变量改下成sed命令写入`C:\ProgramData\Bareos\configure.sed`
+1. 通过bareos-config-deploy.bat对文件应用configure.sed: `nsExec::ExecToLog '"$INSTDIR\bareos-config-deploy.bat" "$INSTDIR\defaultconfigs" "$APPDATA\${PRODUCT_NAME}"'`
+
 ##### by linux
 by [`core/platforms/win32/winbareos-nsi.spec`](https://github.com/bareos/bareos/blob/master/core/platforms/win32/winbareos-nsi.spec)
 
 ~~根据mingw64-libdb-devel在[rpm.pbone.net](http://rpm.pbone.net)的信息, 推测官方使用了opensuse 12.x构建bareos windows client. [Building Windows client from source](https://groups.google.com/g/bareos-devel/c/GEXnhQp9y00)也佐证使用了SUSE. 同时根据`mingw64-cross-pkg-config/mingw64-libgcc`未在[`windows:/mingw:/win64/openSUSE_Leap_15.4/x86_64/`](http://download.opensuse.org/repositories/windows:/mingw:/win64/openSUSE_Leap_15.4)上找到, 但[`windows:/mingw:/win64/openSUSE_12.3`](http://ftp.pbone.net/mirror/ftp5.gwdg.de/pub/opensuse/repositories/windows:/mingw:/win64/openSUSE_12.3/noarch/)上有, 也可验证是使用opensuse 12.x~~
 
-**需用opensuse 15.4**, 此时mingw64-libqt5-qtbase依赖openssl 1.0与官方使用openssl 1.1不符.
+**需用opensuse 15.4**, 此时mingw64-libqt5-qtbase依赖openssl 1.0与官方使用openssl 1.1不符. 官方使用了[SLES + 私有构建服务(`we build using a private instance of
+https://openbuildservice.org, on SLES`)](https://groups.google.com/g/bareos-devel/c/GEXnhQp9y00)
+
+实际结果: 能备份, 还原, 可能问题:
+1. 部分配置的路径包含`/usr/x86_64-w64-mingw32`
+
+吐槽: mingw64-libqt5-qtbase依赖openssl 1.0, 安装mingw64-openssl时又是默认选1.1的
 
 存在未知来源的package: bareos-addons. [bareos-addons is more tricky, as it contains MS header files. Its license don't allow redistribution, so you have to collect them yourself from MS.](https://groups.google.com/g/bareos-devel/c/GEXnhQp9y00), 根据实际编译报错和帖子中的提示, bareos-addons应是包含`SQL Server 2005 Virtual Backup Device Interface (VDI) Specification`和`VSSSDK72`相关的头文件和lib.
 
@@ -297,13 +307,21 @@ ref:
 # cp /bareos-21.1.2/core/platforms/win32{winbareos.nsi,clientdialog.ini,directordialog.ini,storagedialog.ini,bareos.ico,databasedialog.ini} /usr/src/packages/SOURCES
 # 下载[mingw32-cross-nsis-3.08-1.187.src.rpm](https://software.opensuse.org/download.html?project=windows%3Amingw%3Awin32&package=mingw32-cross-nsis), 再根据[Special Builds](https://nsis.sourceforge.io/Special_Builds)追加`NSIS_CONFIG_LOG=yes`以开启nsis的log功能.
 # vim /usr/src/packages/SOURCES/winbareos.nsi
-- File "libQt5Core.dll"
-- File "libQt5Gui.dll"
-- File "libQt5Widgets.dll"
-- File "libqwindows.dll"
-- File "libhistory6.dll"
-- File "libreadline6.dll"
+- `File "libQt5Core.dll"`
+- `File "libQt5Gui.dll"`
+- `File "libQt5Widgets.dll"`
+- `File "libqwindows.dll"`
+- `File "libhistory6.dll"`
+- `File "libreadline6.dll"`
+- `Delete "$INSTDIR\libhistory6.dll"`
+- `Delete "$INSTDIR\libreadline6.dll"`
+- `Delete "$INSTDIR\libQt5Core.dll"`
+- `Delete "$INSTDIR\libQt5Gui.dll"`
+- `Delete "$INSTDIR\libQt5Widgets.dll"`
+- `Section "File Daemon and base libs" SEC_FD`节追加libz.dll
+- 在`Delete "$INSTDIR\zlib1.dll"`后追加`Delete "$INSTDIR\libz.dll"`
 - 如果已重新构建mingw32-cross-nsis则忽略该行, 否则注释所有LogSet和LogText行, 因为mingw32-cross-nsis `NSIS_CONFIG_LOG not defined`即本身编译时没开日志功能
+- 官方sed.exe依赖iconv.dll, 自编译依赖libiconv.dll, libiconv.dll实际就是iconv.dll, 拷贝一份即可.
 - ~~删除webui~~, **不能删除**, 可用[`Easy 7-Zip(windows)解压官方exe提取`. 起先我因为没有php.ini就直接删除了winbareos-nsi.spec php片段和winbareos.nsi如下的webui片段, 最终导致构建出的exe报`Installer corrupted: invalid opcode`
  
   ```
@@ -512,6 +530,7 @@ for flavor in %{flavors}; do
       libpcre-1.dll \
       libbz2-1.dll \
       libssp-0.dll \
+      libz.dll \
    ; do
       #cp %{_mingw32_bindir}/$file $RPM_BUILD_ROOT/$flavor/release32
       cp %{_mingw64_bindir}/$file $RPM_BUILD_ROOT/$flavor/release64
@@ -740,6 +759,27 @@ done
 - `'inet_pton' was not declared in this scope`
 
     同上, 也在`arpa/inet.h`
+- bareos-fd执行报缺libz.dll
+
+    根据windows服务查看可得`bareos-fd.exe /service`为启动服务, 官方Dependencies对比bareos-fd.exe依赖, 官方使用了zlib1.dll(mingw64-tcl), 而自编译是libz.dll(mingw64-libz)
+
+    解决方法: 修改winbareos-nsi.spec和winbareos.nsi追加libz.dll
+
+    > 根据`winbareos.nsi`, `bareos-fd.exe /install`为安装服务
+- 执行`winbareos-nsi.spec`里的`openssl.exe rand -base64 33`报`crypto/fips/fips.c(597): OpenSSL internal error: FATAL FIPS SELFTEST FAILURE`
+
+    openssl.exe from mingw64-openssl-1_1
+
+    原因: FIPS 已启用, 但未安装用户模式的 FIPS 包
+
+    linux:
+    ```bash
+    cat /proc/sys/crypto/fips_enabled shows 1
+    cat /proc/cmdline includes fips=1
+    ```
+
+    ref:
+    - [Fatal FIPS Selftest Failures](https://www.suse.com/support/kb/doc/?id=000018558)    
 
 ##### by windows
 ref:

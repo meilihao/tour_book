@@ -6,3 +6,6 @@
 
 ### 查看dll依赖
 - [lucasg/Dependencies](https://zhuanlan.zhihu.com/p/395557318)
+
+	需要.net framework>=4.6.2
+- `git for windows`里的ldd

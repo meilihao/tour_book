@@ -37,7 +37,9 @@ ref:
 # 7z e winbareos-21.0.0-release-64-bit.exe # 解压出来没有目录层级
 ```
 
-或使用[Universal Extractor 2](https://github.com/Bioruebe/UniExtract2)
+或使用[Universal Extractor 2](https://github.com/Bioruebe/UniExtract2)或[7-Zip](https://sourceforge.net/projects/sevenzip/files/7-Zip/15.05/)
+
+`7-Zip 15.05`可提取安装文件的nsi配置.
 
 ## FAQ
 ### 制作bin
