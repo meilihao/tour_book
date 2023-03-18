@@ -509,3 +509,18 @@ env: rocksdb.spec from [fedora 36](https://src.fedoraproject.org/rpms/rocksdb), 
 ### 重新打包rpm
 ref:
 - [修改rpm中的文件重新打包](https://www.cnblogs.com/felixzh/p/10564895.html)
+
+### rpmbuild报`Couldn't exec %{_mingw64_findprovides}: No such file or directory`
+ref:
+- [Building an RPM](https://docs.oracle.com/en/operating-systems/oracle-linux/6/porting/ch10s01s03.html)
+
+bareos winbareos-nsi.spec:
+```
+...
+%define __find_provides %{_mingw64_findprovides}
+...
+```
+
+通过`cd /usr/lib/rpm && grep -r "mingw64_findprovides"`对比正常构建环境和失败环境(通过拷贝正常环境的x86_64-w64-mingw32而非安装mingw64得到), 发现是失败环境的`/usr/lib/rpm/macros.d/macros.mingw64`中少了`%_mingw64_findprovides    /usr/lib/rpm/mingw64-find-provides.sh`
+
+应该是少安装了某个包来添加`_mingw64_findprovides`的定义或安装的mingw64-filesystem版本差异导致

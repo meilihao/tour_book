@@ -34,12 +34,12 @@ ref:
 
 ```bash
 # zypper install p7zip-full
-# 7z e winbareos-21.0.0-release-64-bit.exe # 解压出来没有目录层级
+# 7z x winbareos-21.0.0-release-64-bit.exe # 用`e`解压出来会没有目录层级
 ```
 
 或使用[Universal Extractor 2](https://github.com/Bioruebe/UniExtract2)或[7-Zip](https://sourceforge.net/projects/sevenzip/files/7-Zip/15.05/)
 
-`7-Zip 15.05`可提取安装文件的nsi配置.
+`7-Zip 15.05`可提取安装文件的nsi配置(即compiled scriptcode).
 
 ## FAQ
 ### 制作bin

@@ -196,8 +196,8 @@ ref:
 官方bareos windows client使用nsis打包, 可用`Easy 7-Zip`解压, 部分缺失文件可从这里提取
 
 配置替换字符串逻辑:
-1. 收集变量, 将变量改下成sed命令写入`C:\ProgramData\Bareos\configure.sed`
-1. 通过bareos-config-deploy.bat对文件应用configure.sed: `nsExec::ExecToLog '"$INSTDIR\bareos-config-deploy.bat" "$INSTDIR\defaultconfigs" "$APPDATA\${PRODUCT_NAME}"'`
+1. 收集变量, 将变量改写成sed命令写入`C:\ProgramData\Bareos\configure.sed`
+1. 通过bareos-config-deploy.bat对配置应用configure.sed: `nsExec::ExecToLog '"$INSTDIR\bareos-config-deploy.bat" "$INSTDIR\defaultconfigs" "$APPDATA\${PRODUCT_NAME}"'`
 
 ##### by linux
 by [`core/platforms/win32/winbareos-nsi.spec`](https://github.com/bareos/bareos/blob/master/core/platforms/win32/winbareos-nsi.spec)
@@ -206,6 +206,8 @@ by [`core/platforms/win32/winbareos-nsi.spec`](https://github.com/bareos/bareos/
 
 **需用opensuse 15.4**, 此时mingw64-libqt5-qtbase依赖openssl 1.0与官方使用openssl 1.1不符. 官方使用了[SLES + 私有构建服务(`we build using a private instance of
 https://openbuildservice.org, on SLES`)](https://groups.google.com/g/bareos-devel/c/GEXnhQp9y00)
+
+**mingw32-filesystem需用mingw32-filesystem-20221115, 而不是mingw64-filesystem-20230309及以上**. 因为20230309版的`/usr/lib/rpm/macros.d/macros.mingw64-cmake`的`_mingw64_cmake`有变化(多了一层build目录), 会导致winbareos64.spec编译bareos失败
 
 实际结果: 能备份, 还原, 可能问题:
 1. 部分配置的路径包含`/usr/x86_64-w64-mingw32`
@@ -288,8 +290,7 @@ ref:
 # ln -s winxp WinXP
 # ln -s win2003 Win2003
 # cd ../lib/pkgconfig # 修复pc配置的prefix, 不知道为什么python3/egl.pc/glesv2.pc的prexfix是错误的
-# rpmbuild -bb winbareos64.spec
-
+# rpmbuild -bb winbareos64.spec # 生成mingw64-winbareos-21.1.2-0.noarch.rpm, mingw64-winbareos-release-21.1.2-0.noarch.rpm(构建出的文件)
 # wget https://download.opensuse.org/repositories/Base:/System/openSUSE_Factory/src/osslsigncode-2.3.0-22.36.src.rpm
 # zypper install autoconf automake libgsf-devel openssl-devel libcurl-devel
 # rpmbuild --rebuild osslsigncode-2.3.0-22.36.src.rpm
@@ -299,13 +300,17 @@ ref:
 # mkdir -p /usr/lib/windows/nssm/
 # cp -r nssm-2.24/* /usr/lib/windows/nssm/
 # cd /usr/src/packages/BUILD
-# wget https://github.com/aleab/toastify/blob/master/InstallationScript/Plugins/x86-ansi/KillProcWMI.dll
+<!-- # wget https://github.com/aleab/toastify/blob/master/InstallationScript/Plugins/x86-ansi/KillProcWMI.dll
 # 下载[AccessControl.dll](https://www.dll4free.com/accesscontrol.dll.html)
 # scp AccessControl.dll aliyun:/usr/src/packages/BUILD
 # 下载[LogEx.dll](https://nsis.sourceforge.io/LogEx_plug-in)
-# scp LogEx.dll aliyun:/usr/src/packages/BUILD
-# cp /bareos-21.1.2/core/platforms/win32{winbareos.nsi,clientdialog.ini,directordialog.ini,storagedialog.ini,bareos.ico,databasedialog.ini} /usr/src/packages/SOURCES
+# scp LogEx.dll aliyun:/usr/src/packages/BUILD -->
+# 从官方exe安装包解压提取KillProcWMI.dll, AccessControl.dll, LogEx.dll
+# cp /bareos-21.1.2/core/platforms/win32{winbareos.nsi,clientdialog.ini,directordialog.ini,storagedialog.ini,bareos.ico,databasedialog.ini} /usr/src/packages/SOURCES # winbareos.nsi使用了这些文件, 比如clientdialog.ini是选择安装filedaemon时配置其参数的窗口中的提示文案
 # 下载[mingw32-cross-nsis-3.08-1.187.src.rpm](https://software.opensuse.org/download.html?project=windows%3Amingw%3Awin32&package=mingw32-cross-nsis), 再根据[Special Builds](https://nsis.sourceforge.io/Special_Builds)追加`NSIS_CONFIG_LOG=yes`以开启nsis的log功能.
+# zypper install gcc-c++ mingw32-cross-binutils mingw32-cross-gcc mingw32-cross-gcc-c++ mingw32-zlib-devel scons 
+# rpmbuild -bb mingw32-cross-nsis.spec
+# 原生mingw32-cross-nsis构建exe时报`NSIS_CONFIG_LOG not defined`, 即本身编译时没开日志功能. **且注释或删除winbareos.nsi中 所有LogSet和LogText行会导致无论原生还是自构建的mingw32-cross-nsis生成的exe运行时会报`Installer corrupted: invalid opcode`**, 这可能与使用了nsis plugin:LogEx.dll有关.
 # vim /usr/src/packages/SOURCES/winbareos.nsi
 - `File "libQt5Core.dll"`
 - `File "libQt5Gui.dll"`
@@ -320,7 +325,6 @@ ref:
 - `Delete "$INSTDIR\libQt5Widgets.dll"`
 - `Section "File Daemon and base libs" SEC_FD`节追加libz.dll
 - 在`Delete "$INSTDIR\zlib1.dll"`后追加`Delete "$INSTDIR\libz.dll"`
-- 如果已重新构建mingw32-cross-nsis则忽略该行, 否则注释所有LogSet和LogText行, 因为mingw32-cross-nsis `NSIS_CONFIG_LOG not defined`即本身编译时没开日志功能
 - 官方sed.exe依赖iconv.dll, 自编译依赖libiconv.dll, libiconv.dll实际就是iconv.dll, 拷贝一份即可.
 - ~~删除webui~~, **不能删除**, 可用[`Easy 7-Zip(windows)解压官方exe提取`. 起先我因为没有php.ini就直接删除了winbareos-nsi.spec php片段和winbareos.nsi如下的webui片段, 最终导致构建出的exe报`Installer corrupted: invalid opcode`
  
@@ -337,12 +341,14 @@ ref:
 # vim mingw-debugsrc-devel.spec
 - `Version:        21.1.2`
 - `Source0:        bareos-%{version}.tar.gz`
-# rpmbuild -bb mingw-debugsrc-devel.spec
+# rpmbuild -bb mingw-debugsrc-devel.spec # 生成mingw-debugsrc-devel-21.1.2-0.noarch.rpm(bareos源码)
 # zypper --no-gpg-checks install /usr/src/packages/RPMS/noarch/mingw-debugsrc-devel-21.1.2-0.noarch.rpm
 # 参考[pkcs12](/shell/cmd/openssl.md)创建pkcs12证书, osslsigncode会用到
 # cp certificate.p12 /usr/src/packages/BUILD/ia.p12
 # cp certificate.pem /usr/src/packages/BUILD/certificate.pem
 # echo "123456" > /usr/src/packages/BUILD/signpassword # 创建ia.p12用到的密码
+# wget https://download.bareos.org/bareos/release/21/openSUSE_Leap_15.3/x86_64/bareos-webui-21.0.0-4.x86_64.rpm # from `https://download.bareos.org/bareos/release/21/openSUSE_Leap_15.3/x86_64/`
+# zypper install ./bareos-webui-21.0.0-4.x86_64.rpm
 # vim winbareos-nsi.spec
 %define __strip %{_mingw64_strip}
 %define __objdump %{_mingw64_objdump}
@@ -536,6 +542,8 @@ for flavor in %{flavors}; do
       cp %{_mingw64_bindir}/$file $RPM_BUILD_ROOT/$flavor/release64
    done
 
+
+   cp %{_mingw64_bindir}/iconv.dll  $RPM_BUILD_ROOT/$flavor/release64/libiconv.dll
 
    #cp %{_mingw32_libdir}/qt5/plugins/platforms/qwindows.dll  $RPM_BUILD_ROOT/$flavor/release32
    cp %{_mingw64_libdir}/qt5/plugins/platforms/libqwindows.dll  $RPM_BUILD_ROOT/$flavor/release64
@@ -779,7 +787,31 @@ done
     ```
 
     ref:
-    - [Fatal FIPS Selftest Failures](https://www.suse.com/support/kb/doc/?id=000018558)    
+    - [Fatal FIPS Selftest Failures](https://www.suse.com/support/kb/doc/?id=000018558)
+- 修改了winbareos.nsi的PRODUCT_NAME发现Installer的路径不变
+
+    之前已安装过未修改PRODUCT_NAME的exe, 推测是注册表cache导致, 因此卸载后第二天安装时发现安装路径已变化.
+    ```bash
+    !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\bareos-fd.exe"
+    !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
+    !define PRODUCT_UNINST_ROOT_KEY "HKLM" # HKLM=HKEY_LOCAL_MACHINE
+    ```
+
+    > bareos未直接定义InstallDir而是使用默认的
+- oem
+
+    - core/src/include/baconfig.h : DEFAULT_CONFIGDIR
+    - core/src/lib/parse_conf.cc : `bstrncat(szConfigDir, "\\Bareos", sizeof(szConfigDir))`
+    - core/platforms/win32/bareos-config-deploy.bat : `SET SED_SCRIPT=%ALLUSERSPROFILE%\Rorke Backup\configure.sed`
+    - core/src/win32/filed/who.h
+
+        ```c++
+        #define APP_NAME "Bareos-fd"
+        #define LC_APP_NAME "bareos-fd"
+        #define APP_DESC "Bareos File Backup Service"
+        #define SERVICE_DESC \
+          "Provides file backup and restore services (bareos client)."
+        ```
 
 ##### by windows
 ref:
@@ -2576,6 +2608,9 @@ job运作中bareos sd被重启了.
 高版本PyVim删除了SmartConnectNoSSL, 仅保留SmartConnect.
 
 用最新版本[vmware_cbt_tool.py](https://github.com/bareos/bareos/blob/master/core/src/vmware/vmware_cbt_tool/vmware_cbt_tool.py)或手动修正vmware_cbt_tool.py.
+
+### windows bareos debug
+在windows cmd中执行`"C:\Program Files\Bareos\bareos-fd.exe"/debug`
 
 ### 修改Director邮件发送命令
 参考:

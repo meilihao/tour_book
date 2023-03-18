@@ -40,3 +40,8 @@ $ldd chrome | grep 'not found'
 解决方法:
 1. 对应的so库是否存在,不存在则安装
 1. 已存在对应的so库, 则使用`sudo ldconfig -v`刷新so缓存
+
+### 执行guestfish报`libselinux.so.1: no version information available (required by xxx)`
+guestfish依赖的libselinux版本不对
+
+> readelf -d xxx.so // SONAME包含主版本

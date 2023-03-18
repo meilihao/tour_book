@@ -2,6 +2,8 @@
 参考:
 - [Minio 中文docs](https://docs.min.io/cn)
 - [Minio 的 benchmark](https://min.io/resources#benchmarks)
+- [golang 源码分析:mc,minio-go](https://www.modb.pro/db/491285)
+- [golang 源码分析 / minio](https://www.modb.pro/u/535208)
 
 MinIO 是一个基于 Apache License v2.0 开源协议的对象存储服务. 它兼容亚马逊 S3 云存储服务接口，非常适合于存储大容量非结构化的数据，例如图片、视频、日志文件、备份数据和容器/虚拟机镜像等，而一个对象文件可以是任意大小，从几 kb 到最大 5T 不等.
 
@@ -147,3 +149,15 @@ ec代码在`cmd/erasure-*.go`, 入口在`cmd/erasure-coding.go#NewErasure`
 
 ### Waiting for the first server to format the disks
 清空所有组成minio cluster的盘(包括其下的隐藏文件)再重试即可.
+
+### web直接上传到minio
+ref:
+- [TypeScript前端上传文件到MinIO](https://developer.aliyun.com/article/879981)
+- [Minio直传方案之后端实现：Spring Boot 整合 Minio 实现直传功能](https://blog.lanweihong.com/posts/20754/)
+- [Minio+vue-uploader 分片上传方案及案例详解](https://blog.csdn.net/qq_43437874/article/details/123429986)
+
+[Upload Files Using Pre-signed URLs](https://min.io/docs/minio/linux/integrations/presigned-put-upload-via-browser.html)
+
+```
+let chunks = Math.ceil(file.file.size / chunkSize); // 分片数量
+```

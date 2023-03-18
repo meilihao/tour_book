@@ -14,6 +14,12 @@ ref:
 - -e 强制用户在下次登录时修改密码
 - -S 显示用户的密码是否被锁定，以及密码所采用的加密算法名称
 
+## `/etc/shadow`
+ref:
+- [Linux /etc/shadow（影子文件）内容解析](http://c.biancheng.net/view/840.html)
+
+格式:`用户名:加密密码:最后一次修改时间:最小修改时间间隔:密码有效期:密码需要变更前的警告天数:密码过期后的宽限时间:账号失效时间:保留字段`
+
 ## FAQ
 ### `passwd xxx`报`The password contains less than 3 character classes`
 密码需要由 3 个类别（数字，小写字母，大写字母，其他）的字符组成, 由`/etc/security/pwquality.conf`的`minclass  = 3`决定, 按照`xxx`内容修改minclass即可.
@@ -39,6 +45,21 @@ chmod -w /etc/shadow
 ```
 
 其实就是先用passwd生成指定密码, 再用其替换其他环境即可.
+
+### 程序修改密码
+```go
+cmdStr:=fmt.Sprintf("echo %s:\"%s\" | chpasswd", "root", password) // chpasswd需root
+``` 
+
+> `Ubuntu不能使用passwd的`--stdin`
+
+### 批量修改密码
+```bash
+# vim pwds.txt
+test1:123456
+test2:123456
+# chpasswd < pwds.txt
+```
 
 ### 重置root密码
 1. 开机grub界面, 选中kernel, 按e进入kernel启动参数编辑页面

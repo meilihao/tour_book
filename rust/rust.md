@@ -115,7 +115,15 @@ rust语言组成:
 
         Rust 标准库中还包含一系列其他字符串类型，比如 OsString、OsStr、CString 和 CStr, 前缀(非String/非Str)对应着它们提供的所有权和可借用的字符串变体.
 
-        使用 to_string 方法从字符串字面值创建 String: `"...".to_string()` <=> `String::from("...")`.
+        使用 to_string 方法从字符串字面值创建 String: `"...".to_string()` <=> `String::from("...")` <=> `str::to_string("hello")`<=>`ToString::to_string("hello")`<=>`<str as ToString>::to_string("hello")`.
+
+        其他形式称为限定方法调用，因为它们需要指定`方法关联的类型或特型`. 最后一种带尖括号的形式，则同时指定了两者，因此称为完全限定方法调用, 比如`<str as ToString>::to_string()`.
+
+        完全限定方法调用用途:
+        1. 两个trait方法同名, 不知用哪个
+        1. 无法推断self参数的类型
+        1. 将函数本身作为参数
+        1. 在宏里调用trait方法
 
         **Rust 的字符串不支持索引**.
 
@@ -285,6 +293,8 @@ pub fn two_times_impl() -> impl Fn(i32) -> i32 {
 ```
 
 #### 格式化输出
+ref:
+- [字符串操作 - 《Rust程序设计 - 17.4 格式化值》]()
 
 打印操作由 std::fmt 里面所定义的一系列宏来处理，包括：
 - format!：将格式化文本写到字符串（String）
@@ -836,6 +846,8 @@ Rust 函数参数的类型和返回值的类型都必须显式定义, 如果没�
 #### 浮点型
 #### 布尔类型
 #### 字符类型
+ref:
+- [字符串操作 - 《Rust程序设计 - 17.3 String与str》]()
 
 char : 单个字符, 大小为四个字节(four bytes)，并代表了一个 Unicode 标量值（Unicode Scalar Value）.
 
@@ -912,6 +924,17 @@ rust指针包括 引用(reference), 原生指针(raw pointer), 函数指针(fn p
 解引用deref: 解引用会获得所有权, 解引用操作符是`*`.
 
 ### 常用集合类型
+标准集合:
+|集合|说明|其他语言中类似的集合(C++/Java/Python)|
+|Vec<T>|可增数组|vector/ArrayList/list)|
+|VecDeque<T>|双端队列（可增长环形缓冲区）|deque/ArrayDeque/collections.deque|
+|LinkedList<T>|双向链表|list/LinkedList/–|
+|BinaryHeap<T> where T: Ord|最大堆|priority_queue/PriorityQueue/heapq|
+|HashMap<K, V> where K: Eq + Hash|键 – 值散列表|unordered_map/HashMap/dict|
+|BTreeMap<K, V> where K: Ord|有序键 – 值表|map/TreeMap/–|
+|HashSet<T> where T: Eq + Hash|散列表|unordered_set/HashSet/set|
+|BTreeSet<T> where T: Ord|有序集|set/TreeSet/–|
+
 Rust 标准库中包含一系列被称为 集合（collections）的非常有用的数据结构. 大部分其他数据类型都代表一个特定的值，不过集合可以包含多个值. 不同于内建的数组和元组类型，这些集合指向的数据是储存在堆上的，这意味着数据的数量不必在编译时就已知，并且还可以随着程序的运行增长或缩小.
 
 std::collections提供了4种通用集合类型:
@@ -1087,6 +1110,7 @@ trait有4中用法:
     关联类型（associated types）是一个将类型占位符与 trait 相关联的方式，这样 trait 的方法签名中就可以使用这些占位符类型. trait 的实现者会针对特定的实现在这个类型的位置指定相应的具体类型.
     **rust很多操作符都是基于trait来实现的.**, 比如加法操作符:
     ```rust
+    // 特型 Add<T> 代表给自己的类型加上一个 T 值的能力
     pub trait Add<RHS = Self> { // `Add<RHS = Self>`表示参数类型RHS为Self, Self是每个trait都带有的隐式类型参数, 代表实现当前trait的具体类型.
         type Output; // 关联类型. Output是一个占位类型, trait的实现者会指定 Output的具体类型.
         fn add(self, rhs: RHS) -> Self::Output;
@@ -1095,6 +1119,10 @@ trait有4中用法:
     1+2 // =>`1.add(2)` 代码中出现`+`时, rust就会自动调用操作符左侧的操作数对应的add()方法去实现具体的操作, 即`+`操作与调用`add()`等价.
     // 可看rust源码为u32实现的Add trait(用宏完成的).
     ```
+
+    > RHS 是 Right Hand Side（右手边）的简写形式.
+
+    > 在 Rust 中, 表达式 lhs * rhs 是 Mul::mul(lhs, rhs) 的简写形式
 
     在语义层面上, 使用关联类型增强了trait表示行为的语义, 因为它表示了和某个行为(trait)相关联的类型. 在工程上, 也体现出了高内聚的特点.
 
@@ -1127,6 +1155,15 @@ trait有4中用法:
     fn some_function<T, U>(t: T, u: U) -> i32 // 等价于同上
     where T: Display + Clone,
           U: Clone + Debug
+    ```
+
+    ```rust
+    use std::fmt::Debug;
+    fn dump<I>(iter: I)
+        where I: Iterator, I::Item: Debug // =  I: Iterator<Item=String>
+    {
+        ...
+    }
     ```
 
     ```rust
@@ -1186,6 +1223,10 @@ trait有4中用法:
 
     Sized 特征是一种标记性特征，用于表示编译期已知大小的类型, 并且可以将该类型的实例放在栈上.
 
+    > Rust 中另一个常见的非固定大小类型是对特型目标的引用. Rust 不能在变量中存储非固定大小的值，也不能将它们作为参数传递, 比如只能通过 &str 或 Box<Write> 这样本身是固定大小的指针来使用它们.
+
+    > `?Sized`表示不一定是 Sized
+
 rust规定函数在参数传递, 返回值传递中类型必须是编译阶段可确定大小的, 而trait的大小在编译时是不固定的, 因此它无法作为实例变量, 参数, 返回值, 这与go的interface不同.
 
 特性做返回值:
@@ -1213,6 +1254,9 @@ impl<T: B + C> A<T> { // 声明了 A<T> 类型必须在 T 已经实现 B 和 C �
 - std::ops 模块的 Add : 允许使用`+`运算符将两个复数相加。
 - std::convert 模块的 Into 和 From : 使用户能够根据其他类型创建复数类型。
 - Display : 使用户能够输出人类可读版本的复数类型
+
+
+Rust 标准库针对输入和输出的特性是通过 3 个特型，即 Read、BufRead 和 Write, 见[字符串操作 - 《Rust程序设计 - 18 输入与输出》]()
 
 ### 宏
 宏语句可以使用圆括号, 中括号, 花括号, 一般使用中括号表示数组.
@@ -1356,12 +1400,18 @@ fn main() {
     Rust会尽可能地降低程序的运行成本, 所以默认情况下, 长度较大的数据存放在堆中, 且采用移动的方式进行数据交互.
 
     > 在 match 表达式中，移动类型默认也会被移动.
-1. clone
+1. Clone
 
     克隆仅在需要复制的情况下使用, 毕竟复制数据会花费更多的时间.
     由于其运行时消耗，许多 Rustacean 之间有一个趋势是倾向于避免使用 clone 来解决所有权问题.
 
+    Clone的返回类型是 Self，而且函数不可能返回非固定大小的值，所以 Clone 特型本身扩展了 Sized 特型。这样就具有了将实现的 Self 类型绑定为 Sized 的效果.
+
+    克隆一个值通常涉及创建该值所拥有一切内容的副本及分配内存，因此 clone 无论在时间消耗还是内存占用方面都可能比较昂贵.
+
 Copy是一种自动化特征，大多数堆栈上的数据类型都自动实现了它. 它通常用于数据完全在栈上的变量的复制, 比如基元类型和不可变引用(&T); 否则Copy开销很大, 因为它需要从堆中复制数据. Copy 特征复制类型的方式与 C 语言中的 memcpy 函数类似，后者用于按位复制值。默认情况下不会为自定义类型实现 Copy 特征，因为 Rust 希望显式指定复制操作，并且要求开发人员必须选择实现该特征. 没有实现 Copy 特征的类型包括`Vec<T>、 String 和可变引用`等.
+
+> 任何实现 Drop 特型的类型不能是 Copy。Rust 认为如果一个类型需要特殊的清理代码，那就一定需要特殊的复制代码，因此不能是 Copy
 
 > 有一条经验规则，就是任何在值被清除后需要特殊处理的类型都不能是 Copy 类型。比如，Vec 需要释放其元素， File 需要关闭其文件勾柄，而 MutexGuard 需要解锁其互斥量。
 
@@ -1904,6 +1954,8 @@ Rust 的 闭包（closures）是可以保存进变量或作为参数传递给其
 如果要实现FnMut，就必须实现FnOnce
 如果要实现FnOnce，就不需要实现FnMut和Fn
 
+实际上，Fn() 是 FnMut() 的子特型，而 FnMut() 又是 FnOnce() 的子特型。于是 Fn 就成了最专一且最强大的类别。FnMut 和 FnOnce 则是包含使用限制的更广泛的类别.
+
 由于所有闭包都可以被调用至少一次，所以所有闭包都实现了 FnOnce. 那些并没有移动被捕获变量的所有权到闭包内的闭包也实现了 FnMut, 而不需要对被捕获的变量进行可变访问的闭包则也实现了 Fn.
 
 如果希望强制闭包获取其使用的环境值的所有权, 可以在参数列表前使用 **move 关键字. 这个技巧在将闭包传递给新线程以便将数据移动到新线程中时最为实用**.
@@ -2013,6 +2065,8 @@ Intoiter可以使用into_iter之类的方法来获取一个迭代器. into_iter�
 - `&'a mut [T] => 没有为[T]类型`实现IntoIterator
 
 ### 迭代器适配器
+Iterator 特型就会提供大量可供选择的适配器方法，或简称适配器（adapter）.
+
 通过适配器模式可以将一个接口转换成所需要的另一个接口. 适配器模式能够使得接口不兼容的类型在一起工作. 适配器也叫包装器(Wrapper).
 
 迭代器适配器，都定义在std::iter模块中：
@@ -2023,9 +2077,28 @@ Intoiter可以使用into_iter之类的方法来获取一个迭代器. into_iter�
 - Enumerate ：创建一个包含计数的迭代器，它返回一个元组（i,val），其中i是usize类型，为迭代的当前索引，val是迭代器返回的值。
 - Filter ：创建一个机遇谓词判断式过滤元素的迭代器。
 - FlatMap ：创建一个类似Map的结构的迭代器，但是其中不会包含任何嵌套。
-- FilterMap ：相当于Filter和Map两个迭代器一次使用后的效果。
+- FilterMap ：相当于Filter和Map两个迭代器一次使用后的效果. 它允许闭包在迭代过程中要么转换项（像 map 那样），要么删除项
 - Fuse ：创建一个可以快速遍历的迭代器。在遍历迭代器时，只要返回过一次None，那么之后所有的遍历结果都为None。该迭代器适配器可以用于优化。
 - Rev ：创建一个可以反向遍历的迭代器
+- Scan: 类似于 map，区别在于它会传给闭包一个可修改的值，而且可以选择提前终止迭代
+- take 和 take_while : 用于在取得一定项数之后或闭包决定中断时终止迭代
+
+    - take 迭代器在产生最多 n 项后返回 None
+    - take_while 迭代器对每一项应用 predicate，在遇到第一个 predicate 返回 false 的项时返回None，后续每次调用 next 也都返回 None
+- skip 和 skip_while : 是对 take 和 take_while 的补充，它们从迭代开始清除一定数量的项，或者一直清除到闭包发现一个可以接受的项，然后将剩余项原封不动返回
+
+    - skip_while 适配器使用闭包来决定清除序列开头的多少项
+- peekable : 可以让代码在不消费下一项的情况下探测下一项
+- fuse : 可以将任何适配器转换为第一次返回 None 之后始终继续返回 None 的迭代器
+- zip : 将两个适配器组合为一个适配器，产生之前两个迭代器项的项对，就像拉链把分开的两边拼在一起一样
+
+    ```rust
+    let v: Vec<_> = (0..).zip("ABCD".chars()).collect();
+    assert_eq!(v, vec![(0, 'A'), (1, 'B'), (2, 'C'), (3, 'D')]);
+    ```
+- inspect : 可以方便地用于迭代器适配器管道的调试
+- cloned : 将一个产生引用的迭代器转换为产生基于引用克隆的值的迭代器。自然地，引用值的类型必须实现 Clone
+- cycle : 返回一个无休止重复底层迭代器的迭代器。底层迭代器必须实现 std::clone::Clone，以便 cycle 可以保存其初始状态并在每次循环开始时重用
 
 Rust可以自定义迭代器适配器
 
@@ -2041,6 +2114,17 @@ Rust标准库std::iter::Iterator中常用的消费器：
 - `all`
 - `for_each`
 - `position`
+- max_by 和 min_by : 根据提供的自定义比较方法返回迭代器产生的最大值和最小值
+- count 方法从一个迭代器中取, 直到它返回 None，然后返回这个迭代器包含多少项
+- max 和 min : 分别返回迭代器产生项的最大值和最小值。迭代器的项类型必须实现 std::cmp::Ord，这样项与项之间才能比较
+- max_by_key 和 min_by_key : 可以根据应用到每一项的闭包选择最大或最小的项。闭包可以选择项的某个字段，或者对每一项执行某些计算
+- any 和 all : 给迭代器产生的每一项应用闭包，如果闭包对其中一项或全部项返回 true, 才返回 true
+- position : 给迭代器产生的每一项应用闭包，返回闭包返回 true 的第一项的索引。更精确地说，position 返回一个索引的 Option：如果闭包对任何项都没有返回 true，则返回None。只要闭包返回 true，position 就停止取值
+- nth : 接收一个索引值 n，然后跳过迭代器中相应的项，返回索引对应的项；如果序列在此之前结束，则返回 None
+- last : 消费每一项，直到迭代器返回 None，然后返回最后一项。如果迭代器不产生任何项，则 last 返回 None
+- find : 从迭代器中取得第一个闭包返回 true 的值，或者如果没有找到合适的项则返回None
+- extend: 如果类型实现了 std::iter::Extend 特型，那么它的 extend 方法可以将一个迭代器的项添加到集合中
+- partition : 把一个迭代器的项分成两个集合，然后使用闭包决定哪一项属于哪个集合
 
 ## 锁
 - RwLock读写锁：是多读单写锁，也叫共享独占锁. 它允许多个线程读，单个线程写。但是在写的时候，只能有一个线程占有写锁；而在读的时候，允许任意线程获取读锁。读锁和写锁不能被同时获取。
