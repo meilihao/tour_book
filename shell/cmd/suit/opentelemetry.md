@@ -321,3 +321,22 @@ systemctl start elasticsearch
 释放空间后执行`curl -XPUT -H "Content-Type: application/json" http://localhost:9200/_all/_settings -d '{"index.blocks.read_only_allow_delete": null}'`来解除索引只读状态
 
 > es存储阈值是95%, 当前是96%.
+
+### 异步trace
+ref:
+- [分布式链路追踪教程(一)---Opentracing 基本概念](https://www.lixueduan.com/posts/tracing/01-opentracing/)
+- [Opentracing概念和术语](https://wu-sheng.gitbooks.io/opentracing-io/content/pages/spec.html)
+- [Replace span relationship with a potentially remote parent context](https://github.com/open-telemetry/opentelemetry-go/pull/451/files)
+- [Go HTTP Server 基于 OpenTelemetry 使用 Jaeger - 代码实操](https://xie.infoq.cn/article/1ee204583dae4fa8c14a9946f)
+- [OpenTelemetry 规范阅读](https://jckling.github.io/2021/04/02/Jaeger/OpenTelemetry%20%E8%A7%84%E8%8C%83%E9%98%85%E8%AF%BB/)
+- [Sync and Async children (FOLLOWS_FROM)](https://github.com/open-telemetry/opentelemetry-specification/issues/65)
+- [Links between spans](https://github.com/open-telemetry/opentelemetry-specification/blob/main/specification/overview.md#links-between-spans)
+- [How to trace two asynchronous go routines with open telemetry](https://stackoverflow.com/questions/70438619/how-to-trace-two-asynchronous-go-routines-with-open-telemetry)
+
+Opentracing 定义了两种引用关系:ChildOf和FollowFrom:
+- ChildOf: 父span的执行依赖子span的执行结果时, 此时子span对父span的引用关系是ChildOf. 比如对于一次RPC调用, 服务端的span（子span）与客户端调用的span（父span）是ChildOf关系.
+- FollowFrom：父span的执不依赖子span执行结果时, 此时子span对父span的引用关系是FollowFrom. FollowFrom常用于异步调用的表示, 例如消息队列中consumerspan与producerspan之间的关系.
+
+opentelemetry使用Link描述该引用关系.
+
+opentelemetry-go使用ContextWithRemoteSpanContext实现该效果.

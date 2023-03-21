@@ -189,9 +189,7 @@ DAEMON_GROUP = root
 #### windows
 ref:
 - [mingw64](https://packages.msys2.org/repos)
-- [msys2 Environments选择](https://www.msys2.org/docs/environments/)
-
-    UCRT在构建时和运行时比 MSVC 的兼容性更好, 但它仅默认在 Windows 10 及以上提供.
+- [msys2](/shell/cmd/suit/msys2.md)
 
 官方bareos windows client使用nsis打包, 可用`Easy 7-Zip`解压, 部分缺失文件可从这里提取
 
@@ -2611,6 +2609,39 @@ job运作中bareos sd被重启了.
 
 ### windows bareos debug
 在windows cmd中执行`"C:\Program Files\Bareos\bareos-fd.exe"/debug`
+
+### windows配置数据加密后bareos-fd.exe启动报错: `Failed to load public certificate for File daemon`
+结合windows 应用日志的`Unable to open certificate file`和源码的`core/src/lib/crypto_openssl.cc#CryptoKeypairLoadCert()`是openssl的BIO_new_file报错了, 推测是其不支持windows路径的问题.
+
+```c
+# cat t.c
+#include <openssl/pem.h>
+#include <openssl/err.h>
+
+int main(int argc, char **argv)
+    {
+    BIO *in = NULL;
+    OpenSSL_add_all_algorithms();
+    ERR_load_crypto_strings();
+    /* Open compressed content */
+    in = BIO_new_file("xxx.pem", "r"); // xxx.pem是bareos-fd使用`PKI Keypair`
+    if (in)
+            fprintf(stdout, "load pem done\n");
+    if (!in)
+        {
+            fprintf(stderr, "load pem failed\n");
+            ERR_print_errors_fp(stderr);
+        }
+    return 0;
+}
+# gcc -lcrypto t.c # 正常
+# x86_64-w64-mingw32-gcc -lcrypto t.c # 报错. 手动指定`-I /usr/x86_64-w64-mingw32/sys-root/mingw/include -L /usr/x86_64-w64-mingw32/sys-root/mingw/lib`也报错; 加`-v`后发现mingw64 lib已引入
+/usr/lib64/gcc/x86_64-w64-mingw32/12.2.0/../../../../x86_64-w64-mingw32/bin/ld: /tmp/ccOW4gKX.o:t.c:(.text+0x60): undefined reference to `OPENSSL_add_all_algorithms_noconf'
+/usr/lib64/gcc/x86_64-w64-mingw32/12.2.0/../../../../x86_64-w64-mingw32/bin/ld: /tmp/ccOW4gKX.o:t.c:(.text+0x65): undefined reference to `ERR_load_crypto_strings'
+/usr/lib64/gcc/x86_64-w64-mingw32/12.2.0/../../../../x86_64-w64-mingw32/bin/ld: /tmp/ccOW4gKX.o:t.c:(.text+0x7e): undefined reference to `BIO_new_file'
+/usr/lib64/gcc/x86_64-w64-mingw32/12.2.0/../../../../x86_64-w64-mingw32/bin/ld: /tmp/ccOW4gKX.o:t.c:(.text+0xe6): undefined reference to `ERR_print_errors_fp'
+collect2: error: ld returned 1 exit status
+```
 
 ### 修改Director邮件发送命令
 参考:

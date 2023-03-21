@@ -7,6 +7,8 @@
 - [云服务器 ECS Linux SSH 基于密钥交换的自动登录原理简介及配置说明](https://help.aliyun.com/knowledge_detail/41493.html)
 - [SSH原理与运用](http://www.ruanyifeng.com/blog/2011/12/ssh_remote_login.html)
 - [Linode](https://www.linode.com/docs/networking/ssh/use-public-key-authentication-with-ssh)
+- [Google Authenticator实现SSH登陆二次验证](https://www.infvie.com/ops-notes/google-authenticator-sshd.html)
+- [Linux下使用ssh动态验证码登陆机器](https://blog.51cto.com/noodle/1831697)
 
 ## 最新
 [OpenSSH 8.2](http://www.openssh.com/txt/release-8.2)增加了[对 FIDO/U2F 硬件身份验证器的支持](https://www.debian.cn/archives/3683).
@@ -92,7 +94,7 @@ PubkeyAuthentication yes
 #指定公钥数据库文件
 #AuthorsizedKeysFile .ssh/authorized_keys
 
-PermitRootLogin no
+PermitRootLogin no # prohibit-password: 允许root以非密码方式登入, 比如key
 
 #禁用密码验证(**RSA登录成功后再禁用**)
 PasswordAuthentication no
