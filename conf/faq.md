@@ -2,6 +2,20 @@
 
 ## 上网
 
+### chrome离线下载
+`https://www.google.cn/chrome/?standalone=1&platform=win64`, 不加platform时即下载当前os对应的版本.
+
+platform:
+- win64/win : win是windows 32位
+- mac
+- linux
+
+> [测试版](https://www.google.cn/intl/zh-CN/chrome/beta/?hl=zh-CN&standalone=1), [开发者版](https://www.google.cn/intl/zh-CN/chrome/dev/?hl=zh-CN&standalone=1)
+
+> [firefox离线包](https://www.mozilla.org/zh-CN/firefox/all)
+
+> [Microsoft Edge 离线安装包](https://www.microsoft.com/zh-cn/edge/business-pages/download)
+
 ### 迅雷99永远下不完
 1. 把任务删除，但是不要删除本地文件
 2. 点击右上角的小箭头--文件--选择导入未完成下载 把原先那个.td后缀的文件导入即可（或者可以直接把这个文件拖入迅雷）,选择`继续下载`即可, 稍后就能下载完成.

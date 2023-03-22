@@ -154,10 +154,31 @@ gcc 8才开始支持'-fmacro-prefix-map'
 ### 获取编译linux内核所用的编译器信息
 `cat /proc/version`
 
-### 按照gcc 12
+### 安装gcc 12
 Ubuntu 22.04:
 ```bash
 # apt install gcc-12
 # update-alternatives --config gcc # 已有gcc配置项
 # update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 20 --slave /usr/bin/g++ g++ /usr/bin/g++-12 # 新增gcc配置项
 ```
+
+### 编译报"undefined reference to `xxx'"
+ref:
+- ["undefined reference to" 问题解决方法](https://blog.csdn.net/aiwoziji13/article/details/7330333)
+
+原因: 链接时缺少相关的库文件（.a/.so）
+
+解决方法:
+1. 追加`-I <lib_header_path> -L <lib_path> -l<lib_name>`
+1. 追加` <lib_path>`
+
+    在mingw64环境编译时常遇到该情况, 该情况下优先使用`.dll.a`再考虑`.a`
+1. 多个库文件链接顺序问题
+
+    注意库之间的依赖顺序，依赖其他库的库一定要放到被依赖库的前面
+1. 定义与实现不一致
+
+    比如在c++代码中链接c语言的库时未添加`extern "C"`
+
+### "undefined reference to `WinMain'"
+代码中不存在入口函数即main()函数

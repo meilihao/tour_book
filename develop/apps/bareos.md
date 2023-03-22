@@ -755,13 +755,18 @@ done
 - `libpq-fe.h: No such file or directory`
 
     将[mingw-w64-x86_64-postgresql-15.1-2-any.pkg.tar.zst](https://mirror.msys2.org/mingw/mingw64/mingw-w64-x86_64-postgresql-15.1-2-any.pkg.tar.zst)解压到mingw64, 并修正pc配置
-- `'inet_ntop' was not declared in this scope`
+- `'inet_ntop' was not declared in this scope`/'inet_pton' was not declared in this scope
 
   构建winbareos64.spec的debug时报错, release时正常.
 
-  inet_ntop在`arpa/inet.h`, windows没有
+  原因见[mingw.md](/shell/cmd/compile/mingw.md), inet_ntop和inet_pton需要_WIN32_WINNT>=0x0600(Windows Vista)才支持, 而bareos构建时使用了0x0500即Windows 2000.
+
+  inet_ntop在`arpa/inet.h`, windows没有.
 
   搜索发现"core/src/win32/compat/include/mingwconfig.h:/* Define to 1 if you have the `inet_ntop' function. */", 将其中的HAVE_INET_NTOP定义为0, 没有效果. 直接将`core/src/lib/address_conf.cc`中HAVE_INET_NTOP=1的条件编译删除, 编译成功
+
+
+
 - `'inet_pton' was not declared in this scope`
 
     同上, 也在`arpa/inet.h`
@@ -2641,6 +2646,7 @@ int main(int argc, char **argv)
 /usr/lib64/gcc/x86_64-w64-mingw32/12.2.0/../../../../x86_64-w64-mingw32/bin/ld: /tmp/ccOW4gKX.o:t.c:(.text+0x7e): undefined reference to `BIO_new_file'
 /usr/lib64/gcc/x86_64-w64-mingw32/12.2.0/../../../../x86_64-w64-mingw32/bin/ld: /tmp/ccOW4gKX.o:t.c:(.text+0xe6): undefined reference to `ERR_print_errors_fp'
 collect2: error: ld returned 1 exit status
+# x86_64-w64-mingw32-gcc -lcrypto t.c /usr/x86_64-w64-mingw32/sys-root/mingw/lib/libcrypto.dll.a # 手动指定libcrypto.dll.a后正常
 ```
 
 ### 修改Director邮件发送命令
@@ -2985,7 +2991,12 @@ ref:
 
 > VMware Workstation 和 VMware ESXi 的 VMware 虚拟磁盘格式是另一回事. VMware Workstation 格式的虚拟磁盘具有内置于单个 VMDK 文件中的磁盘描述符.
 
-### bareos windows还原后目标目录为空, 但该目录大小和备份原目录相近
+### bareos windows还原后目标目录为空, 但属性上该目录大小和备份原目录相近, 且有子文件
 env: bareos v21
 
 还原时选择了xxx.iso和windows的系统文件(比如`$Recycle.Bin`, `System Volume Information`等), 还原后xxx.iso不展示, 通过修改文件管理器(`查看->选项->查看->取消"隐藏受保护的操作系统文件(推荐)"和选中"显示隐藏的文件,文件夹和驱动器"`)的使其展示windows系统文件即可看到xxx.iso
+
+### lstat编码
+lstat demo在[docs/manuals/source/DeveloperGuide/api.rst](https://github.com/bareos/bareos/blob/master/docs/manuals/source/DeveloperGuide/api.rst)
+
+[DecodeStat/EncodeStat 在 core/src/lib/attribs.cc](https://github.com/bareos/bareos/blob/master/core/src/lib/attribs.cc)

@@ -213,3 +213,20 @@ $ ssh-keygen -E md5 -lf meilihao_github.pub
 ssh-keyscan -t ed25519 -p 22 xxx.com
 ```
 获取的是`/etc/ssh`下对应类型的公钥`ssh_host_${type}_key.pub`, type有rsa, ecdsa, ed25519.
+
+### xshell导入linux上生成的密钥报`用户密钥导入失败!`
+原因: 密码格式是OPENSSH PRIVATE KEY, 而xshell需要RSA PRIVATE KEY.
+
+转换命令: `ssh-keygen -p -N "" -m pem -f /path/to/key`, 转换后的内容会覆盖源文件
+
+> key(带密码)的转换: `ssh-keygen -p -P "old passphrase" -N "new passphrase" -m pem -f path/to/key`
+
+其他方法:
+```bash
+puttygen id_rsa -o id_rsa.ppk
+puttygen id_rsa.ppk -O private-openssh -o id_rsa.pem
+```
+或直接:
+```bash
+puttygen id_rsa -O private-openssh -o id_rsa.pem
+```
