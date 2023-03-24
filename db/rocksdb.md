@@ -32,6 +32,8 @@ RocksDB是一个嵌入式的K-V（任意字节流）存储. 所有的数据在�
     # make install-shared
     # ldconfig
     ```
+
+    > 编译7.10.2发现gcc-c++需要支持c++17
 1. `cd rocksdb_source_root`, 查看Makefile, 选择`make static_lib/make shared_lib`进行编译
 
     如果构建环境存在jemalloc/tcmalloc, make会通过`build_tools/build_detect_platform <platform>`将相应的环境变量存入生成的make_config.mk中, 供自身使用
@@ -380,6 +382,8 @@ SkipList Memtable，相比 HashSkipList Memtable 跨多个前缀查找的性能�
 
     这个 max_bytes_for_level_multiplier 参数对写入性能影响也是非常大的，请根据实际情况进行调整，没有一个统一的规则。
 ### Flush 和 Compaction 相关参数
+ref:
+- [RocksDB 7 终于解决了 Compaction 时性能下降问题](https://zhuanlan.zhihu.com/p/579468143)
 
 RocksDB 的后台进程中，有持续不断的 Flush 和 Compaction 操作。前者将 MemTable 的内容刷写到磁盘的 SST 文件中；后者则会对多个 SST 文件做归并和重整，删除重复值，并向更高的层级（Level）移动。例如 L0 -> L1 等。
 

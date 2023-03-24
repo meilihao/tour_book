@@ -182,3 +182,33 @@ ref:
 
 ### "undefined reference to `WinMain'"
 代码中不存在入口函数即main()函数
+
+### 编译rocksdb 7.10.2报`unrecognized command line optin '-std=c++17'`
+ref:
+- [g++: error: unrecognized '-std=c++17' (what is g++ version and how to install)](https://stackoverflow.com/questions/60336940/g-error-unrecognized-std-c17-what-is-g-version-and-how-to-install)
+- [C++ Standards Support in GCC](https://gcc.gnu.org/projects/cxx-status.html)
+- [C++ compiler support](https://en.cppreference.com/w/cpp/compiler_support)
+
+env: gcc-c++-4.8.5
+
+需要gcc-c++需要支持c++17, 至少是v5.0
+
+```bash
+yum install centos-release-scl -y # yum -y install oracle-softwarecollection-release-el7
+yum install devtoolset-11 -y
+
+# 临时覆盖系统原有的gcc引用
+scl enable devtoolset-11 bash
+gcc --version
+
+# 永久
+echo "source /opt/rh/devtoolset-11/enable" >>/etc/profile
+```
+
+C++版本   GCC版本支持情况   GCC版本   指定版本的命令标志
+C++98   完全支持    是GCC 6.1之前版本的默认模式   -std=c++98 or -std=gnu++98
+C++11   完全支持    从GCC4.8.1版本开始完全支持   -std=c++11 or -std=gnu++11
+C++14   完全支持    从GCC 6.1版本开始完全支持，是GCC 6.1到GCC 10 (包括) 的默认模式 -std=c++14 or -std=gnu++14
+C++17   完全支持    从GCC 5版本开始，到GCC 7版本，已基本完全支持。 是GCC 11版本的默认模式 -std=c++17 or -std=gnu++17
+C++20   未完全支持   从GCC 8版本开始陆续支持C++20特性   -std=c++20 or -std=gnu++20 （GCC9及以前使用-std=c++2a）
+C++23   未完全支持（标准还在发展中）  从GCC 11版本开始支持C++23特性    -std=c++2b or -std=gnu++2b

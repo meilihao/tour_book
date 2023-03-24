@@ -165,6 +165,31 @@ cp -r ../RPMS/noarch/* ../RPMS/x86_64
 ll ../RPMS/x86_64 # 所需rpms
 ```
 
+#### centos linux 8.5
+```bash
+# --- 准备环境
+yum install cmake3 rpm-build yum-utils python2 python2-rpm-macros
+yum install redhat-lsb redhat-release jannson-devel
+dnf --enablerepo=PowerTools install rpcgen
+yum-builddep bareos.spec --define "centos_version 800"
+yum-builddep python-bareos.spec --define "centos_version 800"
+# --- 开始构建
+cd /root/rpmbuild/SPECS
+# spec文件来源于[官方](http://download.bareos.org/bareos/release/21/RHEL_7/src/)
+# 修正:
+# - `droplet 0`, droplet已不在维护
+# - `# BuildRequires: lsb-release`, 没有lsb-release包. 查看Ubuntu 20.04的该包, 其提供了命令lsb_release, 但它已在oracle linux的redhat-lsb-core包里. 
+rpmbuild -bb bareos.spec --define "centos_version 800" [--define "vmware 1"] # 如果需要vmware插件
+rpmbuild -bb python-bareos.spec --define "centos_version 800"
+cp -r ../RPMS/noarch/* ../RPMS/x86_64
+ll ../RPMS/x86_64 # 所需rpms
+```
+
+可能的问题:
+1. `rpmbuild -bb bareos.spec --define "centos_version 850" --define "vmware 1"`报`cmake: symbol lookup error: cmake: undefined symbool: archive_write_add_filter_zstd`
+
+    是cmake bug, 解决方法: `yum install libarchive`或使用最新版cmake
+
 #### Ubuntu 20.04
 ref:
 - [travis.yml](https://github.com/bareos/bareos/blob/Release/21.1.2/.travis.yml)
@@ -2949,6 +2974,18 @@ gcc --version
 echo "source /opt/rh/devtoolset-9/enable" >>/etc/profile
 ```
 
+In CentOS 8.x, the Linux Software Collections (centos-release-SCL) repo is not available.
+
+centos8:
+```bash
+dnf group list
+dnf group info "Development Tools"
+dnf group install "Development Tools"
+dnf group remove "Development Tools"
+```
+
+或gcc-toolset-11-toolchain(未测试)
+
 ### bareos 21.1.2执行备份vmware vm报`Fatal error: filed/fd_plugins.cc:670 PluginSave: Command plugin "python:module_path=..." requested, but is not loaded`
 bareos-fd的client/myself.conf是`Plugin Names = "python"`, 而vmware plugin`bareos-fd-vmware.py`是python3, 因此将其改为`Plugin Names = "python3"`即可.
 
@@ -3000,3 +3037,6 @@ env: bareos v21
 lstat demo在[docs/manuals/source/DeveloperGuide/api.rst](https://github.com/bareos/bareos/blob/master/docs/manuals/source/DeveloperGuide/api.rst)
 
 [DecodeStat/EncodeStat 在 core/src/lib/attribs.cc](https://github.com/bareos/bareos/blob/master/core/src/lib/attribs.cc)
+
+### centos 8.5构建bareos 21.1.2的python-bareos.spec时`%py2_build`报`no job control`
+`yum install python2-rpm-macros`
