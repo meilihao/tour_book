@@ -697,3 +697,9 @@ cout << rocksdb::perf_context.ToString();
 > 其他场景(比如嵌入式)报该错可能是程序链接的so不存在或环境不提供某些方法.
 
 解决方法: 记录db引用count, 使用前atomic+1,defer atomic-1, 等到再count为0后再关闭
+
+### rocksdb 7.10.2报`Disk quota exceeded`后zfs fs扩容成功, 但rocksdb还是报该错
+ref:
+- [Can't auto recovery when encounter ENOSPC error from the filesystem](https://github.com/facebook/rocksdb/issues/10134)
+
+官方bug.

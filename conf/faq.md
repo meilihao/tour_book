@@ -241,3 +241,6 @@ google-chrome-stable --proxy-server="socks5://127.0.0.1:1080" // 需梯子
 
 ### sogou linux不能输入中文(已在`拼音`输入模式), 英文正常
 `rm -rf ~/.config/sogou*`, 再重启fcitx输入法即可, 推测是配置损坏.
+
+### 恢复chrome的使用自定义证书的https拦截
+打开对应的网站, 点击url左侧的"不安全"按钮, 点击"开启警告".

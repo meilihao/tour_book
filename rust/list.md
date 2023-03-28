@@ -16,6 +16,8 @@
 - [Rust Primer](https://hardocs.com/d/rustprimer)
 - [可视化 Rust 各数据类型的内存布局](https://github.com/rustlang-cn/Rustt/blob/main/Articles/%5B2022-05-04%5D%20%E5%8F%AF%E8%A7%86%E5%8C%96%20Rust%20%E5%90%84%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80.md)
 - [Rust 数据内存布局](https://rustmagazine.github.io/rust_magazine_2021/chapter_6/ant-rust-data-layout.html)
+- [Rust 程序设计语言（第二版 & 2018 edition）](https://kaisery.github.io/trpl-zh-cn/)
+- [Rust入门第一课](https://rust-book.junmajinlong.com/ch1/00.html)
 
 ## 课件
 - [陈天 · Rust 编程第一课](https://github.com/tyrchen/geektime-rust)
