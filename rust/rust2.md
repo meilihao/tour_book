@@ -142,6 +142,58 @@ rust概念层次:
 
 1. 安全内存管理层
 
+### 类型系统
+rust是强类型且类型安全的静态语言, 是显式静态类型.
+
+> 显式: 明确指定具体的类型
+
+rust同时支持静多态(参数化多态+ad-hoc多态, 即泛型和trait)和动多态, 其静多态就是一种零成本抽象.
+
+rust中一切皆表达式, 表达式皆有值, 值皆有类型 => rust中一切皆类型.
+
+除了一些基本的原生类型和复合类型, Rust还把作用域也纳入了类型系统即生命周期. 一些根本无法返回值的情况, 比如线程崩溃、 break和continue 等行为, 也都被纳入了类型系统即never 类型. 因此Rust类型系统基本囊括了编程中会遇到的各种情况, 一般情况下不会有未定义的行为出现.
+
+Rust 绝大部分类型都是在编译期可确定大小的类型（Sized Type ）, 但也有少量动态大小的类型（Dynamic Sized Type, DST ）, 比如 str 类型的字符串字面量. 针对DST, Rust 提供了引用类型, 因为引用总会有固定的且在编译期己知的大小.
+
+对于 DST 类型, Rust 有如下限制:
+- 只能通过指针来间接创建和操作 DST 类型, `＆[T]/Box<T>`可以, [T]不可以
+- 局部变量和函数参数的类型不能是 DST 类型, 因为局部变量和函数参数必须在编译阶段知道它的大小, 因为目前unsized rvalue 功能还没有实现
+- enum不能包含DST类型, struct 中只有最后一个元素 以是 DST, 其他成员不行, 如果包含有 DST 类型, 那么这个结构体也就成了 DST 类型.
+
+rust还有零大小类型(zero sized type, zst), 比如单元类型和单元结构体, 同时由该类型组成的数组大小也为零. ZST类型的特点是, 它们的值就是其本身, 运行时并不占用内存空间. 它是Sized Type的特例.
+
+> 动态大小类型(Dynamic sized type, dst)是指编译阶段无法确定占用空间的类型, 为了安全, 指向dst的指针一般是胖指针. 胖指针的设计, 避免了数组类型作为参数传递时自动退化为裸指针类型，丢失了长度信息的问题, 保证了类型安全.
+
+> `&str`是引用类型(包含指针和长度信息), 存储在栈上, str字符串是存储在堆上.
+
+> rust没有gc, 内存首先由编译器分配, rust代码被编译成llvm ir, 其中就携带了内存分配信息. 所以编译器需要事先知道类型, 才好分配合理的内存.
+
+never类型(底类型)表示永远不可能有返回值的类型, 特点:
+1. 没有值
+1. 是其他任意类型的子类型, 因此**可强制转换为其他任何类型**
+
+如果说ZST类型表示"空", 那么底类型表示"无". rust中使用`!`表示底类型.
+
+rust中有很多情况确实没有值, 但为了类型安全, 必须把这些情况纳入类型系统进行统一处理, 包括:
+1. 发散函数(diverging function)
+
+    返回类型是`!`, 表示该代码永远不会返回. 发散类型可转为任意一种类型.
+1. continue和break
+1. loop的无限循环
+1. 空枚举, 比如`enum Void{}`
+
+发散函数有:
+1. 导致线程崩溃的panic!("....")以及基于它实现的各种函数/宏, 比如unimplemented!, unreachable!
+1. 用于退出函数的`std::process::exit`, 这类函数永远没有返回值.
+
+#### 类型推导
+
+rust和go类似, 只能对局部变量/全局变量进行类型推导, 而函数签名等场景下是不允许的, 这是有意为之. 同时rust使用`as`显式转换类型.
+
+rust的类型推导强于go, 因为它支持上下文式的推导. 个人建议不要使用上下文推导而是声明时就指定类型.
+
+`xxx::<i32>()`该形式是泛型函数标注类型, `::<>`的形式称为turbofish操作符, 它通常用于在表达式中为泛型类型、函数或方法指定参数, 解决rust无法从上下文中自动推导出类型的时候.
+
 ### 语言组成
 rust组成:
 - 语言规范
@@ -738,7 +790,7 @@ type Carry = u8;
 ## 基本数据类型
 基本数据类型也叫标量类型(scalar type), 表示只能存储单个值的类型.
 
-rust有四种标量类型:整型, 浮点, 布尔, 字符型.
+rust有四种主要的标量类型:整型, 浮点, 布尔, 字符型.
 
 - bool : true, false
 - char : 单个字符, 大小为四个字节(four bytes)，并代表了一个 Unicode 标量值（Unicode Scalar Value）, 等价于go的rune. char 由单引号包裹, 不同于字符串使用双引号.
@@ -841,148 +893,35 @@ rust有四种标量类型:整型, 浮点, 布尔, 字符型.
 	str 字符串类型由两部分组成：指向字符串序列的指针和记录长度的值. 可以通过 str模块提供的 as_ptr 和len方法分别求得指针和长度.
 
 	Rust 中的字符串本质上是一段有效的 UTF8字节序列.
-- 指针
-	> 与 C 指针不同的是， Rust 引用永远不会是空值，因为在安全 Rust 代码中根本不可能产生空引用, 而且 Rust 引用默认是不可修改的.
+- 原生指针
 
-	无GC 的编程语言， C/C++以及 Rust, 对数据的组织操作有更多的自由度, 表现为:
-	- 同一个类型，某些时候可以指定它在栈上, 某些时候可以指定它在堆上. 内存分配方式可以取决于使用方式, 与类型本身无关.
-	- 既可以直接访问数据 ，也可以通过指针间接访问数据. 可以针对任何一个对象取得指向它的指针
-	- 既可以在复合数据类型中直接嵌入别的类型的实体, 也可以使用指针, 间接指向别的类型
-	- 甚至可能在复合数据类型末尾嵌入不定长数据构造出不定长的复合数据类型
+	可表示内存地址 的类型称指针. Rust 提供了多种类型的指针，包括引用(Reference)、原生指针(Raw Pointer)、函数指针(fn Pointer)和智能指针(Smart Pointer).
 
-	Rust 有不止一种指针类型, 常见的几种指针类型:
-	- `Box<T>` : 指向**在堆上分配**的类型T的, 具有所有权的指针, 有权释放内存
+	引用的本质是非空指针.
 
-    	Rust中的值默认被分配到栈内存, 可通过`Box<T>`将值装箱(在堆内存中分配). 可通过解引用来获取`Box<T>`中的T. 因为`Box<T>`的行为像引用, 并且可以自动释放内存, 因此将其称为智能指针.
+	Rust代码可分为Safe Rust和Unsafe Rust 两部分. 引用主要应用于Safe Rust. 在 Safe Rust 中, 编译器会对引用进 用检查以保证内存安全和类型安全.
 
-    	Box 类型的所有权语义取决于包装类型。如果基础类型为Copy, 那么 Box 实例将成为副本，否则默认情况下将发生移动.
+	原生指针主要用于 Unsafe Rust. 直接使用原生指针是不安全的, 比如原生指针可能指向一个Null, 或者一个己经被释放的内存地址, 因为使用原生指针的地方不在Safe Rust可控范围内, 所以需要程序员自行保证安全.
 
-    	String类型和Vec类型的值都是被分配到堆内存并返回指针的，通过将返回的指针封装来实现Deref和Drop.
+	Rust 支持两种原生指针: 不可变原生指针`*const T`和`可变原生指针*mut T`.
+- never
 
-    	```rust
-    	struct Node {
-			data: u32,
-			next: Option<Box<Node>>
-		}
-    	```
+	Rust 供了一种特殊数据类型 never即`!`. 该类型用于表示永远不可能有返回值的计算类型, 比如线程退出.
 
-    	Box<T>是指向类型为T的堆内存分配值的智能指针. 当Box<T>超出作用域范围时，将调用其析构函数，销毁内部对象，并自动释放堆中的内存.
-	- `&T` : 指向类型T的借用指针, 也称为引用, 无权释放内存, 无权写数据, 是 Copy 类型.
-
-		类似C中的`const T*`
-	- `&mnut T` : 指向类型T的mut型借用指针, 无权释放内存, 有权写数据, 不是Copy类型.
-
-		类似C中的`T*`
-	- `*const T` : 指向类型T的只读裸(即原始)指针, 没有生命周期信息, 无权写数据. 它是 Copy 类型。这类似于&T，只是它可以为空值.
-	- `*mut T` : 指向类型T的可读写裸(即原始)指针, 没有生命周期信息, 有权写数据.  它不支持 Copy 特征（ non-Copy）.
-
-	> Rust 的原始指针实际上就是 C++ 中的那种指针, 使用原始指针是不安全的，因为 Rust 不会跟踪它指向哪里.
-
-	```rust
-	fn main() {
-		// 可将引用强制转换为原始指针
-	    let a = &56;
-	    let a_raw_ptr = a as *const i32;
-	    // or
-	    let b = &mut 5634.3;
-	    let b_mut_ptr = b as *mut f64;
-	}
-	```
-
-	此之外，在标准库中还有一种封装起来的可以当作指针使用的类型, 即智能指针(smart pointer, 来自c++):
-	- `Rc<T>` : 指向类型T的引用计数指针, 共享所有权, 线程不安全
-
-	    通过clone方法共享的引用所有权称为强引用，RC<T>是强引用.
-
-	    当与一个 Rc 类型交互时，其内部会发生如下变化:
-		- 当通过调用 Clone()获取对 Rc 的一个新共享引用时， Rc 会增加其内部引用计数。Rc 内部使用 Cell 类型处理其引用计数。
-		- 当引用超出作用域时，它会对引用计数器执行递减操作。
-		- 当所有共享引用计数超出作用域时， refcount 会变成 0。 此时， Rc 上的最后一次 drop	调用会执行相关的资源清理工作
-
-		Rc<T>主要通过两种方式使用:
-		- 静态方法 Rc::new 会生成一个新的引用计数器。
-		- clone 方法会增加强引用计数并分发一个新的 Rc<T>
-
-		Rc 内部会保留两种引用：强引用（ Rc<T>）和弱引用（ Weak<T>）。二者都会维护每种类型的引用数量的计数，但是仅在强引用计数值为零时，才会释放该值. 它的弱引用可打破引用循环.
-	- `Arc<T>` : 指向类型T的原子型引用计数指针, 共享所有权, 线程安全
-	- `Cow<’a, T>` : Clone-on-write, 写时复制指针. 可能是借用指针, 也可能是具有所有权的指针 
-
-    	Cow<T>的功能是：以不可变的方式访问借用内容，以及在需要可变借用或所有权的时候再克隆一份数据. Cow<T>旨在减少复制操作，提高性能，一般用于读多写少的场景. Cow<T>的另一个用处是统一实现规范.
-    - Cell<T>：提供实现了 Copy 特征的类型的内部可变性. 换句话说，有可能获得多个可变引用
-
-    	在一个不可修改的值内部有一个小小的可修改数据, 这就叫作内部修改能力（interior mutability）.
-
-    	Cell 唯一特别的地方是不需要对其自身的mut 引用, 也能取得或设置其私有字段的值.
-
-    	Cell<T>可以为值提供可变性，甚至允许值位于不可引用之后。它以极低的开销提供此功能:
-		- Cell::new 方法允许你通过传递任意类型 T 来创建 Cell 类型的新实例。
-		- get:get 方法允许你复制单元（ cell）中的值。仅当包装类型 T 为 Copy 时，该方法
-		才有效。
-		- set：允许用户修改内部的值，即使该值位于某个不可变引用的后面. 这个方法的 self 参数是以非 mut 引用的形式传入的
-	- RefCell<T>：提供了类型的内部可变性，并且不需要实现 Copy 特征. 它用于运行时的锁定以确保安全性
-
-		与 Cell<T> 类似， RefCell<T> 是只包含一个 T 类型值的泛型类型. 但与 Cell 不同， RefCell 支持借用它的 T 类型值的引用.
-
-		为某个非 Copy 类型支持 Cell 的功能
-
-		RefCell 类型提供了以下方法:
-		- new : 创建一个新 RefCell，将 value 转移到其中
-		- borrow : 回一个 Ref<T>，基本上是对 ref_cell 中值的共享引用. 如果这个值已经被可修改地借用了，这个方法会panic
-		- borrow_mut : 返回一个 RefMut<T>，基本上是对 ref_cell 中值的可修改引用。如果这个值已经被借用了，这个方法会panic.
-
-		上述两个 borrow 方法之所以会panic，是因为试图破坏 Rust 中 mut 引用是排他引用的规则.
-
-		唯一的不同是，常规情况下把引用保存到变量， Rust结构体会通过编译时检查来确保安全地使用它。如果检查失败，编译器会报错。而 RefCell 会通过运行时检查强制应用相同的规则。因此如果开发者破坏了规则，就会收到panic
-
-	Cell和 RefCell，以及包含它们的任何类型，都不是线程安全的. 为此， Rust 不会同时允许多个线程访问它们.
-
-	`Rc<T>和Arc<T>`多用于gui编程. Cell和RefCell提供了共享可变性, 此时会将借用检查从编译时移动到运行时. 这是通过内部可变性实现的.
-
-	> 内部可变性：在这种可变性中，即使你有一个引用某种类型的&SomeStruct，如果其中的字段类型为 Cell<T>或 RefCell<T>，那么仍然可以修改其字段.
-
-Rust使用as用于类型转换, 前提是编译器认为是合理的转换.
-
-
-智能指针是因为它们还具有与之相关联的额外元数据和代码, 它们会在创建和销毁指针时被调用和执行. 智能指针超出作用域时能够自动释放底层资源是采用它们的主要原因之一.
-智能指针的大部分特性要归功于两个特征Drop 和 Deref:
-- Drop: 释放资源, 通常由Rust编译器在编译后的代码中每个作用域结束的位置插入 drop 方法调用, 类似C++中的析构函数.
-
-	它包含一个 drop 方法, 当对象超出作用域时就会被调用。该方法将&mut self 作为参数。使用 drop 释放值是以LIFO 的方式进行的.
-- Deref: 它定义了一个名为 Deref 的方法，并会通过引用获取 self 参数，然后返回对底层类型的不可变引用, 即让指针反映封装值的类型
-
-	DerefMut可提供对底层类型的可变引用.
-
-
-Deref 和 DerefMut 特型的设计初衷是为了实现智能指针类型（如 Box、Rc 和 Arc），以及某些会频繁通过引用来使用的类型的所有者版本（如 Vec<T> 和 String 就是 [T] 和 str 的所
-有者版本）。如果目的仅仅是让 Target 类型的方法自动在类型上可见（就像 C++ 中让基类的方法在子类上可见那样），则不应该实现 Deref 和 DerefMut。这样并不能保证始终有效，
-一旦出问题则很难发现.
-
-打印类型:
-```rust
-fn print_type_of<T>(_: &T) {
-		println!("{}", std::any::type_name::<T>())
-}
-
-fn main() {
-    let x = 32;
-    print_type_of(&x);
-  	// 输出：i32
-}
-```
+	Rust是类型安全的语言, 也需要将这种情况纳入类型系统进行统一管理.
 
 ## 复合(compound)类型
 复合类型（Compound types）可以将多个标量组合成一个类型. Rust 有两个原生的复合类型：元组（tuple）和数组（array）.
 
 rust提供5种复合类型:
-1. 元组(Tuple) : 一种**异构有限**序列, 即元素类型可能不同的**固定长度**的序列. 
-
-    **如果元组中只包含一个元素，应该在后面添加一个逗号，以区分括号表达式和元组**.
+1. 元组(Tuple) : 一种**异构有限**序列, 即元素类型可能不同的**固定长度**的序列.
 
     通过`tuple_name.<N>`的形式访问.
     因为let支持模式匹配(pattern destructuring), 因此可用let解构元组.
     单元值(unit)就是空元组`()`, 不占用内存空间, 可用`std::mem::size_of::<()>()`查看.
 
-    当元组中只有一个元素时（即元组长度是 1），唯一的元素后面必须加上逗号, 这是避免将小括号当做计算的优先级.
+    当元组中只有一个元素时（即元组长度是 1），唯一的元素后面必须加上逗号, 以区分括号表达式和元组, 这是避免将小括号当做计算的优先级.
+
 1. 数组(array) : 与元组不同，数组中的每个元素的类型必须相同. Rust 中的**数组是固定长度**的：一旦声明，它们的长度不能增长或缩小. **数组的大小是在编译时确定
 的常量**.
 
@@ -1000,6 +939,30 @@ rust提供5种复合类型:
     > 当想要在栈（stack）而不是在堆（heap）上为数据分配空间, 或者是想要确保总是有固定数量的元素时，数组非常有用. 但是数组并不如 vector 类型灵活.
 
 1. 结构体(Struct)
+
+    分三种:
+    1. 具名结构体(named-field struct)
+
+        它是rust面向对象思想的一种体现.
+    1. 元组结构体(tuple-like struct)
+
+        没有字段名称, 仅有类型. 比如`struct Color(i32, i32, i32);`
+        
+        当一个元组结构体只有一个字段时, 比如`struct UserId(u64);`, 称为New Type模式. 因为它把一种类型封装成了新类型.
+
+        > 对于具有 3 个以上字段的数据类型，建议具名结构体.
+    1. 单元结构体(unit-like struct)
+
+        没有任何字段的结构体, 比如`strcut Empty{}`.
+        `std::ops::RangeFull`就是一个单元结构体.
+
+        在Release编译模式下, 单元结构体实例会被优化为同一个对象; 而在Debug模式下, 则不会进行这样的优化.
+
+        类单元结构体常常在想要在某个类型上实现 trait 但不需要在类型中存储数据的时候发挥作用.
+
+    结构体名称需遵从驼峰式命名规则.
+
+    结构体上方的`#[derive(Debug, PartialEq)]`是[属性(类似于代码生成)](https://doc.rust-lang.org/reference/attributes/derive.html), 可让结构体自行实现Debug trait 和 PartialEq trait, 即允许对struct实例进行打印(通过`{:?}或{:#?}`)和比较.
 
     Rust 允许 struct 类型的初始化使用一种简化的的写法: 如果有局部变量名字与成员变量名字恰好一致, 那么可以省略掉重复的冒号初始化`: `, 比如:
     ```rust
@@ -1028,28 +991,6 @@ rust提供5种复合类型:
         ..user1 //  `..user1`后面不可以有逗号
     };
     ```
-
-    结构体名称需遵从驼峰式命名规则.
-    结构体上方的`#[derive(Debug, PartialEq)]`是[属性(类似于代码生成)](https://doc.rust-lang.org/reference/attributes/derive.html), 可让结构体自行实现Debug trait 和 PartialEq trait, 即允许对struct实例进行打印(通过`{:?}或{:#?}`)和比较.
-
-    分三种:
-    1. 具名结构体(named-field struct)
-
-        它是rust面向对象思想的一种体现.
-    1. 元组结构体(tuple-like struct)
-
-        没有字段名称, 仅有类型. 比如`struct Color(i32, i32, i32);`
-        当一个元组结构体只有一个字段时, 比如`struct UserId(u64);`, 称为New Type模式. 因为它把一种类型封装成了新类型.
-
-        > 对于具有 3 个以上字段的数据类型，建议具名结构体.
-    1. 单元结构体(unit-like struct)
-
-        没有任何字段的结构体, 比如`strcut Empty{}`.
-        `std::ops::RangeFull`就是一个单元结构体.
-
-        在Release编译模式下, 单元结构体实例会被优化为同一个对象; 而在Debug模式下, 则不会进行这样的优化.
-
-        类单元结构体常常在想要在某个类型上实现 trait 但不需要在类型中存储数据的时候发挥作用.
 
     在rust中函数和方法是有区别的, 不在impl块中定义的函数是自由函数, 而在impl块中定义的函数是方法, 第一个参数通常是`&self/&mut self`, 表示对结构体实例自身的引用.
 
@@ -1187,6 +1128,625 @@ rust提供5种复合类型:
 
 
 > tuple, struct, tuple struct 这几种类型，实质上是同样的内存布局，区别仅仅在于是否给类型及成员起了名字.
+
+## 常用集合类型
+标准集合:
+|集合|说明|其他语言中类似的集合(C++/Java/Python)|
+|Vec<T>|可增数组|vector/ArrayList/list)|
+|VecDeque<T>|双端队列（可增长环形缓冲区）|deque/ArrayDeque/collections.deque|
+|LinkedList<T>|双向链表|list/LinkedList/–|
+|BinaryHeap<T> where T: Ord|最大堆|priority_queue/PriorityQueue/heapq|
+|HashMap<K, V> where K: Eq + Hash|键 – 值散列表|unordered_map/HashMap/dict|
+|BTreeMap<K, V> where K: Ord|有序键 – 值表|map/TreeMap/–|
+|HashSet<T> where T: Eq + Hash|散列表|unordered_set/HashSet/set|
+|BTreeSet<T> where T: Ord|有序集|set/TreeSet/–|
+
+Rust 标准库中包含一系列被称为 集合（collections）的非常有用的数据结构. 大部分其他数据类型都代表一个特定的值，不过集合可以包含多个值. 不同于内建的数组和元组类型，这些集合指向的数据是储存在堆上的，这意味着数据的数量不必在编译时就已知，并且还可以随着程序的运行增长或缩小.
+
+std::collections提供了4种通用集合类型:
+1. 线性序列: 向量(Vec, **堆上分配**的数组), 双端队列(VecDeque), 链表(LinkedList)
+
+    向量也是一种数组, 但可动态增长.
+    `vec!`是一个宏, 用来创建向量字面量.
+    rust的VecDeque是基于可增长的RingBuffer算法实现的双端队列.
+    通常最好使用Vec或VecDeque类型, 因为它们比链表更加快速, 内存访问效率更高, 并且可以更好地利用cpu缓存.
+
+    > rust的String基于Vec, 可变字符串用String, 不可变字符串用`&str`.
+
+    双端队列（Double-ended Queue，缩写Deque）是一种同时具有队列（先进先出）和栈（后进先出）性质的数据结构. 双端队列中的元素可以从两端弹出，插入和删除操作被限定在队列的两端进行. 它是基于可增长的 RingBuffer 算法实现的双端队列.
+
+    Rust提供的链表是双向链表，允许在任意一端插入或弹出元素.
+
+    但是通常最好使用 Vec/VecDeque 类型, 因为它们比链表更加快速, 内存访问效率更高, 并且可以更好地CPU缓存.
+
+    > 当缓冲区达到其容量上限后，再给向量添加元素会导致一系列操作：分配一个更大的缓冲区，将现有内容复制过去，基于新缓冲区更新向量的指针和容量，最后释放旧缓冲区.
+
+    ```rust
+    // 声明
+    let mut v2 = Vec::new();
+    v2.push(2); // 现在 v2 的类型是 Vec<i32>
+    let v3 = Vec::<u8>::new(); // 使用 turbofish 符号, 泛型函数中的 turbofish 运算符出现在函数名之后和圆括号之前
+
+    let mut v: Vec<i32> = Vec::new();
+    // let v = vec![1, 2, 3]; // 使用vec!宏, 让rust自动推导类型
+    v.push(5); // 在 vector 的结尾增加新元素时，在没有足够空间将所有所有元素依次相邻存放的情况下，可能会要求分配新内存并将老的元素拷贝到新的空间中
+
+    let vector = vec![1, 2, 4, 8];     // 通过数组创建向量
+
+    let third: &i32 = &v[2]; // 当引用一个不存在的元素时 Rust 会造成 panic
+    println!("The third element is {}", third);
+
+    match v.get(2) { // 2 is index. 当 get 方法被传递了一个数组外的索引时，它不会 panic 而是返回 None
+        Some(third) => println!("The third element is {}", third),
+        None => println!("There is no third element."),
+    }
+
+    for i in &v {
+        println!("{}", i);
+    }
+    ```
+1. Key-Value映射: 无序哈希表(HashMap), 有序哈希表(BTreeMap)
+
+    HashMap要求key是必须可哈希的类型，BTreeMap的key必须是可排序的
+    value必须是在编译期已知大小的类型
+
+    ```rust
+    use std::collections::HashMap;
+    let mut scores = HashMap::new();
+
+    let teams  = vec![String::from("Blue"), String::from("Yellow")];
+    let initial_scores = vec![10, 50];
+
+    let scores: HashMap<_, _> = teams.iter().zip(initial_scores.iter()).collect(); // 使用下划线占位是因为 Rust 能够根据 vector 中数据的类型推断出 HashMap 所包含的类型
+
+    let team_name = String::from("Blue");
+    let score = scores.get(&team_name);
+
+    for (key, value) in &scores {
+        println!("{}: {}", key, value);
+    }
+
+    scores.insert(String::from("Blue"), 11); // 覆盖value
+    scores.entry(String::from("Yellow")).or_insert(50); // entry 函数的返回值是一个枚举，Entry，它代表了可能存在也可能不存在的值. Entry 的 or_insert 方法在键对应的值存在时就返回这个值的可变引用，如果不存在则将参数作为新值插入并返回新值的可变引用.
+
+    let mut map = HashMap::new();
+    map.insert(1, "a");
+   
+    if let Some(x) = map.get_mut(&1) {
+        *x = "b";
+    }
+    ```
+
+    > 对于像 i32 这样的实现了 Copy trait 的类型，其值可以拷贝进哈希 map。对于像 String 这样拥有所有权的值，其值将被移动而哈希 map 会成为这些值的所有者
+
+    > 如果将值的引用插入哈希 map，这些值本身将不会被移动进哈希 map。但是这些引用指向的值必须至少在哈希 map 有效时也是有效的.
+
+    HashMap 默认使用一种 “密码学安全的”（“cryptographically strong” ）哈希函数，它可以抵抗拒绝服务（Denial of Service, DoS）攻击. 然而这并不是可用的最快的算法，不过为了更高的安全性值得付出一些性能的代价. 如果性能监测显示此哈希函数非常慢，以致于无法接受，可以指定一个不同的 hasher 来切换为其它函数. hasher 是一个实现了 BuildHasher trait 的类型.
+1. 集合类型: 无序集合(HashSet), 有序集合(BTreeMap)
+
+    集合类型实际就是把Key-Value映射的Value设置成空元组.
+1. 优先队列: 基于二叉最大堆(BinaryHeap)实现.
+
+无论是Vec还是HashMap，使用这些集合容器类型，最重要的是理解容量（Capacity）和大小（Size/Len）:
+- 容量是指为集合容器分配的内存容量
+- 大小是指集合中包含的元素数量
+
+## 指针
+与 C 指针不同的是， Rust 引用永远不会是空值，因为在安全 Rust 代码中根本不可能产生空引用, 而且 Rust 引用默认是不可修改的.
+
+无GC 的编程语言， C/C++以及 Rust, 对数据的组织操作有更多的自由度, 表现为:
+- 同一个类型，某些时候可以指定它在栈上, 某些时候可以指定它在堆上. 内存分配方式可以取决于使用方式, 与类型本身无关.
+- 既可以直接访问数据 ，也可以通过指针间接访问数据. 可以针对任何一个对象取得指向它的指针
+- 既可以在复合数据类型中直接嵌入别的类型的实体, 也可以使用指针, 间接指向别的类型
+- 甚至可能在复合数据类型末尾嵌入不定长数据构造出不定长的复合数据类型
+
+Rust 有不止一种指针类型, 常见的几种指针类型:
+- `Box<T>` : 指向**在堆上分配**的类型T的, 具有所有权的指针, 有权释放内存
+
+	Rust中的值默认被分配到栈内存, 可通过`Box<T>`将值装箱(在堆内存中分配). 可通过解引用来获取`Box<T>`中的T. 因为`Box<T>`的行为像引用, 并且可以自动释放内存, 因此将其称为智能指针.
+
+	Box 类型的所有权语义取决于包装类型。如果基础类型为Copy, 那么 Box 实例将成为副本，否则默认情况下将发生移动.
+
+	String类型和Vec类型的值都是被分配到堆内存并返回指针的，通过将返回的指针封装来实现Deref和Drop.
+
+	```rust
+	struct Node {
+		data: u32,
+		next: Option<Box<Node>>
+	}
+	```
+
+	Box<T>是指向类型为T的堆内存分配值的智能指针. 当Box<T>超出作用域范围时，将调用其析构函数，销毁内部对象，并自动释放堆中的内存.
+- `&T` : 指向类型T的借用指针, 也称为引用, 无权释放内存, 无权写数据, 是 Copy 类型.
+
+	类似C中的`const T*`
+- `&mnut T` : 指向类型T的mut型借用指针, 无权释放内存, 有权写数据, 不是Copy类型.
+
+	类似C中的`T*`
+- `*const T` : 指向类型T的只读裸(即原始)指针, 没有生命周期信息, 无权写数据. 它是 Copy 类型。这类似于&T，只是它可以为空值.
+- `*mut T` : 指向类型T的可读写裸(即原始)指针, 没有生命周期信息, 有权写数据.  它不支持 Copy 特征（ non-Copy）.
+
+> Rust 的原始指针实际上就是 C++ 中的那种指针, 使用原始指针是不安全的，因为 Rust 不会跟踪它指向哪里.
+
+```rust
+fn main() {
+	// 可将引用强制转换为原始指针
+    let a = &56;
+    let a_raw_ptr = a as *const i32;
+    // or
+    let b = &mut 5634.3;
+    let b_mut_ptr = b as *mut f64;
+}
+```
+
+此之外，在标准库中还有一种封装起来的可以当作指针使用的类型, 即智能指针(smart pointer, 来自c++):
+- `Rc<T>` : 指向类型T的引用计数指针, 共享所有权, 线程不安全
+
+    通过clone方法共享的引用所有权称为强引用，RC<T>是强引用.
+
+    当与一个 Rc 类型交互时，其内部会发生如下变化:
+	- 当通过调用 Clone()获取对 Rc 的一个新共享引用时， Rc 会增加其内部引用计数。Rc 内部使用 Cell 类型处理其引用计数。
+	- 当引用超出作用域时，它会对引用计数器执行递减操作。
+	- 当所有共享引用计数超出作用域时， refcount 会变成 0。 此时， Rc 上的最后一次 drop	调用会执行相关的资源清理工作
+
+	Rc<T>主要通过两种方式使用:
+	- 静态方法 Rc::new 会生成一个新的引用计数器。
+	- clone 方法会增加强引用计数并分发一个新的 Rc<T>
+
+	Rc 内部会保留两种引用：强引用（ Rc<T>）和弱引用（ Weak<T>）。二者都会维护每种类型的引用数量的计数，但是仅在强引用计数值为零时，才会释放该值. 它的弱引用可打破引用循环.
+- `Arc<T>` : 指向类型T的原子型引用计数指针, 共享所有权, 线程安全
+- `Cow<’a, T>` : Clone-on-write, 写时复制指针. 可能是借用指针, 也可能是具有所有权的指针 
+
+	Cow<T>的功能是：以不可变的方式访问借用内容，以及在需要可变借用或所有权的时候再克隆一份数据. Cow<T>旨在减少复制操作，提高性能，一般用于读多写少的场景. Cow<T>的另一个用处是统一实现规范.
+- Cell<T>：提供实现了 Copy 特征的类型的内部可变性. 换句话说，有可能获得多个可变引用
+
+	在一个不可修改的值内部有一个小小的可修改数据, 这就叫作内部修改能力（interior mutability）.
+
+	Cell 唯一特别的地方是不需要对其自身的mut 引用, 也能取得或设置其私有字段的值.
+
+	Cell<T>可以为值提供可变性，甚至允许值位于不可引用之后。它以极低的开销提供此功能:
+	- Cell::new 方法允许你通过传递任意类型 T 来创建 Cell 类型的新实例。
+	- get:get 方法允许你复制单元（ cell）中的值。仅当包装类型 T 为 Copy 时，该方法
+	才有效。
+	- set：允许用户修改内部的值，即使该值位于某个不可变引用的后面. 这个方法的 self 参数是以非 mut 引用的形式传入的
+- RefCell<T>：提供了类型的内部可变性，并且不需要实现 Copy 特征. 它用于运行时的锁定以确保安全性
+
+	与 Cell<T> 类似， RefCell<T> 是只包含一个 T 类型值的泛型类型. 但与 Cell 不同， RefCell 支持借用它的 T 类型值的引用.
+
+	为某个非 Copy 类型支持 Cell 的功能
+
+	RefCell 类型提供了以下方法:
+	- new : 创建一个新 RefCell，将 value 转移到其中
+	- borrow : 回一个 Ref<T>，基本上是对 ref_cell 中值的共享引用. 如果这个值已经被可修改地借用了，这个方法会panic
+	- borrow_mut : 返回一个 RefMut<T>，基本上是对 ref_cell 中值的可修改引用。如果这个值已经被借用了，这个方法会panic.
+
+	上述两个 borrow 方法之所以会panic，是因为试图破坏 Rust 中 mut 引用是排他引用的规则.
+
+	唯一的不同是，常规情况下把引用保存到变量， Rust结构体会通过编译时检查来确保安全地使用它。如果检查失败，编译器会报错。而 RefCell 会通过运行时检查强制应用相同的规则。因此如果开发者破坏了规则，就会收到panic
+
+Cell和 RefCell，以及包含它们的任何类型，都不是线程安全的. 为此， Rust 不会同时允许多个线程访问它们.
+
+`Rc<T>和Arc<T>`多用于gui编程. Cell和RefCell提供了共享可变性, 此时会将借用检查从编译时移动到运行时. 这是通过内部可变性实现的.
+
+> 内部可变性：在这种可变性中，即使你有一个引用某种类型的&SomeStruct，如果其中的字段类型为 Cell<T>或 RefCell<T>，那么仍然可以修改其字段.
+
+Rust使用as用于类型转换, 前提是编译器认为是合理的转换.
+
+智能指针(Smart Point)的功能并非rust独有的, 它源自C++语言.
+
+Rust 中的值默认被分配到栈内存. 通过 `Box <T>`将值装箱(在堆内存中分配). `Box<T>` 是指向T类型的堆内存分配值的智能指针. 当 `Box<T>` 超出作用域范围时, 将调用其析构函数, 销毁内部对象, 并自动动释放堆中的内存. 通过解引用操符可获取`Box<T>`中的T.
+
+`Box<T>`的行为像引用, 并且可以自动释放内存，所以称其为智能指针.
+
+智能指针是因为它们还具有与之相关联的额外元数据和代码, 它们会在创建和销毁指针时被调用和执行. 智能指针超出作用域时能够自动释放底层资源是采用它们的主要原因之一.
+智能指针的大部分特性要归功于两个特征Drop 和 Deref:
+- Drop: 释放资源, 通常由Rust编译器在编译后的代码中每个作用域结束的位置插入 drop 方法调用, 类似C++中的析构函数.
+
+	它包含一个 drop 方法, 当对象超出作用域时就会被调用。该方法将&mut self 作为参数。使用 drop 释放值是以LIFO 的方式进行的.
+- Deref: 它定义了一个名为 Deref 的方法，并会通过引用获取 self 参数，然后返回对底层类型的不可变引用, 即让指针反映封装值的类型
+
+	DerefMut可提供对底层类型的可变引用.
+
+
+Deref 和 DerefMut 特型的设计初衷是为了实现智能指针类型（如 Box、Rc 和 Arc），以及某些会频繁通过引用来使用的类型的所有者版本（如 Vec<T> 和 String 就是 [T] 和 str 的所
+有者版本）。如果目的仅仅是让 Target 类型的方法自动在类型上可见（就像 C++ 中让基类的方法在子类上可见那样），则不应该实现 Deref 和 DerefMut。这样并不能保证始终有效，
+一旦出问题则很难发现.
+
+打印类型:
+```rust
+fn print_type_of<T>(_: &T) {
+		println!("{}", std::any::type_name::<T>())
+}
+
+fn main() {
+    let x = 32;
+    print_type_of(&x);
+  	// 输出：i32
+}
+```
+
+## 泛型
+每一个编程语言都有高效处理重复概念的工具. 在 Rust 中其工具之一就是 泛型（generics）. 泛型是具体类型或其他属性的抽象替代.
+
+泛型允许开发者编写一些在使用时才制定类型的代码. rust编译器会在编译期间自动为具体类型生成实现代码, 即采用单态化（monomorphization）实现.
+
+## trait
+接口是一个软件系统开发的核心部分，它反映了系统的设计者对系统的抽象理解。作为一个抽象层，接口将使用方和实现方隔离开来，使两者不直接有依赖关系，大大提高了复用性和扩展性.
+
+很多编程语言都有接口的概念，允许开发者面向接口设计，比如 Java 的 interface、Elixir 的 behaviour、Swift 的 protocol 和 Rust 的 trait.
+
+当在运行期使用接口来引用具体类型的时候，代码就具备了运行时多态的能力. 在运行时，一旦使用了关于接口的引用，变量原本的类型被掩藏，此时需要一个胖指针获取这个引用具备什么样的能力, 即在生成这个引用的时候，需要构建胖指针，除了指向数据本身外，还需要指向一张涵盖了这个接口所支持方法的列表, 这个列表，就是熟知的虚表（virtual table）.
+
+trait 同样也不是 Rust 独有的概念, 它借鉴了Haskell的Typeclass.
+
+trait定义了一组类型可以选择性实现的`契约`或共享行为.
+
+trait是在行为上对类型的约束即对类型行为的抽象, 是Rust实现零成本抽象的基石，它有如下机制：
+- trait是Rust唯一的接口抽象方式
+- 可以静态分发，也可以动态分发
+- 可以当做标记类型拥有某些特定行为的"标签"来使用
+
+rust没有传统面向对象编程语言中的继承概念. Rust通过 trait 将类型和行为明确地进行了区分, 充分贯彻了组合优于继承和面向接口编程的编程思想.
+
+在 Rust 里, 数据的行为通过 trait 来定义. 一般用 impl  关键字为数据结构实现 trait, 但 Rust 贴心地提供了派生宏（derive macro）, 可以大大简化一些标准接口的定义. 比如`#[derive(Debug)]` 为数据结构实现了 Debug trait, 提供了 debug 能力，这样可以通过`{:?}/{:#?}`(后者会按字段换行, 适合更多字段的数据结构), 用`println!`打印出来.
+
+> Clone 让数据结构可以被复制，而 Copy 则让数据结构可以在参数传递的时候自动按字节拷贝.
+
+>  Clone 类型的不可变引用转换为自有值(owned values)，即 &T -> T。Clone 没有对这种转换的效率做出承诺，所以它可能是缓慢和昂贵的。为了快速地在一个类型上实现 Clone, 可以使用派生宏.
+
+> ToOwned 是 Clone 的一个更通用的版本. Clone 允许把一个 &T 变成一个 T，但 ToOwned 允许把一个 &Borrowed 变成一个 Owned，其中 `Owned: Borrow<Borrowed>`. 换句话说就是，不能把一个 &str 克隆成一个 String，或者把一个 &Path 克隆成一个 PathBuf，或者把一个 &OsStr 克隆成一个 OsString，因为 clone 方法签名不支持这种跨类型克隆，而这正是 ToOwned 的用途.
+
+trait 告诉 Rust 编译器某个特定类型拥有可能与其他类型共享的功能. 可以通过 trait 以一种抽象的方式定义共享的行为. 可以使用 trait bounds 指定泛型是任何拥有特定行为的类型.
+
+rust支持trait的默认实现: 有时为 trait 中的某些或全部方法提供默认的行为，而不是在每个类型的每个实现中都定义自己的行为是很有用的, 但明确定义该方法可覆盖其默认实现.
+
+> Clone 宏让数据结构可以被复制，而 Copy 则让数据结构可以在参数传递的时候自动按字节拷贝
+
+```rust
+// `<T: Debug>`表示有trait限定(trait bound)的泛型, 即只有实现了Debug trait的类型才适用. 只有实现了Debug trait的类型才拥有使用`{:?}`格式化打印的行为
+fn match_opton<T: Debug>(o: Option<T>) {
+    match o {
+        ...
+    }
+}
+
+struct Duck;
+trait Fly {
+    fn fly(&self) -> bool;
+}
+impl Fly for Duck{
+    fn fly(&self) -> bool {
+        return true;
+    }
+}
+fn fly_static<T: Fly>(s: T) -> bool {
+    s.fly()
+}
+
+fn fly_static(s: &Fly) -> bool {
+    s.fly()
+}
+
+fn main(){
+    let duck = Duck;
+    fly_static::<Duck>(duck); // 静态分发, rust编译器会为`fly_static::<Duck>(duck)`这个具体类型的调用生成特殊化的代码. 即对编译器而言,该中抽象并不存在, 它在编译阶段即可将泛型展成具体类型的代码
+    fly_dyn(&Duck) // 动态分发, 它会在运行时查找对应类型的方法, 需一定的运行时开销(很小). 与golang的接口类似
+}
+```
+
+rust的trait符合c++之父提出的零开销原则: 如果不使用某个抽象, 就不用为它付出开销(静态分发); 如果确实需要使用该抽象, 可以保证这是开销最小的使用方式(动态分发).
+
+trait 和 trait bound 让开发者使用泛型类型参数来减少重复，并仍然能够向编译器明确指定泛型类型需要拥有哪些行为. 因为向编译器提供了 trait bound 信息，它就可以检查代码中所用到的具体类型是否提供了正确的行为. 在动态类型语言中，如果尝试调用一个类型并没有实现的方法，会在运行时出现错误. Rust 将这些错误移动到了编译时，甚至在代码能够运行之前就强迫我们修复错误. 另外，开发者也无需编写运行时检查行为的代码，因为在编译时就已经检查过了，这样相比其他那些不愿放弃泛型灵活性的语言有更好的性能.
+
+从语义上来说, trait 是在行为上对类型的约束, 这种约束可以让 trait 有如下4种用法:
+1. 接口抽象: 接口是对类型行为的统一约束
+
+	接口抽象特点:
+	- 接口中定义方法, 并支持默认实现
+    - 接口中不能实现另一个接口, 但是接口间可以继承
+    - 同一个接口可以同时被多个类型实现, 但不能被同一个类型实现多次
+    - 使用trait关键字来定义接口
+    - 使用impl关键字为类型实现接口方法
+
+    ## 关联类型
+    关联类型（associated types）是一个将类型占位符与 trait 相关联的方式，这样 trait 的方法签名中就可以使用这些占位符类型. trait 的实现者会针对特定的实现在这个类型的位置指定相应的具体类型.
+    **rust很多操作符都是基于trait来实现的.**, 比如加法操作符:
+    ```rust
+    // 特型 Add<T> 代表给自己的类型加上一个 T 值的能力
+    pub trait Add<RHS = Self> { // `Add<RHS = Self>`表示参数类型RHS默认为Self, Self是每个trait都带有的隐式类型参数, 代表实现当前trait的具体类型.
+        type Output; // 关联类型. Output是一个占位类型, trait的实现者会指定 Output的具体类型.
+        fn add(self, rhs: RHS) -> Self::Output;
+    }
+
+    1+2 // =>`1.add(2)` 代码中出现`+`时, rust就会自动调用操作符左侧的操作数对应的add()方法去实现具体的操作, 即`+`操作与调用`add()`等价.
+    // 可看rust源码为u32实现的Add trait(用宏完成的).
+    ```
+
+    > RHS 是 Right Hand Side（右手边）的简写形式.
+
+    > 在 Rust 中, 表达式 lhs * rhs 是 Mul::mul(lhs, rhs) 的简写形式
+
+    在语义层面上, 使用关联类型增强了trait表示行为的语义, 因为它表示了和某个行为(trait)相关联的类型. 在工程上, 也体现出了高内聚的特点.
+
+    ## trait一致性
+    孤儿原则(Orphan Rule): impl块要么与trait的声明在同一个crate中, 要么与类型的声明在同一个crate中. 其可限制代码被破坏性改写, 导致出现难以预料的bug.
+
+    同理匿名impl必须与类型本身在同一个crate中.
+
+    ## trait继承
+    rust不支持传统面向对象的继承, 但支持trait继承. 子 trait 可以继承父 trait 中定义或实现的方法.
+
+    ```rust
+    trait Paginatge: Page + PerPage { // 用冒号表示继承其他trait.
+        ...
+    }
+    impl <T: Page + PerPage>Paginate for T{
+
+    }
+    ```
+1. 泛型约束: 泛型行为被 trait 限定在更有限的范围内
+
+	> Rust 编程的哲学是组合优于继承.
+
+	trait限定(trait bound) : 泛型的行为被trait限定在更有限的范围内, 多个trait限定用`+`连接.
+
+    ```rust
+    fn notify(item: impl Summary + Display) // 使用 impl 特征语法`impl Summary + Display`
+    fn notify<T: Summary + Display>(item: T) // 等价于同上
+
+    fn some_function<T: Display + Clone, U: Clone + Debug>(t: T, u: U)
+    fn some_function<T, U>(t: T, u: U) -> i32 // 等价于同上
+    where T: Display + Clone,
+          U: Clone + Debug
+    ```
+
+    ```rust
+    use std::fmt::Debug;
+    fn dump<I>(iter: I)
+        where I: Iterator, I::Item: Debug // =  I: Iterator<Item=String>
+    {
+        ...
+    }
+    ```
+
+    ```rust
+    use std::ops::Add;
+    // 表示sum函数的参数必须实现Add trait
+    fn sum<T: Add<T, Output=T>>(a: T, b:T) -> T{ // Add<T, Output=T>: Add表示和T类型相加, 并将产生T类型作为输出即输入输出具有相同类型. T 是实现此特征的类型别名
+        a+b
+    }
+    fn foo<T, K, R>(a: T, b:K, c:R) where T: A, K:B+C, R:D {...}// where用于为泛型增加较多的trait限定, 提高代码可读性.
+
+    #[derive(Default, Debug, PartialEq, Copy, Clone)]
+    struct Complex<T> {
+        //实部
+        re: T,
+        //虚部
+        im: T
+    }
+    impl<T> Complex<T> {
+        fn new(re: T, im: T) -> Self {
+            Complex { re, im }
+        }
+    }
+
+    impl<T: Add<T, Output=T>> Add for Complex<T> { // T:Add 表示必须实现 Add trait. 如果没有实现, 那么无法对`T`使用`+`运算符
+        type Output = Complex<T>;
+        fn add(self, rhs: Complex<T>) -> Self::Output {
+            Complex { re: self.re + rhs.re, im: self.im + rhs.im }
+        }
+    }
+
+    let a = Complex::new(1,-2);
+    let b = Complex::default();
+    let res = a + b;
+    ```
+
+    类型上的泛型约束:
+    ```rust
+    use std::fmt::Display;
+    struct Foo<T: Display> {
+        bar: T
+    }
+
+    struct Bar<F> where F: Display {
+        inner: F
+    }
+    ```
+
+    有条件实现方法:
+	```rust
+	struct A<T> {}
+
+	impl<T: B + C> A<T> { // 声明了 A<T> 类型必须在 T 已经实现 B 和 C 特性的前提下才能有效实现此 impl 块
+	    fn d(&self) {}
+	}
+	```
+
+    不推荐在类型上使用泛型约束， 因为它对类型自身施加了限制. 通常, 希望类型尽可能是泛型，从而允许使用任何类型创建实例.
+
+    trait限定给予了开发者更大的自由度, 因为不再需要类型间的继承, 也简化了编译器的检查操作. 包含trait限定的泛型属于**静态分发**, 在编译期通过单态化分别生成具体类型的实例, 所以调用trait限定中的方法也都是运行时零成本的, 因为不需要在运行时再进行方法查找.
+1. 抽象类型: 在运行时作为一种间接的抽象类型去使用, 动态地分发给具体的类型
+
+	对于抽象类型而言, 编译器可能无法确定其确切的功能和所占的空间大小, 所以 Rust目前有两种方法来处理抽象类型: trait 对象和 impl Trait.
+
+	```rust
+	pub fn trait_object() {
+	    #[derive(Debug)]
+	    struct Foo;
+	    trait Bar {
+	        fn baz(&self);
+	    }
+	    impl Bar for Foo {
+	        fn baz(&self) { println!("{:?}", self) }
+	    }
+	    fn static_dispatch<T>(t: &T) where T:Bar {
+	        t.baz();
+	    }
+	    fn dynamic_dispatch(t: &Bar) {
+	        t.baz();
+	    }
+	    let foo = Foo;
+	    static_dispatch(&foo);
+	    dynamic_dispatch(&foo);
+	}
+	```
+
+	TraitObject 包括两个指针: data 指针和vtabl 指针. data指针指向 trait 对象保存的类型数据T, vtable指针指向包含为T实现的 Trait的Vtable(Virtual Table虚表). 虚表本质是一个结构体, 包含了析构函数 、大小、对齐和方法等信息.
+
+	TraitObject根据虚表指针从虚表中查出正确的指针, 然后再进行动态调用, 这也是将 trait 对象称为动态分发的原因.
+
+	并不是每个 trait 都可以作为 trait 对象被使用，这依旧和类型大小是否确定有关系. 每个trait 都包含一个隐式的类型参数 Self, 代表实现 trait 的类型, 其默认有一个隐式的trait限定`?Sized`. rust 中大部分类型都默认是可确定大小的类型即`<T: Sized>`, 这也是泛型代码可以正常编译的原因.
+
+	trait 对象在运行期进行动态分发时, 也必须确定大小, 否则无法为其正确分配内存空间. 所以必须同时满足以下两条规则的 trait 才可作为 trait 对象使用:
+	1. trait 的Sefl类型参数不能被限定为Sized
+
+		trait 对象本身是动态分发的, 编译期根本无法确定Self具体是哪个类型.
+	1. trait 中所有的方法都必须是对象安全的
+
+		对象安全的本质就是为了让 trait 对象可以安全地调用相应的方法.
+
+		对象安全的方法必须满足以下3点之一:
+		1. 方法受 `Self:Sized` 约束
+		1. 方法签名同时满足以下3点:
+			1. 必须不包含任何泛型参数. 如果包含泛型 trait对象在Vtable中查找方法时将不确定该调用哪个方法
+			1. 第一个参数必须为 Self 类型或可以解引用为 Self 的类型
+
+				也就是说, 必须有接收者, 比如`self, &self, ＆mut self, self:Box<Self>`, 没有接收者的方法对trait 对象来说毫无意义.
+			1. Self 不能出现在除第一个参数之外的地, 包括返回值中.
+
+				这是因为如果出现 Self,就意味着`Self和self, &self和&mut self`的类型相匹配. 但是对于 trait 对象来说, 根本无法做到保证类型匹配, 因此这种情况下的方法是对象不安全的.
+
+			这三点可总结为一句 ：没有额外 Self 类型参数的非泛型成员方法.
+		1. trait 不能包含关联常量(Associated Constant). 但从Rust 2018开始 trait 中可以增加默认的关联常量了.
+
+	满足这两条规则的 trait 就是对象安全的 trait.
+
+	在Rust 2018 入了可静态分发的抽象类型 impl Trait. 如果说 trait 对象是装箱抽象类型（Boxed Abstract Type ）, 那 impl Trait 就是拆箱抽象类型(Unboxed Abstract Type).
+
+	> “装箱”代表将值托管到堆内, 而“拆箱” 是在栈内存中生成新的值. 总之，装箱抽象类型代表动态分发，拆箱抽象类型代表静态分发.
+
+	目前 impl Trait 只可以在输入的参敬和返回值这两个位置使用.
+
+	```rust
+	pub fn impl_trait(){
+	    use std::fmt::Debug;
+	    pub trait Fly {
+	        fn fly(&self) -> bool;
+	    }
+	    #[derive(Debug)]
+	    struct Duck;
+	    #[derive(Debug)]
+	    struct Pig;
+	    impl Fly for Duck {
+	        fn fly(&self) -> bool {
+	            return true;
+	        }
+	    }
+	    impl Fly for Pig {
+	        fn fly(&self) -> bool {
+	            return false;
+	        }
+	    }
+	    fn fly_static(s: impl Fly+Debug) -> bool {
+	        s.fly()
+	    }
+	    fn can_fly(s: impl Fly+Debug) -> impl Fly {
+	        if s.fly(){
+	            println!("{:?} can fly", s);
+	        }else{
+	            println!("{:?} can't fly", s);
+	        }
+	        s
+	    }
+	    fn dyn_can_fly(s: impl Fly+Debug+'static) -> Box<dyn Fly> { // ’static 是一种生命周期参数. 它限定了 impl Fly+Debug 抽象类型不可能是引用类型，因为这里出现引用类型可能会引发内存不安全
+	        if s.fly(){
+	            println!("{:?} can fly", s);
+	        }else{
+	            println!("{:?} can't fly", s);
+	        }
+	        Box::new(s)
+	    }
+	    let pig = Pig;
+	    assert_eq!(fly_static(pig), false);
+	    let duck = Duck;
+	    assert_eq!(fly_static(duck), true);
+
+	    let pig = Pig;
+	    can_fly(pig);
+	    let duck = Duck;
+	    can_fly(duck);
+
+	    let duck = Duck;
+	    dyn_can_fly(duck);
+	}
+	```
+
+	将impl Trait 用于返回值位置的时候，实际上等价于给返回类型增加一种 trait 限定范围.
+
+	Rust 2018 版本中，为了在语义上和 impl Trait 语法相对应, 专门为动态分发的 trait对象增加了 dyn Trait. impl Trait 表静态分发, dyn Trait 代表动态分发.
+1. 标签 trait. 对类型的约束, 可以直接作为一种`标签`使用
+
+	对类型的约束, 即直接作为一种"标签"使用.
+
+	Rust 一共提供了5个重要的标签 trait, 都被定义在标准库 std::marker 模块中. 它们分别是：
+	- Sized trait: 用来标识编译期可确定大小的类型
+
+		目前 Rust 中的动态类型有 trait和[T], 其中[T]代表一定数量的T在内存中依次排列，但不知道具体的数量
+
+	- Unsize trait: 目前该 trait 为实验特性，用于标识动态大小类型(DST)
+	- Copy trait: 用来标识 以按位复制其值的类型
+
+		Copy trait 用来标记可以按位复制其值的类型, 按位复制等价于C语言中的 memcpy.
+
+		Clone trait 继承自 Sized时，意味着要实现 Clone trait 对象必须是 Sized 类型. 其默认实现是调用 clone 方法, 因此想让一个类型实现 Copy trait, 就必须同时实现 Clone trait.
+
+		Rust 很多基本数据类型实现了 Copy trait ，比如常用的数字类型、字符（ har ）、布尔类型、单元值、不可变引用等.
+
+		检测类型是否实现了 Copy trait:
+		```rust
+		fn test_copy<T:Copy>(i: T){
+			println!("test")
+		}
+		```
+
+		Copy 的行为是一个隐式的行为, 开发者不能重载 Copy 行为, 它永远都是一个简单的位复制. Copy 隐式行为发生在执行变量绑定、函数参数传递、函数返回等场景中，因为这些场景是开发者无法控制的，所以需要编译器来保证.
+
+		Clone trait 是一个显式的行为，任何类型都可以实现 Clone trait ，开发者可以自由地按需实现 Copy 行为.
+
+		并非所有类型都可以实现 Copy trait 对于自定义类型来说，必须让所有的成员都实现Copy trait, 这个类型才有资格实现Copy trait. 如果是数组类型, 且其内部元素都是Copy类型, 则数组本身就是 Copy 类型；如果是元组类型，且其内部元素都是Copy 类型，则该元组会自动实现 Copy; 如果是结构体或枚举类型, 只有当每个内 部成员都实 Copy时, 它才可以 Copy ，并不会像元组那样自动实 Copy.
+
+	- Send trait: 用来标识可以跨线程安全通信的类型
+
+		实现了 Send 类型, 可以安全地在线程间传递值, 也就是说可跨线程传递所有权
+	- Sync trait: 用来标识可以在线程 安全共享 引用的类型
+
+		实现了 Sync 类型， 可以跨线程安全 传递共享（ 不可变）引用.
+
+	除此之外， ust 标准库还在增加新的标签 trait 以满足变化的需求.
+
+	Rust 提供了 Send, Sync 两个标签 trait, 它们是 Rust 无数据竞争并发的基石.
+
+	Rust 把所有类型归为两类：可以安全跨线程传递的值和引用, 以及不可以跨线程传递的值和引用. 再配合所有权机制, 因此Rust够在编译期就检查出数据竞争的隐患, 而不是等到运行时再排查.
+
+	Send, Sync 标签 trait和前面所说的 Copy,Sized 一样, 内部没有具体的方法实现, 它们仅仅是标记.
+
+    > Rust 中另一个常见的非固定大小类型是对特型目标的引用. Rust 不能在变量中存储非固定大小的值，也不能将它们作为参数传递, 比如只能通过 &str 或 Box<Write> 这样本身是固定大小的指针来使用它们.
+
+    `?Sized`表示不一定是 Sized.
+    动态大小类型不能随意使用，还需要遵循如下3条限制规则：
+	1. 只可以通过胖指针来操作 Unsize 类型 ，比如`&[T]或&Trait`
+	1. 变量、参数和 枚举变量不能使用动态大小类型
+	1. 结构体中只有最后一个字段可以使用动态大小类型, 其他字段不可以使用.
+
+	所以当使用`?Sized`限定时, 应该想想这3条规则.
+
+
+rust规定函数在参数传递, 返回值传递中类型必须是编译阶段可确定大小的, 而trait的大小在编译时是不固定的, 因此它无法作为实例变量, 参数, 返回值, 这与go的interface不同.
+
+Rust 同一个类可以实现多个特性，每个 impl 块只能实现一个.
+
+默认trait: 接口只能规范方法而不能定义方法，但特性可以定义方法作为默认方法，因为是"默认"，所以对象既可以重新定义方法，也可以不重新定义方法使用默认的方法. 这是trait与接口的不同点
 
 ## 类型转换
 在 Rust 中，将一个值从一种类型转换为另一种类型通常需要显式转换。类型转换使用 as.
@@ -1448,7 +2008,11 @@ if let 是 match 的一个语法糖，它当值匹配某一模式时执行代码
 
 	Java 和 C#之类的高级编程语言就是采用`try...catch`方式处理错误的
 
-Rust 没有沿用上述两种处理方式, 而是借鉴 Haskell定义了Option和Result.
+Rust 将错误组合成两个主要类别：可恢复错误（recoverable）和 不可恢复错误（unrecoverable）. 可恢复错误通常代表向用户报告错误和重试操作是合理的情况，比如未找到文件. 不可恢复错误通常是 bug 的同义词, 比如尝试访问超过数组结尾的位置.
+
+Rust 并没有异常, 但是有可恢复错误 `Result<T, E>` 和不可恢复(遇到错误时停止程序执行)错误 panic!.
+
+Rust 没有沿用上述两种处理方式, 而是有一套独特的处理异常情况的机制，其并不像其它语言中的 try 机制那样, 而是借鉴 Haskell定义了Option和Result.
 
 Option表示是否有值.
 
@@ -1503,6 +2067,108 @@ Option 和 Result 类型之间的转换:
 - ok:  Result -> Option, 丢弃Err
 - ok_or: Option -> Result
 
+rust中的错误处理是通过返回Result<T, E>类型的方式进行的. Result<T, E>类型是Option<T>类型的升级版本.
+
+```rust
+fn main() -> Result<(), std::io::Error> {
+    let f = File::open("bar.txt")?; // ?是一个错误处理的语法糖, 它会自动在出现错误的情况下返回std::io::Error.
+}
+```
+
+Result<T, E> 类型定义了很多辅助方法来处理各种情况:
+- is_ok/is_error: 返回 bool 值，表明result 是成功的结果还是错误的结果
+- ok: 返回Option<T>类型的成功值（如果有的话）。如果result是一个成功的结果，就返回 Some(success_value)；否则，返回 None，而丢弃错误值
+- err: 返回 Option<E> 类型的错误值（如果有的话）
+- unwrap : 如果 Result 值是成员 Ok，unwrap 会返回 Ok 中的值; 如果 Result 是成员 Err，unwrap 会调用 panic!
+- unwrap_or(fallback): 返回成功值，如果 result 是成功的结果的话。否则，它返回 fallback，丢弃错误值
+
+    这是对 .ok() 的一个完美替代，因为返回类型是 T 而非 Option<T>. 当然，只有在存在适当后备值的情况下才可以使用这个方法
+- unwrap_or_else(): 只是传入的不是后备值，而是一个函数或闭包。这个方法适合计算后备值如果用不上会造成浪费的情况。只有在返回错误结果时才会调用 fallback_fn
+- expect : expect 与 unwrap 的使用方式一样. 但expect 在调用 panic! 时使用的错误信息将是传递给 expect 的参数，而不像 unwrap 那样使用默认的 panic! 信息
+- as_ref: 将 Result<T, E> 转换为 Result<&T, &E>，即借用现有 result 中成功或错误值的引用
+- result.as_mut() : 类似as_ref, 只是借用了可修改引用, 返回类型为 Result<&mut T, &mut E>
+
+当编写一个其实现会调用一些可能会失败的操作的函数时，除了在这个函数中处理错误外，还可以选择让调用者知道这个错误并决定该如何处理, 这被称为 传播（propagating）错误，这样能更好的控制代码调用，因为比起你代码所拥有的上下文，调用者可能拥有更多信息或逻辑来决定应该如何处理错误.
+
+这种传播错误的模式在 Rust 中很常见，以至于 Rust 提供了 ? 问号运算符来使其更易于处理. ? 运算符可被用于返回值类型为 Result 的函数.
+
+`?`的实际作用是将 Result 类非异常的值直接取出, 如果有异常就将异常 Result 返回出去. 所以, `?`仅用于返回值类型为 Result<T, E> 的函数，其中 E 类型必须和 ? 所处理的 Result 的 E 类型一致.
+
+example:
+```rust
+fn f(i: i32) -> Result<i32, bool> {
+    if i >= 0 { Ok(i) }
+    else { Err(false) }
+}
+
+fn g(i: i32) -> Result<i32, bool> {
+    let t = f(i)?; // 出现error时, ?已将异常 Result 返回了
+    Ok(t) // 因此确定 t 不是 Err, t 在这里已经是 i32 类型
+}
+
+fn g2(i: i32) -> Result<i32, bool> { // 等价于g
+    let t = f(i);
+
+    match t {
+        Ok(i) => Ok(i),
+        Err(b) => Err(b)
+    }
+}
+
+fn main() {
+    let r = g(10000);
+    if let Ok(v) = r {
+        println!("Ok: g(10000) = {}", v);
+    } else {
+        println!("Err");
+    }
+}
+```
+
+match 表达式与`?`运算符所做的有一点不同：? 运算符所收到的错误值被隐式传递给了 from 函数，它定义于标准库的 From trait 中，其用来将错误从一种类型转换为另一种类型. 当 ? 运算符调用 from 函数时，收到的错误类型被转换为由当前函数返回类型所指定的错误类型. 这在当函数返回单个错误类型来代表所有可能失败的方式时很有用，即使其可能会因很多种原因失败. 只要每一个错误类型都实现了 from 函数来定义如何将自身转换为返回的错误类型，? 运算符会自动处理这些转换.
+
+?运算符消除了大量样板代码并使得函数的实现更简单, 甚至可以在 ? 之后直接使用链式方法调用来进一步缩短代码.
+
+panic场景选择:
+- 示例、代码原型和测试都非常适合 panic
+- 当开发者比编译器知道更多的情况
+
+    `let home: IpAddr = "127.0.0.1".parse().unwrap();`, 确定`127.0.0.1`是一个有效的 IP 地址, 无需处理`Result`
+
+判断 Result 的 Err 类型，获取 Err 类型的函数是`kind()`:
+```rust
+use std::io;
+use std::io::Read;
+use std::fs::File;
+
+fn read_text_from_file(path: &str) -> Result<String, io::Error> {
+    let mut f = File::open(path)?;
+    let mut s = String::new();
+    f.read_to_string(&mut s)?;
+    Ok(s)
+}
+
+fn main() {
+    let str_file = read_text_from_file("hello.txt");
+    match str_file {
+        Ok(s) => println!("{}", s),
+        Err(e) => {
+            match e.kind() {
+                io::ErrorKind::NotFound => {
+                    println!("No such file");
+                },
+                _ => {
+                    println!("Cannot read the file");
+                }
+            }
+        }
+    }
+}
+```
+
+### panic
+panic是线程级别的, 是安全的, 它不违反 Rust 的任何安全规则.
+
 std::panic::catch_unwind 会接收一个闭包并处理其中发生的灾难性故障. 它不会阻止灾难性故障的发生，它只是停止发生灾难性故障
 的线程中的堆栈展开. 且catch_unwind 不是 Rust 中处理错误的推荐方案, 因为它不能确保捕获所有灾难性故障， 例如让程序终止运行的故障.
 
@@ -1511,6 +2177,18 @@ std::panic::catch_unwind 会接收一个闭包并处理其中发生的灾难性�
 [profile.release]
 panic = "abort"
 ```
+
+展开栈是默认的诧异行为，但在两种情况下 Rust 不会展开栈:
+1. 如果在 Rust 展开第一个函数之后的清理期间 .drop() 方法触发了第二个诧异，那么这个panic会被认为是致命的. Rust 会停止展开并中止整个进程。
+2. Rust 的panic行为是可自定义的。如果编译时加上 -C panic=abort，那么编译后程序中的第一个panic就会立即中止进程.
+
+    编译时加上这个选项， Rust 则无须知道如何展开栈，因此能够减少编译后代码的大小.
+
+> 当出现 panic 时，程序默认会开始 展开（unwinding），这意味着 Rust 会回溯栈并清理它遇到的每一个函数的数据，不过这个回溯并清理的过程有很多工作. 另一种选择是直接 终止（abort），这会不清理数据就退出程序。那么程序所使用的内存需要由操作系统来清理. 如果需要项目的最终二进制文件越小越好, panic 时通过在 Cargo.toml 的 [profile] 部分增加 panic = 'abort'，可以由展开切换为终止.
+
+> 设置 RUST_BACKTRACE 环境变量来得到一个 backtrace. backtrace 是一个执行到目前位置所有被调用的函数的列表. Rust 的 backtrace 跟其他语言中的一样：阅读 backtrace 的关键是从头开始读直到发现你编写的文件, 这就是问题的发源地. 这一行往上是代码所调用的代码；往下则是调用该代码的代码.
+
+> 为了获取backtrace信息, 必须启用 debug 标识. 当不使用 --release 参数运行 cargo build 或 cargo run 时 debug 标识会默认启用.
 
 ## 宏
 ref:
@@ -2199,6 +2877,7 @@ fn main() {
 ### Operator Traits
 ref:
 - rust表达式小结 from `<<Rust程序设计>>#6.15 优先级与关联性`
+- 表达式优先级 from `<<Rust编程之道>>#2.12 表达式优先级`
 
 Rust 中的所有运算符都与 trait 相关, 如果想为自定义类型实现运算符，就必须实现相关的 trait.
 
