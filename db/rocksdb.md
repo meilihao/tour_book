@@ -384,6 +384,8 @@ SkipList Memtable，相比 HashSkipList Memtable 跨多个前缀查找的性能�
 ### Flush 和 Compaction 相关参数
 ref:
 - [RocksDB 7 终于解决了 Compaction 时性能下降问题](https://zhuanlan.zhihu.com/p/579468143)
+- [带你全面了解compaction 的13个问题](https://tidb.net/blog/eedf77ff)
+- [Rocksdb Compaction源码详解（二）：Compaction 完整实现过程 概览](https://blog.csdn.net/Z_Stand/article/details/107592966)
 
 RocksDB 的后台进程中，有持续不断的 Flush 和 Compaction 操作。前者将 MemTable 的内容刷写到磁盘的 SST 文件中；后者则会对多个 SST 文件做归并和重整，删除重复值，并向更高的层级（Level）移动。例如 L0 -> L1 等。
 

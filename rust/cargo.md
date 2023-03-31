@@ -48,7 +48,7 @@ cargo clippy: 类似eslint, 检查代码规范
 cargo tree: 查看第三方库的版本和依赖关系
 cargo bench: 运行benchmark(基准测试,性能测试)
 cargo udeps(第三方): 检查项目中未使用的依赖
-cargo update [-p <crate>] : 更新全部或某个依赖
+cargo update [-p <crate>] : 更新全部或某个依赖. 默认只更新小版本, 比如`0.3.14->0.3.20`, 大版本升级需修改Cargo.toml
 cargo package : 创建一个文件(`target/package/xxx-<version>.crate`）, 其中包含库的所有源文件，以及 Cargo.toml
 cargo package --list : 查看其中包含什么文件
 cargo login <apikey> : 登录crates.io

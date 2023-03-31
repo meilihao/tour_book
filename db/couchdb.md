@@ -661,6 +661,18 @@ if ('deleted' in doc) {
 emit([deleted],doc);
 ```
 
+### 将_id塞入doc.metadata
+1. 创建doc时, 已将_id放入doc.metadata
+
+1. 获取时塞入
+```js
+function(doc) {
+    metadata = JSON.parse(JSON.stringify(doc.metadata))
+    metadata.id = doc._id
+    emit([0], metadata);
+}
+```
+
 ### db清理
 参考:
 - [`POST /{db}/_compact`](https://docs.couchdb.org/en/main/api/database/compact.html)
