@@ -3,6 +3,8 @@
 
 > lynx不支持https
 
+类似: EWW(the Emacs Web Wowser)是Emacs24.4开始自带的一款web浏览器, 需要有libxml2的支持.
+
 ## build
 ```bash
 # dnf install g++
@@ -34,3 +36,6 @@
 /usr/local/lib
 # ldconfig
 ```
+
+### 支持图片
+w3m-img或w3m-inline-image

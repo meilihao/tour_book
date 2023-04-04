@@ -103,9 +103,9 @@ Multipart包括：
  在 Web 表单文件上传时使用.
 
  ```
-Content-Type: multipart/form-data; boundary=AaB03x
+Content-Type: multipart/form-data; boundary=AaB03x // boundary为分隔符
 　
---AaB03x
+--AaB03x // 分隔符前带`--`
 Content-Disposition: form-data; name="field1"
 　
 Joe Blow
@@ -114,7 +114,7 @@ Content-Disposition: form-data; name="pics"; filename="file1.txt"
 Content-Type: text/plain
 　
 ...（file1.txt的数据）...
---AaB03x--
+--AaB03x-- // 末尾分隔符后带`--`
 ```
 
 > 上传文件过程即是将文件编码为multipart/form-data后放到http.body里进行上传.

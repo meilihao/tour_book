@@ -502,3 +502,15 @@ upgrader由该服务启动, 即使使用了setsid来脱离从父进程继承而�
 >  `--remain-after-exit`: 可以将命令执行的stdout存入systemd log. 与`--scope`互斥
 
 > 在oracle linux 7.9 x64上systemd-run执行命令(执行bin文件, 其中通过bash执行了其他脚本, 且脚本逻辑正确. 但直接执行bin正常)时可能会莫名退出, 加`> /tmp/some-logs.log 2>&1`或`--remain-after-exit`可解决问题. 推测可能与`systemd-run`的`--wait`有关: [systemd-run 将会以异步模式在后台启动临时服务并在命令开始执行之后返回](http://www.jinbuguo.com/systemd/systemd-run.html)
+
+### systemd 计时器
+```config
+[Unit]
+Description=Backup
+Requires=myBackup.service
+[Timer]
+OnBootSec=30min
+OnUnitActiveSec=1d
+[Install]
+WantedBy=timers.target
+```
