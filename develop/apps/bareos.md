@@ -1347,6 +1347,12 @@ Alternatively you can use the redoc format: http://127.0.0.1:8000/redoc
 - 选中状态全传(可以剪枝:目录内容全选时可只传该目录id)
 
 ## plugin
+ref:
+- [Switching to Python 3](https://github.com/bareos/bareos/blob/master/docs/manuals/source/TasksAndConcepts/Plugins.rst)
+- [bacula插件编写初识](https://blog.csdn.net/wuyinghao59/article/details/46544079)
+- [Bacula Plugins](https://blog.51cto.com/u_15127599/3840837)
+- [Bareos FD Plugin API](https://docs.bareos.org/bareos-21/DeveloperGuide/pluginAPI.html)
+
 > [官方 plugins](https://github.com/bareos/bareos/tree/master/core/src/plugins/filed), [官方 contrib plugins](https://github.com/bareos/bareos/tree/master/contrib)和[开源plugins:"bareos-tasks-plugins"(其他它已包含在contrib plugins中)](https://github.com/marcolertora/bareos-tasks-plugins)
 
 bareos原生支持dir, storage, filedaemon的插件扩展. 使用插件前必须在配置中启用它们, **修改后需要重启服务**, 当前支持python 2/3. **bareos 20开始推荐使用python3, 虽然官方20.0.1目前plugins都是python2的**.
@@ -2990,6 +2996,12 @@ dnf group remove "Development Tools"
 bareos-fd的client/myself.conf是`Plugin Names = "python"`, 而vmware plugin`bareos-fd-vmware.py`是python3, 因此将其改为`Plugin Names = "python3"`即可.
 
 ### [bareos备份vmware](https://docs.bareos.org/TasksAndConcepts/Plugins.html#vmware-plugin)
+ref:
+- [Bareos VMware vSphere CBT备份插件](https://blog.csdn.net/allway2/article/details/107547210)
+- 还原逻辑
+
+    - [`self.vadp.start_dumper("restore")`](https://github.com/bareos/bareos/blob/Release/21.1.2/core/src/plugins/filed/python/vmware/BareosFdPluginVMware.py#L466)
+
 1. 先用`vmware_cbt_tool.py`将要备份的 VM 启用 CBT（更改块跟踪）
 
     没开启并备份时joblog会报`No snapshot was taken, skipping snapshot removal`
