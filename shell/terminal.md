@@ -32,7 +32,7 @@ tput和stty
 $ echo -e "\e[1;31m This is red text \e[0m" # 8/16 Colors
 ```
 
-`\e[1;<color>m`开始设置文本颜色, `\e[0m` 重置颜色.
+`\e[<color>m`开始设置文本颜色(`[`表示控制字符的开始, `m`表示控制字符的结束), `\e[0m` 重置全部属性, 这里即重置颜色.
 
 在bash中，escape字符可以是以下任一项开头：
 - `\e`
