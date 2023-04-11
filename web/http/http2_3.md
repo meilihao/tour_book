@@ -15,6 +15,7 @@ HTTP/2解决了HTTP的队头拥塞（head of line blocking）问题, 客户端�
 ## http3
 ref:
 - [检查是否已启用h3](https://http3check.net)
+- [HTTP/3 来了：QUIC 协议在 OPPO 的应用](https://my.oschina.net/u/4273516/blog/8597013)
 
 HTTP/3不存在明文的不安全版本.
 
