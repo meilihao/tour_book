@@ -59,6 +59,8 @@ $ sudo reboot
     $ sudo apt upgrade
     $ sudo do-release-upgrade --allow-third-party -d
     ```
+## arch安装
+`archinstall`
 
 ## FAQ
 ### do-release-upgrade 离线升级

@@ -29,3 +29,12 @@
 
 ## gui
 - [Pop!_OS COSMIC 桌面使用 Rust GUI 库 Iced 取代 GTK](https://www.oschina.net/news/212636/cosmic-desktop-iced-toolkit)
+- [Slint 1.0 正式发布，Rust 编写的原生 GUI 工具包](https://www.oschina.net/news/235410/slint-1-0-released)
+
+## next
+- [用Rust实现用户态高性能存储 - Wang Pu (王璞) from DatenLord](https://weibo.com/1945106210/JAflese1N?type=repost)
+
+## 备份
+- [rustic](https://github.com/rustic-rs/rustic)
+- [preserve](https://github.com/fpgaminer/preserve)
+- [conserve](https://github.com/sourcefrog/conserve)
