@@ -3052,3 +3052,6 @@ lstat demo在[docs/manuals/source/DeveloperGuide/api.rst](https://github.com/bar
 
 ### centos 8.5构建bareos 21.1.2的python-bareos.spec时`%py2_build`报`no job control`
 `yum install python2-rpm-macros`
+
+### bareos备份windows vss报错是乱码
+用Pluma打开查看或`iconv -f gbk -t utf8 win.log |less`
