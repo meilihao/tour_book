@@ -244,3 +244,24 @@ google-chrome-stable --proxy-server="socks5://127.0.0.1:1080" // 需梯子
 
 ### 恢复chrome的使用自定义证书的https拦截
 打开对应的网站, 点击url左侧的"不安全"按钮, 点击"开启警告".
+
+### linux rdp
+`apt install rdesktop && rdesktop 192.168.xxx.xxx`
+
+报错:
+- `Failed to initialize NLA, do you have correct Kerberos TGT initialized`
+
+    在系统属性-远程中开启：【允许远程协助连接这台计算机】+【允许远程连接到此计算机】，如果勾选了【仅运行运行使用网络级别身份验证的远程桌面单位计算机连接】, 那么 rdesktop 就报该错
+
+
+其他软件:
+- xfreerdp
+- GNOME Connections
+
+    `flatpak install flathub org.gnome.Connections`
+- krdc
+
+    `flatpak install flathub org.kde.krdc`
+- Remmina
+
+    `flatpak install flathub org.remmina.Remmina`
