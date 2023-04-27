@@ -68,6 +68,7 @@
 - [动态追踪技术：Linux喜迎DTrace](https://riboseyim.github.io/2016/11/26/DTrace/)
 - [程序员应该知道的延迟](https://people.eecs.berkeley.edu/~rcs/research/interactive_latency.html)
 - [Linux 性能工具图谱](http://www.brendangregg.com/linuxperf.html)
+- [零拷贝技术](https://colobu.com/2022/11/21/zero-copy-and-how-to-use-it-in-go-2/)
 
 ## kernel
 - [内核如何管理内存](https://linux.cn/article-9393-1.html)

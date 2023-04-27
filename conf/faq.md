@@ -265,3 +265,14 @@ google-chrome-stable --proxy-server="socks5://127.0.0.1:1080" // 需梯子
 - Remmina
 
     `flatpak install flathub org.remmina.Remmina`
+
+### 忘记密钥环密码, chrome密码管理器变空
+1. 删除原先密钥环
+
+    ```bash
+    $ cd ~/.local/share/keyrings/
+    $ cp login.keyring login.keyring.bak
+    seahorse # 通过seahorse删除左侧"登录"项
+    $ sudo reboot
+    ```
+1. 打开chrome, 登入google账号等待同步即可

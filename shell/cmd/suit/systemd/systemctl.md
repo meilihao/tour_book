@@ -66,7 +66,7 @@ chen      2151     1  0 09:00 ?        00:00:00 /lib/systemd/systemd --user
 
 1. 列出所有可用单元
  ```shell
-# systemctl list-unit-files
+# systemctl list-unit-files [--type=service --state=enabled]
 UNIT FILE                                  STATE
 proc-sys-fs-binfmt_misc.automount          static
 dev-hugepages.mount                        static

@@ -165,7 +165,7 @@ git config --global http.lowSpeedTime 300
 以上配置后，只有持续300秒以上的时间内传输速率都低于 1KB/s 的话才会 timeout
 
 ### shallow update not allowed
-该仓库使用`git clone –depth=1`**浅克隆**而来, 其有限制: 不能将它推送到一个新的存储库.
+该仓库使用`git clone --depth=1`**浅克隆**而来, 其有限制: 不能将它推送到一个新的存储库.
 
 解决方法: 先使用`git fetch --unshallow <origin_repo>`补全再推送即可.
 
@@ -464,3 +464,14 @@ Host github.com
 git diff branch1 branch2 [--stat] # 显示差异. `--stat`: 仅显示差异的文件列表
 git diff branch1 branch2 <file_path> # 比较指定文件差异
 ```
+
+### 将修改文件发送到remote
+`git diff --name-only [--relative=xxx] [--cached] [--diff-filter=AM] | xargs -I '{}' scp -i ~/.ssh/xxx '{}' root@192.168.16.100:/opt/xxx/{}`
+
+选项:
+- relative : 调整相对路径
+
+> diff-filter from `git diff --name-status`
+
+### clone带submodule的repo
+`git clone --recursive https://github.com/cloudflare/quiche`

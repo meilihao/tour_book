@@ -32,6 +32,8 @@ zfs有两个工具: zpool和zfs. zpool用于维护zfs pools, zfs负责维护zfs 
 > zgenhostid : generate and store a hostid in /etc/hostid
 > zvol_wait :  导入pool时, 等待/dev/zvol下的所有符号链接都创建后返回
 
+> [zfs-2.1.10 : Removed Python 2 and Python 3.5- support](https://github.com/openzfs/zfs/releases/tag/zfs-2.1.10)
+
 ## 概念
 参考:
 - [ZFS 术语](https://docs.oracle.com/cd/E26926_01/html/E25826/ftyue.html)

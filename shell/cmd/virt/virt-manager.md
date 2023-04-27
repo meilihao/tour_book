@@ -294,3 +294,6 @@ ref:
 
 ### 使用 qemu monitor
 `virsh# qemu-monitor-command vm-name --hmp "pmemsave 0 0x20000000 /tmp/dumpfile"`
+
+### windows 2012一键接管卡在启动的转圈画面
+卡住超半小时, 将该vm先virsh destroy再virsh start后能进入系统, 原因未知.

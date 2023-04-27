@@ -38,3 +38,7 @@
 - [rustic](https://github.com/rustic-rs/rustic)
 - [preserve](https://github.com/fpgaminer/preserve)
 - [conserve](https://github.com/sourcefrog/conserve)
+
+## web
+- [salvo](https://salvo.rs/zh-hans/)
+- [Web Frameworks Benchmark - rust](https://web-frameworks-benchmark.netlify.app/result?l=rust)

@@ -15,6 +15,7 @@
 
         能获取到`src.rpm`
 - [repology.org/projects](https://repology.org/projects/)
+- [Arch Linux 的最佳 GUI 包管理器](https://linux.cn/article-15727-1.html)
 
 ### 构建源
 - [CentOS 的 SRPM](http://mirror.centos.org/)
@@ -60,7 +61,7 @@ $ sudo reboot
     $ sudo do-release-upgrade --allow-third-party -d
     ```
 ## arch安装
-`archinstall`
+[`archinstall`](https://www.debugpoint.com/archinstall-guide/)
 
 ## FAQ
 ### do-release-upgrade 离线升级
@@ -84,3 +85,14 @@ do-release-upgrade 会读取文件 /etc/update-manager/meta-release 以查找发
     ```
 1. 修改`/etc/update-manager/meta-release`将`URI_LTS = https://changelogs.ubuntu.com/meta-release-lts`改为`URI_LTS = file:///etc/update-manager/meta-release-lts`
 1. 再次执行`do-release-upgrade -d`即可
+
+### do-release-upgrade调试
+```bash
+export DEBUG_UPDATE_MANAGER=1
+do-release-upgrade
+```
+
+### ubuntu hwe
+hwe: Ubuntu LTS enablement（也叫 HWE 或 Hardware Enablement）stacks 用于支持不断更新的硬件技术, 能够为现存的 Ubuntu LTS 提供更新的内核与图形支持, 适用于桌面版、服务器版甚至 Cloud 版和虚拟镜像.
+
+`apt install linux-generic-hwe-22.04`

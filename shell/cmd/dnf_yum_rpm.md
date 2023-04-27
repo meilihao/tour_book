@@ -143,7 +143,7 @@ ref:
 # repoquery -i php-intl # repoquery from yum-utils. 获取包信息, 包括来源repo. `-i`,展示详情
 # yum/dnf list installed | grep @epel # 已安装包的来源repo
 # dnf repo-pkgs <repoid> list installed # 同上
-# createrepo /root/rpmbuild/RPMS/aarch64 # 创建repo
+# createrepo /root/rpmbuild/RPMS/aarch64 # 创建repo. rpm repo支持软件多版本共存的, 因此离线部署时便于处理版本变化(只需累加即可)
 ```
 
 # yum

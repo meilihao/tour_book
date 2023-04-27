@@ -88,3 +88,27 @@ if [ "$?" -ne 0 ]; then
     return 1
 fi
 ```
+
+### 判断文件是否存在
+```bash
+# 方法1, 推荐:
+if compgen -G "${PROJECT_DIR}/*.png" > /dev/null; then
+    echo "pattern exists!"
+fi
+
+# 方法2:
+# ls returns non-zero when the files do not exist
+if ls /path/to/your/files* 1> /dev/null 2>&1; then
+    echo "files do exist"
+else
+    echo "files do not exist"
+fi
+
+# 方法3:
+if stat --printf='' /path/to/your/files* 2>/dev/null
+then
+    echo found
+else
+    echo not found
+fi
+```

@@ -3,6 +3,7 @@
 - [Linux性能分析工具Perf简介](https://segmentfault.com/a/1190000021465563)
 - [利用perf剖析Linux应用程序](https://blog.gmem.cc/perf)
 - [Linux性能优化实战学习笔记：第四十九讲](https://www.cnblogs.com/luoahong/p/11577395.html)
+- [一文看懂 Linux 性能分析｜perf原理](https://zhuanlan.zhihu.com/p/573633261)
 
 ## 选项
 - -g : 开启调用关系分析

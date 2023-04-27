@@ -85,7 +85,7 @@ alter table xxx drop constraint yyy;
 
 ## 添加用户
 ```sql
-postgres=# CREATE DATABASE mytestdb;
+postgres=# CREATE DATABASE mytestdb [owner postgres];
 CREATE DATABASE
 postgres=# CREATE USER mytestuser WITH ENCRYPTED PASSWORD '123456'; # 或`create user root with password 'password';`
 CREATE ROLE
@@ -137,5 +137,6 @@ SELECT u.datname  FROM pg_catalog.pg_database u where u.datname='xxx'; # 检查�
 
 ## dump
 ```bash
-pg_dump -h localhost -U postgres testdb
+pg_dump -h localhost -U postgres testdb > db.sql
+psql -h localhost -U postgres -d testdb < db.sql
 ```

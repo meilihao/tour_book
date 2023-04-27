@@ -16,3 +16,11 @@ udev 管理工具
 ## FAQ
 ### udev rules优先级
 /etc/udev/rules.d中的任何规则都将优先于/lib/udev/rules.d中的规则
+
+### `/etc/udev/rules.d/99-vmware-scsi-udev.rules:8 Invalid value "/bin/sh -c 'echo 180 >/sys$DEVPATH/timeout'" for RUN (char 27: invalid substitution type), ignoring, but please fix it.`
+```bash
+vim /etc/udev/rules.d/99-vmware-scsi-udev.rules
+..., RUN+="/bin/sh -c 'echo 180 >/sys$$DEVPATH/device/timeout'"
+```
+
+> DEVPATH from `udeadm info /dev/sda`, `/sys$$DEVPATH`即device path
