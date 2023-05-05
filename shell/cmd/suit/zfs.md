@@ -735,7 +735,12 @@ arcstat -f time,hit%,dh%,ph%,mh% 1
 `cat /proc/spl/kmem/slab |awk '{a+=$3}END{print a}'`, **这部分memory不包括arc, 仅是zfs objects**
 
 ### zfs命令卡住
-用iostat发现磁盘写入超过20MB/s时, `%util`已超过90%, await也挺高, 是磁盘性能不够导致. 磁盘空闲后, 该命令可很快成功.
+- 用iostat发现磁盘写入超过20MB/s时, `%util`已超过90%, await也挺高, 是磁盘性能不够导致. 磁盘空闲后, 该命令可很快成功.
+- 服务器存在fc多路径盘, fc离线后, 存储软件将pool使用的盘的软连接指向了其多路径中的某条路径的磁盘, 从而导致zfs异常, 同时导致使用本地盘创建的其他pool创建卷时也卡住了
+
+	syslog里存在分区信息错误的record, 这里是`kernel: GPT:disk_guids don't match.\nkernel: GPT:partition_entry_array_crc32 values don't match\nkernel: GPT: Use GNU Parted to correct GPT errors.`
+
+	解决方法: 重新扫描fc, 待磁盘上线后重建软连接, 可能需要重启系统.
 
 ### zfs fs写放大35左右%
 ref:
