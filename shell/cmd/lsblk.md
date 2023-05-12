@@ -17,3 +17,7 @@
 - -S/--scsi : 仅输出scsi设备
 - -t : 显示拓扑结构信息
 - --json : json输出
+
+## FAQ
+### holders,slaves
+sysfs 有 `/sys/block/$device/{holders,slaves}` 来表示哪些设备依赖于哪些设备, 比如lvm或软raid. 在lsof和fuser都找不到被占用问题时可尝试.
