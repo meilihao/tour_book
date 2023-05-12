@@ -15,7 +15,7 @@ rust三大设计哲学:
 ref:
 - [Rust、Go、C ，哪个才是“内存管理大师”？](https://mp.weixin.qq.com/s?__biz=MjM5ODI5Njc2MA==&mid=2655873042&idx=1&sn=db17488d9ea741c280cf26ee6fb4b8ea)
 
-	类型安全即类型系统可以保证程序的行为是意义明确, 不出错的. c/c++的类型系统不是类型安全的, 比如它们不检查数组越界, 这导致发生了语音规范规定之外的行为即未定义行为(Undefined Behavior).
+	类型安全即类型系统可以保证程序的行为是意义明确, 不出错的. c/c++的类型系统不是类型安全的, 比如它们不检查数组越界, 这导致发生了语音规范规定之外的行为即未定义行为(Undefined Behavior). 类型系统其实就是，对类型进行定义、检查和处理的系统.
 
     > 类型安全: 类型系统给内存中的plain data赋予了类型信息，如果不按照类型信息来解释内存中的数据，应该产生编译错误或者 产生well-specified的运行时错误.
 
@@ -1368,6 +1368,7 @@ type Carry = u8;
 ## 基本数据类型
 ref:
 - [字符串操作 - 《Rust程序设计 - 17.3 String与str》]()
+- [rust原生类型](https://doc.rust-lang.org/std/index.html#primitives)
 
 基本数据类型也叫标量类型(scalar type), 表示只能存储单个值的类型.
 
@@ -1847,7 +1848,7 @@ rust提供5种复合类型:
 |集合|说明|其他语言中类似的集合(C++/Java/Python)|
 |Vec<T>|可增数组|vector/ArrayList/list)|
 |VecDeque<T>|双端队列（可增长环形缓冲区）|deque/ArrayDeque/collections.deque|
-|LinkedList<T>|双向链表|list/LinkedList/–|
+|[LinkedList<T>](https://doc.rust-lang.org/std/collections/struct.LinkedList.html)|双向链表|list/LinkedList/–|
 |BinaryHeap<T> where T: Ord|最大堆|priority_queue/PriorityQueue/heapq|
 |HashMap<K, V> where K: Eq + Hash|键 – 值散列表|unordered_map/HashMap/dict|
 |BTreeMap<K, V> where K: Ord|有序键 – 值表|map/TreeMap/–|
@@ -2062,6 +2063,8 @@ fn main() {
 
 	Rc 内部会保留两种引用：强引用（ Rc<T>）和弱引用（ Weak<T>）。二者都会维护每种类型的引用数量的计数，但是仅在强引用计数值为零时，才会释放该值. 它的弱引用可打破引用循环.
 
+    > Weak 相当于一个弱化版本的 Rc，不参与到引用计数的计算中，而 Weak 可以 upgrade 到 Rc 来使用.
+
 	Rc通过clone创建的引用是强引用; 用Rc::downgrade创建的是弱引用, 它的指针没有所有权, 所以被称为弱引用.
 
 	```rust
@@ -2248,7 +2251,7 @@ fn main() {
 ## trait
 接口是一个软件系统开发的核心部分，它反映了系统的设计者对系统的抽象理解。作为一个抽象层，接口将使用方和实现方隔离开来，使两者不直接有依赖关系，大大提高了复用性和扩展性.
 
-很多编程语言都有接口的概念，允许开发者面向接口设计，比如 Java 的 interface、Elixir 的 behaviour、Swift 的 protocol 和 Rust 的 trait.
+很多编程语言都有接口的概念，允许开发者面向接口设计，比如 Java/go 的 interface、Elixir 的 behaviour、Swift 的 protocol 和 Rust 的 trait.
 
 当在运行期使用接口来引用具体类型的时候，代码就具备了运行时多态的能力. 在运行时，一旦使用了关于接口的引用，变量原本的类型被掩藏，此时需要一个胖指针获取这个引用具备什么样的能力, 即在生成这个引用的时候，需要构建胖指针，除了指向数据本身外，还需要指向一张涵盖了这个接口所支持方法的列表, 这个列表，就是熟知的虚表（virtual table）.
 

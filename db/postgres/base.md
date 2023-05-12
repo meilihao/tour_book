@@ -398,6 +398,12 @@ $ psql -d test -U postgres -f /home/chen/test_backup # 将备份的数据库还�
 $ pg_restore -d test -U postgres -C /home/chen/test_backup # 将备份的数据库还原, `-C`表示在恢复数据库之前先创建它
 ```
 
+sql:
+```
+$ pg_dump -U postgres test > xxx.sql
+$ psql -U postgres -d test < db_backup.sql
+```
+
 ## SQL说明
 ```sql
 CREATE DATABASE mytest

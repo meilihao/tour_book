@@ -2473,3 +2473,12 @@ pdb 命令行：
 madbg attach <pid>
 ipdb> help # 查看帮助
 ```
+
+## celery
+### redis keys
+- celery：表示当前正在队列中的 task，等待被 worker 所接收. celery 消失说明任务已经被启动的 worker 接收了即当前没有等待被接收的任务
+- `_kombu.binding.celery`: celery 使用 kombu 维护消息队列
+- `_kombu.binding.celery.pidbox`: kombu 维护
+- `_kombu.binding.celeryev`: kombu 维护, 用来记下当前连接的 worker
+- unacked：被 worker 接收了但是还没开始执行的 task 列表
+- unacked_index：用户标记上面 unacked 的任务的 id，理论上应该与 unacked 一一对应的

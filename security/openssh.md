@@ -81,6 +81,8 @@ ssh-copy-id -i ~/.ssh/id_rsa.pub root@192.168.15.241
 cat ~/.ssh/id_rsa.pub | ssh root@120.26.38.248 'cat >> ~/.ssh/authorized_keys'
 ```
 
+ssh-copy-id添加的pub key是追加到authorized_keys末尾的, 且不检查是否重复.
+
 ### 修改SSH配置文件
 
 ```
@@ -89,8 +91,8 @@ vi /etc/ssh/sshd_config
 
 Protocol 2
 
-RSAAuthentication yes
-PubkeyAuthentication yes
+#RSAAuthentication yes # Protocol 1支持的配置
+PubkeyAuthentication yes # Protocol 2支持的配置
 #指定公钥数据库文件
 #AuthorsizedKeysFile .ssh/authorized_keys
 
@@ -230,3 +232,19 @@ puttygen id_rsa.ppk -O private-openssh -o id_rsa.pem
 ```bash
 puttygen id_rsa -O private-openssh -o id_rsa.pem
 ```
+
+### ssh root 密码无法登入
+env: openssh 7.4, 且authorized_keys已添加pub key
+
+当前配置:
+```bash
+PermitRootLogin yes
+StrictModes yes
+PubkeyAuthentication yes
+PasswordAuthentication yes
+AuthenticationMethods publickey,password
+```
+
+直接使用`ssh root@192.168.1.2`直接被拒绝; 使用`ssh -i <private key> root@192.168.1.2`时出现密码提示, 输入密码后成功登入.
+
+修改方法: 注释`AuthenticationMethods`并重启ssh, `ssh -i <private key> root@192.168.1.2`直接登入成功.

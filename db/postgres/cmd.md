@@ -93,6 +93,7 @@ postgres=# GRANT ALL PRIVILEGES ON DATABASE mytestdb to mytestuser;
 GRANT
 ALTER DATABASE name OWNER TO new_owner; -- 修改db owner
 ALTER TABLE <tablename> OWNER TO <username>; -- 修改table owner
+postgres=# drop user xxx;
 ```
 
 ## sql结果保存到file

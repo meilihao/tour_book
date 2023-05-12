@@ -103,6 +103,7 @@ dot -Tpng -o a.png a.dot
 
 ## crypto
 - [go-dongle](github.com/golang-module/dongle)
+- [go-cryptobin](https://github.com/deatil/go-cryptobin)
 
 ## encoding
 ### xlsx

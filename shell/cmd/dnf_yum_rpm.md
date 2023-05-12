@@ -140,6 +140,8 @@ ref:
 # rpm -qpl xxx.rpm # 查看rpm文件信息
 # rpm -q --scripts <pkg> # 查看已安装的pkg的rpm scripts
 # rpm -e --test centos-release  # 检查谁依赖了这个包
+# rpm -e --nodeps packageA # keep deps
+# rpm -K packageA # check signature
 # repoquery -i php-intl # repoquery from yum-utils. 获取包信息, 包括来源repo. `-i`,展示详情
 # yum/dnf list installed | grep @epel # 已安装包的来源repo
 # dnf repo-pkgs <repoid> list installed # 同上
@@ -159,6 +161,7 @@ rehat开发的包管理软件, 已被dnf取代.
 # yum reinstall # 软件包名称 重新安装软件包
 # yum update # 软件包名称 升级软件包
 # yum remove # 软件包 移除软件包
+# yum remove --noautoremove <package name> # keep deps, started from coentos8
 # yum clean all # 清除所有仓库缓存
 # yum check-update # 检查可更新的软件包
 # yum grouplist # 查看系统中已经安装的软件包组

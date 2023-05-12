@@ -3,7 +3,7 @@
 - [CouchDB 教程](https://www.w3cschool.cn/couchdb/)
 - [CouchDB 让人头痛的十大问题](https://www.linuxidc.com/Linux/2012-02/54134.htm)
 
-**强烈推荐不使用它, 坑很深. 个人体验是小众且应用范围窄, 开发麻烦, 查询麻烦等, 总之是麻烦比解决方法多**, 推荐使用tidb cluster代替它:
+**强烈推荐不使用它, 坑很深. 个人体验是小众且应用范围窄, 开发麻烦, 查询麻烦等, 且主流db都支持复制, couchdb复制(异步)也没有优势, 总之是麻烦比解决方法多.**, 推荐使用tidb cluster代替它:
 1. doc频繁变动, couchdb又会保存历史version, 容易耗光存储
 
 存储格式：JSON : **没有表的概念，数据直接以文档的形式存储在数据库中，每个数据库是一个独立的文档集合**, 因此其数据库就类似于sql的table.
@@ -681,3 +681,63 @@ function(doc) {
 存储空间耗光时couchdb的表现: 访问couchdb时好时坏.
 
 > 清理操作也需要空间: 它是先生成新文件再删除旧文件的操作.
+
+### 复制查询
+log查询场景:
+```
+{
+    "_id":""
+    "_rev":""
+    "metadata":{
+        "user": "x",
+        "record_at": 0
+    }
+}
+```
+
+针对`metadata.user`为空时即系统log, 该记录所有用户都需要展示, 且按record_at升序排列, 该需求无法用视图实现.
+
+解决方法:
+1. 对record_at创建index
+
+    ```
+    POST /db/_index HTTP/1.1
+    Content-Type: application/json
+
+    {
+        "index": {
+            "fields": ["metadata.record_at"]
+        },
+        "name" : "record_at-index",
+        "type" : "json"
+    }
+    ```
+1. 查询
+
+    ```
+    POST /movies/_find HTTP/1.1
+    Accept: application/json
+    Content-Type: application/json
+
+    {
+        "selector": {
+            "metadata.user": {"$or": ["","x"]}
+        },
+        "fields": ["_id", "_rev", "metadata"], // 只能提取第一层的字段, 比如`["_id", "_rev", "metadata", "metadata.user"]`时输出结果不包含`metadata.user`
+        "sort": [{"metadata.record_at": "asc"}],
+        "limit": 2,
+        "skip": 0,
+        "execution_stats": true
+    }
+    ```
+
+上面方法缺点: 无法获取总页数. 可通过组合视图即查询`key=[""]+key=["x"]`获取总页数:
+```
+{
+    function(doc){
+        if (doc.status!="deleted"){
+            emit([doc.metadata.user], doc)
+        }
+    }
+}
+```
