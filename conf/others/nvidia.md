@@ -105,9 +105,13 @@ xrandr --dpi 96
 通过`locale nvidia`清理**所有**旧安装的nvidia文件后重新安装即可.
 
 ### `apt install nvidia-driver-525`重启黑屏, 桌面只有鼠标的箭头
+os: ubuntu 22.04
+
 ```bash
 # cat /etc/X11/default-display-manager
 lightdm
 # systemctl start lightdm # 此时就能正常进入桌面, 且之后重启也不会再黑屏
 # nvidia-smi # 查看是否正确
 ```
+
+后面一次重启还是出现黑屏, 查看lightdm已启动, 重启lightdm后能进入桌面但下方的任务栏消失. 重启后选择kernel 5.19(原先是6.1.28)一切正常.
