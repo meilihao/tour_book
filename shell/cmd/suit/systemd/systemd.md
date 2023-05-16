@@ -514,3 +514,13 @@ OnUnitActiveSec=1d
 [Install]
 WantedBy=timers.target
 ```
+
+### systemd service获取不到所需环境变量
+ref:
+- [Make systemd service inherit environment variables from /etc/profile.d](https://unix.stackexchange.com/questions/675521/make-systemd-service-inherit-environment-variables-from-etc-profile-d)
+
+systemd service的环境变量与shell env无关, 因此systemd提供了Environment, EnvironmentFile.
+
+见`man 5 systemd.exec`.
+
+> `ExecStartPre=/usr/bin/bash xxx.sh`无用, 因为执行ExecStart前ExecStartPre已结束.

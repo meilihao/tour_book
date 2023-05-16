@@ -50,6 +50,7 @@ $ ./configure --target-list="x86_64-softmmu,x86_64-linux-user,aarch64-softmmu,aa
               --enable-zstd \
               --enable-linux-io-uring \
               --mandir="\${prefix}/share/man"
+            #   --disable-docs
     		#   --enable-opengl \
             #   --enable-gtk
 $ make -j $(nproc) && sudo make install
@@ -233,6 +234,12 @@ $ ln -sf /usr/bin/qemu-system-x86_64 /usr/libexec/qemu-kvm
 qemu默认会启动一个vnc server(port 5900), 可用vncviewer工具连上该server来查看guest.
 
 > centos 7常使用tigervnc-server和tigervnc作为vnc server和vncviewer.
+
+## qemu-system-riscv64
+ref:
+- [通过 QEMU 仿真 RISC-V 环境并启动 OpenEuler RISC-V 系统](https://github.com/openeuler-mirror/RISC-V/blob/master/doc/tutorials/vm-qemu-oErv.md)
+
+> ubuntu 22.04: qemu-system-riscv64在qemu-system-misc中, 推荐手动编译.
 
 ## qemu monitor
 进入: 鼠标点击qemu窗口，然后ctrl+alt+2即可切换到控制台; ctrl+alt+1回到guest窗口.
