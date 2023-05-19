@@ -40,7 +40,7 @@ VG管理工具
     ```bash
     # vgscan --reportformat json
     ```
-- vgdisplay: 显示卷组详细信息
+- vgdisplay: 显示卷组详细信息. `-v`, 显示其上的lv和构成该vg的pv信息
 - vgcreate: 创建卷组
 - vgextend: 扩展卷组
 - vgreduce: 缩小卷组

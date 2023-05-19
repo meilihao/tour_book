@@ -8,7 +8,7 @@ ref:
 env: ubuntu 22.04
 
 ```bash
-$ apt install bochs bximage
+$ apt install bochs bochs-sdl bximage # 默认安装的wx在当前环境会崩溃, 因此使用sdl
 $ bochs -n # see Bochs 2.7
 $ bochs --help cpu
 $ bximage # 下面是创建disk image的交互式输入参数example
@@ -64,9 +64,9 @@ log: bochsout.txt
 mouse: enabled=0  
    
 # enable keymapping, using Us layout as default  
-keyboard:keymap=/usr/share/bochs/keymaps/x11-pc-us.map
+keyboard:keymap=/usr/share/bochs/keymaps/sdl2-pc-us.map
 
-config_interface: wx
+display_library: sdl2
 $ bochs -f bochsrc
 ```
 
@@ -158,4 +158,10 @@ display_library:sdl2
 display_library追加`, options="gui_debug"`即可, 已测试x,sdl2
 
 ### `bx_dbg_read_linear: physical memory read error (phy=0x0000322f3130, lin=0x00000000322f3130)`
+ref:
+- [bx_dbg_read_linear: physical memory read error](https://github.com/bochs-emu/Bochs/issues/50)
+- [[SeaBIOS] physical memory read error](https://sourceforge.net/p/bochs/discussion/39592/thread/4f3d95a9/)
+
+       可能是bios问题. 将romimage换成/usr/share/seabios/bios.bin后, "physical memory read error"消失, 但bochs还是黑屏. 使用自编译的seabios-1.16.2构建的bin也是黑屏.
+
 0x0000322f3130约在800M位置, 将megs改为1024(2000年时使用megs=32没遇到过该问题), 不再报该错误, 但还是黑屏, 看不到bios界面. 自编译bochs也无法解决该问题, 推荐qemu.

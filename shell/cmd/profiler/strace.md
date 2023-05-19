@@ -4,6 +4,13 @@
 
 > strace的负载很高.
 
+类似的不同作用的trace还有:
+- ltrace: 库文件调用跟踪器
+
+  strace也能查看系统调用, 但它查看的并不是最终的系统调用, 而是系统调用的封装函数.
+- ptrace: 进程跟踪器
+- ftrace: 包含一系列跟踪器，用于不同的场合，比如跟踪内核函数调用(function tracer)、跟踪上下文切换(sched_switch tracer)、查看中断被关闭的时长(irqsoff tracer)、跟踪内核中的延迟以及性能问题等. 它是内建于Linux的内核跟踪工具，依赖于内核配置宏(Kernel Hacking->Tracers)和debugfs.
+
 ## 选项
 - -c : 统计每一系统调用的所执行的时间,次数和出错的次数等, 并在退出时汇总信息
 - -d : 在stderr上输出strace自身的调试信息

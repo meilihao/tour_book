@@ -466,3 +466,6 @@ libvirt 5.3 引入了对 QEMU 自 QEMU 2.9 提供的固件自动选择功能的�
 hostdev为vm提供对 PCI 设备的直接访问, 缺点是无法模拟不同的设备类型. 因此, vm必须有一个可用的驱动程序，该驱动程序与管理程序提供的硬件类型相匹配.
 
 direct并部署真的direct, 它依赖于管理程序配置的网络接口来提供与客户操作系统的连接. 它允许 KVM 本地模拟一些常见的网络接口类型，这些类型通常存在于大多数当前和旧版操作系统中.
+
+### `qemu-system-x86_64 -fda test.img`报`qemu: module ui-ui-gtk not found, do you want to install qemu-system-gui package?`
+`apt install qemu-system-gui`

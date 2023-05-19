@@ -571,6 +571,9 @@ env:
 
 当前观察到x86仅支持一个ide controller.
 
+### cdrom启动"No bootable device"
+bus使用了scsi, 换成sata,ide就正常了.
+
 ### 创建vm时将默认q35改为i440fx, 导致创建vm报错`must be model='pci-root' for this machine type, but model='pcie-root' was found instead`
 ref:
 - [virt-manager#398](https://github.com/virt-manager/virt-manager/issues/398)
