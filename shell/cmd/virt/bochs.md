@@ -2,7 +2,7 @@
 ref:
 - [bochs一般用法](https://xlem0n.gitee.io/2019/10/23/2019-10-23-%E7%95%AA%E5%A4%96%E7%AF%87%E2%80%94%E2%80%94boch%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95-2019/)
 
-**推荐使用qemu, FAQ中的`physical memory read error`无法解决**.
+**推荐使用qemu-system-i386, FAQ中的`physical memory read error`无法解决**.
 
 ## 安装
 env: ubuntu 22.04
@@ -43,6 +43,7 @@ BootMessage:  db "Hello,OS world!"
 	dw 0xaa55
 $ nasm boot.asm -o boot.bin
 $ dd if=boot.bin of=test.img bs=512 count=1 conv=notrunc
+$ hexdump -C boot.img
 $ vim bochsrc # bochsrc example: /usr/share/doc/bochs/examples/bochsrc.gz
 # how much memorythe emulated machine will have  
 megs: 32  
@@ -164,4 +165,4 @@ ref:
 
        可能是bios问题. 将romimage换成/usr/share/seabios/bios.bin后, "physical memory read error"消失, 但bochs还是黑屏. 使用自编译的seabios-1.16.2构建的bin也是黑屏.
 
-0x0000322f3130约在800M位置, 将megs改为1024(2000年时使用megs=32没遇到过该问题), 不再报该错误, 但还是黑屏, 看不到bios界面. 自编译bochs也无法解决该问题, 推荐qemu.
+0x0000322f3130约在800M位置, 将megs改为1024(2000年时使用megs=32没遇到过该问题), 不再报该错误, 但还是黑屏, 看不到bios界面. 自编译bochs也无法解决该问题, 推荐qemu-system-i386.

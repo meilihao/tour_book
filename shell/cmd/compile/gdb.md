@@ -63,6 +63,7 @@ gdb中命令：
     set print union : 设置显示结构体时，是否显式其内的联合体数据
     set print object : 在C++中，如果一个对象指针指向其派生类，如果打开这个选项，GDB会自动按照虚方法调用的规则显示输出，如果关闭这个选项的话，GDB就不管虚函数表了
     set language <lan> : 设在程序语言类型
+    set disassemble-next-line on: si时默认显示下一条指令
 (gdb) next：单步调试（逐过程，函数直接执行）,简写n
 
     nexti/ni : 单步跳过下一条指令(不进入函数) 
@@ -107,12 +108,13 @@ gdb中命令：
     格式: `x/<n><format><size> ADDRESS`:
     参数: n、f、u是可选的参数:
     - n 是一个正整数，表示读取n个单位的内存
-    - format 表示显示的格式，print的格式. 如果地址所指的是字符串，那么格式可以是s，如果地十是指令地址，那么格式可以是i.
+    - format 表示显示的格式，print的格式. 如果地址所指的是字符串，那么格式可以是s; 如果是指令地址，那么格式可以是i; x(hex); d(deciaml), c(char)等
     - size 表示每个单位的字节数，如果不指定的话，GDB默认是4个bytes. u参数可以用下面的字符来代替，b表示单字节，h表示双字节，w表示四字节，g表示八字节. 当指定了字节长度后，GDB会从指内存定的内存地址开始，读写指定字节，并把其当作一个值取出来.
 
     example:
     - `x /3uh ${addr}` ：比如从内存地址0x54320读取内容, 否则从上次读取的结尾开始，h表示以双字节为一个单位，3表示三个单位，u表示按十六进制显示
     - x/5i $cs*16+$pc <=> display /5i $cs*0x10+$pc  # 基于下一条指令 disassemble 5条汇编指令(包括下一条指令自身)
+    - `x/2xb 0x7c00+510`: mbr标志
 (gdb) finish：结束当前函数，返回到函数调用点
 (gdb) continue：继续运行,简写c
 
@@ -184,6 +186,9 @@ gdb中命令：
     set disassembly-flavor intel/att : 切换汇编方言 : GDB默认汇编方言是AT&T格式
     disassemble start,end/start,+length : 反汇编地址范围. length为连续解析的字节长度
     disassemble /r : 可以用16进制形式显示程序的原始机器码
+
+    example:
+    - `disas 0x7c00,+10`, 反汇编结果是32bit寄存器格式, 可当前实际是在实模式下, 自己换算成16bit寄存器位宽即可.
 (gdb) set follow-fork-mode child#Makefile项目管理：选择跟踪父子进程（fork()）
       ctrl+c：退出输入
 (gdb) signal <singal>: 产生信号量
