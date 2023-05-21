@@ -71,6 +71,8 @@ display_library: sdl2
 $ bochs -f bochsrc
 ```
 
+> hd用`ata0-master: type=disk, path="boot.img", mode=flat, sect_size=4096`+`boot: disk`
+
 组件说明:
 - bochs-wx: WxWindows plugin for Bochs
 - bximage: 制作bochs image工具
@@ -163,6 +165,6 @@ ref:
 - [bx_dbg_read_linear: physical memory read error](https://github.com/bochs-emu/Bochs/issues/50)
 - [[SeaBIOS] physical memory read error](https://sourceforge.net/p/bochs/discussion/39592/thread/4f3d95a9/)
 
-       可能是bios问题. 将romimage换成/usr/share/seabios/bios.bin后, "physical memory read error"消失, 但bochs还是黑屏. 使用自编译的seabios-1.16.2构建的bin也是黑屏.
+       可能是bios问题, 大概率是vgarom. 将romimage换成/usr/share/seabios/bios.bin后, "physical memory read error"消失, 但bochs还是黑屏. 使用自编译的seabios-1.16.2构建的bin也是黑屏.
 
 0x0000322f3130约在800M位置, 将megs改为1024(2000年时使用megs=32没遇到过该问题), 不再报该错误, 但还是黑屏, 看不到bios界面. 自编译bochs也无法解决该问题, 推荐qemu-system-i386.
