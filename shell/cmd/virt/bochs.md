@@ -2,7 +2,7 @@
 ref:
 - [bochs一般用法](https://xlem0n.gitee.io/2019/10/23/2019-10-23-%E7%95%AA%E5%A4%96%E7%AF%87%E2%80%94%E2%80%94boch%E8%B0%83%E8%AF%95%E6%96%B9%E6%B3%95-2019/)
 
-**推荐使用qemu-system-i386, FAQ中的`physical memory read error`无法解决**.
+**考虑FAQ中的`physical memory read error`, 推荐汇编测试用bochs, 界面输出测试用qemu-system-i386**.
 
 ## 安装
 env: ubuntu 22.04
@@ -168,3 +168,16 @@ ref:
        可能是bios问题, 大概率是vgarom. 将romimage换成/usr/share/seabios/bios.bin后, "physical memory read error"消失, 但bochs还是黑屏. 使用自编译的seabios-1.16.2构建的bin也是黑屏.
 
 0x0000322f3130约在800M位置, 将megs改为1024(2000年时使用megs=32没遇到过该问题), 不再报该错误, 但还是黑屏, 看不到bios界面. 自编译bochs也无法解决该问题, 推荐qemu-system-i386.
+
+### `apt source --compile bochsbios`遇到`openjade:/usr/share/sgml/docbook/stylesheet/dsssl/modular/html/../common/dbtable.dsl:224:13:E: 2nd argument for primitive "ancestor" of wrong type: "#node-list()" not a singleton node list`
+ref:
+- [bochs-2.7 make编译时出错cannot generate system identifier for public text "-//OASIS//DTD DocBook V4.1//EN" ](https://www.cnblogs.com/kendoziyu/p/cannot-generate-system-identifier-for-public-text-OASIS-DTD-DocBook-V4-1-EN.html)
+
+尝试:
+1. `apt purge openjade`, 经验证, 无效: dpkg-buildpackage时报缺docbook-dsssl依赖, 而docbook-dsssl依赖openjade.
+2. 注释`debian/rules` doc相关命令, 编译后install时报找不到doc
+
+`apt source --compile bochsbios`已编出二进制在`debian/tmp`
+
+### bochs启动报`ata0-0: could not open hard drive image file 'c.img'`
+c.img存在c.img.lock, 删除c.img.lock即可

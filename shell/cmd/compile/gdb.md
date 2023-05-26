@@ -64,10 +64,10 @@ gdb中命令：
     set print object : 在C++中，如果一个对象指针指向其派生类，如果打开这个选项，GDB会自动按照虚方法调用的规则显示输出，如果关闭这个选项的话，GDB就不管虚函数表了
     set language <lan> : 设在程序语言类型
     set disassemble-next-line on: si时默认显示下一条指令
-(gdb) next：单步调试（逐过程，函数直接执行）,简写n
+(gdb) next：单步调试（c语言级别, 逐过程，函数直接执行）,简写n
 
     nexti/ni : 单步跳过下一条指令(不进入函数) 
-(gdb) step：单步调试（逐语句：跳入自定义函数内部执行）,简写s
+(gdb) step：单步调试（c语言级别, 逐语句：跳入自定义函数内部执行）,简写s
 
     si [N]: 执行N个指令, 默认是1个
 (gdb) backtrace：查看函数的调用的栈帧和层级关系,简写bt

@@ -191,7 +191,7 @@ sudo aptitude purge ~c # purge them
 deb-src http://pl.archive.ubuntu.com/ubuntu/ natty main restricted
 # apt update
 # apt build-dep ccache # 安装构建ccache所需的依赖
-# apt-get -b source ccache # 获取ccache源码并构建
+# apt-get -b source ccache/apt source --compile ccache # 获取ccache源码并构建 = apt source ccache && cd ccache* && dpkg-buildpackage [--no-sign]/dpkg-buildpackage -rfakeroot -b -uc -us/debuild -b -uc -us
 # dpkg -i ccache*.deb
 ```
 
