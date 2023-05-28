@@ -209,6 +209,10 @@ $ ln -sf /usr/bin/qemu-system-x86_64 /usr/libexec/qemu-kvm
 
     - once=d : 指定系统的启动顺序是首次光驱, guest reboot后根据默认order(启动顺序)启动
 - cdrom : 分配给guest的光驱
+- [-d](https://blog.csdn.net/weixin_39871788/article/details/123250595): enable logging of specified items
+    - cpu_reset： 显示CPU reset前的cpu state
+    - int: 显示中断和异常
+- -no-reboot: 不触发重启. cpu异常时不自动重启, 而是直接退出
 - display
 
     - curses : 仅用于文本模式(text mode is used only with BIOS firmware), 当出现"640 x 480 Graphic mode"时表示guest已切换到图形模式.
