@@ -11,7 +11,7 @@ env: ubuntu 22.04
 $ apt install bochs bochs-sdl bximage # 默认安装的wx在当前环境会崩溃, 因此使用sdl
 $ bochs -n # see Bochs 2.7
 $ bochs --help cpu
-$ bximage # 下面是创建disk image的交互式输入参数example
+$ bximage # 下面是创建disk image的交互式输入参数example. = `bximage -hd -mode="flat" -size=64 -q hd.img`
 1
 hd
 flat
@@ -121,6 +121,164 @@ romimage:
 
 ## bochsrc
 - display_library: 显示库是显示Bochs VGA屏幕的代码
+
+## 编译seabios
+ref:
+- [seabios-1.16.2-1.fc39](https://src.fedoraproject.org/rpms/seabios/tree/rawhide)
+
+```bash
+$ tree ~/rpmbuild
+/home/chen/rpmbuild
+├── BUILD
+├── BUILDROOT
+├── RPMS
+├── SOURCES
+│  ├── config.seabios-128k
+│  ├── config.vga-bochs-display
+│  ├── config.vga-stdvga
+│  ├── seabios-1.16.2-1.fc39.src.rpm
+│  └── seabios-1.16.2.tar.gz
+├── SPECS
+│  └── seabios.spec
+└── SRPMS
+
+6 directories, 6 files
+# %if 0%{?fedora:1}
+%define cross 1
+%endif
+
+Name:           seabios
+Version:        1.16.2
+Release:        1%{?dist}
+Summary:        Open-source legacy BIOS implementation
+
+License:        LGPLv3
+URL:            http://www.coreboot.org/SeaBIOS
+
+Source0:        %{name}-%{version}.tar.gz
+
+Source13:       config.vga-stdvga
+Source17:       config.seabios-128k
+Source21:       config.vga-bochs-display
+
+%if 0%{?cross:1}
+BuildRequires: binutils-x86_64-linux-gnu gcc-x86_64-linux-gnu
+Buildarch:     noarch
+%else
+ExclusiveArch: x86_64
+%endif
+
+Requires: %{name}-bin = %{version}-%{release}
+Requires: seavgabios-bin = %{version}-%{release}
+
+# Seabios is noarch, but required on architectures which cannot build it.
+# Disable debuginfo because it is of no use to us.
+%global debug_package %{nil}
+
+# Similarly, tell RPM to not complain about x86 roms being shipped noarch
+%global _binaries_in_noarch_packages_terminate_build   0
+
+# You can build a debugging version of the BIOS by setting this to a
+# value > 1.  See src/config.h for possible values, but setting it to
+# a number like 99 will enable all possible debugging.  Note that
+# debugging goes to a special qemu port that you have to enable.  See
+# the SeaBIOS top-level README file for the magic qemu invocation to
+# enable this.
+%global debug_level 1
+
+
+%description
+SeaBIOS is an open-source legacy BIOS implementation which can be used as
+a coreboot payload. It implements the standard BIOS calling interfaces
+that a typical x86 proprietary BIOS implements.
+
+
+%package bin
+Summary: Seabios for x86
+Buildarch: noarch
+
+
+%description bin
+SeaBIOS is an open-source legacy BIOS implementation which can be used as
+a coreboot payload. It implements the standard BIOS calling interfaces
+that a typical x86 proprietary BIOS implements.
+
+
+%package -n seavgabios-bin
+Summary: Seavgabios for x86
+Buildarch: noarch
+
+%description -n seavgabios-bin
+SeaVGABIOS is an open-source VGABIOS implementation.
+
+
+%prep
+%setup -q
+%autopatch -p1
+
+%build
+%define _lto_cflags %{nil}
+export CFLAGS="$RPM_OPT_FLAGS"
+mkdir binaries
+
+build_bios() {
+    make clean distclean
+    cp $1 .config
+    echo "CONFIG_DEBUG_LEVEL=%{debug_level}" >> .config
+    make oldnoconfig V=1
+
+    make V=1 \
+        EXTRAVERSION="-%{release}" \
+        PYTHON=python3 \
+%if 0%{?cross:1}
+        HOSTCC=gcc \
+        CC=x86_64-linux-gnu-gcc \
+        AS=x86_64-linux-gnu-as \
+        LD=x86_64-linux-gnu-ld \
+        OBJCOPY=x86_64-linux-gnu-objcopy \
+        OBJDUMP=x86_64-linux-gnu-objdump \
+        STRIP=x86_64-linux-gnu-strip \
+%endif
+        $4
+
+    cp out/$2 binaries/$3
+}
+
+# seabios
+build_bios %{_sourcedir}/config.seabios-128k bios.bin bios.bin
+
+# seavgabios
+%global vgaconfigs bochs-display stdvga
+for config in %{vgaconfigs}; do
+    build_bios %{_sourcedir}/config.vga-${config} \
+               vgabios.bin vgabios-${config}.bin out/vgabios.bin
+done
+
+
+%install
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/seabios
+mkdir -p $RPM_BUILD_ROOT%{_datadir}/seavgabios
+install -m 0644 binaries/bios.bin $RPM_BUILD_ROOT%{_datadir}/seabios/bios.bin
+install -m 0644 binaries/vgabios*.bin $RPM_BUILD_ROOT%{_datadir}/seavgabios
+
+
+%files
+%doc COPYING COPYING.LESSER README
+
+
+%files bin
+%dir %{_datadir}/seabios/
+%{_datadir}/seabios/bios*.bin
+
+%files -n seavgabios-bin
+%dir %{_datadir}/seavgabios/
+%{_datadir}/seavgabios/vgabios*.bin
+
+
+%changelog
+* Mon Mar 20 2023 Gerd Hoffmann <kraxel@redhat.com> - 1.16.2-1
+- Update to 1.16.2
+```
 
 ## FAQ
 ### ROM: couldn't open ROM imgae file '/usr/share/bochs'

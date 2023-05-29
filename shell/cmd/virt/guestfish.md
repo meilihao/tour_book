@@ -140,3 +140,6 @@ losetup -d /dev/loop0
 
 ### 拷贝到disk
 `guestfish add /dev/xxx : run : mount /dev/sda1 : copy-in /root/a.cfg /root : ls /root`
+
+### xfs_repair: feature 'xfs' is not available in this\nbuild of libguestfs.
+`yum install libguestfs-xfs`
