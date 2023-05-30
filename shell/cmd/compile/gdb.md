@@ -36,6 +36,7 @@ gdb中命令：
      run argv[1] argv[2]：调试时命令行传参
 (gdb) start：单步执行，运行程序，停在第一执行语句, 简写st
 (gdb) layout src : 弹出窗口用于查看代码
+(gdb) layout asm : 弹出窗口用于查看汇编. `CTRL+x+a`: 退出
 (gdb) list：查看原代码,简写l
 
     list : 默认显示当前行和之后的10行，再执行又下滚10行
@@ -198,6 +199,9 @@ gdb中命令：
 (gdb) shell : 使用户不离开gdb就能使用shell
 (gdb) make : 使用户不离开gdb就能使用make
  ```
+
+## tools
+- [gdb-dashboard](https://github.com/cyrus-and/gdb-dashboard) 
 
 ## FAQ
 ### gdb命令连写
