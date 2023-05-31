@@ -250,6 +250,9 @@ ref:
 滚屏: ctrl + 上/下
 查看是否使用kvm: info kvm
 
+## tools
+- [查看guest memory](https://github.com/qemu/qemu/blob/master/scripts/dump-guest-memory.py), 未验证
+
 ## 操作
 ### 模拟cpu加电
 ```

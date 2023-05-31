@@ -586,6 +586,9 @@ virt-manager根据vm os默认选中q35时xml已填充了部分controller数据, 
 
 解决方法: 将当前xml保存为tmp.xml, 在删除其中所有`<controller type='pci*'/>`, 再`virsh define tmp.xml`即可.
 
+### `internal error: Failed to reserve port 5900`
+vnc端口5900已被占用, 修改端口即可
+
 ### 使用usb 2/3
 ref:
 - [虚拟机配置](https://docs.openeuler.org/zh/docs/22.03_LTS/docs/Virtualization/%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%85%8D%E7%BD%AE.html)
