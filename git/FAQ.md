@@ -475,3 +475,6 @@ git diff branch1 branch2 <file_path> # 比较指定文件差异
 
 ### clone带submodule的repo
 `git clone --recursive https://github.com/cloudflare/quiche`
+
+### 设置默认remote
+`git branch --set-upstream-to origin/master`

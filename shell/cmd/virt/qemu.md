@@ -249,6 +249,8 @@ ref:
 进入: 鼠标点击qemu窗口，然后ctrl+alt+2即可切换到控制台; ctrl+alt+1回到guest窗口.
 滚屏: ctrl + 上/下
 查看是否使用kvm: info kvm
+显示内存层次: info mtree
+查看物理内存内容: xp /512bx 0x7e00
 
 ## 操作
 ### 模拟cpu加电
