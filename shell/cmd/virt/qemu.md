@@ -252,6 +252,9 @@ ref:
 显示内存层次: info mtree
 查看物理内存内容: xp /512bx 0x7e00
 
+## tools
+- [查看guest memory](https://github.com/qemu/qemu/blob/master/scripts/dump-guest-memory.py), 未验证
+
 ## 操作
 ### 模拟cpu加电
 ```
