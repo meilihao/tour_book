@@ -545,12 +545,22 @@ vm和host都是东8区.
 
 原因: 当前guest使用centos, 因此将其xml配置的clock offset的localtime改为utc即可.
 
+### Unable to open /dev/kvm: No such file or director
+步骤:
+- 执行`systemd-detect-virt`探明环境
+
+   - vmware: 开启嵌套虚拟化
+   - none: 查cpu指令集是否支持虚拟化
+
 ### `virsh start xxx`报`internal error: qemu unexpectedly closed the monitor: Could not access KVM kernel module: Permission denied\n...qemu-system-x86_64: failed to initialize KVM: Permission denied`
 `ls -al /dev/kvm`返回`crw-rw----+`m, 存在acl属性
 
 解决(2种):
 1. `setfacl -b /dev/kvm && chmod 0660 /dev/kvm`(重启后失效)
 2. 修改/etc/libvirt/qemu.conf, 将user和group都设为root
+
+### windows vm出现多个鼠标且鼠标不跟手
+usb controller model使用ich9-ehci1而不是nec-xhci
 
 ### 通过snap接管的含lvm的vm启动失败
 env: oracle linux 7.9
