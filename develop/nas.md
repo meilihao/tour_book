@@ -39,6 +39,8 @@ autofs 自动挂载服务: 无论是 Samba 服务还是 NFS 服务，都要把�
 - [pNFS](https://wenku.baidu.com/view/7cd3eee26294dd88d0d26b0c.html)
 - [windows 支持nfs的版本](https://docs.microsoft.com/en-us/windows-server/storage/nfs/nfs-overview)
 - [nas 常见问题 from aliyun](https://github.com/AlibabaCloudDocs/nas/tree/master/cn.zh-CN/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)
+- [农商行本地数据中心基于华为NAS双活实践](https://www.talkwithtrend.com/Article/266299)
+- [NAS双活各主流产品解决方案的对比，各自有哪些优缺点？](https://www.talkwithtrend.com/Question/459035)
 
 > **NFS鉴权采用的是IP安全组，不支持用户名鉴权**
 

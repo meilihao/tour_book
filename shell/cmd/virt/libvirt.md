@@ -559,9 +559,6 @@ vm和host都是东8区.
 1. `setfacl -b /dev/kvm && chmod 0660 /dev/kvm`(重启后失效)
 2. 修改/etc/libvirt/qemu.conf, 将user和group都设为root
 
-### windows vm出现多个鼠标且鼠标不跟手
-usb controller model使用ich9-ehci1而不是nec-xhci
-
 ### 通过snap接管的含lvm的vm启动失败
 env: oracle linux 7.9
 需要将`/root`分区所在的disk, 放在xml disks的第一个

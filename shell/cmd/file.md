@@ -16,4 +16,4 @@
     # file t.elf # 输出包含"not stripped"表示有符号表
     # file -i xxx # 查看文件编码
     # file zsha2 # 查看开发语言, 这里是golang
-    zsha2: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, Go BuildID=9h4qNkFzYZaEW35kATVl/JI23wkfKIQqWQnWPQmI_/A2rlxTCOrY5CK4DB9Ypw/3t5KM7fcCCtzwU2Btlpl, stripped
+    zsha2: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, Go BuildID=9h4qNkFzYZaEW35kATVl/JI23wkfKIQqWQnWPQmI_/A2rlxTCOrY5CK4DB9Ypw/3t5KM7fcCCtzwU2Btlpl, stripped # 目标文件是`LSB relocatable`, 因为目标文件是可重定位文件, 即其中的符号尚未定位, 可用nm验证

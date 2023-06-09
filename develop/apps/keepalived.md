@@ -147,7 +147,7 @@ keepalived只有一个配置文件keepalived.conf，配置文件里面主要包�
         通过脚本来检测服务是否正常.
 
         ```conf
-        vrrp_script <SCRIPT_NAME> {
+        vrrp_script <SCRIPT_NAME> { # 灵活模式就是利用vrrp_script的weight值对节点的优先级priority进行重新计算
            script <STRING>|<QUOTED-STRING> # path of the script to execute，需要运行的脚本，返回值为0表示正常; 其它值都会当成检测失败.
            interval <INTEGER>  # seconds between script invocations, default 1 second ，脚本运行时间，即隔多少秒去检测, **推荐**
            timeout <INTEGER>   # seconds after which script is considered to have failed，脚本运行的超时时间, **推荐**
@@ -210,6 +210,10 @@ keepalived只有一个配置文件keepalived.conf，配置文件里面主要包�
 
     如果没有配置LVS+keepalived，那么无需配置这段区域. 如果用的是nginx来代替LVS，也无需配置这里. 这里的LVS配置是专门为keepalived+LVS集成准备的.
 
+## 选举
+ref:
+- [Keepalived中Master和Backup角色选举策略](https://www.modb.pro/db/112625)
+
 ## FAQ
 ### keepalived两个节点都出现了vip
 env：kylinV10 (fork from centos 7.x)
@@ -253,3 +257,13 @@ VRRP全称Virtual Router Redundancy Protocol，即虚拟路由冗余协议。对
 
 官方issue: [Child (PID 24646) failed to terminate after kill - filling up logs](https://github.com/acassen/keepalived/issues/1989)
 官方fix: [Handle script timeouts when child process has terminated](https://github.com/acassen/keepalived/commit/79e1ec8ae4da5b0a9defd53b87f3d4ceb1fbd005), 至少需要v2.0.19
+
+### Keepalived跨网段设置
+ref:
+- [Keepalived跨网段设置 -- KeepAlived on different subnets](https://blog.csdn.net/bpqqop/article/details/130017966)
+
+一种方法是使用unicast_peer选项，让不同网段的keepalived实例通过单播通信，然后使用notify_script选项，调用一个脚本来移动一个IP Failover（由你的主机提供），并向你的提供商发送一个API请求，告诉它将你的IP Failover移动到另一个服务，当keepalived转换为MASTER时（有一个notify_master规则）
+
+另一种方法是使用vrrp_sync_group选项，将两个或多个keepalived实例同步为一个组，然后在每个实例中指定不同的接口和虚拟IP地址，分别对应外部和内部网段。你还可以使用track_interface和track_script选项，来检测接口和服务的状态，并根据需要触发故障转移
+
+还有一种方法是禁用VRRP协议中的TTL检查，因为这个检查要求发送者和接收者都在同一个以太网段上，而单播模式下VRRP广告很可能会跨越不同的网络段。你可以在keepalived配置文件中添加vrrp_skip_check_adv_addr或者vrrp_strict选项来禁用TTL检查
