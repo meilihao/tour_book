@@ -72,6 +72,25 @@ default via 192.168.0.1 dev bond0
 
 网关是路由出口的位置, 不一定和本机网段相同.
 
+路由说明:
+```bash
+# ip route
+default via 192.168.88.1 dev enp2s0 proto static metric 100 # 1
+169.254.0.0/16 dev virbr0 scope link metric 1000 linkdown 
+192.168.88.0/24 dev enp2s0 proto kernel scope link src 192.168.88.236 metric 100 # 1
+192.168.122.0/24 dev virbr0 proto kernel scope link src 192.168.122.1 linkdown 
+# route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface # 1
+0.0.0.0         192.168.88.1    0.0.0.0         UG    100    0        0 enp2s0
+169.254.0.0     0.0.0.0         255.255.0.0     U     1000   0        0 virbr0
+192.168.88.0    0.0.0.0         255.255.255.0   U     100    0        0 enp2s0 # 2
+192.168.122.0   0.0.0.0         255.255.255.0   U     0      0        0 virbr0
+```
+
+`# 1`表示发往任何地方的数据包, 都是经过enp2s0, 并由网关192.168.88.1发出
+`# 2`表示发往192.168.88.0/24的数据包, 都由enp2s0发出, 其src表示enp2s ip是192.168.88.236, metric 100是路由距离即到达指定网络需要的中转数
+
 # ip addr
 ## example
 ```bash

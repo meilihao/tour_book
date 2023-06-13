@@ -96,6 +96,7 @@ systemd-ask-password-conso
 
 1. 刷新systemd的配置
         # systemctl daemon-reload # service连续启动失败多次后, 再start会直接报错, 应先用daemon-reload重置其状态, 再start
+        # systemctl reload apache2 # reload one service
 
 1. 列出所有slice
 

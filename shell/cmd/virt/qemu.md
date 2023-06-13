@@ -64,6 +64,9 @@ $ ln -sf /usr/bin/qemu-system-x86_64 /usr/libexec/qemu-kvm
 > `--enable-sdl`是为了启用qemu gui, 便于查看early boot, 比如uefi/grub信息.
 > qemu 5.2.0构建切换到ninja+meson后, 构建速度贼快.
 > qemu 6.0.0需要libzstd>=1.4.0
+> enable-jemalloc在qemu 8.0是`enable-malloc=jemalloc`
+
+构建qemu 8: `dnf install ninja-build glib2-devel pixman-devel SDL2-devel libzstd-devel jemalloc-devel liburing-devel`
 
 生成的相关程序:
 - ivshmem-client/server：这是一个 guest 和 host 共享内存的应用程序，遵循 C/S 的架构

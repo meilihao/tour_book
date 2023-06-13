@@ -267,3 +267,11 @@ ref:
 另一种方法是使用vrrp_sync_group选项，将两个或多个keepalived实例同步为一个组，然后在每个实例中指定不同的接口和虚拟IP地址，分别对应外部和内部网段。你还可以使用track_interface和track_script选项，来检测接口和服务的状态，并根据需要触发故障转移
 
 还有一种方法是禁用VRRP协议中的TTL检查，因为这个检查要求发送者和接收者都在同一个以太网段上，而单播模式下VRRP广告很可能会跨越不同的网络段。你可以在keepalived配置文件中添加vrrp_skip_check_adv_addr或者vrrp_strict选项来禁用TTL检查
+
+### 脑裂
+检查`tcpdump -i eth1 vrrp`, 这里仅说明有收到vrrp包, 可能还要检查防火墙, 比如iptable的
+```
+# 需要刷新iptables
+-A INPUT -s 192.168.1.0/24 -d 224.0.0.18 -j ACCEPT       # 允许组播地址通信
+-A INPUT -s 192.168.1.0/24 -p vrrp -j ACCEPT             # 允许VRRP（虚拟路由器冗余协）通信
+```

@@ -45,6 +45,10 @@ tcpdump停止捕获数据包时:
     # tcpdump ip host 210.27.48.1 and ! 210.27.48.2 # 获取主机210.27.48.1除了和主机210.27.48.2之外所有主机通信的ip包
     # tcpdump -i eth0 host hostname and dst port 80 -x #  目的端口是80 # 列出送到80端口的数据包
     # tcpdump -i eth1 src host 211.167.237.199 and dst port 1467 # 211.167.237.199通过ssh源端口连接到221.216.165.189的1467端口
+    # tcpdump -i eth1 '(dst 211.167.237.199 and src 211.167.237.198) or (dst 192.168.0.10 and src 192.168.0.11)'
+    # tcpdump -i eth1 src host 211.167.237.199 and vrrp # 过滤vrrp, 这里仅说明有收到vrrp包, 可能还要检查防火墙
+    # tcpdump -i eth1 vrrp # 过滤vrrp
+    # tcpdump -i eth1 src host 211.167.237.199 and port not 22 # 过滤ssh
     # tcpdump -e -i ens160 arp # 截获arp
     # tcpdump -vv -eqtnni ens160 arp # 截获收到的arp
     # tcpdump -A port 8359
