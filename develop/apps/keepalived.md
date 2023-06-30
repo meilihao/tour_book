@@ -151,7 +151,7 @@ keepalived只有一个配置文件keepalived.conf，配置文件里面主要包�
            script <STRING>|<QUOTED-STRING> # path of the script to execute，需要运行的脚本，返回值为0表示正常; 其它值都会当成检测失败.
            interval <INTEGER>  # seconds between script invocations, default 1 second ，脚本运行时间，即隔多少秒去检测, **推荐**
            timeout <INTEGER>   # seconds after which script is considered to have failed，脚本运行的超时时间, **推荐**
-           weight <INTEGER:-254..254>  # adjust priority by this weight, default 0. 当script返回非零时， keepalived发送自己的vrrp通告为100+weight.
+           weight <INTEGER:-254..254>  # adjust priority by this weight, default 0. 当script返回非零时， keepalived发送自己的vrrp通告为100+weight. [priority和weight值的设定应遵循: abs(MASTER priority – BAKCUP priority) < abs(weight)](https://blog.51cto.com/wwdhks/1563916)
            rise <INTEGER>              # required number of successes for OK transition，配置几次检测成功才认为服务正常
            fall <INTEGER>              # required number of successes for KO transition，配置几次检测失败才认为服务异常, **推荐**
            user USERNAME [GROUPNAME]   # user/group names to run script under
