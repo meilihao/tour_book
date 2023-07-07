@@ -17,3 +17,6 @@
 - [Redis主从同步与故障切换，有哪些坑？](https://new.qq.com/omn/20201125/20201125A0GFNT00.html)
 - [+redis 主从同步-slave端](https://www.jianshu.com/p/e10d21ecdd0b)
 - [boazjohn/redis-keepalived](https://github.com/boazjohn/redis-keepalived)
+
+## other
+- [深入解析 Redis 的 LRU 与 LFU 算法实现](https://my.oschina.net/vivotech/blog/10086708)

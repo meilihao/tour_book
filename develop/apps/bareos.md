@@ -3,6 +3,7 @@
 - [备份/恢复系统BAREOS的安装、设置和使用（二）](https://blog.csdn.net/laotou1963/article/details/82711776)
 - [OSBConf 2015 | Backup of VMware snapshots with Bareos by Philipp Storz & Stephan Dühr](https://www.youtube.com/watch?v=pDNhfK9MO0g)
 - [支持的os](https://github.com/bareos/bareos/blob/master/.matrix.yml)
+- [Best VMware Backup Software Tools. Top 10 VMware Backup Solutions](https://www.baculasystems.com/blog/top-10-vmware-backup-solutions/)
 
 Bareos 由 bacula fork而來.
 
@@ -140,6 +141,13 @@ ref:
 - [travis](https://github.com/bareos/bareos/tree/Release/21.1.2/.travis)
 - [Configure (cmake) build settings](https://docs.bareos.org/DeveloperGuide/BuildAndTestBareos/systemtests.html)
 - [bareos release/历史版本](https://download.bareos.org/bareos/release/)
+
+
+bareos 22变化:
+1. Bareos 22 bareos-webui now uses php_fpm instead of mod_php, PHP 7 or newer is recommended.
+1. Bareos 22 removes bareos-webui support for RHEL 7 and CentOS 7
+1. Bareos 22 uses the VMware VDDK 8.0.0 for the VMware Plugin. PR #1295. VDDK 8.0.0 supports vSphere 8 and is backward compatible with vSphere 6.7 and 7. vSphere 6.5 is not supported anymore.
+1. download.bareos.org出现调整, 无法下载到之前20.0.0/21.0.0的源码和安装包(现需要订阅), 现在只能下载最新版bareos的pre版的相关文件
 
 ### v21.1.2
 #### oracle linux 7.9
