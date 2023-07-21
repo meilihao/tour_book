@@ -143,3 +143,6 @@ losetup -d /dev/loop0
 
 ### xfs_repair: feature 'xfs' is not available in this\nbuild of libguestfs.
 `yum install libguestfs-xfs`
+
+### guestfish: error while loading shared libraries: libconfig.so.11: cannot open shared object file: No such file or directory
+需要libconfig-1.7.x, 比如当前环境是libconfig-1.7.2

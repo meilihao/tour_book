@@ -46,4 +46,5 @@ $ rsync -P --rsh=ssh aliyun:~/git/lfs.img.zstd . # 断点续传
 $ rsync -ah --progress source destination # 拷贝带进度
 $ sspass -p "<password>" rsync -ah --progress source destination # 传入ssh password
 $ rsync -av -e ssh --exclude='*.new' ~/virt/ root@centos7:/tmp
+$ rsync -e "ssh -i /root/.ssh/id_rsa -o StrictHostKeyChecking=no -S /tmp/fuck" --archive --compress --timeout=10 go.md root@192.168.16.76:~
 ```

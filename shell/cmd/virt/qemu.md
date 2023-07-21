@@ -402,6 +402,9 @@ KVM [1]: Hyp mode initialized successfully
 
 推荐使用`qemu-system-x86_64 -kernel arch/x86_64/boot/bzImage -nographic -append "console=ttyS0"`运行, 退出方法同上.
 
+### unsupported configuration: IDE controllers are unsupported for this QEMU binary or machine type
+当前host是飞腾, disk bus不支持ide, 改用virt, sata, scsi即可.
+
 ### 强制退出QEMU虚拟机
 
 先按ctrl + a 放开后，再按下 x, 这在运行启动虚拟机的命令后发生卡死现象时特别有用.

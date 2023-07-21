@@ -104,8 +104,9 @@ WantedBy=multi-user.target
 	> Before systemd-230 it was called just StartLimitInterval.
 - StartLimitBurst=3. 用于设置在一段给定的时长内，最多允许启动多少次.  默认值等于 DefaultStartLimitBurst= 的值(默认为5次)
 
-> After和Before字段只涉及启动顺序，不涉及依赖关系
-> Wants字段与Requires字段只涉及依赖关系，与启动顺序无关
+> **After和Before字段只涉及启动顺序，不涉及依赖关系**; **Wants字段与Requires字段只涉及依赖关系，与启动顺序无关**
+
+	Requires时, 依赖service停止, 当前服务也会停止.
 > 自动重启逻辑的单元触碰到了启动频率限制，那么该单元将再也不会尝试自动重启. systemctl reset-failed 命令能够重置单元的启动频率计数器.
 
 ### `[Install]`
@@ -127,7 +128,9 @@ ref:
 - Type=forking：以 fork 方式从父进程创建子进程，创建后父进程会立即退出
 - Type=oneshot：一次性进程，Systemd 会等当前服务退出，再继续往下执行
 - Type=dbus：当前服务通过D-Bus启动
-- Type=notify：当前服务启动完毕，会通知Systemd，再继续往下执行
+- Type=notify：与 Type=simple 相同, 但当前服务启动完成(systemctl start会阻塞直至服务就绪)，会通知Systemd，再继续往下执行
+
+	在默认情况下(也就是调用此命令的服务单元含有 NotifyAccess=none)， systemd 并不从此命令接受状态更新消息, 因此需要NotifyAccess=all
 - Type=idle：若有其他任务执行完毕，当前服务才会运行
 - ExecStart：运行这个单元最主要的命令（这个参数是几乎每个 .service 文件都会有的，指定服务启动的主要命令，在每个配置文件中**只能使用一次**）.
 - ExecStartPre：ExecStart之前运行的命令（指定在启动执行 ExecStart 的命令前的准备工作，**可以有多个**，所有命令会按照文件中书写的顺序**依次**被执行）.

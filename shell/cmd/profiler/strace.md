@@ -39,7 +39,7 @@
       只跟踪有关进程控制的系统调用
     - -e trace=network
       跟踪与网络有关的所有系统调用
-    - -e strace=signal
+    - -e trace=signal
       跟踪所有信号有关的系统调用
     - -e trace=ipc
       跟踪所有ipc有关的系统调用

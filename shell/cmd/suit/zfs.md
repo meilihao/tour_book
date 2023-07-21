@@ -12,6 +12,7 @@
 - [ZFS 分层架构设计](https://farseerfc.me/zhs/zfs-layered-architecture-design.html)
 - [zfs share(nas)](https://wiki.debian.org/ZFS#File_Sharing)
 - [在Linux上安装和使用ZFS](https://www.escapelife.site/posts/caf259ea.html)
+- [Zfs_ondiskformat.pdf](http://www.giis.co.in/Zfs_ondiskformat.pdf)
 
 ```sh
 # ubuntu 18.04

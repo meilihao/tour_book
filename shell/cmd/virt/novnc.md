@@ -46,3 +46,6 @@ websockify --cert=/usr/share/novnc/self.pem --key=/usr/share/novnc/self.key ... 
 ```
 
 > 仅使用tls时可用`ssl_only=true`
+
+### novnc vm鼠标不可用
+测试环境是chrome 64, 为不可用, 但chrome 111是可用的

@@ -37,6 +37,8 @@ RocksDB是一个嵌入式的K-V（任意字节流）存储. 所有的数据在�
 1. `cd rocksdb_source_root`, 查看Makefile, 选择`make static_lib/make shared_lib`进行编译
 
     如果构建环境存在jemalloc/tcmalloc, make会通过`build_tools/build_detect_platform <platform>`将相应的环境变量存入生成的make_config.mk中, 供自身使用
+
+    > [`ROCKSDB_DISABLE_JEMALLOC=1 make shared_lib`的ROCKSDB_DISABLE_JEMALLOC可禁用jemalloc](https://github.com/facebook/rocksdb/issues/1442), 此时tcmalloc已安装(libtcmalloc-minimal4, 是libtcmalloc_minimal.so)也并不会启用tcmalloc, 是build_detect_platform没有探测到需要的`libtcmalloc.so`, 其实启用tcmalloc需要`libgoogle-perftools-dev`(libtcmalloc.so在libgoogle-perftools4里), 禁用tcmalloc可用ROCKSDB_DISABLE_TCMALLOC.
 1. 参考rocksdb的Makefile, 再执行`make install-static/make install-shared`即可. 如果安装位置需要还可使用`INSTALL_PATH=/usr/local make install-static/install-shared`, `INSTALL_PATH`默认已是`/usr/local`, 最终`librocksdb.a/librocksdb.so`会出现在`$INSTALL_PATH/lib`下
 1. 设置环境变量
 
@@ -249,6 +251,9 @@ RocksDB提供以下3大类型的工具:
     ```
 
 1. 性能分析工具，DB Analyzer
+
+## API
+- DeleteRange : 范围是`[)`
 
 ## 源码
 - [RocksDB · 数据的读取(一)](http://mysql.taobao.org/monthly/2018/11/05/)
@@ -548,7 +553,9 @@ uint32_t Extend(uint32_t crc, const char* buf, size_t size) {
 
 ### go driver
 - [linxGnu/grocksdb](https://github.com/linxGnu/grocksdb), follow rocksdb latest, **推荐**
-- [tecbot/gorocksdb](https://github.com/tecbot/gorocksdb), most using, **许久每更新, 不推荐**
+
+    `CGO_CFLAGS="-I/usr/local/include/rocksdb" CGO_LDFLAGS="-L/usr/local/lib -lrocksdb -lstdc++ -lm -lz -lsnappy -llz4 -lzstd" go build`
+- [tecbot/gorocksdb](https://github.com/tecbot/gorocksdb), most using, **许久没更新, 不推荐**
 
     编译出的程序没法链接librocksdb.so时, 可参考[/go/cgo.md].
 
@@ -705,3 +712,18 @@ ref:
 - [Can't auto recovery when encounter ENOSPC error from the filesystem](https://github.com/facebook/rocksdb/issues/10134)
 
 官方bug.
+
+### rocksdb刚启动就coredump
+env:
+- Ubuntu 20.04
+- jemalloc: 5.2.1
+- rocksdb: 7.10.2/8.1.1
+
+通过`gdb <my_program_path> <coredump_path>`, 崩溃在`_start_thread` jemalloc分配内存时.
+
+解决方法:
+1. ~~使用其他版本jemalloc, 需要自编译: 官方apt repo的jemalloc需要libc6>=2.34, 而Ubuntu 20.04的是2.31~~
+
+    后来发现, 构建rocksdb时优先使用了`/usr/local`下的自编译jemalloc, 而自编的jemalloc 5.3.0/5.2.1都会引发coredump, 移除自编译jemalloc而采用官方jemalloc后不再coredump
+1. 使用tcmalloc
+1. 采用默认malloc, 经测试可行

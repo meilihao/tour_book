@@ -223,4 +223,10 @@ $ gdb -x gdbinit # 仅使用gdb script
 `env - gdb /home/chen/hello` : 此时 gdb 环境下所包含的环境变量仅为其新增加的 LINES 和 COLUMNS.
 
 ### 开启core dump
+ref:
+- [Core文件去哪里了](https://www.jianshu.com/p/7317910210a4)
+
 生成core文件：先用`$ ulimit -c ${0|1024|unlimited}`(0表示关闭)开启core，当程序出错会自动生成core文件, 调试core时用`gdb a.out core`
+
+core dump位置:
+- ubuntu 20.04:/var/lib/apport/coredump

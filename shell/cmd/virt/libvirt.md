@@ -102,7 +102,7 @@ libvirt API大致可划分为如下8个部分:
       > transport表示传输方式， 其取值可以是ssh、 tcp、 libssh2等； user表示连接远程主机使用的用户名， host表示远程主机的主机名或IP地址， port表示连接远程主机的端口, 其余参数的意义与本地URI中介绍的完全一样.
 
       在libvirt中， 远程连接QEMU/KVM的URI示例如下：
-      - `qemu+ssh://root@example.com/system`： 通过ssh通道连接到远程节点的system实例，具有最大的权限来管理远程节点上的虚拟化资源. 建立该远程连接时， 需要经过ssh的用户名和密码验证或者基于密钥的验证.
+      - `qemu+ssh://root@example.com/system?keyfile=/root/.ssh/example_key`： 通过ssh通道连接到远程节点的system实例，具有最大的权限来管理远程节点上的虚拟化资源. 建立该远程连接时， 需要经过ssh的用户名和密码验证或者基于密钥的验证.
       - `qemu+ssh://user@example.com/session`： 通过ssh通道连接到远程节点的使用user用户的session实例， 该连接仅能对user用户的虚拟化资源进行管理， 建立连接时同样需要经过ssh的验证。
       - `qemu://example.com/system`： 通过建立加密的TLS连接与远程节点的system实例相连接， 具有对该节点的特权管理权限。 在建立该远程连接时， 一般需要经过TLS x509安全协议的证书验证
       - `qemu+tcp://example.com/system`： 通过建立非加密的普通TCP连接与远程节点的system实例相连接， 具有对该节点的特权管理权限。 在建立该远程连接时， 一般需要经过SASL/Kerberos认证授权
@@ -778,7 +778,7 @@ help: `virt-install <参数> ?`
         start                          开始一个（以前定义的）非活跃的域
         suspend                        挂起一个域
         ttyconsole                     tty 控制台
-        undefine                       取消定义一个域, 若虚拟机启动时使用了nvram文件，销毁该虚拟机需要指定nvram的处理策略: keep-nvram/nvram, 其他nvram是销毁 
+        undefine                       取消定义一个域, 若虚拟机启动时使用了nvram文件，销毁该虚拟机需要指定nvram的处理策略: keep-nvram/nvram, 其他nvram是销毁. 该命令不会删除xml, 需要自行删除
         update-device                  从 XML 文件中关系设备
         vcpucount                      域 vcpu 计数
         vcpuinfo                       详细的域 vcpu 信息. 一个vm默认只能使用同一颗物理cpu的逻辑核.

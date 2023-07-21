@@ -4,6 +4,7 @@
 - [Minio 的 benchmark](https://min.io/resources#benchmarks)
 - [golang 源码分析:mc,minio-go](https://www.modb.pro/db/491285)
 - [golang 源码分析 / minio](https://www.modb.pro/u/535208)
+- [2.1 基于MINIO的对象存储方案在探探的实践 - 于乐.pdf](https://github.com/bingohuang/gopherchina-conference/blob/master/2019/2.1%20%E5%9F%BA%E4%BA%8EMINIO%E7%9A%84%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8%E6%96%B9%E6%A1%88%E5%9C%A8%E6%8E%A2%E6%8E%A2%E7%9A%84%E5%AE%9E%E8%B7%B5%20-%20%E4%BA%8E%E4%B9%90.pdf)
 
 MinIO 是一个基于 Apache License v2.0 开源协议的对象存储服务. 它兼容亚马逊 S3 云存储服务接口，非常适合于存储大容量非结构化的数据，例如图片、视频、日志文件、备份数据和容器/虚拟机镜像等，而一个对象文件可以是任意大小，从几 kb 到最大 5T 不等.
 

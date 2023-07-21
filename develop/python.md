@@ -2352,6 +2352,26 @@ ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 timedatectl set-timezone Asia/Shanghai
 ```
 
+### paramiko使用ed25519
+[paramiko>=2.2.0](https://stackoverflow.com/questions/60660919/paramiko-ssh-client-is-unable-to-unpack-ed25519-key)
+
+### paramiko只使用密码
+```python
+client = paramiko.SSHClient()
+client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+client.connect(hostname="host.sftp.com", username="user", password="xxx", look_for_keys=False) # 没有look_for_keys=False时, 即使指定了password, 也是优先使用pkey
+```
+
+### [paramiko - connect with private key - not a valid OPENSSH private/public key file](https://stackoverflow.com/questions/45829838/paramiko-connect-with-private-key-not-a-valid-openssh-private-public-key-fil)
+
+To convert "BEGIN OPENSSH PRIVATE KEY" to "BEGIN RSA PRIVATE KEY":
+```
+ssh-keygen -p -m PEM -f ~/.ssh/id_rsa
+```
+
+### paramiko log
+paramiko.util.log_to_file("<log_file_path>", level = "WARN") # level in [DEBUG, WARN]
+
 ### 使用linux下gdb来调试python程序
 **gdb调试Python没有pdb那么方便, 主要是没法直接给python代码打断点**
 

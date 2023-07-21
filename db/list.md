@@ -1,5 +1,6 @@
 # list
 ## 选型
+- [全方位对比 Postgres 和 MySQL (2023 版)](https://my.oschina.net/u/6148470/blog/10088145)
 - [神仙打架：PG 和 MySQL 到底哪个更好用？](https://www.tuicool.com/articles/AFJ3YnR)
 - [MongoDB复制集原理: 复制集容忍失效数](https://developer.aliyun.com/article/64)
 

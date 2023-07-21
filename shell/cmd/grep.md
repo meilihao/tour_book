@@ -22,7 +22,7 @@ grep [OPTIONS] 关键词 [FILE...]
 - -c : 统计文件中包含文本的次数
 - -e : 使用模式匹配
 - -E : 使用extended regular expression(ERE,扩展的正则表达式)模式进行匹配,默认是使用基本正则表达式(BRE)
-- -f : 事先将搜索条件写入一个文件, 然后按该文件搜索
+- -f : 从指定文件获取匹配模式, 然后按该模式进行匹配
 - -i : 忽略大小写
 - -l : 只打印文件名
 - -n : 打印匹配的行号
@@ -45,5 +45,6 @@ $ cat /var/log/syslog |grep zfs
 Binary file (standard input) matches
 $ grep -a zfs /var/log/syslog # 可解决`Binary file (standard input) matches`的问题
 $ grep -r --include="*.lua"  "ToSearchString"  Path # 按扩展名搜索
-$ cat id_rsa.pub |grep -c - authorized_keys # 判断是否指定文件
+$ cat id_rsa.pub |grep -c - authorized_keys # 判断是否指定文件. **不推荐**: 某些情况下发现匹配出错(key不存在于authorized_keys, 但输出是1)
+$ cat id_rsa.pub |grep -c -f - authorized_keys # 解决上面的异常情况, **推荐**
 ```

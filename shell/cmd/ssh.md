@@ -155,3 +155,13 @@ PermitRootLogin yes
 PermitRootLogin选项:
 - yes : 允许root登录
 - prohibit-password : 允许root登录, 但是禁止root用密码登录
+
+### `PermitEmptyPasswords yes`导致ssh连接出现`Authentication failed`
+env:
+- kylin server v10
+- openssh 8.2p1
+
+创建/删除nas(业务代码)的同时用python2 paramiko ssh+password访问节点会报`Authentication failed`, 与同事确认将`PermitEmptyPasswords`设为`no`后问题消失.
+
+
+推荐使用ssh key取代ssh password来解决.

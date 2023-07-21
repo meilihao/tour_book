@@ -6,6 +6,12 @@
 - [cfssl创建证书](https://www.centos.bz/2017/09/k8s%E9%83%A8%E7%BD%B2%E4%B9%8B%E4%BD%BF%E7%94%A8cfssl%E5%88%9B%E5%BB%BA%E8%AF%81%E4%B9%A6/)
 - [Kubernetes安装之证书验证](https://jimmysong.io/posts/kubernetes-tls-certificate/)
 - [TLS 网站/API 安全评估](https://myssl.com/)
+- [Openssl密码管理(文件加密)](http://foolishflyfox.xyz/blog/2020/04/12/linux/password-save/)
+
+    `openssl aes-128-cbc -in passwd.txt -out passwd.txt.aes`
+
+    > 支付宝/微信均使用aes cbc加密内容
+- [使用 OpenSSL 加密和解密文件](https://linux.cn/article-13368-1.html)
 
 ### openssl ciphers
 CipherSuite 包含多种技术，例如认证算法（Authentication）、加密算法（Encryption）、消息认证码算法（Message Authentication Code，简称为 MAC）、密钥交换算法（Key Exchange）和密钥衍生算法（Key Derivation Function）.
@@ -163,4 +169,10 @@ openssl enc -d -aes-256-cbc -in largefile.pdf.enc -out largefile.pdf -pass file:
 SAN无法对所有ip进行授权, 只能使用多SAN的形式指定多个ip地址.
 
 其他方案:
-- 让用户先手动访问目标地址授权不拦截该种不安全的https, 然后再进行操作. 场景: 不通过管理节点中转, 而是直接向存储节点上传iso. 
+- 让用户先手动访问目标地址授权不拦截该种不安全的https, 然后再进行操作. 场景: 不通过管理节点中转, 而是直接向存储节点上传iso.
+
+### AES密钥KEY和初始化向量IV
+初始化向量IV可以有效提升安全性, 目的是防止同样的明文块，始终加密成同样的密文块. 在实际的使用场景中，它不能像密钥KEY那样直接保存在配置文件或固定写死在代码中，一般正确的处理方式为：在加密端将IV设置为一个16位的随机值，然后和加密文本一起返给解密端即可.
+
+密钥KEY：AES标准规定区块长度只有一个值，固定为128Bit，对应的字节为16位。AES规定密钥长度只有三个值，128Bit、192Bit、256Bit，对应的字节为16位、24位和32位，密钥KEY不能公开传输，用于加密和解密数据；
+初始化向量IV：该字段可以公开，用于将加密随机化。同样的明文被多次加密也会产生不同的密文，避免了较慢的重新产生密钥的过程，初始化向量与密钥相比有不同的安全性需求，因此IV通常无须保密。然而在大多数情况中，不应当在使用同一密钥的情况下两次使用同一个IV，**推荐初始化向量IV为16位的随机值**.

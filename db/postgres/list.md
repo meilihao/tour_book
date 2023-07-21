@@ -7,6 +7,7 @@
 - [PostgreSQL on Linux 最佳部署手册](http://mp.weixin.qq.com/s/FR65pyRmpEFFVvoJ28uBUg)
 - [Postgres 索引类型探索之旅](https://linux.cn/article-9035-1.html)
 - [PostgreSQL数据目录深度揭秘](https://www.tuicool.com/articles/aiYZny6)
+- [PostgreSQL一线生产经验分享：我讨厌PostgreSQL的10件事 | Rick Branson](https://www.jdon.com/54016.html)
 
 ### 相关主页
 
@@ -48,3 +49,6 @@
 ## 发行版
 - [Pigsty 开箱即用的 PostgreSQL 发行版](https://www.oschina.net/p/pigsty)/[Pigsty 近况与 v1.4 前瞻](https://www.oschina.net/news/184665)/[Vonng/pigsty](https://github.com/Vonng/pigsty)
 - [pg支持周期](https://www.postgresql.org/support/versioning/)
+- [OrioleDB 构建现代云原生存储引擎](https://www.oschina.net/p/orioledb)
+
+	没有VACUUM

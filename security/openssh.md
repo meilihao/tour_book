@@ -248,3 +248,6 @@ AuthenticationMethods publickey,password
 直接使用`ssh root@192.168.1.2`直接被拒绝; 使用`ssh -i <private key> root@192.168.1.2`时出现密码提示, 输入密码后成功登入.
 
 修改方法: 注释`AuthenticationMethods`并重启ssh, `ssh -i <private key> root@192.168.1.2`直接登入成功.
+
+### 无法使用密码登入
+开启`PasswordAuthentication yes`并重启sshd
