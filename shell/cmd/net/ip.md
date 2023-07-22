@@ -116,7 +116,7 @@ ip rule list的这三张路由表，又称为路由规则. 只不过路由规则
 ```bash
 ip -s link list # 显示更加详细的设备信息, 信息from /sys/class/net/${interface}/statistics
 ip link show                     # 显示网络接口信息
-ip link set eth0 up             # 开启网卡
+ip link set eth0 up             # 开启网卡, 前提是物理链路必须正常, 否则没效果
 ip link set eth0 down            # 关闭网卡
 ip link set eth0 promisc on      # 开启网卡的混合模式
 ip link set eth0 promisc offi    # 关闭网卡的混个模式
