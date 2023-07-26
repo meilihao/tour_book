@@ -51,3 +51,6 @@ EOF
 尝试过fdisk前调用`kpartx -l -u -s -v /dev/zd0`刷新内核分区信息, 但发现其p1,p2重复注册了分区(lsblk时看到zd0下多出两个重复分区p1,p2), 导致destroy zd0报busy, 解决方法: 先`kpartx -d /dev/zd0`再destroy.
 
 解决方法: `partprobe /dev/zd0`, 报错明细减少但之后还有小概率出现过一次. 可试试`partprobe /dev/zd0`+`partx -u /dev/zd0 (= partx -d /dev/zd0 + partx -a /dev/zd0, 用"-u"还是有更小概率复现)`/`partx -d /dev/zd0`(直接先删除zd0在kernel分区cache中的信息, 此时lsbk看不到zd0的分区, 再由之后的fdisk触发刷新内核分区信息, 之后lsblk能看到zd0的分区, 未再出现)+`time.sleep(5)`+fdisk操作.
+
+### 查看物理块大小
+`blockdev --getpbsz /dev/vda`

@@ -74,3 +74,8 @@
 ## FAQ
 ### `ls /`卡住
 `/`下有挂载目录 from iscsi, iscsi服务端取消分配后, iscsi client没有umount
+
+### CanonicalPath(规范路)
+一个相对路径为`.././Java.txt`的文件, 那么:
+- 它的绝对路径是 `/Users/androidyue/Documents/projects/PathSamples/.././Java.txt`
+- 它的规范路径是 `/Users/androidyue/Documents/projects/Java.txt`

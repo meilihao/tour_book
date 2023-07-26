@@ -14,12 +14,18 @@
 - Blocks: 使用的底层块数(单位是512B from `man stat`)
 
   du获取的大小是 Blocks * 512
+- IO Block: 文件系统的块大小
+- device: 文件所在设备的设备号, 以十六进制和十进制表示. non-device 文件的情况下, 不会打印.
+
+  它是文件所在设备的主设备号和次设备号组合成一个值. 804h 是主要设备 8, 次要设备 4.
+- Context: selinux上下文
 
 ## 格式
 
   stat [OPTION]... FILE...
 
 ## 选项
+- f : 获取文件所属fs的相关信息
 
 ## 例
 ```bash

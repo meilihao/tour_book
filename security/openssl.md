@@ -13,6 +13,13 @@
     > 支付宝/微信均使用aes cbc加密内容
 - [使用 OpenSSL 加密和解密文件](https://linux.cn/article-13368-1.html)
 
+## 优化
+- [3.4.3 SSL 层优化实践](https://www.thebyte.com.cn/http/ssl-performance.html)
+
+    考虑建议使用 TLS1.3 + ECC 证书方式
+
+## openssl
+
 ### openssl ciphers
 CipherSuite 包含多种技术，例如认证算法（Authentication）、加密算法（Encryption）、消息认证码算法（Message Authentication Code，简称为 MAC）、密钥交换算法（Key Exchange）和密钥衍生算法（Key Derivation Function）.
 

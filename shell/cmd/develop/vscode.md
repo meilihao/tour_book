@@ -7,7 +7,7 @@
 - Switcher : 能在头文件和 C/C++ 文件之间跳转
 - shellman :  Linux shell 脚本辅助工具, 提供了便捷的shell script 自动补全和联想等功能
 - Go
-- Rust
+- rust-analyzer
 - Python
 - Ruff : 基于 Rust 编写的高性能 Python 代码分析工具 (Python linter)
 - x86 and x86_64 Assembly

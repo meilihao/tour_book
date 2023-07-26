@@ -37,6 +37,52 @@
 ## 备份
 - [rustic](https://github.com/rustic-rs/rustic)
 - [preserve](https://github.com/fpgaminer/preserve)
+
+	deps: `dnf install xz-devel sqlite-devel`
+
+	```bash
+	# ./preserve -h
+	# ./preserve keygen --keyfile test_key
+	# ./preserve create my-backup-2016-02-25_11-56-51 /root/test --keyfile test_key --backend file:/root/backups/ # my-backup-2016-02-25_11-56-51是唯一任务标识; /root/test是备份目标(源码里假设是dir, 未测试file的情况); `backend`: 备份存储位置, 当前只支持file
+	Gathering list of files...
+	Reading files...
+	Reading file: src/main.rs
+	Progress: 0MB of 0MB
+	Reading file: certs/key.pem
+	Progress: 0MB of 0MB
+	Reading file: certs/cert.pem
+	Progress: 0MB of 0MB
+	Reading file: Cargo.toml
+	Progress: 0MB of 0MB
+	Writing archive...
+	Backup created successfully
+	# ./preserve list --keyfile test_key --backend file:/root/backups # 罗列备份任务
+	# mkdir -p /root/tmp
+	# ./preserve restore my-backup-2016-02-25_11-56-51 /root/tmp --keyfile test_key --backend file:/root/backups/ # /root/tmp是还原target
+	```
+
+	源码:
+	- keygen:
+
+		1. `KeyStore::new()`用随机生成的128B作为master_key, 再用pbkdf2导出4把加密各类数据的256B key
+
+			会将256B key分成2个128B bytes, 一个做SivEncryptionKeys.siv_key, 一个做SivEncryptionKeys.cipher_key
+		1. 将master_key保存到`--keyfile`指定的位置
+	- create:
+
+		1. 构建`ArchiveBuilder::new`, `builder.walk()`遍历目标路径, `builder.read_files()`读取文件内容并存储到`--backend`, 由`builder.create_archive(&backup_name)`组织元数据
+
+			判断文件属性逻辑在`read_file_metadata()`
+
+			存储文件逻辑在`read_file_inner()`
+
+			内容加密逻辑在`keystore.encrypt_block(&buffer)`: 会用`self.block_keys.encrypt(&[], block)`加密内容, 具体步骤:
+			1. 构建siv=HMAC-SHA-512-256 (siv_key, aad || plaintext || le64(aad.length) || le64(plaintext.length)), 同时会将siv.0作为blockid, aad是空
+			1. HMAC-SHA-512 (cipher_key, nonce) 导出加密密钥, 执行ChaCha20(衍生密钥 from 加密密钥，数据)
+		1. `archive.encrypt(&keystore)`->`backend.store_archive()`
+
+			archive内容json序列化后会用`lzma::compress`压缩再`keystore.encrypt_archive_metadata()`加密
+
 - [conserve](https://github.com/sourcefrog/conserve)
 
 ## web

@@ -1364,6 +1364,8 @@ ref:
 
 > [官方 plugins](https://github.com/bareos/bareos/tree/master/core/src/plugins/filed), [官方 contrib plugins](https://github.com/bareos/bareos/tree/master/contrib)和[开源plugins:"bareos-tasks-plugins"(其他它已包含在contrib plugins中)](https://github.com/marcolertora/bareos-tasks-plugins)
 
+> linux可通过管道实现备份db无需暂存的功能.
+
 bareos原生支持dir, storage, filedaemon的插件扩展. 使用插件前必须在配置中启用它们, **修改后需要重启服务**, 当前支持python 2/3. **bareos 20开始推荐使用python3, 虽然官方20.0.1目前plugins都是python2的**.
 
 > **一个client无法同时加载python2和python3插件, 可创建两个client分别加载python2/3来解决**.
@@ -1597,7 +1599,7 @@ ref:
           Compression = LZ4                       # [压缩](https://docs.bareos.org/Configuration/Director.html)
           Signature = MD5                         # 每个文件产生MD5校验文件
           One FS = No                             # 所有指定的文件（含子目录是mountpoint）都会被备份
-          # One FS = Yes                          # 指定的文件（含子目录）如不在同一文件系统下不会被备份
+          # One FS = Yes                          # 指定的文件（含子目录）如不在同一文件系统下不会被备份, 即它不会备份mount在子目录上的文件系统. 见[One FS](https://docs.bareos.org/Configuration/Director.html)或[`onefs=<yes|no>`](https://www.bacula.org/13.0.x-manuals/en/main/Configuring_Director.html)
           #
           # 需要备份的文件系统类型列表
           FS Type = btrfs                         # btrfs 文件系统需要备份

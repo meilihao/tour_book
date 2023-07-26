@@ -12,4 +12,6 @@ Starting with nightly-2021-07-28, one must pass -Zunpretty=expanded instead of -
 > `the option `Z` is only accepted on the nightly compiler`
 
 
-其他方法: [`cargo-expand`](https://github.com/dtolnay/cargo-expand), 是上述方法的wrapper.
+其他方法:
+- [`cargo-expand`](https://github.com/dtolnay/cargo-expand), 是上述方法的wrapper.
+- [rust playground](https://play.rust-lang.org/)的TOOLS->Expand macros

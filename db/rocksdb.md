@@ -10,6 +10,7 @@
 - [Apache Flink中的RocksDB状态后端](https://zhuanlan.zhihu.com/p/332484994)
 - [rocksdb-doc-cn](https://wanghenshui.github.io/rocksdb-doc-cn/)
 - [WiscKey 发布的五年后，工业界用上了 KV 分离吗？](https://zhuanlan.zhihu.com/p/397466422)
+- [TIDB TIKV数据存储到ROCKSDB探秘 与 ROCKSDB 本尊](https://cloud.tencent.com/developer/article/1857152)
 
 RocksDB的目的是成为一套能在服务器压力下，真正发挥高速存储硬件（特别是Flash 和 RAM）性能的高效单点数据库系统. 它是一个C++库，允许存储任意长度二进制kv数据, 支持原子读写操作, 因此本质上来说它是一个可插拔式的存储引擎选择.
 
@@ -510,7 +511,7 @@ RocksDB的内存大致有如下四个区：
 ref:
 - [MySQL · MyRocks · MyRocks参数介绍](https://developer.aliyun.com/article/397246)
 
-查看db_path下的OPTIONS-<SN>中的section "Version"即可
+查看db_path下的OPTIONS-<SN>中的section "Version"即可, 或源码的`include/rocksdb/version.h`
 
 参考rocksdb 配置:
 - [tikv](https://github.com/tikv/tikv/blob/master/docs/reference/configuration/rocksdb-option-config.md)
@@ -727,3 +728,12 @@ env:
     后来发现, 构建rocksdb时优先使用了`/usr/local`下的自编译jemalloc, 而自编的jemalloc 5.3.0/5.2.1都会引发coredump, 移除自编译jemalloc而采用官方jemalloc后不再coredump
 1. 使用tcmalloc
 1. 采用默认malloc, 经测试可行
+
+### tikv调用rocksdb
+ref:
+- [求助！关于tikv调用rust-rocksdb](https://asktug.com/t/topic/663579)
+
+`tikv components/engine_rocks` -> `https://github.com/tikv/rust-rocksdb` -> rocksdb
+
+
+> AgateDB - A new storage engine created by PingCAP in an attempt to replace RocksDB from the Tikiv DB stack

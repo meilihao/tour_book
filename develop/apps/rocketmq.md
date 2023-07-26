@@ -1,6 +1,7 @@
 # rocketmq
 ref:
 - [RocketMQ DLedger多副本即主从切换的实现原理](https://www.yisu.com/zixun/598918.html)
+- [解读 RocketMQ 5.0 全新的高可用设计](https://my.oschina.net/yunqi/blog/10086167)
 
 > 从4.5开始RocketMQ集群从原先的支持主从同步升级到可支持主从切换
 

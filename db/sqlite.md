@@ -61,3 +61,8 @@ type Author struct {
 	Email string
 }
 ```
+
+> 看到过sqlite3用`blocks TEXT NOT NULL`存储json内容
+
+### `REPLACE INTO`
+`INSERT OR REPLACE INTO mtime_cache (path, mtime, mtime_nsec, size, blocks) VALUES (?,?,?,?,?)`

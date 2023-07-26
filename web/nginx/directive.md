@@ -113,3 +113,6 @@ open("/etc/nginx/html404", O_RDONLY|O_NONBLOCK) = -1 ENOENT (No such file or dir
 
 执行顺序:
 1. 依次检查目录下index directive列举的文件,如果index存在,$uri=$uri+index,再执行try_files,$t不存在.
+
+## module
+- return : ngx_http_rewrite_module

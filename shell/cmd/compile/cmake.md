@@ -54,3 +54,23 @@ ref:
 或`cmake -DCOMPILE_WARNING_AS_ERROR=no`
 
 或在CMakeLists.txt里找`-Werror`并去掉它
+
+### [Cmake参数修改之CFLAGS和CXXFLAGS](https://blog.51cto.com/u_15061951/3708727)
+```bash
+# --- 全局
+# vim CmakeLists.txt
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g")
+# --- 区分编译
+# vim CmakeLists.txt
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DDEBUG")
+set(CMAKE_C_FLAGS_Release "${CMAKE_C_FLAGS_Release} -DNDBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
+set(CMAKE_CXX_FLAGS_Release "${CMAKE_CXX_FLAGS_Release} -DNDBUG")
+
+## --- 区分编译使用
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Debug/Release ..
+make
+```

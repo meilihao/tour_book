@@ -2,6 +2,7 @@
 参考:
 - [HTTPS 温故知新（四） —— 直观感受 TLS 握手流程(下)](https://halfrost.com/https_tls1-3_handshake/)
 - [TLS 1.3科普——新特性与协议实现](https://zhuanlan.zhihu.com/p/28850798)
+- [HTTP - TLS1.3 初次解读](https://cloud.tencent.com/developer/article/2123171)
 
 ## tls协议
 TLS 1.3包括3个子协议——alert、handshake、record:
