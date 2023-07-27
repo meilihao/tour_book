@@ -276,3 +276,6 @@ google-chrome-stable --proxy-server="socks5://127.0.0.1:1080" // 需梯子
     $ sudo reboot
     ```
 1. 打开chrome, 登入google账号等待同步即可
+
+### linux图形界面重启后黑屏
+重启桌面显示管理器, 比如`systemctl restart  lightdm.service`
