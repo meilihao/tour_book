@@ -11,6 +11,7 @@
 - [rocksdb-doc-cn](https://wanghenshui.github.io/rocksdb-doc-cn/)
 - [WiscKey 发布的五年后，工业界用上了 KV 分离吗？](https://zhuanlan.zhihu.com/p/397466422)
 - [TIDB TIKV数据存储到ROCKSDB探秘 与 ROCKSDB 本尊](https://cloud.tencent.com/developer/article/1857152)
+- [rocksdb/USERS.md](https://github.com/facebook/rocksdb/blob/main/USERS.md)
 
 RocksDB的目的是成为一套能在服务器压力下，真正发挥高速存储硬件（特别是Flash 和 RAM）性能的高效单点数据库系统. 它是一个C++库，允许存储任意长度二进制kv数据, 支持原子读写操作, 因此本质上来说它是一个可插拔式的存储引擎选择.
 
@@ -725,7 +726,7 @@ env:
 解决方法:
 1. ~~使用其他版本jemalloc, 需要自编译: 官方apt repo的jemalloc需要libc6>=2.34, 而Ubuntu 20.04的是2.31~~
 
-    后来发现, 构建rocksdb时优先使用了`/usr/local`下的自编译jemalloc, 而自编的jemalloc 5.3.0/5.2.1都会引发coredump, 移除自编译jemalloc而采用官方jemalloc后不再coredump
+    后来发现, 构建rocksdb时优先使用了`/usr/local`下的自编译jemalloc, 而自编的jemalloc 5.3.0/5.2.1都会引发coredump, 移除自编译jemalloc而采用ubuntu官方jemalloc后不再coredump
 1. 使用tcmalloc
 1. 采用默认malloc, 经测试可行
 

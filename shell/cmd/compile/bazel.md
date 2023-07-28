@@ -1,4 +1,7 @@
 # bazel
+ref:
+- [Bazel学习笔记](https://blog.gmem.cc/bazel-study-note)
+
 bazel是Google公司开源的一个自动化软件构建和测试工具. Bazel使用分布式缓存和增量构建方法，使构建更加快速. 其支持构建任务，包括运行编译器和链接器以生成可执行程序和库.
 
 Bazel与Make、Gradle及Maven等构建工具类似，但Bazel在构建速度、可扩展性、灵活性及跨语言和对不同平台的支持上更加出色。Bazel具有如下特性:

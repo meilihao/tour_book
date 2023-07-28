@@ -545,6 +545,10 @@ vm和host都是东8区.
 
 原因: 当前guest使用centos, 因此将其xml配置的clock offset的localtime改为utc即可.
 
+### [windows接管报`No physical memory available at the location required for the Windows Boot Manager.`](https://answers.microsoft.com/en-us/windows/forum/all/no-physical-memory-is-available-at-the-location/33e1c1de-dd92-45bb-a9b2-b7be3611e6ed)
+应是磁盘或内存问题. 经排查是创建vm xml时内存参数是2048Kib, 导致内存不足引发的.
+
+
 ### Unable to open /dev/kvm: No such file or director
 步骤:
 - 执行`systemd-detect-virt`探明环境

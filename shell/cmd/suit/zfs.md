@@ -756,3 +756,12 @@ ref:
 ssd pool且recordsize=4k不存在该问题.
 
 > truenas 22.02.4(22.9.27)上也发现该问题.
+
+### truenas+vmware `Disable physical block size reporting`
+如果initiator不支持超过 4K 的物理块大小值, 则设置. 该设置还可以防止在 ESXi 中使用此共享时出现恒定块大小警告.
+
+vmkwarning.log:
+```
+WARNING: ScsiPath: 4394: The Physical block size "131072" reported by the path vmhba64:C0:T4:L0 is not supported. The only supported physical blocksizes are 512 and 4096
+WARNING: ScsiDeviceIO: 6462: The Physical block size "131072" reported by the device naa.6589cfc0000000572b71f35019e9c31f is not supported. The only supported physical blocksizes are 512 and 4096
+```

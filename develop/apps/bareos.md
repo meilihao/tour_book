@@ -1221,6 +1221,7 @@ status client=t3-fd  #客户端名称t3-fd的状态信息, 如果支持plugin, �
 status client   # 查看 client  的状态
 status dir      # 查看director 的状态
 status storage  # 查看 storage 的状态
+status jobid=11 # 查看运行中job的状态, 比如速率等
 
 # truncate
 truncate volstatus=Purged storage=<storage> pool=<pool> volume=<volume> [drive=<drivenum>] yes
@@ -1267,6 +1268,9 @@ prune # 这个命令和 purge 相似，但安全很多，它只会清除过期�
 list volumes pool=xxx # 按pool获取volume, 没法按照job获取volume
 delete volume=xxx yes # tape会变成未标记, 但再次标记会报错, 需要先[`mt -f /dev/st0 rewind && mt -f /dev/st0 weof && mt -f /dev/st0 rewind`](https://blog.ls-al.com/bacula-relabel-tape/)即清空tape再标记. 按照[官方文档 label](https://docs.bareos.org/TasksAndConcepts/BareosConsole.html)先purge再label不可行: 要改变卷名, 但磁带柜使用条码作为卷名, 重命名后, 原tape状态还是未标记. 其他可用方法: 1. `purge volume=xxx`, 2. `truncate volstatus=Purged storage=<storage> volume=<volume> yes`, 3. `update volume=xxx pool=Scratch`即可重用, 经验证这些步骤后再追加delete并label还是会报错即此方法无需delete再label.
 rm -rf <volume> # 底层执行删除volume
+
+# --- blk
+blk -k -p -V <volume> <storage> # 验证volume完整性
 ```
 
 ```bash

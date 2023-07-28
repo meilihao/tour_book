@@ -82,6 +82,22 @@
 		1. `archive.encrypt(&keystore)`->`backend.store_archive()`
 
 			archive内容json序列化后会用`lzma::compress`压缩再`keystore.encrypt_archive_metadata()`加密
+	- verify:
+
+		1. 获取archive并解码, 验证archive支付正确
+		1. block_list.shuffle()
+
+			打乱block顺序, 使得多次执行(包括中断)尽可能涵盖所有block
+		1. verify_blocks()
+
+			解码encrypted_block来验证
+	- diff: 比较两次备份文件列表的差异, 比如添加/删除文件等
+	- restore: create的逆过程
+
+		`set_file_time`将原文件时间应用到新文件, 见[utimensat](https://man7.org/linux/man-pages/man2/utimensat.2.html)
+
+		`directory_times.reverse()`+`set_file_time`可还原目录时间
+
 
 - [conserve](https://github.com/sourcefrog/conserve)
 

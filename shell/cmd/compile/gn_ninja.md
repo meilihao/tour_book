@@ -140,6 +140,7 @@ gn编译的toolchain配置非常关键，决定了编译的方式和产物的用
 参考:
 - [Ninja 构建系统](https://blog.csdn.net/yujiawang/article/details/72627121)
 
+> Ninja 的独特卖点（USP）是对速度的执著.
 
 ninja 工具介绍
 
