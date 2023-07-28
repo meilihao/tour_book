@@ -579,7 +579,7 @@ fn main() {
     > 在 match 表达式中，移动类型默认也会被移动.
 
     move可以理解为浅拷贝+使原所有者变量失效.
-1. Clone
+1. [Clone](https://doc.rust-lang.org/std/clone/trait.Clone.html)
 
     克隆仅在需要复制的情况下使用, 毕竟复制数据会花费更多的时间.
     由于其运行时消耗，许多 Rustacean 之间有一个趋势是倾向于避免使用 clone 来解决所有权问题.
@@ -589,6 +589,12 @@ fn main() {
     克隆一个值通常涉及创建该值所拥有一切内容的副本及分配内存，因此 clone 无论在时间消耗还是内存占用方面都可能比较昂贵.
 
     clone主要针对heap上的数据.
+
+    Clone 是深度拷贝，栈内存和堆内存一起拷贝
+
+    > Clone的`clone_from()`价值: 某些情况下a已存在时, `a.clone_from(&b)`比`a = b.clone()`高效, 比如a带buffer且buffer足够大, 此时可避免内存分配
+
+    > 在 clone 一个数据时只需要有已有数据的只读引用。但对 Rc<T> 这样在 clone() 时维护引用计数的数据结构，clone() 过程中会改变自己，所以要用 Cell<T> 这样提供内部可变性的结构来进行改变.
 
 对 Rust 而言，一个值如果没有实现 Copy, 在赋值、传参以及函数返回时会被 Move. 其实 Copy 和 Move 在内部实现上, 都是浅层的按位做内存复制, 只不过 Copy 允许访问之前的变量, 而 Move 不允许.
 
@@ -2202,9 +2208,54 @@ Rust 中的值默认被分配到栈内存. 通过 `Box <T>`将值装箱(在堆�
 - Drop: 释放资源, 通常由Rust编译器在编译后的代码中每个作用域结束的位置插入 drop 方法调用, 类似C++中的析构函数.
 
 	它包含一个 drop 方法, 当对象超出作用域时就会被调用。该方法将&mut self 作为参数。使用 drop 释放值是以LIFO 的方式进行的.
+
+    大部分场景无需为数据结构提供 Drop trait，系统默认会依次对数据结构的每个域做 drop。但有两种情况可能需要手工实现 Drop:
+    1. 希望在数据结束生命周期的时候做一些事情，比如记日志
+    1. 需要对资源回收的场景, 比如说锁资源`MutexGuard<T>`的释放, 因为编译器并不知道你额外使用了哪些资源，也就无法帮助开发者 drop 它们.
+
+    Copy trait 和 Drop trait 是互斥的，两者不能共存，当你尝试为同一种数据类型实现 Copy 时，也实现 Drop，编译器就会报错。这其实很好理解：Copy 是按位做浅拷贝，那么它会默认拷贝的数据没有需要释放的资源；而 Drop 恰恰是为了释放额外的资源而生的
 - Deref: 它定义了一个名为 Deref 的方法，并会通过引用获取 self 参数，然后返回对底层类型的不可变引用, 即让指针反映封装值的类型
 
+    DerefMut继承了 Deref，只是它额外提供了一个 deref_mut 方法，用来获取可变的解引用.
+
 	DerefMut可提供对底层类型的可变引用.
+
+
+    数据结构 Buffer 包裹住了 Vec，但这样一来，原本 Vec 实现了的很多方法就无法使用了, 可以实现 Deref 和 DerefMut, 这样在解引用的时候，直接访问到 buf.0，省去了代码的啰嗦和数据结构内部字段的隐藏.
+    ```rust
+    use std::ops::{Deref, DerefMut};
+
+    #[derive(Debug)]
+    struct Buffer<T>(Vec<T>);
+
+    impl<T> Buffer<T> {
+        pub fn new(v: impl Into<Vec<T>>) -> Self {
+            Self(v.into())
+        }
+    }
+
+    impl<T> Deref for Buffer<T> {
+        type Target = [T];
+
+        fn deref(&self) -> &Self::Target {
+            &self.0
+        }
+    }
+
+    impl<T> DerefMut for Buffer<T> {
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            &mut self.0
+        }
+    }
+
+    fn main() {
+        let mut buf = Buffer::new([1, 3, 2, 4]);
+        // 因为实现了 Deref 和 DerefMut，这里 buf 可以直接访问 Vec<T> 的方法
+        // 下面这句相当于：(&mut buf).deref_mut().sort()，也就是 (&mut buf.0).sort()
+        buf.sort();
+        println!("buf: {:?}", buf);
+    }
+    ```
 
 
 Deref 和 DerefMut 特型的设计初衷是为了实现智能指针类型（如 Box、Rc 和 Arc），以及某些会频繁通过引用来使用的类型的所有者版本（如 Vec<T> 和 String 就是 [T] 和 str 的所
@@ -2269,6 +2320,10 @@ trait是在行为上对类型的约束即对类型行为的抽象, 是Rust实现
 rust没有传统面向对象编程语言中的继承概念. Rust通过 trait 将类型和行为明确地进行了区分, 充分贯彻了组合优于继承和面向接口编程的编程思想.
 
 在 Rust 里, 数据的行为通过 trait 来定义. 一般用 impl  关键字为数据结构实现 trait, 但 Rust 贴心地提供了派生宏（derive macro）, 可以大大简化一些标准接口的定义. 比如`#[derive(Debug)]` 为数据结构实现了 Debug trait, 提供了 debug 能力，这样可以通过`{:?}/{:#?}`(后者会按字段换行, 适合更多字段的数据结构), 用`println!`打印出来.
+
+> Clone / Copy trait: 约定了数据被深拷贝和浅拷贝的行为
+
+> 和 Clone trait 不同的是，Copy trait 没有任何额外的方法，它只是一个标记 trait（marker trait）. Copy trait 虽然没有任何行为，但它可以用作 trait bound 来进行类型安全检查，所以管它叫标记 trait.
 
 > Clone 让数据结构可以被复制，而 Copy 则让数据结构可以在参数传递的时候自动按字节拷贝.
 
@@ -2592,7 +2647,7 @@ trait 和 trait bound 让开发者使用泛型类型参数来减少重复，并�
 
 	TraitObject根据虚表指针从虚表中查出正确的指针, 然后再进行动态调用, 这也是将 trait 对象称为动态分发的原因.
 
-	并不是每个 trait 都可以作为 trait 对象被使用，这依旧和类型大小是否确定有关系. 每个trait 都包含一个隐式的类型参数 Self, 代表实现 trait 的类型, 其默认有一个隐式的trait限定`?Sized`. rust 中大部分类型都默认是可确定大小的类型即`<T: Sized>`, 这也是泛型代码可以正常编译的原因.
+	并不是每个 trait 都可以作为 trait 对象被使用，这依旧和类型大小是否确定有关系. 每个trait 都包含一个隐式的类型参数 Self, 代表实现 trait 的类型, 其默认有一个隐式的trait限定`?Sized`, 表示任意大小的类型. rust 中大部分类型都默认是可确定大小的类型即`<T: Sized>`, 这也是泛型代码可以正常编译的原因.
 
 	trait 对象在运行期进行动态分发时, 也必须确定大小, 否则无法为其正确分配内存空间. 所以必须同时满足以下两条规则的 trait 才可作为 trait 对象使用:
 	1. trait 的Sefl类型参数不能被限定为Sized
@@ -2688,6 +2743,8 @@ trait 和 trait bound 让开发者使用泛型类型参数来减少重复，并�
 	Rust 一共提供了5个重要的标签 trait, 都被定义在标准库 std::marker 模块中. 它们分别是：
 	- Sized trait: 用来标识编译期可确定大小的类型
 
+        在使用泛型参数时，Rust 编译器会自动为泛型参数加上 Sized 约束.
+
 		目前 Rust 中的动态类型有 trait和[T], 其中[T]代表一定数量的T在内存中依次排列，但不知道具体的数量
 
 	- Unsize trait: 目前该 trait 为实验特性，用于标识动态大小类型(DST)
@@ -2719,6 +2776,8 @@ trait 和 trait bound 让开发者使用泛型类型参数来减少重复，并�
 
 		实现了 Sync 类型， 可以跨线程安全 传递共享（ 不可变）引用.
 
+        一个类型 T 满足 Sync trait，当且仅当 &T 满足 Send trait.
+
 	除此之外， ust 标准库还在增加新的标签 trait 以满足变化的需求.
 
 	Rust 提供了 Send, Sync 两个标签 trait, 它们是 Rust 无数据竞争并发的基石.
@@ -2726,6 +2785,11 @@ trait 和 trait bound 让开发者使用泛型类型参数来减少重复，并�
 	Rust 把所有类型归为两类：可以安全跨线程传递的值和引用, 以及不可以跨线程传递的值和引用. 再配合所有权机制, 因此Rust够在编译期就检查出数据竞争的隐患, 而不是等到运行时再排查.
 
 	Send, Sync 标签 trait和前面所说的 Copy,Sized 一样, 内部没有具体的方法实现, 它们仅仅是标记.
+
+    标准库中，不支持 Send / Sync 的数据结构主要有:
+    - `裸指针 *const T / *mut T`: 它们是不安全的，所以既不是 Send 也不是 Sync
+    - UnsafeCell<T> 不支持 Sync. 也就是说，任何使用了 Cell 或者 RefCell 的数据结构不支持 Sync
+    - 引用计数 Rc 不支持 Send 也不支持 Sync。所以 Rc 无法跨线程
 
     > Rust 中另一个常见的非固定大小类型是对特型目标的引用. Rust 不能在变量中存储非固定大小的值，也不能将它们作为参数传递, 比如只能通过 &str 或 Box<Write> 这样本身是固定大小的指针来使用它们.
 
@@ -2766,6 +2830,9 @@ trait 不足主要包括以下三点:
 - std::ops 模块的 Add : 允许使用`+`运算符将两个复数相加。
 - std::convert 模块的 Into 和 From : 使用户能够根据其他类型创建复数类型。
 - Display : 使用户能够输出人类可读版本的复数类型
+
+     Debug和Display定义相同, 但Debug 是为开发者调试打印数据结构所设计的，而 Display 是给用户显示数据结构所设计的. 这也是为什么 Debug trait 的实现可以通过派生宏直接生成，而 Display 必须手工实现.
+- Default: 为类型提供缺省值
 
 Rust 标准库针对输入和输出的特性是通过 3 个特型，即 Read、BufRead 和 Write, 见[字符串操作 - 《Rust程序设计 - 18 输入与输出》]()
 
@@ -2834,6 +2901,10 @@ From Into 是定义于 std::convert 模块中的两个 trait. 它们定义了 fr
 
 标准库中还包含了 AsRef和AsMut 两种 rait, 可以将值分别转换为不可变引用和可变引用. AsRef和标准库的另外一个Borrow trait 功能有些类似，但 AsRef 更轻量级, 
 它只是简单地将值转换为引用, 而 Borrow trait 可以用来将某个复合类型抽象为拥有借用语义的类型.
+
+对值类型的转换和对引用类型的转换，Rust 提供了两套不同的 trait:
+1. 值类型到值类型的转换：`From<T> / Into<T> / TryFrom <T>/ TryInto<T>`
+1. 引用类型到引用类型的转换：`AsRef<T> / AsMut<T>`
 
 ## 流程控制
 主流编程语言都会有常用的流程控制语句:条件语句和循环语句. Rust也有但叫做流程控制表达式.
@@ -4910,6 +4981,7 @@ fn main() {
 ref:
 - rust表达式小结 from `<<Rust程序设计>>#6.15 优先级与关联性`
 - 表达式优先级 from `<<Rust编程之道>>#2.12 表达式优先级`
+- [std::ops](https://doc.rust-lang.org/std/ops/index.html)
 
 Rust 中的所有运算符都与 trait 相关, 如果想为自定义类型实现运算符，就必须实现相关的 trait.
 
@@ -5499,7 +5571,9 @@ where
 
 spawn 是一个包含 F 和 T 的泛型函数, 并且会接收一个参数 f, 返回的泛型是JoinHandle<T>. 随后的 where 子句指定了多个trait限制:
 - F:FnOnce() -> T + Send + 'static：这表示 F 实现了一个只能被调用一次的闭包. 换句话说， f 是一个闭包，通过值获取所有内容并移动从环境中引用的项. 同时表示闭包必须是发送型（ Send），并且必须具有'static 的生命周期，同时执行环境中闭包内引用的任何类型必须是发送型，必须在程序的整个生命周期内存活。
-- T:Send + 'static：来自闭包的返回类型 T 必须实现 Send+'static 特征. `'static` 限定表示类型T只能是非引用类型(除`&'static`之外), 因为使用引用无法保证生命周期.
+- T:Send + 'static：来自闭包的返回类型 T 必须实现 Send+'static 特征. `'static` 限定表示类型T只能是非引用类型即拥有所有权(除`&'static`之外), 因为使用引用无法保证生命周期.
+
+> 使用支持 Send/Sync 的 Arc 和 Mutex 一起，可以构造一个可以在多线程间共享且可以修改的类型
 
 Send 是一种标记性特征。它只用于类型级标记，意味着可以安全地跨线程发送值即在线程之间发送是安全的；并且大多数类型都是发送型。未实现 Send 特征的类型是指针、引用等。此外， Send 是自动
 型特征或自动派生的特征。复合型数据类型，例如结构体，如果其中的所有字段都是 Send型，那么该结构体实现了 Send 特征.
