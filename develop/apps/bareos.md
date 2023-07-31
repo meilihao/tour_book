@@ -1370,6 +1370,8 @@ ref:
 
 > linux可通过管道实现备份db无需暂存的功能.
 
+> 修改plugin路径: 修改bareos.spec定义的plugin_dir的定义
+
 bareos原生支持dir, storage, filedaemon的插件扩展. 使用插件前必须在配置中启用它们, **修改后需要重启服务**, 当前支持python 2/3. **bareos 20开始推荐使用python3, 虽然官方20.0.1目前plugins都是python2的**.
 
 > **一个client无法同时加载python2和python3插件, 可创建两个client分别加载python2/3来解决**.

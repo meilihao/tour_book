@@ -279,3 +279,8 @@ google-chrome-stable --proxy-server="socks5://127.0.0.1:1080" // 需梯子
 
 ### linux图形界面重启后黑屏
 重启桌面显示管理器, 比如`systemctl restart  lightdm.service`
+
+### 点向日葵图标无法启动向日葵
+env: ubuntu 22.04
+
+解决方法: 先启动向日葵服务`systemctl status runsunloginclient.service`, 再点击图标启动即可.

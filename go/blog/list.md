@@ -69,6 +69,7 @@
 - [Go应用性能优化实战 - Golang profiling and optimizing](http://yangxikun.com/golang/2017/12/24/golang-profiling-optimizing.html)
 - [性能优化：优化一个已经很快了的Go程序](https://boyter.org/posts/sloc-cloc-code-performance/)
 - [Two Go programs, three different profiling techniques, in 50 minutes](https://about.sourcegraph.com/go/gophercon-2019-two-go-programs-three-different-profiling-techniques-in-50-minutes)
+- [CGO 和 CGO 性能之谜](https://cloud.tencent.com/developer/article/1650525)
 
 ## 反射
 - [Go语法简略 － 反射](http://www.zddhub.com/memo/2015/07/03/go-reflect/)

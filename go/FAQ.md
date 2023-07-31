@@ -520,6 +520,31 @@ env:
 
 推测是ParseMultipartForm报错了, 把`/tmp`写满了, 解决方法: 分片上传
 
+### 生成core dump
+ref:
+- [通过dlv简单分析Go coredump文件](https://blog.csdn.net/qq_31930499/article/details/109274469)
+
+`GOTRACEBACK=crash ./go_programer`
+
+调试:
+- `dlv core <go_programer> <core>`
+- `gdb -c <core> <go_programer>`
+
+### 调试cgo
+ref:
+- [golang 调用 cgo coredump 获得方法](https://studygolang.com/articles/2754)
+
+```bash
+# --- 步骤:
+# --- 1. 编译debug版cgo依赖的so
+# --- 2. 获取coredump
+# --- 3. 调试coredump
+# gdb <go_programer> <core>
+(gdb) bt full # 查看所有的frame
+(gdb) frame <number> # 查看指定的frame
+(gdb) print <symbol> # 查看指定的变量的值
+```
+
 ## 兼容性
 ### os.ReadDir
 ```go

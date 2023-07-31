@@ -12,6 +12,9 @@
 - [WiscKey 发布的五年后，工业界用上了 KV 分离吗？](https://zhuanlan.zhihu.com/p/397466422)
 - [TIDB TIKV数据存储到ROCKSDB探秘 与 ROCKSDB 本尊](https://cloud.tencent.com/developer/article/1857152)
 - [rocksdb/USERS.md](https://github.com/facebook/rocksdb/blob/main/USERS.md)
+- [RocksDB 笔记](https://blog.csdn.net/qq_32907195/article/details/117933955)
+
+> go+[badger](https://github.com/dgraph-io/badger)也是不错的选择, 特别是cgo问题无法解决的时候
 
 RocksDB的目的是成为一套能在服务器压力下，真正发挥高速存储硬件（特别是Flash 和 RAM）性能的高效单点数据库系统. 它是一个C++库，允许存储任意长度二进制kv数据, 支持原子读写操作, 因此本质上来说它是一个可插拔式的存储引擎选择.
 
@@ -30,17 +33,21 @@ RocksDB是一个嵌入式的K-V（任意字节流）存储. 所有的数据在�
 
     ```bash
     # apt install libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev liblz4-dev  libzstd-dev libjemalloc-dev
-    # make -j4 shared_lib
+    # make -j4 shared_lib # 调试模式用make dbg(LIB_MOD=shared) from `INSTALL.md`, make all也可以(LIB_MOD=shared)
     # make install-shared
     # ldconfig
     ```
 
-    > 编译7.10.2发现gcc-c++需要支持c++17
+    > 编译7.10.2发现gcc-c++需要支持c++17, 推荐gcc8
+
+    > rocksdb的cmake是针对windows 64-bit的, 见CMakeLists.txt
+
+    > 构建rocksdb时去除`PORTABLE=1`, 可能使得gdb coredump时获取更多信息
 1. `cd rocksdb_source_root`, 查看Makefile, 选择`make static_lib/make shared_lib`进行编译
 
     如果构建环境存在jemalloc/tcmalloc, make会通过`build_tools/build_detect_platform <platform>`将相应的环境变量存入生成的make_config.mk中, 供自身使用
 
-    > [`ROCKSDB_DISABLE_JEMALLOC=1 make shared_lib`的ROCKSDB_DISABLE_JEMALLOC可禁用jemalloc](https://github.com/facebook/rocksdb/issues/1442), 此时tcmalloc已安装(libtcmalloc-minimal4, 是libtcmalloc_minimal.so)也并不会启用tcmalloc, 是build_detect_platform没有探测到需要的`libtcmalloc.so`, 其实启用tcmalloc需要`libgoogle-perftools-dev`(libtcmalloc.so在libgoogle-perftools4里), 禁用tcmalloc可用ROCKSDB_DISABLE_TCMALLOC.
+    > [`ROCKSDB_DISABLE_JEMALLOC=1 make shared_lib`的ROCKSDB_DISABLE_JEMALLOC可禁用jemalloc](https://github.com/facebook/rocksdb/issues/1442), 此时tcmalloc已安装(libtcmalloc-minimal4, 是libtcmalloc_minimal.so)也并不会启用tcmalloc, 是build_detect_platform没有探测到需要的`libtcmalloc.so`, 其实启用tcmalloc需要`atp install libgoogle-perftools-dev(libtcmalloc.so在libgoogle-perftools4里)/yum install gperftools gperftools-devel`, 禁用tcmalloc可用`ROCKSDB_DISABLE_TCMALLOC=1`.
 1. 参考rocksdb的Makefile, 再执行`make install-static/make install-shared`即可. 如果安装位置需要还可使用`INSTALL_PATH=/usr/local make install-static/install-shared`, `INSTALL_PATH`默认已是`/usr/local`, 最终`librocksdb.a/librocksdb.so`会出现在`$INSTALL_PATH/lib`下
 1. 设置环境变量
 
@@ -557,6 +564,27 @@ uint32_t Extend(uint32_t crc, const char* buf, size_t size) {
 - [linxGnu/grocksdb](https://github.com/linxGnu/grocksdb), follow rocksdb latest, **推荐**
 
     `CGO_CFLAGS="-I/usr/local/include/rocksdb" CGO_LDFLAGS="-L/usr/local/lib -lrocksdb -lstdc++ -lm -lz -lsnappy -llz4 -lzstd" go build`
+
+
+    崩溃示例:
+    ```go
+    func WrongCall(db *grocksdb.DB) {
+        rOpt := grocksdb.NewDefaultReadOptions()
+        wOpt := grocksdb.NewDefaultWriteOptions()
+
+        k := []byte("k")
+        tmp, _ := db.Get(rOpt, k)
+        if tmp.Exists() {
+            data := tmp.Data()
+            tmp.Free()
+
+            data[0] = 'a'
+            if err := db.Put(wOpt, k, data); err != nil { // tmp已free, 再次使用data会导致cgo segmentation violation
+                CheckErr(err)
+            }
+        }
+    }
+    ```
 - [tecbot/gorocksdb](https://github.com/tecbot/gorocksdb), most using, **许久没更新, 不推荐**
 
     编译出的程序没法链接librocksdb.so时, 可参考[/go/cgo.md].
@@ -738,3 +766,130 @@ ref:
 
 
 > AgateDB - A new storage engine created by PingCAP in an attempt to replace RocksDB from the Tikiv DB stack
+
+### Flush报`Shutdown in progress`
+Flush前报`CancelAllBackgroundWork(true)`导致, 将CancelAllBackgroundWork放到db close前即可
+
+### options.Clone().Destroy()崩溃
+env:
+- oracle linux 7.9 x64
+- rocksdb 8.1.1
+- github.com/linxGnu/grocksdb v1.8.0
+- jemalloc: from 官方repo
+
+ps: ubuntu 20.04/22.04正常
+
+```go
+func main() {
+    dir, err := os.MkdirTemp(".", "t-")
+    CheckErr(err)
+
+    givenNames := []string{"default", "write"}
+    options := grocksdb.NewDefaultOptions()
+    options.SetCreateIfMissing(true)
+    options.SetCreateIfMissingColumnFamilies(true)
+
+    oOptions := options.Clone()
+    {
+        oOptions.SetMemTablePrefixBloomSizeRatio(0.1)
+        oOptions.SetPrefixExtractor(grocksdb.NewFixedPrefixTransform(1))
+
+        bto := grocksdb.NewDefaultBlockBasedTableOptions()
+        bto.SetBlockSize(32 << 20)
+        bto.SetChecksum(0x1)
+        bto.SetFilterPolicy(grocksdb.NewBloomFilterFull(1))
+        bto.SetCacheIndexAndFilterBlocks(true)
+        bto.SetCacheIndexAndFilterBlocksWithHighPriority(true)
+        oOptions.SetBlockBasedTableFactory(bto)
+    }
+
+    dOptions := options.Clone()
+    {
+        dOptions.SetOptimizeFiltersForHits(false)
+        dOptions.SetPrefixExtractor(grocksdb.NewNoopPrefixTransform())
+
+        bto := grocksdb.NewDefaultBlockBasedTableOptions()
+        bto.SetBlockSize(32 << 20)
+        bto.SetChecksum(0x1)
+        bto.SetWholeKeyFiltering(false)
+        bto.SetCacheIndexAndFilterBlocks(true)
+        bto.SetCacheIndexAndFilterBlocksWithHighPriority(true)
+        dOptions.SetBlockBasedTableFactory(bto)
+    }
+
+    db, cfh, err := grocksdb.OpenDbColumnFamilies(options, dir, givenNames, []*grocksdb.Options{dOptions, oOptions})
+    CheckErr(err)
+
+    if len(cfh) != 2 {
+        panic("cfh")
+    }
+
+    cfh[0].Destroy()
+    cfh[1].Destroy()
+
+    db.Close()
+    dOptions.Destroy() // will segmentation violation, 崩溃原因是[`dOptions.SetPrefixExtractor(grocksdb.NewNoopPrefixTransform())`](https://github.com/facebook/rocksdb/issues/1095), 当设置SetPrefixExtractor后, 不调用`C.rocksdb_slicetransform_destroy(opts.cst)`即不调用`dOptions.Destroy(),oOptions.Destroy()`
+    oOptions.Destroy()
+    options.Destroy()
+}
+```
+
+解决方法: 注释dOptions.Destroy()和oOptions.Destroy()
+
+### `make dbg`报`error: format '%u' expects argument of type 'unsigned int', but argument 2 has type 'std::reference_wrapper<unsigned int>'`
+ref:
+- [build v7.10.2 failed with gcc 11/12](https://github.com/facebook/rocksdb/issues/11655)
+
+env: gcc 7/9/11/12
+
+解决方法: 在Makefile的`WARNING_FLAGS = ...`后追加`-Wformat=0`
+
+### `make dbg`报`error: no match for 'operator=' (operand type are 'std::reference_wrapper<unsigned int>' and 'int')`
+ref:
+- [build v7.10.2 failed with gcc 11/12](https://github.com/facebook/rocksdb/issues/11655)
+
+env: gcc 7/9/11/12
+
+解决方法是修改代码:
+
+```c++
+class StressCacheKey {
+ public:
+  void Run() {
+    if (FLAGS_sck_footer_unique_id) {
+      // Proposed footer unique IDs are DB-independent and session-independent
+      // (but process-dependent) which is most easily simulated here by
+      // assuming 1 DB and (later below) no session resets without process
+      // reset.
+      FLAGS_sck_db_count = 1;
+    }
+...
+```
+
+改为:
+```c++
+class StressCacheKey {
+ public:
+  void Run() {
+    if (FLAGS_sck_footer_unique_id) {
+      // Proposed footer unique IDs are DB-independent and session-independent
+      // (but process-dependent) which is most easily simulated here by
+      // assuming 1 DB and (later below) no session resets without process
+      // reset.
+      unsigned int x = 1;
+      FLAGS_sck_db_count = std::ref(x);
+    }
+```
+
+### `make all`报`error: '__Y' may by use uninitialized [-Werror=maybe-uninitialized]`和`error: '__Y' may by use uninitialized [-Werror=uninitialized]`
+ref:
+- [build v7.10.2 failed with gcc 11/12](https://github.com/facebook/rocksdb/issues/11655)
+- [Building from source with MKL-DNN fails on Fedora37](https://github.com/apache/mxnet/issues/21188)
+
+env: gcc 12
+
+是在编译`util/xxhash.o`时遇到的.
+
+解决方法: 在Makefile的`WARNING_FLAGS = ...`后追加`-Wno-maybe-uninitialized -Wno-uninitialized`
+
+> gcc 9编译`util/xxhash.o`没报该错
