@@ -545,6 +545,8 @@ ref:
 (gdb) print <symbol> # 查看指定的变量的值
 ```
 
+> go 1.20 cgo调试比1.21友好, 1.21比1.20多了很多名为gopark的goroutine.
+
 ## 兼容性
 ### os.ReadDir
 ```go

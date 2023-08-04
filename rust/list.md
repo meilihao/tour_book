@@ -8,6 +8,7 @@
 - [Rust算法题解](https://github.com/rustlang-cn/rust-algos)
 
 ## 教程
+- [Rust入门秘籍](https://rust-book.junmajinlong.com/about.html)
 - [微软开放的Rust视频教程](https://www.youtube.com/playlist?list=PLlrxD0HtieHjbTjrchBwOVks_sr8EVW1x)
 - [微软开放的Rust图文教程](https://docs.microsoft.com/zh-cn/learn/paths/rust-first-steps/?WT.mc_id=academic-29077-cxa)
 - [张汉东的Rust实战课-课件](https://github.com/ZhangHanDong/inviting-rust)
@@ -18,6 +19,7 @@
 - [Rust 数据内存布局](https://rustmagazine.github.io/rust_magazine_2021/chapter_6/ant-rust-data-layout.html)
 - [Rust 程序设计语言（第二版 & 2018 edition）](https://kaisery.github.io/trpl-zh-cn/)
 - [Rust入门第一课](https://rust-book.junmajinlong.com/ch1/00.html)
+- [【Rust 新手小册】Day 4. 字节跳动开源的 Volo 框架简介](https://juejin.cn/post/7217644586868031548)
 
 ## 课件
 - [陈天 · Rust 编程第一课](https://github.com/tyrchen/geektime-rust)
@@ -39,6 +41,8 @@
 - [preserve](https://github.com/fpgaminer/preserve)
 
 	deps: `dnf install xz-devel sqlite-devel`
+
+	允许多个备份任务保存在一个备份目标. 存储端当前仅支持file.
 
 	```bash
 	# ./preserve -h
@@ -100,6 +104,26 @@
 
 
 - [conserve](https://github.com/sourcefrog/conserve)
+
+	[A comparison to other backup systems](https://github.com/sourcefrog/conserve)
+
+	一个备份任务一个备份目标. 存储端当前仅支持file.
+
+	```bash
+	# ./conserve init /root/test/storage/conserve # 初始化备份保存target
+	# ./conserve backup /root/test/storage/conserve /root/tmp # 备份/root/tmp
+	# ./conserve diff /root/test/storage/conserve /root/tmp # 当前/root/tmp与备份的差异
+	# ./conserve versions /root/test/storage/conserve # 显示备份列表
+	b0000                2023-08-01T14:14:03+08:00 incomplete # b<xxxx>是备份版本 开始实际 是否完成/完成显示耗时
+	b0001                2023-08-01T14:14:26+08:00       0:00
+	# ./conserve ls [-b b2] /root/test/storage/conserve/ # 显示指定版本的备份, 默认是最新
+	# ./conserve restore -b b2  /root/test/storage/conserve/ /root/tmp/r # 还原指定版本
+	# ./conserve validate /root/test/storage/conserve # 验证备份数据完整性
+	```
+
+	源码入口在src/bin/conserve.rs:
+	- init: `Archive::create`
+	- backup: `backup(&Archive::open(open_transport(archive)?)?, source, &options)?;`
 
 ## web
 - [salvo](https://salvo.rs/zh-hans/)
