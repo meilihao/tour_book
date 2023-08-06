@@ -1035,6 +1035,8 @@ oracle linux 7.9 x86启用vmware插件:
 
 > 如果是centos, 将rhel_version换成centos_version即可.
 
+> 将`/usr/lib/VMware-vix-disklib`加入ld.conf配置时, 本机程序可能会优先使用其中的`libstdc++.so`, 该so性能不如系统自带的高, 可将so导入放到bareos_vadp_dumper_wrapper.sh里处理: 在开头追加`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/VMware-vix-disklib`
+
 ## 概念
 - volume : Bareos将在其上写入备份数据的单个物理磁带（或可能是单个文件）
 - pool : 定义接收备份数据的多个volume（磁带或文件）组成的逻辑组
@@ -1369,6 +1371,8 @@ ref:
 > [官方 plugins](https://github.com/bareos/bareos/tree/master/core/src/plugins/filed), [官方 contrib plugins](https://github.com/bareos/bareos/tree/master/contrib)和[开源plugins:"bareos-tasks-plugins"(其他它已包含在contrib plugins中)](https://github.com/marcolertora/bareos-tasks-plugins)
 
 > linux可通过管道实现备份db无需暂存的功能.
+
+> 修改plugin路径: 修改bareos.spec定义的plugin_dir的定义
 
 bareos原生支持dir, storage, filedaemon的插件扩展. 使用插件前必须在配置中启用它们, **修改后需要重启服务**, 当前支持python 2/3. **bareos 20开始推荐使用python3, 虽然官方20.0.1目前plugins都是python2的**.
 

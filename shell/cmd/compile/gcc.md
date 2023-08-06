@@ -212,3 +212,8 @@ C++14   完全支持    从GCC 6.1版本开始完全支持，是GCC 6.1到GCC 10
 C++17   完全支持    从GCC 5版本开始，到GCC 7版本，已基本完全支持。 是GCC 11版本的默认模式 -std=c++17 or -std=gnu++17
 C++20   未完全支持   从GCC 8版本开始陆续支持C++20特性   -std=c++20 or -std=gnu++20 （GCC9及以前使用-std=c++2a）
 C++23   未完全支持（标准还在发展中）  从GCC 11版本开始支持C++23特性    -std=c++2b or -std=gnu++2b
+
+### 查看GCC/GLIB版本信息
+查看方法, 前提是没有strip so:
+`strings libdhnetsdk.so | grep GLIB`
+`strings libdhnetsdk.so | grep GCC`

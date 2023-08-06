@@ -263,6 +263,9 @@ Runlevel 6 : 关闭并重启机器(runlevel6.target, reboot.target)
 # systemctl list-timers
 ```
 
+### sockets
+`systemctl list-sockets`
+
 ## 参考
 
 - [最简明扼要的 Systemd 教程，只需十分钟](https://linux.cn/article-6888-1.html)
