@@ -78,3 +78,194 @@ ECDHE-ECDSA-AES128-SHA # TLSv1 for win7,旧Android
 
 > 在配置 CipherSuite 时，请务必参考权威文档，如：[CloudFlare 使用的配置](https://github.com/cloudflare/sslconfig/blob/master/conf);[Mozilla 的推荐配置](https://wiki.mozilla.org/Security/Server_Side_TLS#Recommended_configurations)
 > ssl_ecdh_curve选择: `ssl_ecdh_curve   X25519:P-256:P-384:P-224:P-521;`
+
+### Create ED25519 certificates for TLS with OpenSSL
+ref:
+- [openssl ca vs openssl x509 comparison [With Examples]](https://www.golinuxcloud.com/openssl-ca-vs-openssl-x509-comparison/)
+- [Create ED25519 certificates for TLS with OpenSSL](https://blog.pinterjann.is/ed25519-certificates.html)
+- [PKI Certificate Authority questions. (ED25519) Design, best practices, how to.](https://www.reddit.com/r/sysadmin/comments/1417lhz/pki_certificate_authority_questions_ed25519/)
+
+ps:
+- 添加使用cfssl
+- 使用`openssl x509`替换`openssl ca`
+
+    openssl ca维护了证书db, 不允许签发同一证书多次, 除非先撤销之前证书.
+
+```bash
+# openssl version
+OpenSSL 3.0.2 15 Mar 2022 (Library: OpenSSL 3.0.2 15 Mar 2022)
+# mkdir private certs csr newcerts
+# touch index.txt
+# echo 1001 > serial
+# --- Generate ED25519 private key for Root cert
+# openssl genpkey -algorithm ED25519 -out private/ca.key.pem
+# cat openssl-25519.cnf # 仅用于演示创建root ca
+[req]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+prompt = no
+[req_distinguished_name]
+C = DE
+CN = www.example.com
+[v3_req]
+keyUsage = keyEncipherment, dataEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = www.example.com
+DNS.2 = example.com
+# cat openssl-25519v2.cnf
+# OpenSSL intermediate CA configuration file.
+# Copy to `/root/ca/cert-archive/intermediate/openssl.cnf`.
+
+[ ca ]
+# `man ca`
+default_ca = CA_default
+
+[ CA_default ]
+# Directory and file locations.
+dir               = /home/chen/test/ed25519
+certs             = $dir/certs
+crl_dir           = $dir/crl
+new_certs_dir     = $dir/newcerts
+database          = $dir/index.txt
+serial            = $dir/serial
+RANDFILE          = $dir/private/.rand
+
+# The root key and root certificate.
+private_key       = $dir/private/ca.key.pem
+certificate       = $dir/certs/ca.cert.pem
+
+# For certificate revocation lists.
+crlnumber         = $dir/crlnumber
+crl               = $dir/crl/intermediate.crl.pem
+crl_extensions    = crl_ext
+default_crl_days  = 3652
+
+# SHA-1 is deprecated, so use SHA-2 instead.
+default_md        = sha256
+
+name_opt          = ca_default
+cert_opt          = ca_default
+default_days      = 7300
+preserve          = no
+policy            = policy_loose
+
+[ policy_strict ]
+# The root CA should only sign intermediate certificates that match.
+# See the POLICY FORMAT section of `man ca`.
+countryName             = match
+stateOrProvinceName     = match
+organizationName        = match
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = optional
+
+[ policy_loose ]
+# Allow the intermediate CA to sign a more diverse range of certificates.
+# See the POLICY FORMAT section of the `ca` man page.
+countryName             = optional
+stateOrProvinceName     = optional
+localityName            = optional
+organizationName        = optional
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = optional
+subjectAltName          = optional
+
+[ req ]
+distinguished_name = req_distinguished_name
+x509_extensions     = server_cert
+req_extensions      = v3_req
+
+[ v3_req ]
+# Extensions for a certificate request (`man x509v3_config`).
+subjectAltName = @alt_names
+
+[ req_distinguished_name ]
+# See <https://en.wikipedia.org/wiki/Certificate_signing_request>.
+countryName                     = Country Name (2 letter code)
+stateOrProvinceName              = State or Province Name
+localityName                    = Locality Name
+0.organizationName              = Organization Name
+organizationalUnitName          = Organizational Unit Name
+commonName                      = Common Name
+emailAddress                    = Email Address
+
+# Optionally, specify some defaults.
+countryName_default             = US
+stateOrProvinceName_default     = NOTEXIST
+localityName_default            = SOMEWHERE
+0.organizationName_default      = Example Co.
+organizationalUnitName_default  = IT
+emailAddress_default            = not@exist.us
+
+[ v3_ca ]
+# Extensions for a typical CA (`man x509v3_config`).
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer
+basicConstraints = critical, CA:true, pathlen:4
+keyUsage = critical, digitalSignature, cRLSign, keyCertSign
+subjectAltName = @alt_names
+
+[ v3_intermediate_ca ]
+# Extensions for a typical intermediate CA (`man x509v3_config`).
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer
+basicConstraints = critical, CA:true, pathlen:1
+keyUsage = critical, digitalSignature, cRLSign, keyCertSign
+subjectAltName = @alt_names
+
+[ usr_cert ]
+# Extensions for client certificates (`man x509v3_config`).
+basicConstraints = CA:FALSE
+nsCertType = client
+nsComment = "OpenSSL Generated Client Certificate"
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer:always
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+extendedKeyUsage = clientAuth
+
+[ server_cert ]
+# Extensions for server certificates (`man x509v3_config`).
+basicConstraints = CA:FALSE
+nsCertType = server
+nsComment = "OpenSSL Generated Server Certificate"
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid,issuer:always
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+
+[ alt_names ]
+IP.1 = 10.10.60.1
+DNS.1 = appajava.server1.test.int.local
+DNS.2 = server1.test.int.local
+
+[ crl_ext ]
+# Extension for CRLs (`man x509v3_config`).
+authorityKeyIdentifier=keyid:always
+# --- generate self signed root ca from config file, 有两种方法:
+## ---req和x509分开处理
+# openssl req -new -out csr/ca.cert.csr -key private/ca.key.pem -config openssl-25519.cnf
+# openssl req -in csr/ca.cert.csr -text -noout
+# openssl x509 -req -days 700 -in csr/ca.cert.csr -signkey private/ca.key.pem -out certs/ca.cert.pem
+## ---req和x509一起处理by`-x509`
+# openssl req -config openssl-25519v2.cnf -key private/ca.key.pem -new -x509 -days 7300 -sha256 -extensions v3_ca -out certs/ca.cert.pem
+# openssl x509 -in certs/ca.cert.pem -text -noout
+# --- INTERMEDIATE, 也可将openssl-25519v2.cnf拷贝一份, 作为intermediate自己的签名配置, 记得修改`[ CA_default ]`里的private_key和certificate
+# --- Generate ED25519 private key for intermediate cert
+# openssl genpkey -algorithm ED25519 -out private/intermediate_ca.key.pem
+# Genereate CSR for intermediate cert
+openssl req -config openssl-25519v2.cnf -new -sha256 -key private/intermediate_ca.key.pem  -extensions v3_intermediate_ca -out csr/intermediate.csr.pem # `Common Name`必填, 可用subj指定. sha256是CSR签名时用的摘要算法
+# --- Sign the intermediate cert with the root CA
+# openssl ca -config openssl-25519v2.cnf -extensions v3_intermediate_ca -days 3650 -notext -md sha256 -in csr/intermediate.csr.pem -out certs/intermediate.cert.pem
+# openssl x509 -in certs/intermediate.cert.pem -text -noout
+# --- SERVER
+# --- Generate ED25519 private key for server cert
+# openssl genpkey -algorithm ED25519 -out private/server.key.pem
+# --- Genereate CSR for server cert
+# openssl req -config openssl-25519v2.cnf -extensions v3_req -key private/server.key.pem -new -sha256 -out csr/server.csr.pem # `Common Name`必填
+# --- Sign the intermediate cert with the intermediate CA
+# openssl ca -config openssl-25519v2.cnf -extensions server_cert -days 3750 -notext -md sha256 -in csr/server.csr.pem -out certs/server.cert.pem
+```

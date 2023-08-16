@@ -20,6 +20,7 @@
 - [Rust 程序设计语言（第二版 & 2018 edition）](https://kaisery.github.io/trpl-zh-cn/)
 - [Rust入门第一课](https://rust-book.junmajinlong.com/ch1/00.html)
 - [【Rust 新手小册】Day 4. 字节跳动开源的 Volo 框架简介](https://juejin.cn/post/7217644586868031548)
+- [Visualizing memory layout of Rust's data types](https://www.youtube.com/watch?v=rDoqT-a6UFg)
 
 ## 课件
 - [陈天 · Rust 编程第一课](https://github.com/tyrchen/geektime-rust)
