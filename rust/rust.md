@@ -426,6 +426,8 @@ let mut声明的**可变绑定**可以对相应的存储单元进行写入.
 
 > 全局(static)变量和常量类似，但static变量不会被内联，在整个程序中，全局变量只有一个实例, **必须是编译期可确定的常量**，也就是说所有的引用都会指向一个相同的地址. 因为全局变量可变，就会出被多个线程同时访问的情况，因而引发内存不安全的问题，所以对于全局可变(static mut)变量的访问和修改代码就必须在unsafe块中进行定义. 声明static变量时禁止调用普通函数, 但const fn可以, 因为const fn是编译时执行的.
 
+> 任何需要 static mut 的地方，都可以用 AtomicXXX / Mutex / RwLock 来取代
+
 在存储的数据比较大，需要引用地址或具有可变性的情况下使用静态变量. 否则，应该优先使用普通常量. 推荐使用lazy_static实现复杂的static变量初始化. lazy_static可以把定义全局静态变量延迟到运行时, 而非编译时.
 
 lazy_static限制:
@@ -3125,7 +3127,7 @@ fn main() {
 
 > for 循环的主要用处是利用迭代器对包含同样类型的多个元素的容器执行遍历，如数组,链表,HashMap,HashSet等.
 
-Rust 的 for 循环可以用于任何实现了  IntoIterator trait 的数据结构. 在执行过程中，IntoIterator 会生成一个迭代器，for 循环不断从迭代器中取值，直到迭代器返回 None 为止。因而，**for 循环实际上只是一个语法糖，编译器会将其展开使用 loop 循环对迭代器进行循环访问，直至返回 None**
+Rust 的 for 循环可以用于任何实现了  IntoIterator trait 的数据结构(它可以把数据结构的所有权转移到 Iterator 中). 在执行过程中，IntoIterator 会生成一个迭代器，for 循环不断从迭代器中取值，直到迭代器返回 None 为止。因而，**for 循环实际上只是一个语法糖，编译器会将其展开使用 loop 循环对迭代器进行循环访问，直至返回 None**
 
 通过斐波那契数列, 使用 if 和 loop / while / for 这几种循环，来实现程序的基本控制流程:
 ```rust
@@ -4594,6 +4596,8 @@ fn main() {
 
 一般情况下，不介意泛型参数带来的稍微复杂的代码结构，愿意用开发时的额外付出，换取运行时的高效；但有时候，当泛型参数过多，导致代码出现了可读性问题，或者运行效率并不是主要矛盾的时候，可以通过使用 trait object 做动态分发，来降低代码的复杂度.
 
+> generics 依然最快，但使用 &dyn Executor 和 Box<dyn executor> 也不过只比它慢了 1% 和 2%
+
 > 在编译 dyn T 时，Rust 会为使用了 trait object 类型的 trait 实现，生成相应的 vtable，放在可执行文件中（一般在 TEXT 或 RODATA 段）
 
 > 在 Rust 里，函数或者方法的执行就是一次跳转指令，而 trait object 方法的执行还多一步，它涉及额外的内存访问，才能得到要跳转的位置再进行跳转，执行的效率要低一些. 此外，如果要把 trait object 作为返回值返回，或者要在线程间传递 trait object，都免不了使用 Box<dyn T> 或者 Arc<dyn T>，会带来额外的堆分配的开销.
@@ -5501,7 +5505,7 @@ Child status: Err(
 */
 ```
 
-上例使用了 Builder::new 方法, 调用 name 和 stack_size 方法为线程分配名称和设置堆栈大小.
+上例使用了 Builder::new 方法, 调用 name 和 stack_size 方法为线程分配名称和设置堆栈大小(默认是2M).
 
 标准库的 spawn 函数是一个重要的原语，但并不是专门为并行分叉–合并设计的. 当前社区已经有更好的分叉–合并 API 构建在其基础之上, 比如Rayon, 它还支持工作窃取（work-stealing）的技术动态地在线程间平衡负载.
 
@@ -5520,6 +5524,50 @@ Rust 并不会倾向于使用任何固有的并发模型, 允许开发者使用�
 
 Rust 内置了两种流行的并发模型：通过同步共享数据和通过消息传递共享数据.
 
+并发状态下有三种常见的工作模式:
+1. 自由竞争模式
+
+    atomic / Mutex 解决了自由竞争模式下并发任务的同步问题，也能够很好地解决 map/reduce 模式下的同步问题
+1. map/reduce 模式
+1. DAG 模式
+
+    可用Channel 用于处理并发任务之间的通讯
+
+
+#### channel
+Rust 提供了以下四种 Channel:
+1. oneshot：这可能是最简单的 Channel，写者就只发一次数据，而读者也只读一次. 这种一次性的、多个线程间的同步可以用 oneshot channel 完成.
+
+    由于 oneshot 特殊的用途，实现的时候可以直接用 atomic swap来完成
+1. rendezvous：很多时候，只需要通过 Channel 来控制线程间的同步，并不需要发送数据。rendezvous channel 是 channel size 为 0 的一种特殊情况
+
+    这种情况下，用 Mutex(保证条件在读写时互斥) + Condvar(控制线程的等待和唤醒) 实现就足够了，在具体实现中，rendezvous channel 其实也就是 Mutex + Condvar 的一个包装
+1. bounded：bounded channel 有一个队列，但队列有上限。一旦队列被写满了，写者也需要被挂起等待。当阻塞发生后，读者一旦读取数据，channel 内部就会使用 Condvar 的 notify_one 通知写者，唤醒某个写者使其能够继续写入
+
+    实现中，一般会用到 Mutex + Condvar + VecDeque 来实现；如果不用 Condvar，可以直接使用 thread::park + thread::notify 来完成（flume 的做法）；如果不用 VecDeque，也可以使用双向链表或者其它的 ring buffer 的实现
+1. unbounded：queue 没有上限，如果写满了，就自动扩容
+
+    Rust 的很多数据结构如 Vec 、VecDeque 都是自动扩容的
+
+    unbounded 和 bounded 相比，除了不阻塞写者，其它实现都很类似
+
+所有这些 channel 类型，同步和异步的实现思路大同小异，主要的区别在于挂起 / 唤醒的对象. 在同步的世界里，挂起 / 唤醒的对象是线程；而异步的世界里，是粒度很小的 task.
+
+
+根据 Channel 读者和写者的数量，Channel 又可以分为:
+1. SPSC：Single-Producer Single-Consumer，单生产者，单消费者。最简单，可以不依赖于 Mutex，只用 atomics 就可以实现
+1. SPMC：Single-Producer Multi-Consumer，单生产者，多消费者。需要在消费者这侧读取时加锁
+1. MPSC：Multi-Producer Single-Consumer，多生产者，单消费者。需要在生产者这侧写入时加锁
+1. MPMC：Multi-Producer Multi-Consumer。多生产者，多消费者。需要在生产者写入或者消费者读取时加锁
+
+在众多 Channel 类型中，使用最广的是 MPSC channel，多生产者，单消费者，因为往往希望通过单消费者来保证，用于处理消息的数据结构有独占的写访问.
+
+各种并发原语的使用场景 Atomic、Mutex、RwLock、Semaphore、Condvar、Channel、Actor:
+1. Atomic 在处理简单的原生类型时非常有用，如果可以通过 AtomicXXX 结构进行同步，那么它们是最好的选择
+1. 当数据结构无法简单通过 AtomicXXX 进行同步，但又的确需要在多个线程中共享数据，那么 Mutex / RwLock 可以是一种选择。不过，需要考虑锁的粒度，粒度太大的 Mutex / RwLock 效率很低
+1. 如果你有 N 份资源可以供多个并发任务竞争使用，那么，Semaphore 是一个很好的选择。比如要做一个 DB 连接池
+1. 当需要在并发任务中通知、协作时，Condvar 提供了最基本的通知机制，而 Channel 把这个通知机制进一步广泛扩展开，于是可以用 Condvar 进行点对点的同步，用 Channel 做一对多、多对一、多对多的同步
+
 #### 原子类型
 std::sync::atomic 模块包含无锁并发编程要使用的原子类型. 这些类型基本上与标准 C++ 原子类型相同:
 - AtomicIsize 和 AtomicUsize 是共享的整数类型，对应单线程的 isize 和 usize 类型
@@ -5532,8 +5580,14 @@ Atomic相当于线程安全版本的`Cell<T>`
 
 rust提供的5种内存顺序, 实际上可以归为3大类:
 1. 排序一致性顺序： Ordering::SeqCst
+
+    SeqCst 是最严格的 ordering，除了 AcqRel 的保证外，它还保证所有线程看到的所有 SeqCst 操作的顺序是一致的
 1. 自由顺序: Ordering::Relaxed
+
+    最宽松的规则，它对编译器和 CPU 不做任何限制，可以乱序执行
 1. 获取-释放顺序： Ordering::Release, Ordering::Acquire和Ordering::AcqRel
+
+     AcqRel 是 Acquire 和 Release 的结合，同时拥有 Acquire 和 Release 的保证
 
 Rust 支持的5种内存顺序与其底层的 LLVM 支持的内存顺序是一致的.
 
@@ -5568,6 +5622,13 @@ rust语言层面支持并发工具:
 与 C++ 不同，Rust 中受保护的数据保存在 Mutex 内部. rust有互斥锁`Mutex<T>`和读写锁`RwLock<T>`:
 - RwLock读写锁：是多读单写锁，也叫共享独占锁. 它允许多个线程读，单个线程写。但是在写的时候，只能有一个线程占有写锁；而在读的时候，允许任意线程获取读锁。读锁和写锁不能被同时获取。
 - Mutex互斥锁：只允许单个线程读和写
+
+
+> Mutex 的实现依赖于 CPU 提供的 atomic, 可以把 Mutex 想象成一个粒度更大的 atomic，只不过这个 atomic 无法由 CPU 保证，而是通过软件算法来实现.
+
+> SpinLock 和 Mutex 最大的不同是，使用 SpinLock，线程在忙等（busy wait），而使用 Mutex lock，线程在等待锁的时候会被调度出去，等锁可用时再被调度回来.
+
+> 在实践中，Condvar 往往和 Mutex 一起使用：Mutex 用于保证条件在读写时互斥，Condvar 用于控制线程的等待和唤醒
 
 > 条件变量用来自动阻塞一个线程, 直到出现指定的条件, 通常和互斥锁配合使用. 在运行中每个条件变量每次只能和一个互斥体一起使用.
 
@@ -5788,6 +5849,8 @@ Unsafe Rust是Safe Rust一个超集. 因此在 Unsafe Rust 中, 并不会禁用 
 
 unsafe不过是把 Rust 编译器在编译器做的严格检查退步成为 C++ 的样子, 由开发者自己为其所撰写的代码的正确性做担保.
 
+使用 unsafe 的场景，根据重要 / 常用程度，会依次介绍：实现 unsafe trait，主要是 Send / Sync 这两个 trait、调用已有的 unsafe 接口、对裸指针做解引用，以及使用 FFI.
+
 >  unsafe 块是 Rust 提供的可选机制，专为安全责任自负的程序员使用高级语言特性提供
 
 rust只允许少数几个地方用 unsafe 关键字进行标记:
@@ -5881,3 +5944,11 @@ Rust 提供了 extern 语法使得 FFI 常便于使用:
 |float |c_float|
 |double| c_double|
 |`void *`、`const void *`| `*mut c_void`、`*const c_void`|
+
+把 Rust 代码编译成 C 库, 在通过Rust shim来调用.
+
+Rust shim 主要做四件事情:
+1. 提供 Rust 方法、trait 方法等公开接口的独立函数。注意 C 是不支持泛型的，所以对于泛型函数，需要提供具体的用于某个类型的 shim 函数
+1. 所有要暴露给 C 的独立函数，都要声明成 #[no_mangle]，不做函数名称的改写
+1. 数据结构需要处理成和 C 兼容的结构
+1. 要使用 catch_unwind 把所有可能产生 panic! 的代码包裹起来

@@ -37,6 +37,9 @@ rsync [OPTION]... rsync://[USER@]HOST[:PORT]/SRC [DEST]
 - 列远程机的文件列表。这类似于rsync传输，不过只要在命令中省略掉本地机信息即可。如：rsync -v rsync://192.168.78.192/www
 
 ## example
+ref:
+- [真正的inotify+rsync实时同步 彻底告别同步慢](https://cloud.tencent.com/developer/article/1373541)
+
 ```bash
 $ rsync -ac /etc/bareos bak # 备份bareos目录到bak
 $ rsync -ac /etc/bareos/ bak # 备份bareos目录下的内容到bak

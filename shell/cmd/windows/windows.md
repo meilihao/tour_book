@@ -30,3 +30,6 @@ windows为了区分计算机系统上的存储设备, 每个存储设备都标�
 
 ### 修复ntfs
 `ntfsfix /dev/sdx`
+
+### 获取cpu序列号
+`wmic CPU get ProcessorID`

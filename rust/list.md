@@ -129,3 +129,14 @@
 ## web
 - [salvo](https://salvo.rs/zh-hans/)
 - [Web Frameworks Benchmark - rust](https://web-frameworks-benchmark.netlify.app/result?l=rust)
+
+## lib
+ref:
+- [生态系统：有哪些常有的Rust库可以为我所用?](https://time.geekbang.org/column/article/429673)
+
+- clap : 命令行, clap 3 已经整合了 structopt
+- dialoguer: 交互式的命令行
+- indicati: 在命令行中提供友好的进度条
+- crossbeam : 处理并发
+- mdbook: 对标 gitbook
+- zola: 对标 hugo 
