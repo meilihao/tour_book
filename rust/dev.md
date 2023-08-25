@@ -339,6 +339,37 @@ Rust 没有沿用上述两种处理方式, 而是有一套独特的处理异常�
 ## 语言比较
 - [Golang vs. Rust: Which Programming Language To Choose in 2022?](https://www.trio.dev/blog/golang-vs-rust)
 
+## 高并发
+作为构建高性能事件驱动系统的一个很典型模式, Reactor pattern 包含三部分
+- task，待处理的任务。任务可以被打断，并且把控制权交给 executor，等待之后的调度
+- executor，一个调度器。维护等待运行的任务（ready queue），以及被阻塞的任务（wait queue）
+- reactor，维护事件队列。当事件来临时，通知 executor 唤醒某个任务等待运行
+
+executor 会调度执行待处理的任务，当任务无法继续进行却又没有完成时，它会挂起任务，并设置好合适的唤醒条件。之后，如果 reactor 得到了满足条件的事件，它会唤醒之前挂起的任务，然后 executor 就有机会继续执行这个任务。这样一直循环下去，直到任务执行完毕
+
+
+以 tokio 为例：async/await 提供语法层面的支持，Future 是异步任务的数据结构，当 fut.await 时，executor 就会调度并执行它.
+
+tokio 的调度器（executor）会运行在多个线程上，运行线程自己的 ready queue 上的任务（Future），如果没有，就去别的线程的调度器上“偷”一些过来运行。当某个任务无法再继续取得进展，此时 Future 运行的结果是 Poll::Pending，那么调度器会挂起任务，并设置好合适的唤醒条件（Waker），等待被 reactor 唤醒。而 reactor 会利用操作系统提供的异步 I/O，比如 epoll / kqueue / IOCP，来监听操作系统提供的 IO 事件，当遇到满足条件的事件时，就会调用 Waker.wake() 唤醒被挂起的 Future。这个 Future 会回到 ready queue 等待执行.
+
+tokio 一般会在每个物理线程（或者 CPU core）下运行一个线程，每个线程有自己的 run queue 来处理 Future。为了提供最大的吞吐量，tokio 实现了 work stealing scheduler，这样，当某个线程下没有可执行的 Future，它会从其它线程的 run queue 中“偷”一个执行
+
+
+不是所有的应用场景都适合用 async/await:
+1. 处理计算密集型任务时
+
+	当处理的任务是 CPU 密集型，而非 IO 密集型，更适合使用线程，而非 Future.
+
+	因为 Future 的调度是协作式多任务（Cooperative Multitasking），也就是说，除非 Future 主动放弃 CPU，不然它就会一直被执行，直到运行结束.
+
+	也可用tokio::task::yield_now()主动让出cpu, 避免某个计算密集型的任务饿死其它任务.
+2. 异步代码中使用 Mutex 时
+
+	大部分时候，标准库的 Mutex 可以用在异步代码中，而且，这是推荐的用法. 然而，标准库的 MutexGuard 不能安全地跨越 await，所以，当需要获得锁之后执行异步操作，必须使用 tokio 自带的 Mutex
+3. 在线程和异步任务间做同步时
+
+	一般的做法是使用 channel 来在线程和 future 两者之间做同步
+
 ## FAQ
 ### 鸭子类型
 只要给定的值拥有函数运行所需的属性和方法, 那它就能使用这个函数.
@@ -399,3 +430,12 @@ Rust 没有沿用上述两种处理方式, 而是有一套独特的处理异常�
 Rust 的一些在功能上与其他被认为是函数式语言类似的特性:
 - 闭包（Closures），一个可以储存在变量里的类似函数的结构
 - 迭代器（Iterators），一种处理元素序列的方式
+
+### SOLID 原则
+- SRP：单一职责原则，是指每个模块应该只负责单一的功能，不应该让多个功能耦合在一起，而是应该将其组合在一起
+- OCP：开闭原则，是指软件系统应该对修改关闭，而对扩展开放
+- LSP：里氏替换原则，是指如果组件可替换，那么这些可替换的组件应该遵守相同的约束，或者说接口
+- ISP：接口隔离原则，是指使用者只需要知道他们感兴趣的方法，而不该被迫了解和使用对他们来说无用的方法或者功能
+- DIP：依赖反转原则，是指某些场合下底层代码应该依赖高层代码，而非高层代码去依赖底层代码
+
+好的 trait, 设计一定是符合 SOLID 原则的

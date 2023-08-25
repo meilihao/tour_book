@@ -20,6 +20,7 @@
 - [Rust 程序设计语言（第二版 & 2018 edition）](https://kaisery.github.io/trpl-zh-cn/)
 - [Rust入门第一课](https://rust-book.junmajinlong.com/ch1/00.html)
 - [【Rust 新手小册】Day 4. 字节跳动开源的 Volo 框架简介](https://juejin.cn/post/7217644586868031548)
+- [Visualizing memory layout of Rust's data types](https://www.youtube.com/watch?v=rDoqT-a6UFg)
 
 ## 课件
 - [陈天 · Rust 编程第一课](https://github.com/tyrchen/geektime-rust)
@@ -128,3 +129,26 @@
 ## web
 - [salvo](https://salvo.rs/zh-hans/)
 - [Web Frameworks Benchmark - rust](https://web-frameworks-benchmark.netlify.app/result?l=rust)
+
+## lib
+ref:
+- [生态系统：有哪些常有的Rust库可以为我所用?](https://time.geekbang.org/column/article/429673)
+
+- clap : 命令行, clap 3 已经整合了 structopt
+- dialoguer: 交互式的命令行
+- indicati: 在命令行中提供友好的进度条
+- crossbeam : 处理并发
+- mdbook: 对标 gitbook
+- zola: 对标 hugo
+- orm: diesel(不支持异步), sea-orm(支持异步), sqlx
+
+## example
+- 练手rustlings，小练习 可以让你习惯阅读和编写 Rust 
+- 练手[exercism](https://exercism.org/)，编程语言在线学习网站
+- 刷题[codewars](https://www.codewars.com/)，刷题网站，类似 LeetCode
+- [talent-plan](https://github.com/pingcap/talent-plan)
+- [Writing an OS in Rust](https://os.phil-opp.com/)
+
+## book
+- [rust-course](https://github.com/sunface/rust-course)
+- [Rust 秘典](https://nomicon.purewhite.io/intro.html)

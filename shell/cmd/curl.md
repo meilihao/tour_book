@@ -41,3 +41,20 @@ $ curl -c cookies http://example.com
 $ curl -b cookies http://example.com
 $ curl --header "Content-Type:application/json" http://example.com
 ```
+
+## FAQ
+### couchdb更新大视图报`done waiting for 100-continue`
+ref:
+- [curl Expect:100-continue](https://blog.csdn.net/fdipzone/article/details/42463727)
+
+`curl -v -X PUT --data ...`返回该错并阻塞
+
+原因: 如请求是POST/PUT, 且`--data`超过1024, curl并不会直接就发起POST请求, 而是会分两步:
+1.发送一个请求，header中包含一个Expect:100-continue，询问Server是否愿意接受数据
+2.接受到Server返回的100-continue回应后，才把数据POST到Server
+
+比如couchdb更新大视图就会卡住, 解决方法: 添加`-H 'Expect:'`禁用该逻辑
+
+补: 实际测试couchdb更新大视图即使分成2步也是没有问题. 部署14套环境, 2套出相同问题, 推测可能与防火墙有关, 待查明
+
+### couchdb更新大视图报`curl -v -X PUT -H 'Expect:' --data ...`报`upload completely sent off: 40 out of 40 bytes`阻塞

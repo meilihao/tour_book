@@ -4,6 +4,11 @@ ref:
 - [virsh list所有vm state及其转换](https://docs.openeuler.org/zh/docs/20.03_LTS_SP3/docs/Virtualization/%E7%AE%A1%E7%90%86%E8%99%9A%E6%8B%9F%E6%9C%BA.html)
 - [Domain XML format](https://avdv.github.io/libvirt/formatdomain.html)
 - [虚拟化调试和优化指南](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/7/html/virtualization_tuning_and_optimization_guide/sect-virtualization_tuning_optimization_guide-blockio-tuning)
+- [如何安装 oVirt 管理程序](https://www.storagereview.com/zh-CN/news/how-to-install-ovirt-hypervisor)
+- [Proxmox VE(Proxmox Virtual Environment)](https://pve.proxmox.com/wiki/Main_Page)
+   支持集群
+- [KubeSphere 虚拟化 KSV 安装体验](https://blog.csdn.net/networken/article/details/125009058)
+- [kubevirt在360的探索之路（k8s接管虚拟化）](https://zyun.360.cn/blog/?p=691)
 
 目前使用最广泛的对kvm进行管理的工具和应用程序接口, 它也支持xen, vmware, virtualbox, hyper-v等平台虚拟化, 以及openvz, lxc等容器虚拟化.
 
@@ -584,6 +589,12 @@ env:
 
 ### cdrom启动"No bootable device"
 bus使用了scsi, 换成sata,ide就正常了.
+
+### windows启动"No bootable device"
+带引导信息的磁盘必须是xml的第一块磁盘
+
+### window启动报`Windows 未能启动。原因可能是最近更改了硬件或软件`, 错误码是`0xc000000f`, 信息是`未连接或无法访问所需设备`
+初步怀疑是磁盘签名的问题
 
 ### 创建vm时将默认q35改为i440fx, 导致创建vm报错`must be model='pci-root' for this machine type, but model='pcie-root' was found instead`
 ref:
