@@ -656,3 +656,6 @@ deepin wine应用依赖i386, i386和amd64共存导致`apt dist-upgrade`失败, �
 `sudo apt reinstall dde*`, 或用`apt search dde |egrep "^dde" |grep -v "dbgsym" |grep -v "dev"`精确筛选dde相关包.
 
 安装dde相关包后能正常登录, 但控制中心无法打开, `sudo dde-control-center --show`直接崩溃, 通过执行`sudo QT_DEBUG_PLUGINS=1 dde-control-center --show`定位是`libdeepin-recovery-plugin.so`导致, 用`dpkg -S libdeepin-recovery-plugin.so`定位包, 因此卸载`deepin-recovery-plugin`即可.
+
+### qqmusic崩溃报`FATAL:gpu_data_manager_impl_private.cc(1034)] The display compositor is frequently crashing. Goodbye.`
+追加`--no-sandbox`

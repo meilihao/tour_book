@@ -5834,6 +5834,10 @@ Send 类型可以安全地发送到多个线程，这表明该类型是一种移
     Rust 当前以 async 关键字配合 await! 宏来提供 async/await 异步开发方案. 在不久的将来, await 会变成关键字.
     async/await实际上是一种语法糖. async_fu 会自动为开发者生成返回值是 impl Future类型的函数.
 
+    只不过 JavaScript 的 Promise 和线程类似，一旦创建就开始执行，对 Promise await 只是为了“等待”并获取解析出来的值；而 Rust 的 Future，只有在主动 await 后才开始执行.
+
+    一般而言，async 定义了一个可以并发执行的任务，而 await 则触发这个任务并发执行. 大多数语言，包括 Rust，async/await 都是一个语法糖（syntactic sugar），它们使用状态机将 Promise/Future 这样的结构包装起来进行处理. rust 是 async 来方便地生成 Future，await 来触发 Future 的调度和执行
+
 ### 数据并行
 并行分任务并行(Task Parallelism)和数据并行(Data Parallelism). 任务并行是指将所需要执行的任务分配到多个核上; 数据并行是指将需要处理的数据分配到多个核上. 数据并行处理起来比任务并行更加简单和实用.
 

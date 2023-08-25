@@ -139,4 +139,16 @@ ref:
 - indicati: 在命令行中提供友好的进度条
 - crossbeam : 处理并发
 - mdbook: 对标 gitbook
-- zola: 对标 hugo 
+- zola: 对标 hugo
+- orm: diesel(不支持异步), sea-orm(支持异步), sqlx
+
+## example
+- 练手rustlings，小练习 可以让你习惯阅读和编写 Rust 
+- 练手[exercism](https://exercism.org/)，编程语言在线学习网站
+- 刷题[codewars](https://www.codewars.com/)，刷题网站，类似 LeetCode
+- [talent-plan](https://github.com/pingcap/talent-plan)
+- [Writing an OS in Rust](https://os.phil-opp.com/)
+
+## book
+- [rust-course](https://github.com/sunface/rust-course)
+- [Rust 秘典](https://nomicon.purewhite.io/intro.html)

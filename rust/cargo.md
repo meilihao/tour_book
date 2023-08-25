@@ -299,3 +299,5 @@ registry = "https://mirrors.tuna.tsinghua.edu.cn/git/crates.io-index.git"
 ^0.0 := >=0.0.0 <0.1.0
 ^0 := >=0.0.0 <1.0.0
 ```
+### 大小优化
+- [min-sized-rust](https://github.com/johnthagen/min-sized-rust)

@@ -7,6 +7,10 @@
   - 数据操作语言 (DML - - select,update,delete,insert)
   - 数据控制语言 (DCL - grant,revoke,commit,rollback)
 
+SQL 数据库非常适合需要强数据一致性、定义良好的模式和复杂关系的应用程序. 其典型用例包括电子商务平台、金融系统和内容管理系统。例如，MySQL 提供ACID（原子性、一致性、隔离性与持久性）合规性，使其适合需要事务完整性的应用程序.
+
+NoSQL 数据库非常适合优先考虑可扩展性、灵活性和高性能数据检索的应用程序. 它们在实时分析、社交媒体平台和 IoT（物联网）应用程序等用例中表现出色.
+
 ## 运算符优先级(Operator Precedence)
 
 - [Postgres](http://www.postgresql.org/docs/9.4/static/sql-syntax-lexical.html)

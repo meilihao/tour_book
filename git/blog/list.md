@@ -5,6 +5,7 @@
 - [Pro Git 2](http://git-scm.com/book/zh/v2/)
 - [图解Git](http://marklodato.github.io/visual-git-guide/index-zh-cn.html)
 - [*2016 Git 新视界](https://linux.cn/article-8419-1.html)
+- [猴子都能懂的GIT入门](https://backlog.com/git-tutorial/cn/)
 
 ## 整理
 - [如何清洗 Git Repo 代码仓库](2015_07_07_001.md)

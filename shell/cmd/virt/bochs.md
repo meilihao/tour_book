@@ -4,6 +4,8 @@ ref:
 
 **考虑FAQ中的`physical memory read error`, 推荐汇编测试用bochs, 界面输出测试用qemu-system-i386**.
 
+ps: 从使用情况看, qemu-system-i386比bochs更能模拟真实硬件, 便于发现错误.
+
 ## 安装
 env: ubuntu 22.04
 
