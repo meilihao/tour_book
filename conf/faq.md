@@ -16,6 +16,21 @@ platform:
 
 > [Microsoft Edge 离线安装包](https://www.microsoft.com/zh-cn/edge/business-pages/download)
 
+### apt安装google chrome
+```sh
+$ wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+$ sudo sh -c 'echo "deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+$ sudo apt update
+$ sudo apt-cache search chrome
+$ sudo apt install google-chrome-stable
+```
+
+> 参考: https://www.ubuntuupdates.org/ppa/google_chrome?dist=stable
+
+https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
+https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+
+
 ### 迅雷99永远下不完
 1. 把任务删除，但是不要删除本地文件
 2. 点击右上角的小箭头--文件--选择导入未完成下载 把原先那个.td后缀的文件导入即可（或者可以直接把这个文件拖入迅雷）,选择`继续下载`即可, 稍后就能下载完成.
@@ -74,17 +89,6 @@ set -x GOROOT /opt/go
 set -x GOPATH /home/chen/git/go
 set -x PATH {$PATH} {$GOROOT}/bin {$GOPATH}/bin
 ```
-
-## apt安装google chrome
-```sh
-$ wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-$ sudo sh -c 'echo "deb [arch=amd64] https://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
-$ sudo apt update
-$ sudo apt-cache search chrome
-$ sudo apt install google-chrome-stable
-```
-
-> 参考: https://www.ubuntuupdates.org/ppa/google_chrome?dist=stable
 
 ## linux登录后应用自启动
 ```sh
