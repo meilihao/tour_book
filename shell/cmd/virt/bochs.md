@@ -282,6 +282,14 @@ install -m 0644 binaries/vgabios*.bin $RPM_BUILD_ROOT%{_datadir}/seavgabios
 - Update to 1.16.2
 ```
 
+手动配置编译:
+```bash
+make menuconfig
+# General Features: 1. 禁用`Support Xen HVM`; 2. 大小 256, 128不够;
+# VGA ROM: `QEMU/Bochs VBE SVGA`
+make
+```
+
 ## FAQ
 ### ROM: couldn't open ROM imgae file '/usr/share/bochs'
 看bochs启动日志提示: "ROM: couldn't open ROM image file '/usr/share/bochs/BIOS-bochs-latest'"
@@ -323,6 +331,8 @@ display_library追加`, options="gui_debug"`即可, 已测试x,sdl2
 ### `bx_dbg_read_linear: physical memory read error (phy=0x0000322f3130, lin=0x00000000322f3130)`
 ref:
 - [bx_dbg_read_linear: physical memory read error](https://github.com/bochs-emu/Bochs/issues/50)
+
+    `when config, append --with-sdl2 --enable-debugger`
 - [[SeaBIOS] physical memory read error](https://sourceforge.net/p/bochs/discussion/39592/thread/4f3d95a9/)
 
        可能是bios问题, 大概率是vgarom. 将romimage换成/usr/share/seabios/bios.bin后, "physical memory read error"消失, 但bochs还是黑屏. 使用自编译的seabios-1.16.2构建的bin也是黑屏.
