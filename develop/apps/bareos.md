@@ -1157,7 +1157,7 @@ ref:
 - [bareos-cleaner](https://github.com/elonen/bareos-cleaner/blob/master/bareos-cleanup)
 
 ```bash
-* reload # 重载配置
+* reload # 重载配置, 或使用`echo "reload"|bconsole`
 * show client=l130 [verbose]
 * show fileset[=xxx]
 * show storage # 从conf配置获取数据
@@ -2116,6 +2116,8 @@ messages
 quit
 END_OF_DATA
 ```
+
+> 最后的`@output\nquit`不要省略, 否则可能导致bareos-dir报`Number of console connections exceeded MaximumConsoleConnections`, 因为MaximumConsoleConnection默认是20, 此时连接bareos-dir:9101的连接很多是`CLOSE_WAIT`
 
 ## 备份还原
 env:

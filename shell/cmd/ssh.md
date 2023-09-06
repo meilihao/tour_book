@@ -165,3 +165,10 @@ env:
 
 
 推荐使用ssh key取代ssh password来解决.
+
+### go ssh+password连接esxi报`ssh: unable to authenticate, attempted methods [none], no supported methods remain`
+ref:
+- [SSH in Go: unable to authenticate, attempted methods [none], no supported methods remain](https://stackoverflow.com/questions/47102080/ssh-in-go-unable-to-authenticate-attempted-methods-none-no-supported-method)
+- [x/crypto/ssh: failed to connect using keyboard interactive auth method](https://github.com/golang/go/issues/32108)
+
+通过`ssh -T -vvv root@xxx`, 查看esxi ssh server支持的ssh method是keyboard-interactive, 而不是password.

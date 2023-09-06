@@ -402,7 +402,7 @@ SMB 协议版本:
 	example:
 	```ini
 	# 参考: [Samba共享目录的多用户权限设置案例](https://www.cnblogs.com/kevingrace/p/5569993.html)
-	[exchage] # 所有人都能读写，包括guest用户，但每个人不能删除别人的文件
+	[exchage] # 所有人都能读写，包括guest用户，但每个人不能删除别人的文件. sharename不能包含windows文件禁止字符, 比如[`/`](https://access.redhat.com/discussions/3237641)
 	comment = Exchange File Directory
 	path = /home/samba/exchange # 再加`chmod -R 1777 /home/samba/exchange`
 	public = yes

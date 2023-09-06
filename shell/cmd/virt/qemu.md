@@ -250,11 +250,39 @@ ref:
 > ubuntu 22.04: qemu-system-riscv64在qemu-system-misc中, 推荐手动编译.
 
 ## qemu monitor
+ref:
+- [36 使用 QEMU 监视器管理虚拟机](https://documentation.suse.com/zh-cn/sles/15-SP4/html/SLES-all/cha-qemu-monitor.html)
+- [[Qemu-devel] [RFC] monitor: add memory search commands s, sp](https://lists.gnu.org/archive/html/qemu-devel/2015-03/msg02309.html)
+
 进入: 鼠标点击qemu窗口，然后ctrl+alt+2即可切换到控制台; ctrl+alt+1回到guest窗口.
 滚屏: ctrl + 上/下
 查看是否使用kvm: info kvm
 显示内存层次: info mtree
 查看物理内存内容: xp /512bx 0x7e00
+
+- memsaveADDRSIZEFILENAME
+    将起始地址为 ADDR 大小为 SIZE 的虚拟内存转储保存到 FILENAME 文件中
+
+- pmemsaveADDRSIZEFILENAME
+    将起始地址为 ADDR 大小为 SIZE 的物理内存转储保存到 FILENAME- 文件中
+
+- x /FMT ADDR
+    创建起始地址为 ADDR 并根据 FMT 字符串设置格式的虚拟内存转储。FMT 字符串由 COUNTFORMATSIZE 这三个参数构成：
+
+    COUNT 参数是要转储的项数。
+
+    FORMAT 可以是 x（十六进制）、d（有符号十进制）、u（无符号十进制）、o（八进制）、c（字符）或 i（汇编指令）。
+
+    SIZE 参数可以是 b（8 位）、h（16 位）、w（32 位）或 g（64 位）。在 x86 上，可以使用 i 格式指定 h 或 w，以分别选择 16 位或 32 位代码指令大小。
+
+- xp /FMT ADDR
+    创建起始地址为 ADDR 并根据 FMT 字符串设置格式的物理内存转储。FMT 字符串由 COUNTFORMATSIZE 这三个参数构成：
+
+    COUNT 参数是要转储的项数。
+
+    FORMAT 可以是 x（十六进制）、d（有符号十进制）、u（无符号十进制）、o（八进制）、c（字符）或 i（汇编指令）。
+
+    SIZE 参数可以是 b（8 位）、h（16 位）、w（32 位）或 g（64 位）。在 x86 上，可以使用 i 格式指定 h 或 w，以分别选择 16 位或 32 位代码指令大小。
 
 ## tools
 - [查看guest memory](https://github.com/qemu/qemu/blob/master/scripts/dump-guest-memory.py), 未验证
