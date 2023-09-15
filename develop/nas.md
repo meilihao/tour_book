@@ -623,7 +623,7 @@ linux samba client挂载需注意斜杠是linux风格的.
 ```
 
 ### zfs nfs mount no acl
-1. 设置acls后nfs挂载,创建目录成功, umount, 再使用samba挂载,取消挂载并重启smbd, 最后回到nfs挂载, 无法创建目录(报无权限), `getfacl`无法获取acls, 但`nfs4_getfacl`可以, 刷新nfs server(`exportfs -r`)后恢复, 但`getfacl`无法获取acls.
+1. 设置acls后nfs挂载,创建目录成功, umount, 再使用samba挂载,取消挂载并重启smbd, 最后回到nfs挂载, 无法创建目录(报无权限), `getfacl`无法获取acls, 但`[nfs4_getfacl](nfs4_getfacl)`可以, 刷新nfs server(`exportfs -r`)后恢复, 但`getfacl`无法获取acls.
 
 ### [是否支持 NFS 和SMB 同时挂载一个文件系统](https://www.alibabacloud.com/help/zh/doc-detail/110839.htm)
 不能以 NFS 和 SMB 同时挂载同一个文件系统.

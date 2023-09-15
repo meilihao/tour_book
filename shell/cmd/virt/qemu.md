@@ -254,6 +254,7 @@ ref:
 - [36 使用 QEMU 监视器管理虚拟机](https://documentation.suse.com/zh-cn/sles/15-SP4/html/SLES-all/cha-qemu-monitor.html)
 - [[Qemu-devel] [RFC] monitor: add memory search commands s, sp](https://lists.gnu.org/archive/html/qemu-devel/2015-03/msg02309.html)
 
+全屏: ctrl+alt+f
 进入: 鼠标点击qemu窗口，然后ctrl+alt+2即可切换到控制台; ctrl+alt+1回到guest窗口.
 滚屏: ctrl + 上/下
 查看是否使用kvm: info kvm

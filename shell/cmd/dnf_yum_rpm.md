@@ -218,7 +218,7 @@ rpmlint RPMS/x86_64/dalong-demo-1-1.x86_64.rpm
 # cp ~/rpmbuild/
 # rpmdev-newspec -o SPECS/xxx.spec 生成SPEC 文件的模板
 # cd SPECS
-# rpmbuild [-vv] -bb xxx.spec # 开始构建, 也可使用`rpmbuild -bb xxx.spec --buildroot="xxx" --define "_topdir xxx" --define "centos_version 700"`, 指定define参数: _topdir指定编译的根目录. 指定buildroot原因: 默认的buildroot是BUILDROOT下的子目录, 该目录的文件名包含该os的特定信息.
+# rpmbuild [-vv] -bb xxx.spec # 开始构建, 也可使用`rpmbuild -bb xxx.spec --buildroot="xxx" --define "_topdir xxx" --define "centos_version 700"`, 指定define参数: _topdir指定编译的**根目录**. 指定buildroot原因: 默认的buildroot是BUILDROOT下的子目录, 该目录的文件名包含该os的特定信息.
 ```
 
 有些项目的xxx.spec不包含编译步骤, 它们是通过组合自编译 + xxx.spec(仅打包, 通过将需要的文件追加到`%files`来指定打包需要的文件)来实现的.

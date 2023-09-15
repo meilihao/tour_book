@@ -593,7 +593,7 @@ bus使用了scsi, 换成sata,ide就正常了.
 ### windows启动"No bootable device"
 带引导信息的磁盘必须是xml的第一块磁盘
 
-### window启动报`Windows 未能启动。原因可能是最近更改了硬件或软件`, 错误码是`0xc000000f`, 信息是`未连接或无法访问所需设备`
+### window启动报`Windows 未能启动。原因可能是最近更改了硬件或软件`, 错误码是`0xc000000f/0xc000000e`, 信息是`未连接或无法访问所需设备`
 初步怀疑是磁盘签名的问题
 
 ### 创建vm时将默认q35改为i440fx, 导致创建vm报错`must be model='pci-root' for this machine type, but model='pcie-root' was found instead`
