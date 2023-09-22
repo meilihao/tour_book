@@ -8,6 +8,8 @@
 - -L : 将比如lib32-glibc的库加入库搜索路径
 - -lc : 连接标准 C 语言库， 比如printf
 
+> lld可使用`-e xxx`指定程序入口; clang不加`-nostdlib`时会连接ld.so即反汇编时main函数前面的部分代码.
+
 ## example
 ```bash
 # ld [-L/usr/lib64] -luring --verbose # test liburing, like `gcc -lhdf5 --verbose`

@@ -288,6 +288,7 @@ NFS服务虽然不具备用户身份验证的功能，但是NFS提供了一种�
 - [使用POSIX ACL控制Samba文件系统的访问](https://help.aliyun.com/document_detail/143007.html)
 - [The Official Samba 3.5.x HOWTO and Reference Guide](https://www.samba.org/samba/docs/old/Samba3-HOWTO/index.html)
 - [将Samba设置为Active Directory域控制器](https://www.cnblogs.com/zyxnhr/p/10981108.html)
+- [内核级 SMB 服务器 Ksmbd 进入稳定状态](https://linux.cn/article-16200-1.html)
 
 > samba有include指令, 能实现类似于nginx的conf.d.
 > 在rhel上，内核的cifs.ko文件系统模块提供了对SMB协议的支持. samba支持windows, mac, linux, 但linux推荐使用nfs.

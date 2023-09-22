@@ -251,6 +251,7 @@ ref:
 
 ## qemu monitor
 ref:
+- [QEMU Monitor](https://qemu-project.gitlab.io/qemu/system/monitor.html)
 - [36 使用 QEMU 监视器管理虚拟机](https://documentation.suse.com/zh-cn/sles/15-SP4/html/SLES-all/cha-qemu-monitor.html)
 - [[Qemu-devel] [RFC] monitor: add memory search commands s, sp](https://lists.gnu.org/archive/html/qemu-devel/2015-03/msg02309.html)
 
@@ -287,6 +288,9 @@ ref:
 
 ## tools
 - [查看guest memory](https://github.com/qemu/qemu/blob/master/scripts/dump-guest-memory.py), 未验证
+
+## patchs
+- [Exposing Model Specific Registers(msr) on the Qemu Monitor](https://www.kirschju.re/posts/exposing-model-specific-registers-via-qemu-monitor/)
 
 ## 操作
 ### 模拟cpu加电

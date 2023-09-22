@@ -129,7 +129,7 @@ endef
 ifdef, ifndef, ifeq, ifneq, else, 结尾统一用endif.
 
 ## FAQ
-### 了解make时执行了哪些命令
+### 了解make时执行了哪些命令/debug
 ```bash
 $ make [test] "V=1"
 ```
