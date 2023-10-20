@@ -1,5 +1,8 @@
 # download/下载
 
+## focus
+- [开源应用 Pomatez 使你保持专注](https://linux.cn/article-16268-1.html)
+
 ## uget+aria2
 
 [uget](http://ugetdm.com)是一款轻量级的自由开源的下载管理器类似迅雷，可运行Linux、windows和MAC系统上,支持队列下载和恢复下载和通过终端下载的功能.uget采用aria2作为后端，安装aria2插件后可与其进行交互。

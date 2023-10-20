@@ -209,25 +209,39 @@ $ ln -sf /usr/bin/qemu-system-x86_64 /usr/libexec/qemu-kvm
 参考:
 - [qemu命令行参数](https://blog.csdn.net/GerryLee93/article/details/106475710)
 
-- boot :
+- boot : 设置guest启动时的各种选项, 比如启动顺序
 
     - once=d : 指定系统的启动顺序是首次光驱, guest reboot后根据默认order(启动顺序)启动
+    - order: x86 pc有a,b(软盘1和2); c(第一个磁盘); d(第一个cdrom); n~p(从p网卡启动). 默认是c 
 - cdrom : 分配给guest的光驱
 - [-d](https://blog.csdn.net/weixin_39871788/article/details/123250595): enable logging of specified items, see `-d help`
     - cpu_reset： 显示CPU reset前的cpu state
     - int: 显示中断和异常
+- drive option[,...,option]: 设置驱动器
+
+    option:
+    - file:文件
+    - index: 顺序
+    - media: 媒介, 比如disk,cdrom
+    - format: 磁盘格式, raw表示保留原始格式
 - -no-reboot: 不触发重启. cpu异常时不自动重启, 而是直接退出
+- -nographic: 使用非gui模式
 - display
 
     - curses : 仅用于文本模式(text mode is used only with BIOS firmware), 当出现"640 x 480 Graphic mode"时表示guest已切换到图形模式.
     - sdl : qemu console gui
 - -cpu <cpu>/help : help可获取qemu支持模拟的cpu
 - -kernel bzImage : 使用linux bzImage, 但`CONFIG_PVH=y`时可直接使用vmlinux
-- -m <N>G : 分配内存大小
+- -m <N>G : 分配内存大小, 默认是MB
 - -M <machine>/help : 当前版本的Qemu工具支持的开发板列表
 - -s : 设置gdbserver的监听端口, 等同于`-gdb tcp::1234`
 - -S : 启动时cpu仅加电, 但不继续执行, 相当于将断点打在CPU加电后要执行的第一条指令处，也就是BIOS程序的第一条指令. 必须在qemu monitor输入`c`才能继续. 未使用`-monitor`时, 按`Ctrl+Alt+2`可进入qemu的monitor界面,`Ctrl+Alt+1`回到qemu
-- -serial stdio : redirects the virtual serial port to the host's terminal input/output, 丢失early boot信息即加电到出现终端登入界面间的信息.
+- -serial : 将guest串口重定向到宿主机的字符设备上, 允许多次指定来模拟多个串口
+
+    gui模式下, 默认重定向到虚拟控制台; 非图形模式(`-nographics`)下, 默认重定向到stdio
+
+    - stdio : redirects the virtual serial port to the host's terminal input/output, 丢失early boot信息即加电到出现终端登入界面间的信息.
+    - mon:dev_string : 监视器多路复用连接到另一个串口设备
 - smp <N> : 为对称多处理器结构分配N个vCPU
 - -device : 要模拟的设备, help可获取qemu支持模拟的设备列表
 - -monitor
@@ -260,6 +274,7 @@ ref:
 滚屏: ctrl + 上/下
 查看是否使用kvm: info kvm
 显示内存层次: info mtree
+显示页表: info pg
 查看物理内存内容: xp /512bx 0x7e00
 
 - memsaveADDRSIZEFILENAME

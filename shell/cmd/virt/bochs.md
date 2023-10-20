@@ -99,7 +99,10 @@ $ bochs -f bochsrc
 1. enable-x86-debugger: 支持x86调试器
 1. with-x: 使用x windows
 1. with-x11: 使用x11
-1. enable-gdb-stub: 支持gdb远程调试, 需要替换enable-debugger
+1. enable-gdb-stub: 支持gdb远程调试, 与enable-debugger互斥
+
+    被调试程序需要开启编译选项`-g`, 链接时不能有`-s`选项, 且bochsrc需要设置`gdbstbub:enable=1`
+    使bochs在本地1234端口上监听gdb命令, 并向gdb发送命令执行结果
 
 编译可能遇到的错误:
 - `error: 'XRRQueryExtension' was not declared in this scope; did you mean 'XQueryExtension'?`
@@ -123,6 +126,28 @@ romimage:
 
 ## bochsrc
 - display_library: 显示库是显示Bochs VGA屏幕的代码
+- megs: 内存
+- romimage: rom bios
+- vga : vga显示配置
+- vga romimage: VGA rom bios
+- floppya : 软驱a
+- floppyb : 软驱b
+- ata[0-3]: 硬盘或光驱的ata控制器
+- ata[0-3]-master: ata设备的主设备
+- ata[0-3]-slave: ata设备的从设备
+- boot: 启动驱动器
+- ips: 模拟的频率
+- log: 调试用的log
+- panic: 错误的信息
+- error: bochs遇到不能模拟的情况, 比如非法指令
+- info: 显示一些不常出现的情况
+- debug: 主要用来开发bochs软件时的调试信息
+- parport1: 并行端口
+- vga_update_interval: vga卡刷新频率
+- keyboard_serial_delay: 键盘串行延时
+- mouse: 鼠标
+- private_colormap: gui色彩映射
+- keyboard_mapping: 硬盘映射
 
 ## 编译seabios
 ref:

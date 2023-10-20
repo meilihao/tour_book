@@ -547,6 +547,9 @@ ref:
 
 > go 1.20 cgo调试比1.21友好, 1.21比1.20多了很多名为gopark的goroutine.
 
+### vscode显示`run test`的详情
+[`"go.testFlags": ["-v"]`](https://github.com/Microsoft/vscode-go/issues/1377)
+
 ## 兼容性
 ### os.ReadDir
 ```go

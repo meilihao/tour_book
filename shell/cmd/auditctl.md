@@ -41,6 +41,7 @@ audit主要包含2个命令:
 # auditctl -a exit,always -F arch=b64 -S kill [-k audit_kill] # 查找who send sigkill. audit.log里可能没有相关进程的killed信息
 # auditctl -a always,exit -F arch=b64 -F a1=15 -S kill -k log_kill
 # auditctl -a always,exit -F arch=b64 -F a1=9 -S kill -k log_kill
+# auditctl -a always,exit -F arch=b64 -F a1!=0x0 -S kill,tkill,tgkill -k log_kill
 # service auditd restart
 # ausearch -sc kill # 使用ausearch搜索结果
 # ausearch -i -k log_kill # `-i`可解析 uid, gid, syscalls, arguments等

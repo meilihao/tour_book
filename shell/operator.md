@@ -80,12 +80,22 @@ cmd1 | ( cmd2; cmd3; cmd4 ) | cmd5
 
 ## FAQ
 ### 判断一个命令是否存在
+ref:
+- [是否存在命令](https://stackoverflow.com/questions/592620/how-can-i-check-if-a-program-exists-from-a-bash-script)
+
 ```bash
 command -v xxx >/dev/null 2>&1
 
 # fail on non-zero return value
 if [ "$?" -ne 0 ]; then
     return 1
+fi
+```
+
+```bash
+if ! [ -x "$(command -v git)" ]; then
+  echo 'Error: git is not installed.' >&2
+  exit 1
 fi
 ```
 

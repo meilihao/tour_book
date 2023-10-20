@@ -2078,6 +2078,30 @@ File -> Invalidate Caches/Restart...
 单星号(*agrs) : 将所有参数以元组(tuple)的形式导入
 双星号（**kwargs）: 将参数以字典的形式导入
 
+```python2
+import concurrent.futures import ThreadPoolExecutor
+import functools import wraps
+
+def record_logger_decorator():
+    def _record_logger_decorator(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            print args
+            print kwargs
+            return 200, "ok"
+        return kwargs
+    return _record_logger_decorator
+
+@record_logger_decorator()
+def spawn_volgroup(group_uuid, group_name, triger=None, user=None):
+    return 200
+
+data = []
+data.append((("id","name"), ({"triger":None, "user":None}))) # 当p[0]只有一个参数时, 需使用`("id",)`, 即末尾的`,`不能省略, 否则程序会panic
+with ThreadPoolExecutor(max_workers=len(data)) as executor:
+    for future in executor.map(lambda p: spawn_volgroup(*p[0], **p[1]), data)
+```
+
 ### ImportError: No module named license.LicenseManager
 明明`license.LicenseManager.py`却提示找不到, 因为LicenseManager.py同目录的`__init__.py`被删除了.
 
@@ -2135,6 +2159,9 @@ python3的: `int.from_bytes() `
 subprocess.Popen默认使用sh(dash)执行命令, 而dash不支持`echo -e`.
 
 解决方法: 换用bash, 即`Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True, executable='/bin/bash')`
+
+### `'NoneType' object has no attribute '__getitem__'`
+读取了None值的属性
 
 ### subprocess.Popen(cmd)卡住
 使用`Popen(cmd, stdout=PIPE, stderr=PIPE)`

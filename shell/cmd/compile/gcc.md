@@ -9,17 +9,32 @@ ref:
 gnu编译套件之一.
 
 ## [选项](https://gcc.gnu.org/onlinedocs/gcc/Option-Index.html#Option-Index):
+- -ansi : 只支持ANSI标准的c语言语法
 - -c : 只编译不链接, 生成目标文件`.o`
 - -Dmacro : 定义指定的宏, 使它能够通过源码中的`#ifdef`进行处理
 - -E : 仅预编译
+- -g : 生成调试信息, gnu调试器可使用该信息
+- -ggdb: 生成gdb专用调试信息, 使用最适合的格式(stabs等), 会有一些gdb专用的扩展
+- -gdwarf2: 附带输出调试信息 
 - -fPIC: 构建动态库
+
+    在编译阶段, 告诉编译器生成与位置无关代码(position independent code), 即产生的代码中没有绝对地址, 全部使用相对地址, 故而代码被加载器加载到内存的任意位置都可以正确执行
+- -fnopic: 关闭fPIC
+- -fnobuiltin: 不接受内建函数(builtin function)
+- -fnoomiframepointer:省略栈帧指针, backtrace利用调用栈帧信息把函数调用关系层层遍历出来
+- -fnostackprotector: 关闭fstackprotector
+- -fstackprotector: 提供缓冲区溢出检查机制
+- -fnostrictaliasing: 关闭strict aliasing. 当使用strict aliasing时, 编译器会认为在不同类型之间的转换不会发生, 因此执行更激进的编译优化, 比如重新安排执行顺序
 - -gN : 生成的可执行程序中含有调试信息, N是1~3, 默认是2, N越大调试信息越多. 与优化选项`-O[N]`冲突
 - -I dir : 在头文件的搜索路径中添加dir
 - -L dir : 在库文件的搜索路径中添加dir
 
     LD_LIBRARY_PATH定义了库搜索路径
 - -lxxx : 链接名为libxxx.so的库文件
+- -m32: 生成32位机器上的代码
+- -MD: 生成当前编译程序文件关联的详细信息, 保含目标文件所依赖的所有源码文件, 包括头文件, 但是信息输出将导入`.d`的文件中
 - -MM : 自动查找源文件中包含的头文件并输出相关Makefile格式的依赖信息
+- -nostdinc: 使编译器不再系统默认的头文件目录中找文件头, 一般和`-I`联合使用, 明确限定头文件的位置
 - -o : 指定输出的文件名, 默认是`a.out`
 - -O0 : 不进行优化
 - -O 或 -O1 : 优化生成代码
@@ -29,7 +44,8 @@ gnu编译套件之一.
 - -pipe : 编译过程中使用pipe, 加快编译速度
 - -P * : 表示在预处理阶段的输出中，阻止生成换行符, 但生成的结果没有换行和排版
     
-    `gcc -E -P maco_expand.c -o result.c`, 
+    `gcc -E -P maco_expand.c -o result.c`
+- -shared: 生成共享目标文件, 通常用在建立共享库时
 - -static : 链接静态库
 - -save-temps : 保留中间文件：如预处理后的结果文件、汇编代码文件与目标文件
 
@@ -37,8 +53,8 @@ gnu编译套件之一.
 - -S : 只编译不汇编, 生成汇编代码
 - -v : 输出详细信息
 - -w : 禁止所有的报警
-- -Wall : 在发生警告时取消编译, 即将警告看作错误, **推荐**
-- -Werror : 在发生警告时取消编译, 即将警告看作错误
+- -Wall : 生成所有告警信息, 在发生警告时停止编译, 即将警告看作错误, **推荐**
+- -Werror : 在发生警告时停止编译, 即将警告看作错误
 - -Wl, 表示后面的参数将传给 link 程序 ld, 比如`-Wl,rpath=./`可在编译时指定so查找路径.
 - --out-implib,dlltest.lib 表示让ld 生成一个名为 dlltest.lib 的导入库
 
