@@ -611,6 +611,9 @@ virt-manager根据vm os默认选中q35时xml已填充了部分controller数据, 
 ### `internal error: Failed to reserve port 5900`
 vnc端口5900已被占用, 修改端口即可
 
+### [virt-install报`Failed to get "write" lock`](https://serverfault.com/questions/1057939/not-able-to-start-virtual-machine-domain-in-kvm-failed-to-get-write-lock)
+xml disk中多次使用了相同的盘, 此时`fuser, lsof, lslocks`均没法反映该情况
+
 ### 使用usb 2/3
 ref:
 - [虚拟机配置](https://docs.openeuler.org/zh/docs/22.03_LTS/docs/Virtualization/%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%85%8D%E7%BD%AE.html)

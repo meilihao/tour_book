@@ -245,7 +245,7 @@ $ git push origin master
 
 1. git format-patch + git am(**推荐**)
 ```bash
-# git format-patch -k --stdout ${A_COMMIT_HASH}..${B_COMMIT_HASH} > xxx.patch # `-k`, 不加时patch中的git log's subject会被冠以"[PATCH] "前缀, 不要省略commit range中间的".."
+# git format-patch -k --stdout ${A_COMMIT_HASH}..${B_COMMIT_HASH} > xxx.patch # `-k`, 不加时patch中的git log's subject会被冠以"[PATCH] "前缀, 不要省略commit range中间的"..", rang = (A_COMMIT_HASH, B_COMMIT_HASH]
 # git am -k -3 [--signoff] < xxx.patch # "-3",使用 three-way merge; "-k", 去除导入patch中git log's subject中的"[PATCH] "前缀
 ```
 

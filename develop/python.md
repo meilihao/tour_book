@@ -546,6 +546,8 @@ import语句允许在当前运行的程序文件中使用模块中的代码.
 module搜索顺序:
 - 内建模块 : 除了sys.builtin_module_names 列出的内置模块之外，还会加载其他一些标准库，都存放在sys.modules字典中
 - sys.path : sys.path[0]为空字符串, 表示启动python解析器时的当前目录.
+
+    执行的py文件与其导入的lib重名会报`No module named xxx`
 - 环境变量PYTHONPATH
 
 > 路径应为**module的上级目录**.

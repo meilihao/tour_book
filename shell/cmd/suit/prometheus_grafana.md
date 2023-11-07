@@ -26,6 +26,17 @@ Prometheus定义了4中不同的指标类型(metric type)：
   与Summary类型的指标相似之处在于Histogram类型的样本同样会反应当前指标的记录的总数(以_count作为后缀)以及其值的总量（以_sum作为后缀）. 不同在于Histogram指标直接反应了在不同区间内样本的个数,区间通过标签len进行定义. 同时对于Histogram的指标,我们还可以通过histogram_quantile()函数计算出其值的分位数. 不同在于Histogram通过histogram_quantile函数是在服务器端计算的分位数. 而**Sumamry的分位数则是直接在客户端计算完成**.因此对于分位数的计算而言,Summary在通过PromQL进行查询时有更好的性能表现,而Histogram则会消耗更多的资源. 反之对于客户端而言Histogram消耗的资源更少.在选择这两种方式时用户应该按照自己的实际场景进行选择.
 
 ## 部署prometheus
+非容器:
+```bash
+# cd prometheus-2.47.2
+# ./prometheus --version
+# mkdir -p /etc/prometheus
+# cp prometheus.yml /etc/prometheus
+# ./promtool check config /etc/prometheus/prometheus.yml # 检查配置文件
+# ./prometheus --config.file "/etc/prometheus/prometheus.yml"
+```
+
+容器:
 ```bash
 # mkdir -p /var/lib/prometheus
 # chmod 777 /var/lib/prometheus
@@ -178,7 +189,8 @@ User：用户，这个概念应该很简单. Grafana里面用户有三种角色a
 # docker run -d --restart=unless-stopped --net=host -p 3000:3000 -v data-grafana:/var/lib/grafana --name grafana  grafana/grafana
 ```
 
-访问http://localhost:3000, 初始密码: admin/admin
+访问http://localhost:3000, 初始密码: admin/admin, 可通过更新Grafana配置文
+件的`[security]`部分来控制
 
 > grafana配置位置: /etc/grafana/grafana.ini
 

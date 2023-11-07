@@ -6,6 +6,8 @@
 - [Basic Operations](https://github.com/facebook/rocksdb/wiki/Basic-Operations)
 - [漫谈RocksDB(四)存储结构](https://www.modb.pro/db/112483)
 - [Tuning RocksDB - Statistics](https://www.jianshu.com/p/ddf652aa4882)
+
+    开启statistics会增加5%~10%的额外开销
 - [rocksdb参数](https://tikv.org/docs/6.1/deploy/configure/tikv-configuration-file/#rocksdb)
 - [Apache Flink中的RocksDB状态后端](https://zhuanlan.zhihu.com/p/332484994)
 - [rocksdb-doc-cn](https://wanghenshui.github.io/rocksdb-doc-cn/)
@@ -13,10 +15,20 @@
 - [TIDB TIKV数据存储到ROCKSDB探秘 与 ROCKSDB 本尊](https://cloud.tencent.com/developer/article/1857152)
 - [rocksdb/USERS.md](https://github.com/facebook/rocksdb/blob/main/USERS.md)
 - [RocksDB 笔记](https://blog.csdn.net/qq_32907195/article/details/117933955)
+- [rocksdb-doc-cn](https://github.com/johnzeng/rocksdb-doc-cn)
+
+其他软件使用的rocksdb版本:
+- [apache/kvrocks](https://github.com/apache/kvrocks/blob/unstable/cmake/rocksdb.cmake)
+- [facebook/mysql-5.6](https://github.com/facebook/mysql-5.6)
+- [flink-state-backends](https://github.com/apache/flink/blob/master/flink-state-backends/flink-statebackend-rocksdb/pom.xml)
+
+    1.18.0->6.20.3
 
 > go+[badger](https://github.com/dgraph-io/badger)也是不错的选择, 特别是cgo问题无法解决的时候
 
 RocksDB的目的是成为一套能在服务器压力下，真正发挥高速存储硬件（特别是Flash 和 RAM）性能的高效单点数据库系统. 它是一个C++库，允许存储任意长度二进制kv数据, 支持原子读写操作, 因此本质上来说它是一个可插拔式的存储引擎选择.
+
+> rocksdb解决的是写多读少的场景需求; B+解决的是读多写少.
 
 RocksDB大量复用了levedb的代码，并且还借鉴了许多HBase的设计理念, 同时Rocksdb也借用了一些Facebook之前就有的理念和代码.
 
@@ -80,6 +92,8 @@ RocksDB是一个嵌入式的K-V（任意字节流）存储. 所有的数据在�
 - IDENTITY : 存放当前rocksdb的唯一标识
 
 ## Memtable
+> rocksdb内存部分就地写; 磁盘部分追加写.
+
 可插拔 memtable，RocksDB 的 memtable 的默认实现是一个 skiplist。skiplist 是一个有序集，当工作负载使用 range-scans 并且交织写入时，这是一个必要的结构。然而，一些应用程序不交织写入和扫描，而一些应用程序根本不执行范围扫描。对于这些应用程序，排序集可能无法提供最佳性能。因此，RocksDB 支持可插拔的 API，允许应用程序提供自己的 memtable 实现。
 
 开发库提供了三个 memtable：skiplist memtable，vector memtable 和前缀散列（prefix-hash） memtable
@@ -88,7 +102,19 @@ RocksDB是一个嵌入式的K-V（任意字节流）存储. 所有的数据在�
 
 只读的 MemTable和 MemTable 的数据结构完全一样，唯一的区别就是不允许再写入了.
 
+内存结构选择:
+1. 红黑树
+
+    并发需要锁整棵树
+2. 调表
+
+    并发只需要锁最大高度和节点
+
 ## SSTFile(SSTTable)
+> sst单个文件没有重复
+> level0同层可能有重复; level1-level N 同层没有重复, 因为其由上层合并而来, 但层间可能有重复
+
+
 RocksDB在磁盘上的file结构sstfile由block作为基本单位组成，一个sstfile结构由多个data block和meta block组成， 其中data block就是数据实体block，meta block为元数据block， 其中data block就是数据实体block，meta block为元数据block。 sstfile组成的block有可能被压缩(compression)，不同level也可能使用不同的compression方式。 sstfile如果要遍历block，会逆序遍历，从footer开始。
 
 sst里面的数据已**按照key进行排序**能方便对其进行二分查找. 在SST文件内，还额外包含以下特殊信息：
@@ -118,6 +144,9 @@ Get()流程：
 ## RocksDB的典型场景（低延时访问）:
 1. 需要存储用户的查阅历史记录和网站用户的应用
 1. 支持大量写和删除操作的消息队列
+
+## 衍生版
+- Pika: 解决大数据量下, redis启动慢
 
 ## 功能
 ### Column Families
@@ -310,6 +339,9 @@ iter.Close()
 ```
 
 ## 调优
+ref:
+- [TiKV 配置文件描述](https://docs.pingcap.com/zh/tidb/v7.4/tikv-configuration-file#rocksdb)
+
 ### Block Cache 系列参数
 ref:
 - [Flink on RocksDB 参数调优指南](https://cloud.tencent.com/developer/article/1592441)
@@ -330,6 +362,9 @@ Block 块是 RocksDB 保存在磁盘中的 SST 文件的基本单位，它包含
 ### Index 和 Bloom Filter 系列参数
 每个 SST 都可以有一个索引（Index）和 Bloom Filter（布隆过滤器），可以提升读性能，因为有了索引，不必顺序遍历整个 SST 文件，就可以定位具体的 Key 在哪里，因为已经保存了所有的 Key、Offset、Size 等元数据；而通过布隆过滤器，可以在假阳（False Positive）率很低的情况下，迅速判断某个 Key 是否在这个 SST 文件中，如果返回 False 就不再继续找索引了.
 
+- filter_policy
+
+    也就是 bloom filter，通常在点查 Get 的时候我们需要快速判断这个 key 在 SST 文件里面是否存在，如果 bloom filter 已经确定不存在了，就可以过滤掉这个 SST，减少没必要的磁盘读取操作了。我们使用 rocksdb::NewBloomFilterPolicy(bits_per_key) 来创建 bloom filter，bits_per_key 默认是 10，表示可能会有 1% 的误判率，bits_per_key 越大，误判率越小，但也会占用更多的 memory 和 space amplification
 - cache_index_and_filter_blocks
 
     默认是 false，表示不在内存里缓存索引和过滤器 Block，而是用到了载入，不用就踢出去。如果设置为 true，则表示允许把这些索引和过滤器放到 Block Cache 中备用，这样可以提升局部数据存取的效率（无需磁盘访问就知道 Key 在不在，以及在哪里）。但是，如果启用了这个选项，必须同时把 pin_l0_filter_and_index_blocks_in_cache也设置为 true，否则可能会因为操作系统的换页操作，导致性能抖动.
@@ -379,7 +414,7 @@ SkipList Memtable，相比 HashSkipList Memtable 跨多个前缀查找的性能�
     通常来说，Write Buffer 越大，写放大效应越小，因而写性能也会改善, 但同时会增大 flush 后 L0、L1 层的压力。因此这个参数的调整，必须随着下面的几个参数一起来做，否则可能会达不到预期的效果。
 - max_write_buffer_number
 
-    columnFamilyOptions.setMaxWriteBufferNumber可控制内存中允许保留的 MemTable 最大个数，超过这个个数后，就会被 Flush 刷写到磁盘上成为 SST 文件。
+    columnFamilyOptions.setMaxWriteBufferNumber可控制内存中允许保留的 MemTable 最大个数, 包含活跃的和不可变的，超过这个个数后，就会被 Flush 刷写到磁盘上成为 SST 文件。
 
     这个参数的默认值是 2. 对于机械磁盘来说或者内存足够大，可以调大到 4 左右，以令 MemTable 的大小减小一些，降低 Flush 操作时造成 Write Stall 的概率.
 - min_write_buffer_number_to_merge
@@ -446,9 +481,13 @@ RocksDB 的 compaction 策略，并且提到了读放大、写放大和空间放
     DBOptions 的setMaxBackgroundCompactions 可设置最大的后台并行 Compaction 作业数。
 
     如果 CPU 负载不高的话，建议增加这项的值，以允许更多的 Compaction 同时进行，减少读放大和空间放大，提升读取效率；但是如果设置的过大，可能会造成性能损耗，因为 Compaction 操作会带来停顿。
+
+    L1-LN, 在非0Level上多个compactions可以被并行执行， max_background_compactions控制了最大并行数量.
 - set_max_subCompactions
 
     DBOptions 允许用户通过 setMaxSubcompactions 选项，把 Compaction 操作拆分为并行的子任务。这个选项资料较少，我们测试来看，性能影响也不大，因此可以暂时忽略。
+
+    大于1时，L0->L1, 会尝试把L0中数据文件分割开，用多线程合并到L1中
 - set_level_0_file_num_compaction_trigger
 
     ColumnFamilyOption 的可以指定 L0 触发 Compaction 操作的文件个数阈值。默认值为 4，可以调大一些，以减少 Compaction 操作的频率（但是会带来 Compaction 时间的延长）。
@@ -614,6 +653,7 @@ RocksDB 调用 Posix API fdatasync() 对数据进行异步写. 如果想用 fsyn
 参考:
 - [官方RocksDB调优](https://github.com/facebook/rocksdb/wiki/RocksDB-Tuning-Guide), 翻译在[RocksDB参数调优](https://xiking.win/2018/12/05/rocksdb-tuning/)
 - [Tuning RocksDB - Write Stalls](https://www.jianshu.com/p/a2892a161a7b)
+- [RocksDB Tuning Guide](https://github.com/facebook/rocksdb/wiki/RocksDB-Tuning-Guide)
 
 有人在HDD/NVME SSD/Ceph Rados上分别测试过Rocksdb的性能，这三者的同步写性能分别是(170MB/s, 1200MB/s, 120MB/s), 不过最终的测试结果却让人大跌眼镜， Rocksdb的性能分别为(<1MB/s, 50MB/s, 4MB/s)，最多只能发挥存储侧不到0.05%的性能.
 
@@ -640,6 +680,7 @@ writeOptions.SetSync=true时, writeOptions.DisableWAL必须为false.
 
 ### rocksdb delete a range of keys
 参考:
+- [Compaction](https://www.jianshu.com/p/a2c092b8d1ea)
 - [带你全面了解 compaction 的13个问题](https://tidb.net/book/tidb-monthly/2022-06/usercase/compaction-question)
 - [2020-10-03-Rocksdb删除问题总结.pdf](https://emperorlu.github.io/files/2020-10-03-Rocksdb%E5%88%A0%E9%99%A4%E9%97%AE%E9%A2%98%E6%80%BB%E7%BB%93.pdf)
 - [rocksdb系列delete a range of keys](https://www.jianshu.com/p/cea1267628b6) from 官方文档的翻译[Delete A Range Of Keys](https://github.com/facebook/rocksdb/wiki/Delete-A-Range-Of-Keys)
@@ -653,6 +694,8 @@ writeOptions.SetSync=true时, writeOptions.DisableWAL必须为false.
 最消极的做法: 遍历DB， 遇到特定范围里的key，直接调用Delete就可以了，这种方法适合于要删除的keys数量小的情况, 另一方面， 这种方法有两个显著问题：
 1. 不能立刻收回资源，得等compaction完成后在能真正收回资源
 2. 大量的tombstones（也就是标记为del的key） 会减缓迭代器效率
+
+> [全量Compaction不可以停止，必须等待操作完成, 这是 RocksDB 的限制](https://docs.nebula-graph.com.cn/3.5.0/8.service-tuning/compaction/)
 
 解决方法:
 - 针对1:
@@ -893,3 +936,15 @@ env: gcc 12
 解决方法: 在Makefile的`WARNING_FLAGS = ...`后追加`-Wno-maybe-uninitialized -Wno-uninitialized`
 
 > gcc 9编译`util/xxhash.o`没报该错
+
+### rocksdb写入卡住
+- [Write Stalls](https://github.com/facebook/rocksdb/wiki/Write-Stalls)
+
+在rocksdb log里检索`ing writes`, 导致该问题有两种情况:
+- `Stalling writes ...`: 触发写入限速
+- `Stopping writes ...`: 触发写暂停
+
+根据具体原因调整参数
+
+### 获取db状态
+[GetProperty](https://bravoboy.github.io/2019/07/06/rocksdb-log/)

@@ -63,6 +63,10 @@ $ sudo reboot
 ## arch安装
 [`archinstall`](https://www.debugpoint.com/archinstall-guide/)
 
+## 制作你的Linux发行版
+- [基于Debian上游制作你的Linux发行版](https://zhuanlan.zhihu.com/p/643461882)
+- [Archiso](https://wiki.archlinuxcn.org/wiki/Archiso?rdfrom=https%3A%2F%2Fwiki.archlinux.org%2Findex.php%3Ftitle%3DArchiso_%28%25E7%25AE%2580%25E4%25BD%2593%25E4%25B8%25AD%25E6%2596%2587%29%26redirect%3Dno)
+
 ## FAQ
 ### do-release-upgrade 离线升级
 env: 有apt repo proxy(且支持ubuntu jammy, 比如`nexus repository manager`是可以限制代理的Ubuntu版本的), 但无法访问changelogs.ubuntu.com

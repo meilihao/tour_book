@@ -5,6 +5,7 @@
 - [支持的os](https://github.com/bareos/bareos/blob/master/.matrix.yml)
 - [Best VMware Backup Software Tools. Top 10 VMware Backup Solutions](https://www.baculasystems.com/blog/top-10-vmware-backup-solutions/)
 - [Storage Media Output Format](https://docs.bareos.org/DeveloperGuide/mediaformat.html)
+- [issues](https://bugs.bareos.org/my_view_page.php)
 
 Bareos 由 bacula fork而來.
 
