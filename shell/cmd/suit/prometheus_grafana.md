@@ -135,18 +135,25 @@ systemd demo:
 # cat > /etc/sysconfig/node_exporter << EOF
 OPTIONS="--collector.textfile.directory /var/lib/node_exporter/textfile_collector"
 EOF
+# cat > /lib/systemd/system/node_exporter.socket << EOF
+[Unit]
+Description=Node Exporter
+
+[Socket]
+ListenStream=9100
+
+[Install]
+WantedBy=sockets.target
+EOF
 # cat > /lib/systemd/system/node_exporter.service << EOF
 [Unit]
-Description=node_exporter
-Documentation=https://prometheus.io/
-After=network.target
+Description=Node Exporter
+Requires=node_exporter.socket
 
 [Service]
-Type=simple
 User=root
 EnvironmentFile=/etc/sysconfig/node_exporter
-ExecStart=/usr/local/bin/node_exporter $OPTIONS
-Restart=on-failure
+ExecStart=/usr/local/bin/node_exporter --web.systemd-socket $OPTIONS
 
 [Install]
 WantedBy=multi-user.target
@@ -205,6 +212,31 @@ User：用户，这个概念应该很简单. Grafana里面用户有三种角色a
 > 不联网环境使用`https://grafana.com/grafana/dashboards/1860`右侧页面`Download JSON`链接下载的json配置即可.
 
 > Grafana首页的Dashboards tag页仅显示已使用过的dashboard, 初次可用左侧菜单栏的搜索按钮进行查找.
+
+# alertmanager
+```bash
+# ./alertmanager --version
+# ./alertmanager --config.file="alertmanager.yml"
+```
+
+## 警报触发
+警报可能有以下三种状态：
+- Inactive： 警报未激活
+- Pending： 警报已满足测试表达式条件， 但仍在等待for子句中指定的持续时间
+- Firing： 警报已满足测试表达式条件， 并且Pending的时间已超过for子句的持续时间
+
+  警报现在处于Firing状态, 会将其推送到Alertmanager
+
+Pending到Firing的转换可以确保警报更有效, 且不会来回浮动. 没有for子句的警报会自动从Inactive转换为Firing, 只需要一个评估周期即可触发. 带有for子句的警报将首先转换为Pending， 然后转换为Firing, 因此至少需要两个评估周期才能触发.
+
+silence: 特定时期内忽略警报
+
+设置silence：
+- 通过Alertmanager Web控制台
+- 通过amtool命令行工具
+
+## alertmanager.yml
+group_by控制的是Alertmanager分组警报的方式
 
 # FAQ
 ### 让Prometheus reload配置激活新的job的方法

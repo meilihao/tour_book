@@ -173,7 +173,7 @@ global: # 全局配置信息. 它定义的内容可被scrape_configs中的每个
 # Alertmanager configuration
 alerting: # 设置Prometheus的警报
   alertmanagers:
-    - static_configs: # 静态配置alertmanager的地址, 也可依赖服务发现动态识别
+    - static_configs: # 静态配置alertmanager的地址, 也可依赖服务发现动态识别比如dns_sd_configs
         - targets:
           # - alertmanager:9093
 
@@ -233,6 +233,8 @@ scrape_configs: # 指定Prometheus抓取的所有目标
 
 > 重启Prometheus服务器或进行SIGHUP可reload `rule_files`
 
+> scrape_configs job 也支持file_sd_configs
+
 目前主要有两种规则:
 - 记录规则（recording rule）
 
@@ -248,6 +250,13 @@ prometheus默认查询地址是`localhost:9090/graph`.
 promql命令:
 - up : 查看每个监控job的监控状态: 1, ok; 0, bad.
 
+## 高可用
+ref:
+- [高可用prometheus集群方案选型分享](https://developer.aliyun.com/article/993139)
+- [高可用Prometheus：Thanos 实践](https://www.kubernetes.org.cn/7217.html)
+
+Prometheus最简单的容错解决方案是并行运行两个配置相同的Prometheus服务器， 并且这两个服务器同时处于活动状态. 该配置生成的重复警报可以交由上游Alertmanager使用其分组（及抑制） 功能进行处理.
+
 ## exporter
 ### node_exporter
 ```bash
@@ -259,3 +268,9 @@ promql命令:
 
 textfile收集器: node_exporter通过扫描指定目录中的文件，提取所有格式为Prometheus指标的字符串， 然后暴露它们以便抓取. 它使用`--
 collector.textfile.directory`指定
+
+### 从日志提取信息
+mtail
+
+### Blackbox exporter
+探针, 允许通过HTTP、 HTTPS、 DNS、 TCP和ICMP来探测端点

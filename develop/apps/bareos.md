@@ -3077,3 +3077,20 @@ lstat demo在[docs/manuals/source/DeveloperGuide/api.rst](https://github.com/bar
 
 ### bareos备份windows vss报错是乱码
 用Pluma打开查看或`iconv -f gbk -t utf8 win.log |less`
+
+### 并发备份
+- [Concurrent Disk Jobs](https://docs.bareos.org/TasksAndConcepts/VolumeManagement.html#concurrent-disk-jobs)
+- [Concurrent Jobs in Bareos with disk storage](https://svennd.be/concurrent-jobs-in-bareos-with-disk-storage/)
+
+bareos一个storage device只能同时备份一个job, 因此需要多个device
+
+### [bareos 22.1.0编译报`sorry, unimplemented: non-trivial designated initializers not supported`](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=55606)
+
+C++ 不支持乱序初始化，想要在声明的时候初始化就必须按结构体里的顺序依次初始化（C 支持的特性，C++ 不支持的并不多见）
+
+c++20支持乱序, 需要gcc8或更高
+
+或参考bareos 21补全相应的字段
+
+### fd断电重启, job一直在运行中, 直至2小时后终止
+触发tcp keepalived机制, KeepAlive的空闲时长(tcp_keepalive_time)默认是2小时, 可通过设置Heartbeat Interval来修改tcp空闲时间.

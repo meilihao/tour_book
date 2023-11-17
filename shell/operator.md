@@ -122,3 +122,8 @@ else
     echo not found
 fi
 ```
+
+### `[: too many arguments`
+`if [ -n ${no_pool} ]`或`if [ $myvar = "foo bar oni" ]`报改错, 原因是变量没放在双引号中, 所以 bash 认为方括号中的自变量过多(比如`if [ foo bar oni = "foo bar oni" ]`), 可以用双引号将字符串自变量括起来消除该问题.
+
+解决: `if [ -n "${no_pool}" ]`或`if [ "$myvar" = "foo bar oni" ]`

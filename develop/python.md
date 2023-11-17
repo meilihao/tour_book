@@ -32,6 +32,8 @@ $ curl https://bootstrap.pypa.io/get-pip.py --output get-pip.py
 $ sudo python2 get-pip.py
 ```
 
+`pipdeptree -p xxxx [-r]`显示xxx所有的依赖包及其子包(`-r`反向查询即谁依赖xxx), 其他的有`pip show xxx`
+
 `pip install wheel`后安装依赖时也会构建出相应的whl包, 此时[`pip install --no-cache-dir`](https://stackoverflow.com/questions/35169608/when-does-pip-install-build-a-wheel)可禁用构建whl包.
 
 > [pip安装, 未测试](https://pip.pypa.io/en/stable/installing/)
@@ -136,10 +138,10 @@ $ pip config set global.index-url https://mirrors.aliyun.com/pypi/simple # 推�
 $ pip config set global.trusted-host "mirrors.aliyun.com"
 $ python -m pip -V # 检查是否安装pip成功
 $ mkdir -p ~/.pip
-$ vim ~/.pip/pip.conf # [为pip换源](https://blog.csdn.net/xuezhangjun0121/article/details/81664260), 会用到sudo时建议添加到`/etc/pip.conf`. 高版本使用`~/.config/pip/pip.conf`
+$ vim ~/.config/pip/pip.conf # [为pip换源](https://blog.csdn.net/xuezhangjun0121/article/details/81664260), 会用到sudo时建议添加到`/etc/pip.conf`. `~/.pip/pip.conf`有时失效, 可能与pip版本有关
 [global]
 index-url = https://pypi.tuna.tsinghua.edu.cn/simple
-$ vim ~/.pip/pip.conf # aliyun pip mirror
+$ vim ~/.config/pip/pip.conf # aliyun pip mirror
 [global]
 trusted-host =  mirrors.aliyun.com
 index-url = https://mirrors.aliyun.com/pypi/simple

@@ -13,6 +13,7 @@
 
 ## 教程
 - [让你提升命令行效率的 Bash 快捷键 (完整版](https://linuxtoy.org/archives/bash-shortcuts.html)
+- [解析shell](https://explainshell.com/)
 
 ## 调试/实践
 - [Bash Shell Online](http://www.tutorialspoint.com/execute_bash_online.php)

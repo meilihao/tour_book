@@ -640,6 +640,9 @@ virbr0包括两个端口：virbr0-nic 为网桥内部端口，vnet0 为虚拟机
 
 virDomainGetID可能返回4294967295, 它即[`^uint32(0)=(unsigned int)-1)`](https://github.com/libvirt/libvirt/blob/master/tools/virsh-domain-monitor.c#L1231)等价于`virsh list`中的`-`.
 
+### GPU 透传
+打开 iommu, VT-d
+
 ## uefi shell
 - exit : 进入qemu machine(virt-4.0)的类似bios界面的字符uefi firmware settings界面.
 

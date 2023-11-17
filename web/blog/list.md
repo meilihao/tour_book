@@ -141,7 +141,14 @@
 - [QUIC 协议在蚂蚁集团落地之综述](https://my.oschina.net/alimobile/blog/5296337)
 
     QUIC LB 组件：基于 NGINX 4层 UDP Stream 模块开发.
+- [腾讯开源高性能轻量级跨平台 QUIC 协议库 - TQUIC](https://www.oschina.net/news/265538)
+
 ## 打包
 - [Turbopack](https://www.oschina.net/news/214982/nextjs-13-released)
 
     Next.js 13 发布，推出快 700 倍的基于 Rust 的 Webpack 替代品
+
+## ssr
+- [Hydration](https://my.oschina.net/u/4090830/blog/10141047)
+
+    "hydration"（水合）是指通过客户端 JavaScript 将静态 HTML 网页转化为动态网页的过程，以实现对 HTML 元素的事件处理。这个过程可以通过将事件处理程序附加到 HTML 元素上来完成

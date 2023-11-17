@@ -36,6 +36,7 @@
 
 ## next
 - [用Rust实现用户态高性能存储 - Wang Pu (王璞) from DatenLord](https://weibo.com/1945106210/JAflese1N?type=repost)
+- [Rust for Linux](https://rust-for-linux.com/)
 
 ## 备份
 - [rustic](https://github.com/rustic-rs/rustic)

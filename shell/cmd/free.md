@@ -1,4 +1,6 @@
 # free
+ref:
+- [我的内存呢？Linux MemAvailable 如何计算](https://lotabout.me/2021/Linux-Available-Memory/)
 
 查看内存使用状况, 信息来自`/proc/meminfo`.
 

@@ -59,6 +59,26 @@ ss 秒(选择性)
     # date -s "21 June 2009 11:01:22" # 设置系统时间
     # clock -w # 把系统时间写入CMOS
 
+### example
+```bash
+# date -d '20200716 15:43:46.111222333' +'%s.%N' # `2020-07-16 15:43:46.111222333`也是支持的
+1594885426.111222333
+# date -d @1594885426.111222333
+2020年 07月 16日 星期四 15:43:46 CST
+# date +%s #显示当前时间的时间戳
+1700118443
+# date +'%Y-%m-%d %H:%M:%S'
+2020-07-16 15:43:46
+# date +'%F %T'
+2020-07-16 15:43:46
+# date -d '2 days ago' +'%F'
+2020-07-14
+# date -d '+4 hours' +'%T'
+19:43:46
+# date -d '2020-07-16 +3 days -1 minute' +'%F %T'
+2020-07-18 23:59:00
+```
+
 ## timedatectl
 参考:
 - [如何设置时间，时区和同步系统时钟使用timedatectl命令](https://www.howtoing.com/set-time-timezone-and-synchronize-time-using-timedatectl-command/)

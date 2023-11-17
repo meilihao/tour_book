@@ -7,6 +7,7 @@
 - [制作 OpenStack Linux 镜像 - 每天5分钟玩转 OpenStack](https://developer.aliyun.com/article/463345)
 - [如何构建OpenStack镜像](https://www.jingh.top/2016/05/28/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BAOpenStack%E9%95%9C%E5%83%8F/)
 - [DIB(disk image builder)是OpenStack TripleO项目的子项目，专门用于构建OpenStack镜像](https://www.jingh.top/2016/05/28/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BAOpenStack%E9%95%9C%E5%83%8F/)
+- [images](https://docs.openstack.org/image-guide/obtain-images.html)
 
 Qemu是一个广泛使用的开源计算机仿真器和虚拟机.
 
@@ -118,8 +119,8 @@ $ ln -sf /usr/bin/qemu-system-x86_64 /usr/libexec/qemu-kvm
 
     `qemu-img snapshot [-l|-a snapshot|-c snapshot|-d snapshot] filename`.
     - -l : 表示查询并列出镜像文件中的所有快照
-    - -a snapshot : 让镜像文件使用某个快照
-    - -c snapshot : 创建一个快照
+    - `-a <snapshot_name>` : 让镜像文件使用某个快照
+    - `-c <snapshot_name>` : 创建一个快照
     - -d : 删除一个快照
 
     `qemu-img rebase [-f fmt] [-t cache] [-p] [-u] -b backing_file [-F backing_fmt] filename`: 改变镜像文件的后端镜像文件,  只有qcow2和qed格式支持rebase命令
