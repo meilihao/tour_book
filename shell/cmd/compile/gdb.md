@@ -233,3 +233,6 @@ ref:
 
 core dump位置:
 - ubuntu 20.04:/var/lib/apport/coredump
+
+### [dump memory](https://blog.csdn.net/ztguang/article/details/51015758)
+`pmap`+`dump binary memory my_binary_file.bin 0x22fd8a 0x22fd8a+450`

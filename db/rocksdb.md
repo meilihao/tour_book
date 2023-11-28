@@ -871,7 +871,7 @@ func main() {
     cfh[1].Destroy()
 
     db.Close()
-    dOptions.Destroy() // will segmentation violation, 崩溃原因是[`dOptions.SetPrefixExtractor(grocksdb.NewNoopPrefixTransform())`](https://github.com/facebook/rocksdb/issues/1095), 当设置SetPrefixExtractor后, 不调用`C.rocksdb_slicetransform_destroy(opts.cst)`即不调用`dOptions.Destroy(),oOptions.Destroy()`
+    dOptions.Destroy() // will segmentation violation, 崩溃原因是[`dOptions.SetPrefixExtractor(grocksdb.NewNoopPrefixTransform())`](https://github.com/facebook/rocksdb/issues/1095), 当设置SetPrefixExtractor后, 不调用`C.rocksdb_slicetransform_destroy(opts.cst)`即不调用`dOptions.Destroy(),oOptions.Destroy()`, 建议是仅注释C.rocksdb_slicetransform_destroy(), 避免相关资源内存泄露
     oOptions.Destroy()
     options.Destroy()
 }

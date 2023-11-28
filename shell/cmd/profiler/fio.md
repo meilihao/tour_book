@@ -33,7 +33,7 @@ fio 分顺序读，随机读，顺序写，随机写，混合随机读写模式.
 - iodepth=1            # 请求IO队列的深度
 - ioengine=psync       # io 引擎使用 psync 方式
 
-    - libaio : Linux 原生的异步 I/O，这也是通常我们这边用的最多的测试盘吞吐和延迟的方法
+    - libaio : Linux 原生的异步 I/O，这也是通常我们这边用的最多的测试盘吞吐和延迟的方法, 需要yum install libaio-devel/apt install libaio-dev
     - sync : 也就是最通常的 read / write 操作
     - vsync : 使用 readv / writev，主要是会将相邻的 I/O 进行合并
     - psync : 对应的 pread / pwrite

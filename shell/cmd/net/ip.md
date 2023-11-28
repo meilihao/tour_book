@@ -318,7 +318,7 @@ $ ip rule add from 60.30.128.15 table cnc
 ```
 
 ### `ip route`配置gateway时报`Nexthop has invalid gateway`
-解决方法: 先将网卡up并给其配上ip再配置gateway即可.
+解决方法: 先将网卡**up**并给其配上ip再配置gateway即可.
 
 ### 使用udev重命名网卡(**不推荐修改**)
 **通过添加kernel参数`net.ifnames=0 biosdevname=0`的方式可能不成功**. RHEL7开始不支持这种修改方式.

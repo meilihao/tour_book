@@ -146,3 +146,6 @@ losetup -d /dev/loop0
 
 ### guestfish: error while loading shared libraries: libconfig.so.11: cannot open shared object file: No such file or directory
 需要libconfig-1.7.x, 比如当前环境是libconfig-1.7.2
+
+### guestfish: /usr/lib64/libselinux.so.1: no version information available (required by /usr/lib64/libguestfs.so.0)
+`yum reinstall libselinux/apt install --reinstall libselinux1`

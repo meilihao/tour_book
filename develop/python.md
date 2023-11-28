@@ -2203,6 +2203,8 @@ logger.debug('this is debug')
 
 log color可用coloredlogs.
 
+### [python3: Python.h: No such file or directory](https://stackoverflow.com/questions/21530577/fatal-error-python-h-no-such-file-or-directory)
+
 ### pep8
 #### E127：continuation line over-indented for visual indent
 在括号内的参数很多的时候, 为了满足每一行的字符不超过79个字符, 需要将参数换行编写, 这个时候换行的参数应该与上一行的括号对齐.

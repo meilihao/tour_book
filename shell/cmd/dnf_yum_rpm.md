@@ -33,7 +33,7 @@ DNF配置文件的位置:
 # dnf search httpd # 查找包
 # dnf install [--assumeno] httpd # 安装包, `--assumeno`类似dryrun
 # dnf reinstall httpd # 重装包
-# dnf download httpd # 下载包, 但不安装. 用`dnf download --resolve samba`/`yumdownloader --resolve samba`可同时下载依赖
+# dnf download httpd # 下载包, 但不安装. 用`dnf download --resolve samba`/`yumdownloader --resolve [-x \*i686 --archlist=x86_64] samba`可同时下载依赖. `-x \*i686 --archlist=x86_64`, archlist是下载兼容特定服务器架构软件包的, 因为i686的包也能安装在x86_64的服务器上, 可使用-x选项忽略特定架构的包
 # dnf download --source httpd # 下载src.rpm
 # dnf info httpd # 查看包的详细信息
 # dnf remove httpd # 卸载http包

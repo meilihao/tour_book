@@ -297,3 +297,6 @@ ref:
 
 ### windows 2012一键接管卡在启动的转圈画面
 卡住超半小时, 将该vm先virsh destroy再virsh start后能进入系统, 原因未知.
+
+### 连接远程libvirt报`Configure SSH key access for the remote host, or install an SSH askpass package locally`
+`apt install ssh-askpass`

@@ -1038,6 +1038,17 @@ oracle linux 7.9 x86启用vmware插件:
 
 > 将`/usr/lib/VMware-vix-disklib`加入ld.conf配置时, 本机程序可能会优先使用其中的`libstdc++.so`, 该so性能不如系统自带的高, 可将so导入放到bareos_vadp_dumper_wrapper.sh里处理: 在开头追加`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/VMware-vix-disklib`
 
+oracle linux 7.9 x86 bareos-fd启用ovirt插件(仅支持全备):
+1. 安装ovirt-engine-sdk-python的依赖: `yum install python3-devel libcurl-devel libxml2-devel`, 见[oVirt Engine API Python SDK](https://github.com/oVirt/ovirt-engine-sdk/blob/master/sdk/README.adoc)
+1. `pip3 install ovirt-engine-sdk-python`
+1. 安装[ovirt](/shell/cmd/virt/ovirt.md)
+1. 安装bareos-fd
+
+    `dnf install bareos-common bareos-filedaemon bareos-filedaemon-python-plugins bareos-filedaemon-python3-plugins bareos-filedaemon-ovirt-python-plugin`
+1. 添加bareos-fd
+
+    关闭firewalld, selinux
+
 ## 概念
 - volume : Bareos将在其上写入备份数据的单个物理磁带（或可能是单个文件）
 - pool : 定义接收备份数据的多个volume（磁带或文件）组成的逻辑组
@@ -1374,6 +1385,8 @@ ref:
 > linux可通过管道实现备份db无需暂存的功能.
 
 > 修改plugin路径: 修改bareos.spec定义的plugin_dir的定义
+
+**bareos 22开始禁用python2插件, 并将在bareos 23移除它**.
 
 bareos原生支持dir, storage, filedaemon的插件扩展. 使用插件前必须在配置中启用它们, **修改后需要重启服务**, 当前支持python 2/3. **bareos 20开始推荐使用python3, 虽然官方20.0.1目前plugins都是python2的**.
 

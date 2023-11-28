@@ -71,6 +71,9 @@
 - [Two Go programs, three different profiling techniques, in 50 minutes](https://about.sourcegraph.com/go/gophercon-2019-two-go-programs-three-different-profiling-techniques-in-50-minutes)
 - [CGO 和 CGO 性能之谜](https://cloud.tencent.com/developer/article/1650525)
 
+### 内存泄露
+- [Hi, 使用多年的go pprof检查内存泄漏的方法居然是错的?!](https://colobu.com/2019/08/20/use-pprof-to-compare-go-memory-usage/)
+
 ## 反射
 - [Go语法简略 － 反射](http://www.zddhub.com/memo/2015/07/03/go-reflect/)
 - [Go语法简略 － 依赖注入](http://www.zddhub.com/memo/2015/07/05/go-dependency-inject/)

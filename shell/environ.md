@@ -150,3 +150,7 @@ no-login shell是在终端下直接输入 bash 或者`bash -c "CMD"`来启动的
 ~/.profile、~/.bashrc文件是针对单个用户来说的，每个用户目录下都会有这两个文件，其中~/.profile在Login Shell登录时执行，~/.bashrc在Non-login Shell登录时执行.
 
 ![](/misc/img/shell/20170405223231326.png)
+
+## FAQ
+### web terminal bash 输入后退键变空格
+解决方法: 缺`ncurses-base`或使用`export TERM=linux`

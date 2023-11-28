@@ -58,6 +58,7 @@
     # ps -o pid,psr,comm -p <pid> # 进程/线程目前分配到的 （在“PSR”列）CPU ID
     # ps -T -p <pid> 显示指定进程的线程
     # ps -p <pid> # 获取指定进程信息, 可检查进程是否alive
+    # ps mp 3030923 -o THREAD,tid | wc -l # 进程对应的内核线程
 
 ## 扩展
 

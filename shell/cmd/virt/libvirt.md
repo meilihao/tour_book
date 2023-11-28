@@ -587,6 +587,9 @@ env:
 
 当前观察到x86仅支持一个ide controller.
 
+### `unsupported configuration: IDE controllers are unsupported for this QEMU binary or machine type`
+arm64不支持IDE总线
+
 ### cdrom启动"No bootable device"
 bus使用了scsi, 换成sata,ide就正常了.
 
@@ -654,6 +657,20 @@ Libvirt 分服务端和客户端, Libvirtd 是一个 daemon 进程, 是服务端
 virsh同时支持交互模式和非交互模式.
 
 > virsh是用C语言编写的一个使用libvirt API的虚拟化管理工具. virsh程序的源代码在libvirt项目源代码的tools目录下， 实现virsh工具最核心的一个源代码文件是virsh.c
+
+## viewer
+- [remote-viewer](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-graphic_user_interface_tools_for_guest_virtual_machine_management-remote_viewer)
+
+   ```bash
+   remote-viewer spice://testguest:5900
+   remote-viewer vnc://testguest2:5900
+   ```
+
+- [virt-viewer](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/chap-graphic_user_interface_tools_for_guest_virtual_machine_management#sect-Graphic_User_Interface_tools_for_guest_virtual_machine_management-Using_virt_viewer_command_line)
+
+   ```bash
+   virt-viewer --connect qemu+ssh://root@192.168.88.151/system test
+   ```
 
 ### 常用命令
 ref:

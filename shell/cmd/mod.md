@@ -19,7 +19,9 @@ depmod会遍历文件/lib/modules/`uname -r`/modules.dep解析模块依赖关系
 - Used by : 依赖其他模块的个数 + 被其他模块依赖的列表
 
 # modinfo
-显示内核模块的信息
+显示内核模块的信息, 比如配置参数
+
+> 查看mod配置也可用: /sys/module/<mod_name>/parameters
 
 字段说明:
 - firmware : driver支持的固件
@@ -41,7 +43,7 @@ depmod会遍历文件/lib/modules/`uname -r`/modules.dep解析模块依赖关系
 ### example
 ```bash
 # modinfo -F filename qla2xxx # 检查光纤驱动模块是否存在
-# modinfo  first_time.ko # 查看模块信息
+# modinfo first_time.ko # 查看模块信息
 ```
 
 # modprobe命令
