@@ -212,6 +212,13 @@ $ sudo ninja -C build install
 
 > libvirt 6.3.0编译html docs时会报错
 
+## 备份
+- [virtnbdbackup 虚拟机备份](https://blog.csdn.net/ruanchao2012/article/details/129787012)
+- [Efficient live full disk backup](https://libvirt.org/kbase/live_full_disk_backup.html)
+- [Internals of incremental backup handling in qemu](https://libvirt.org/kbase/internals/incremental-backup.html)
+- [Checkpoint XML format](https://libvirt.org/formatcheckpoint.html)
+- [Domain state capture using Libvirt](https://libvirt.org/kbase/domainstatecapture.html)
+
 ## FAQ
 ### libvirt5.6.0源码并编译安装
 ```bash

@@ -1039,12 +1039,19 @@ oracle linux 7.9 x86启用vmware插件:
 > 将`/usr/lib/VMware-vix-disklib`加入ld.conf配置时, 本机程序可能会优先使用其中的`libstdc++.so`, 该so性能不如系统自带的高, 可将so导入放到bareos_vadp_dumper_wrapper.sh里处理: 在开头追加`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/VMware-vix-disklib`
 
 oracle linux 7.9 x86 bareos-fd启用ovirt插件(仅支持全备):
-1. 安装ovirt-engine-sdk-python的依赖: `yum install python3-devel libcurl-devel libxml2-devel`, 见[oVirt Engine API Python SDK](https://github.com/oVirt/ovirt-engine-sdk/blob/master/sdk/README.adoc)
-1. `pip3 install ovirt-engine-sdk-python`
 1. 安装[ovirt](/shell/cmd/virt/ovirt.md)
+1. 安装ovirt-engine-sdk-python的依赖
+
+    - centos: `yum install python3-devel libcurl-devel libxml2-devel`, 见[oVirt Engine API Python SDK](https://github.com/oVirt/ovirt-engine-sdk/blob/master/sdk/README.adoc)
+    - ubuntu 22: `apt install libcurl4-openssl-dev`
+1. `pip3 install ovirt-engine-sdk-python`
 1. 安装bareos-fd
 
+    > bareos-fd ovirt插件是调用ovirt api及会下载快照, 因此bareos-fd可安装在任意机器, 只需要和ovirt-engine-sdk-python同机即可
+
     `dnf install bareos-common bareos-filedaemon bareos-filedaemon-python-plugins bareos-filedaemon-python3-plugins bareos-filedaemon-ovirt-python-plugin`
+
+    配置hosts: `192.168.88.152 egnine.myovirt.com`, 因此sdk会检查插件参数server和ca是否匹配
 1. 添加bareos-fd
 
     关闭firewalld, selinux
@@ -1445,6 +1452,64 @@ python3 plugin启用方法:
 - [`bareos-fd-local-fileset`](https://github.com/aussendorf/bareos-fd-python-plugins/wiki): 备份时动态将filename=/etc/bareos/extra-files中的文件列表加入fileset
 
 fd-plugins其实就是操作fileset, fliter或添加需要备份的文件列表.
+
+#### 流程
+ref:
+- [IOP.func == bareosfd.IO_XXX](https://github.com/bareos/bareos/blob/6f35a0436dd9e9428f100f28ea931fb37c2f3199/core/src/filed/fd_plugins.h#L141)
+
+    ```c
+    enum
+    {
+      IO_OPEN = 1,
+      IO_READ = 2,
+      IO_WRITE = 3,
+      IO_CLOSE = 4,
+      IO_SEEK = 5
+    };
+    ```
+
+plugin由handle_plugin_event驱动, 以ovirt举例.
+
+备份:
+1. **start_backup_job**
+1. prepare_vm_backup
+1. create_vm_snapshot
+1. **start_backup_file**: file
+1. **start_backup_file**: snapshot
+1. start_download
+
+    disk snap实际下载是在plugin_io中完成的
+1. **start_backup_file**: disk_metadata
+1. handle_plugin_event#bEventEndBackupJob
+1. end_vm_backup
+
+start_backup_file后会调用plugin_io进行写数据到storage, 具体逻辑:
+1. IO_OPEN: 打开文件
+1. IO_READ: 从backup_obj里读取并写入storage, 可能需要循环读多次, 直至完成或报错
+1. IO_CLOSE: 关闭文件
+
+> ovirt将需要备份的对象放在self.backup_objects里, 备份文件时给self.backup_obj, 当self.backup_obj==None表示没有需要备份的文件了
+
+还原:
+1. handle_plugin_event#bEventStartRestoreJob
+1. **start_restore_job**
+1. **start_restore_file**
+1. prepare_vm_restore
+1. create_vm
+1. create_file
+1. start_upload
+1. **end_restore_file**
+
+start_restore_file后会调用plugin_io从storage读取, 具体逻辑:
+1. IO_OPEN: 打开文件
+1. IO_WRITE: 从storage读取数据, 可能需要循环读多次写入目标文件, 直至完成或报错
+1. IO_CLOSE: 关闭文件
+
+> 加粗的是bareos plugin的pFuncs
+
+> 插件里的bareosfd.JobMessage仅出现在`list joblog jobid=xxx`, 而bareosfd.DebugMessage仅出现在bareos-fd.service的日志里
+
+> 部分插件支持配置log
 
 ## tap
 ref:
@@ -3107,3 +3172,12 @@ c++20支持乱序, 需要gcc8或更高
 
 ### fd断电重启, job一直在运行中, 直至2小时后终止
 触发tcp keepalived机制, KeepAlive的空闲时长(tcp_keepalive_time)默认是2小时, 可通过设置Heartbeat Interval来修改tcp空闲时间.
+
+### ovirt plugin报`ovirtsdk4.AuthError: Error during SSO authentication access_denied : Cannot authenticate user No valid profile found in credentials`
+当在api中使用admin账号时应是"admin@ovirt@internalsso"
+
+### 开始备份后, bareos-dir无响应, bconsole所有命令卡死
+env: bareos 22
+
+原因: 修改了某个storage的ip, 刚好这次备份使用了该storage.
+解决方法: 修正bareos-dir配置里的storage ip

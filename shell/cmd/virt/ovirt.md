@@ -3,6 +3,7 @@
 - [oVirt 架构学习](https://cloud.tencent.com/developer/article/1435899)
 - [编译oVirt相关软件包](https://www.hikunpeng.com/document/detail/zh/kunpengcpfs/ecosystemEnable/oVirt/kunpengovirtoe_04_0004.html)
 - [Next-Gen Backup & DR Solution for oVirt](https://resources.ovirt.org/site-files/2020/Next-Gen%20oVirt%20Backup%20%26%20DR%20Solution%20-%20vinchin%20-%20official%20presentation.pdf)
+- [架构 Background](https://www.ovirt.org/develop/release-management/features/virt/enhance-import-export-with-ova.html)
 
 oVirt基于KVM，并整合使用了libvirt、gluster、patternfly、ansible等一系列优秀的开源软件，oVirt的定位是替代VMware vsphere，oVirt目前已经成为了企业 虚拟化  环境可选的解决方案，另外相比OpenStack的庞大和复杂，oVirt在企业私有云建设中具备部署和维护使用简单的优势.
 
@@ -30,6 +31,10 @@ oVirt项目中的不同组件主要包含三个部分：
 12. SPICE client-用户可以通过spice客户端访问虚拟机
 
 ## 部署
+ref:
+- [oVirt4.4本地存储架构部署教程（v4.4.3）（Engine独立部署）](https://www.cnovirt.com/archives/2807)
+- [oVirt4.4本地存储架构部署教程（v4.4.3）（HostedEngine方式）](https://www.cnovirt.com/archives/2851)
+
 > [官方repo](https://resources.ovirt.org/pub)里centos 7最多支持到ovirt 4.3
 
 > dnf -y install https://resources.ovirt.org/pub/yum-repo/ovirt-release44.rpm
@@ -54,8 +59,8 @@ oVirt项目中的不同组件主要包含三个部分：
 # dnf distro-sync --nobest # 不加`--nobest`可能更安全
 # dnf upgrade --nobest
 # --- 正式开始
-# vim /etc/hosts # 在所有需要访问ovirt-engine的机器上追加`192.168.88.152 egnine.myovirt.com`, 并ping test一下
-# hostnamectl set-hostname egnine.myovirt.com # 给相应的ovirt role node配置正确的hostname
+# vim /etc/hosts # 在所有需要访问ovirt-engine的机器上追加`192.168.88.152 engine.myovirt.com`, 并ping test一下
+# hostnamectl set-hostname engine.myovirt.com # 给相应的ovirt role node配置正确的hostname
 # dnf install -y python3.11-pip # 见ovirt-engine添加host报错
 # python3.11 -m pip install netaddr
 # dnf install ovirt-engine
@@ -68,7 +73,7 @@ Configure Data Warehouse on this host (Yes, No) [Yes]
 Configure Keycloak on this host (Yes, No) [Yes]:
 Configure VM Console Proxy on this host (Yes, No) [Yes]:
 Configure Grafana on this host (Yes, No) [Yes]:
-Host fully qualified DNS name of this server [egnine.myovirt.com]: # 建议配置正确, 如果使用默认的`localhost.localdomain`, 则部署成功后登入ovirt-engine会报`用于访问系统的 FQDN 不是一个有效的引擎 FQDN。您需要使用一个引擎 FQDN 或一个引擎备选的 FQDN 来访问系统。`
+Host fully qualified DNS name of this server [engine.myovirt.com]: # 建议配置正确, 如果使用默认的`localhost.localdomain`, 则部署成功后登入ovirt-engine会报`用于访问系统的 FQDN 不是一个有效的引擎 FQDN。您需要使用一个引擎 FQDN 或一个引擎备选的 FQDN 来访问系统。`
 Do you want Setup to configure the firewall? (Yes, No) [Yes]:
 Firewall manager to configure (firewalld): firewalld
 Where is the DWH database located? (Local, Remote) [Local]:
@@ -92,7 +97,7 @@ Use Engine admin password as initial Grafana admin password (Yes, No) [Yes]:
          
           Application mode                        : both
           Default SAN wipe after delete           : False
-          Host FQDN                               : egnine.myovirt.com
+          Host FQDN                               : engine.myovirt.com
           Firewall manager                        : firewalld
           Update Firewall                         : True
           Set up Cinderlib integration            : False
@@ -132,16 +137,17 @@ Use Engine admin password as initial Grafana admin password (Yes, No) [Yes]:
 # --- engine-setup开始自动部署, 部署完成会看到`--== SUMMARY ==-...[ INFO  ] Execution of setup completed successfully`
 ...
 Web access for Keycloak Administration Console is enabled at:
-              https://egnine.myovirt.com/ovirt-engine-auth/admin
+              https://engine.myovirt.com/ovirt-engine-auth/admin
 Web access is enabled at:
-              http://egnine.myovirt.com:80/ovirt-engine
-              https://egnine.myovirt.com:443/ovirt-engine
+              http://engine.myovirt.com:80/ovirt-engine
+              https://engine.myovirt.com:443/ovirt-engine
 ...
 [ INFO  ] Execution of setup completed successfully
 ```
 
-访问`https://egnine.myovirt.com/ovirt-engine-auth/admin`, 用admin
-访问`https://egnine.myovirt.com/ovirt-engine`, 用admin@ovirt
+访问`https://engine.myovirt.com/ovirt-engine-auth/admin`, 用admin
+访问`https://engine.myovirt.com/ovirt-engine`, 用admin@ovirt
+访问前将ovirt ca证书导入浏览器(见FAQ), 否则很多web操作都可能出问题.
 
 admin portal登入后显示数据中心`Default`未初始化, 开始配置:
 1. 计算->数据中心, 新建数据中心"mydc"
@@ -190,7 +196,9 @@ admin portal登入后显示数据中心`Default`未初始化, 开始配置:
 	数据中心: mydc
 	存储类型: 主机本地
 	主机: node151
-	路径: /images, 已创建(mkdir /images && chown -R vdsm:kvm /images/)
+	路径: /images, 已创建(mkdir /images && chown -R vdsm:kvm /images/), 挂载路径需要唯一
+
+	注意: 从v4.4开始, ovirt计划废弃iso域, 而是将iso上传到数据域, 具体见[oVirt上传ISO镜像的方法](https://www.cnovirt.com/archives/1190), 该文章也提供了上传iso到iso域的方法
 1. 存储->存储域, 新建disks
 
 	数据中心: mydc
@@ -198,9 +206,20 @@ admin portal登入后显示数据中心`Default`未初始化, 开始配置:
 	主机: node151
 	路径: /disks, 已创建(mkdir /images && chown -R vdsm:kvm /disks/)
 1. 计算->虚拟机, 新建test
+
+	创建磁盘是不启用"启用增量备份", 那么其格式是raw
 1. 用novnc访问 vm. novnc无法访问时见FAQ
 
 Hosted Engine部署:
+1. 可以使用[cnovirt-node-ng-installer iso](https://www.cnovirt.com/%e5%ae%89%e8%a3%85%e5%8c%85%e4%b8%8b%e8%bd%bd), 它已集成了engine appliance rpm包. 因为使用官方最新版ovirt-node-ng-installer-4.5.4-2022120615.el8.iso部署过程中node重启了导致部署失败
+1. 配置hosts和hostname
+1. 准备nfs, 见[oVirt4.4本地存储架构部署教程（v4.4.3）（HostedEngine方式）](https://www.cnovirt.com/archives/2851)
+
+	```bash
+	# mkdir /data/images/nfs
+	# chown vdsm:kvm /data/images/nfs
+	# vi /etc/exports
+	```
 1. VM
 
 	Engine VM FQDN: engine FQDN
@@ -209,16 +228,172 @@ Hosted Engine部署:
 1. Engine
 
 	Admin Portal Password: xxx
+1. 配置nfs: 192.168.88.152:/data/images/nfs
+1. 访问`https://engine.myovirt.com/ovirt-engine`, 用admin@internal
 
-未成功, ovirt node未知重启了.
+## [api](https://www.ovirt.org/documentation/)
+- [python-ovirt-engine-sdk4](https://github.com/oVirt/python-ovirt-engine-sdk4)
+
+	使用增量备份时需要在vm disks上开启"启用增量备份", 否则备份时没有生成checkpoint
+
+	examples:
+	```
+	# ./list_vms.py # 获取vm list
+	test: 95c839b9-04c6-4f9e-b113-83e0aefcddb1
+	test3: 4bb770db-3302-4f7f-846b-f4e12705985c
+	test_restore: 24f25298-a7ea-4a59-be34-bb78c276dc4d
+	# ./list_vm_disks.py # 获取vm disks by name use "test"
+	name: CentOS-8-GenericCloud-8.1.1911
+	id: 198668cf-7f01-467a-badc-85396034c1de
+	status: ok
+	provisioned_size: 10737418240
+	# ./list_disk_snapshots.py -c engine1 198668cf-7f01-467a-badc-85396034c1de
+	[
+	  {
+	    "actual_size": 768610304,
+	    "format": "cow",
+	    "id": "c0586bf2-e409-4e4e-98e1-f62ef967da26",
+	    "parent": null,
+	    "status": "ok"
+	  }
+	]
+	# ./list_vm_snapshots.py # 获取vms的snaps
+	test:Active VM:CentOS-8-GenericCloud-8.1.1911:images
+	test3:Active VM:test3_Disk1:disks
+	test_restore:Active VM:CentOS-8-GenericCloud-8.1.1911:disks
+	# --- 全量备份
+	# ./backup_vm.py -c engine1 --debug full --backup-dir bak_dir 95c839b9-04c6-4f9e-b113-83e0aefcddb1
+	[   0.0 ] Starting full backup for VM '95c839b9-04c6-4f9e-b113-83e0aefcddb1'
+	[   1.3 ] Waiting until backup '1f085fec-8ea5-42ee-bb25-fc8aad52188f' is ready
+	[  23.6 ] Created checkpoint '0ec49a4c-06e5-4c08-ad4f-20ecce88b78a'
+	[  23.6 ] Downloading full backup for disk '198668cf-7f01-467a-badc-85396034c1de'
+	[  23.6 ] Creating backup file 'bak_dir/20231130115919.0ec49a4c-06e5-4c08-ad4f-20ecce88b78a.198668cf-7f01-467a-badc-85396034c1de.full.qcow2'
+	[  25.2 ] Image transfer 'dc28ada5-9562-47ce-ba69-4622d666605c' is ready
+	[ 100% ] 10.00 GiB, 51.10 s, 200.41 MiB/s
+	[  76.3 ] Finalizing image transfer
+	[  81.5 ] Download completed successfully
+	[  81.5 ] Finalizing backup
+	[ 136.5 ] Full backup '1f085fec-8ea5-42ee-bb25-fc8aad52188f' completed successfully
+	# --- 增量备份
+	# ./backup_vm.py -c engine1 --debug incremental --backup-dir bak_dir --from-checkpoint-uuid 0ec49a4c-06e5-4c08-ad4f-20ecce88b78a 95c839b9-04c6-4f9e-b113-83e0aefcddb1
+	[   0.0 ] Starting incremental backup for VM '95c839b9-04c6-4f9e-b113-83e0aefcddb1'
+	[   1.1 ] Waiting until backup 'd31fc6d1-17c7-4bfc-b64d-644974a69323' is ready
+	[  13.2 ] Created checkpoint '2045a517-836d-43ba-a1ca-3c8f81fab921'
+	[  13.3 ] Downloading incremental backup for disk '198668cf-7f01-467a-badc-85396034c1de'
+	[  13.3 ] Creating backup file 'bak_dir/20231130120504.2045a517-836d-43ba-a1ca-3c8f81fab921.198668cf-7f01-467a-badc-85396034c1de.incremental.qcow2'
+	[  13.3 ] Using backing file '20231130115919.0ec49a4c-06e5-4c08-ad4f-20ecce88b78a.198668cf-7f01-467a-badc-85396034c1de.full.qcow2'
+	[  14.7 ] Image transfer '5329d8c7-cf11-43bb-bc7a-7cc9cef0fca6' is ready
+	[ 100% ] 10.00 GiB, 0.59 s, 16.84 GiB/s                                        
+	[  15.3 ] Finalizing image transfer
+	[  17.3 ] Download completed successfully
+	[  17.3 ] Finalizing backup
+	[  69.3 ] Incremental backup 'd31fc6d1-17c7-4bfc-b64d-644974a69323' completed successfully
+	# ./backup_vm.py -c engine1 --debug stop 95c839b9-04c6-4f9e-b113-83e0aefcddb1 4cff2a36-ddbb-4737-bbf3-5f903f331686 # `vm_id bakcup_id`, 取消备份, 可解锁备份失败时锁定的disks
+	# --- 分步全备
+	# ./backup_vm.py -c engine1 --debug start 4bb770db-3302-4f7f-846b-f4e12705985c
+	[   0.0 ] Starting full backup for VM '4bb770db-3302-4f7f-846b-f4e12705985c'
+	[   1.3 ] Waiting until backup '9b098edf-4f23-4291-84de-38ffae8d59e5' is ready
+	[  23.7 ] Created checkpoint 'b91276e2-06ab-461e-bd36-efdec14473ed'
+	[  23.8 ] Backup '9b098edf-4f23-4291-84de-38ffae8d59e5' is ready
+	#./backup_vm.py -c engine1 --debug download --backup-uuid 9b098edf-4f23-4291-84de-38ffae8d59e5 4bb770db-3302-4f7f-846b-f4e12705985c
+	[   0.0 ] Downloading VM '4bb770db-3302-4f7f-846b-f4e12705985c' disks
+	[   0.5 ] Downloading full backup for disk '63dbc882-70fc-48cf-8401-9c41b8cd0e06'
+	[   0.5 ] Creating backup file './20231129165654.b91276e2-06ab-461e-bd36-efdec14473ed.63dbc882-70fc-48cf-8401-9c41b8cd0e06.full.qcow2'
+	[   2.1 ] Image transfer 'd4d6ebc0-b802-4103-babb-6768c171680c' is ready
+	[ 100% ] 15.00 GiB, 0.31 s, 48.19 GiB/s
+	[   2.4 ] Finalizing image transfer
+	[   4.5 ] Download completed successfully
+	[   4.6 ] Finished downloading disks
+	# ./backup_vm.py -c engine1 --debug stop 4bb770db-3302-4f7f-846b-f4e12705985c 9b098edf-4f23-4291-84de-38ffae8d59e5
+	[   0.0 ] Finalizing backup '9b098edf-4f23-4291-84de-38ffae8d59e5'
+	[  45.3 ] Backup '9b098edf-4f23-4291-84de-38ffae8d59e5' completed successfully
+	#  --- 分步增备
+	# ./backup_vm.py -c engine1 --debug start --from-checkpoint-uuid b91276e2-06ab-461e-bd36-efdec14473ed 4bb770db-3302-4f7f-846b-f4e12705985c
+	[   0.0 ] Starting incremental backup since checkpoint 'b91276e2-06ab-461e-bd36-efdec14473ed' for VM '4bb770db-3302-4f7f-846b-f4e12705985c'
+	[   1.1 ] Waiting until backup 'bd474e84-f44a-4fcd-8cce-327c39f78e6d' is ready
+	[  12.3 ] Created checkpoint '088a83ea-e897-4bb6-a7ca-cf1f75c6f7bd'
+	[  12.4 ] Backup 'bd474e84-f44a-4fcd-8cce-327c39f78e6d' is ready
+	# ./backup_vm.py -c engine1 --debug download --backup-uuid bd474e84-f44a-4fcd-8cce-327c39f78e6d --incremental 4bb770db-3302-4f7f-846b-f4e12705985c
+	[   0.0 ] Downloading VM '4bb770db-3302-4f7f-846b-f4e12705985c' disks
+	[   0.4 ] Downloading incremental backup for disk '63dbc882-70fc-48cf-8401-9c41b8cd0e06'
+	[   0.4 ] Creating backup file './20231129170320.088a83ea-e897-4bb6-a7ca-cf1f75c6f7bd.63dbc882-70fc-48cf-8401-9c41b8cd0e06.incremental.qcow2'
+	[   0.4 ] Using backing file '20231129165654.b91276e2-06ab-461e-bd36-efdec14473ed.63dbc882-70fc-48cf-8401-9c41b8cd0e06.full.qcow2'
+	[   1.8 ] Image transfer 'ea1f86d7-5f08-40d0-9076-550a0d678bd3' is ready
+	[ 100% ] 15.00 GiB, 0.27 s, 56.06 GiB/s
+	[   2.1 ] Finalizing image transfer
+	[   5.1 ] Download completed successfully
+	[   5.2 ] Finished downloading disks
+	# ./backup_vm.py -c engine1 --debug stop 4bb770db-3302-4f7f-846b-f4e12705985c bd474e84-f44a-4fcd-8cce-327c39f78e6d
+	[   0.0 ] Finalizing backup 'bd474e84-f44a-4fcd-8cce-327c39f78e6d'
+	[  56.4 ] Backup 'bd474e84-f44a-4fcd-8cce-327c39f78e6d' completed successfully
+	# ./upload_disk.py -c engine1 --disk-spare --sd-name data 20231129170320.088a83ea-e897-4bb6-a7ca-cf1f75c6f7bd.63dbc882-70fc-48cf-8401-9c41b8cd0e06.incremental.qcow2
+	```
+
+	> upload_disk.py基于ovirt_imageio.client.upload, 该函数默认backing_chain=True即还原时自动处理qcow2 backing chain.
+
+	> `-c engine1`中的engine1是~/.config/ovirt.conf(from examples/ovirt.conf)的section
+
+	> backup_vm.py的start/download/stop子命令是将备份过程分成了3步处理
+
+	> backup_vm.py增量备份可能失败, 见FAQ.
+
+	> backup_vm.py开始备份后会在`/var/run/vdsm/backup`创建同uuid的目录(backup_vm.py stop后会被清理掉), /var/lib/vdsm/storage/transient_disks也有一些文件(结束后也会被清理掉), 记录见`select * from vm_backups`, `select * from vm_backup_disk_map`, `select * from vm_checkpoints`, `select * from vm_checkpoints_disks_map`
+
+增量备份分析:
+- cmd_incremental
 
 ## 备份
+- [**Incremental Backup in oVirt**](https://resources.ovirt.org/site-files/2020/Back_to_the_future-incremental_backup_in_oVirt.pdf)或[Back_to_the_future-incremental_backup_in_oVirt.pdf](/misc/pdf/Back_to_the_future-incremental_backup_in_oVirt.pdf)
+
+	Changed block tracking
+
+	Will be in tech preview in oVirt 4.4 - requires libvirt 6.0.z and qemu 4.2
+
+	优点:
+	1. Speed up incremental backup by copying only blocks that changed since the last backup
+	1. Speed up full backup by copying only the data extents and skipping zero extents
+	1. No need to create and delete a snapshot
+	1. Access raw guest data in backup and restore regardless of the underlying disk format and snapshots
+	1. imageio client library can upload/download raw/qcow2 images (including the backing files)
+
+	还原增量镜像:
+	```bash
+	$ qemu-img rebase -u incr-backup-2020-01-14.qcow2 -b incr-backup-2020-01-13.qcow2 -F qcow2
+	$ qemu-img rebase -u incr-backup-2020-01-13.qcow2 -b full-backup-2020-01-12.qcow2 -F qcow2
+	$ --- incr-backup-2020-01-14.qcow2 就是可用的镜像文件了
+	````
+
+	该pdf包含备份过程中的关键打点
+
 - [vacosta94/VirtBKP](https://github.com/vacosta94/VirtBKP)
 - [allwaysoft/ovirtvmbackup](https://github.com/allwaysoft/ovirtvmbackup/blob/master/ovirtvmbackup.py)
 - [oVirt/vdsm/incremental-backup.md](https://github.com/oVirt/vdsm/blob/master/doc/incremental-backup.md)
+- [Incremental Backup](https://www.ovirt.org/develop/incremental-backup-guide/incremental-backup-guide.html)
 - [Incremental Backup](https://www.ovirt.org/develop/release-management/features/storage/incremental-backup.html)
+- [ovirt增量备份](https://blog.csdn.net/allway2/article/details/102979449)
+- [LWN: QEMU中的数据变动跟踪与差分备份](https://blog.csdn.net/Linux_Everything/article/details/110848435)
+- [华为云计算学习：备份之CBT技术](https://www.vinchin.com/blog/vinchin-technique-share-details.html?id=8374)
+- [ovirtsdk4.services](https://ovirt.github.io/python-ovirt-engine-sdk4/master/services.m.html#ovirtsdk4.services.VmService.snapshots_service)
+- [Hybrid Backup](https://www.ovirt.org/media/Hybrid-backup-v8.pdf)
+
+增量备份要求: qcow2 v3即compat 1.1, libvirt 增量备份是基于CBT备份. raw镜像仅支持全备, 因此raw和qcow2 v3混合增量备份时, raw盘还是全备
 
 官方sdk不支持差分备份, 需要自实现
+
+> `python-ovirt-engine-sdk4-4.6.1/examples/vm_backup.py`基于snapshots_service()仅支持全量备份; 而同目录的`backup_vm.py`基于backup_service支持增量备份
+
+备份还原细节 from bareos ovirt plugin:
+1. len(snaps_service.list()) > 1 时不能备份
+
+### 混合备份
+```
+[Hybrid backup is enabled by default in in oVirt 4.5](https://www.ovirt.org/media/Hybrid-backup-v8.pdf). To disable it globally:
+# engine-config -s UseHybridBackup=false
+# systemctl restart ovirt-engine
+```
+
+## tools
+- engine-config: 查看engine配置
 
 ## FAQ
 ### ovirt-engine FQDN使用了`localhost.localdomain`, 访问admin portal报`用于访问系统的 FQDN 不是一个有效的引擎 FQDN。您需要使用一个引擎 FQDN 或一个引擎备选的 FQDN 来访问系统`
@@ -228,9 +403,9 @@ ref:
 
 	没采用, 还是改FQDN方便点
 
-使用`/usr/share/ovirt-engine/setup/bin/ovirt-engine-rename`修改ovirt-engine的FQDN, 如果修改时报`Host name is not valid: egnine.myovirt.com did not resolve into an IP address`, ssh重新登入再ping一下egnine.myovirt.com, 成功则再次修改即可. 但修改后还是有问题见"ovirt-engine登入报`Internal Server Error`".
+使用`/usr/share/ovirt-engine/setup/bin/ovirt-engine-rename`修改ovirt-engine的FQDN, 如果修改时报`Host name is not valid: engine.myovirt.com did not resolve into an IP address`, ssh重新登入再ping一下engine.myovirt.com, 成功则再次修改即可. 但修改后还是有问题见"ovirt-engine登入报`Internal Server Error`".
 
-### 修改无效的FQDN后, ovirt-engine登入报`Internal Server Error`, 且`/var/log/httpd/ssl_error_log`报`oidc_authenticate_user: the URL hostname (localhost.localdomain) of the configured OIDCRedirectURI does not match the URL hostname of the URL being accessed (egnine.myovirt.com): the "state" and "session" cookies will not be shared between the two!, referer: https://egnine.myovirt.com/ovirt-engine/`
+### 修改无效的FQDN后, ovirt-engine登入报`Internal Server Error`, 且`/var/log/httpd/ssl_error_log`报`oidc_authenticate_user: the URL hostname (localhost.localdomain) of the configured OIDCRedirectURI does not match the URL hostname of the URL being accessed (engine.myovirt.com): the "state" and "session" cookies will not be shared between the two!, referer: https://engine.myovirt.com/ovirt-engine/`
 
 用`grep -r "localhost.localdomain" /etc`发现ovirt-engine-rename后很多配置还是使用了修改前的FQDN, 果断重装
 
@@ -263,3 +438,125 @@ shibboleth
 
 	1. 打开设置, 找到"管理证书"
 	1. 选中"授权机构", 并导入, 导入时选择信任所有授权项
+- firefox
+	1. 找到"证书管理器"
+	1. 选中"证书颁发机构", 并导入, 导入时选择信任所有授权项
+
+其他ca证书导致的问题:
+1. 上传iso报, 报`被系统暂停`. 此时可通过`上传`按钮下拉里的`取消`进行取消上传
+
+### CentOS Linux and Stream cloud images
+ref:
+- [【Cloud】修改CentOS官方 云镜像的ROOT密码](https://developer.aliyun.com/article/799104)
+
+选"带有BIOS的Q35芯片组", 因为这些qcow2不支持uefi
+
+启动过程中可能卡在"probing edd (edd=off to disable)... ok", 继续等待即可
+
+root密码是未知的, 需要自行修改镜像密码:
+```bash
+# yum install libguestfs-tools
+# virt-customize -a disk/CentOS-7-x86_64-GenericCloud-1511.qcow2 --root-password password:123456
+# virt-customize -a disk/CentOS-7-x86_64-GenericCloud-1511.qcow2 --root-password random # 随机密码, 修改过程会打印该密码
+# virt-customize -a disk/CentOS-7-x86_64-GenericCloud-1511.qcow2 --password tao:password:taoyuhang # 为其他用户设置密码, 且只覆盖密码, 并不能创建用户
+```
+
+### api调用报`ovirtsdk4.AuthError: Error during SSO authentication access_denied : Cannot authenticate user No valid profile found in credentials`
+当在api中使用admin账号时应是"admin@ovirt@internalsso"
+
+### python sdk报`error:0A000126:SSL routines::unexpected eof while reading`
+sdk.Connection的url写错域名
+
+### 解锁disk
+```
+Unlock all disks
+/usr/share/ovirt-engine/setup/dbutils/unlock_entity.sh -t all
+
+Unlock specific VM disk
+/usr/share/ovirt-engine/setup/dbutils/unlock_entity.sh -t vm UUID_OF_VM
+```
+
+可以解锁损坏的clone disk操作, 但无法解锁使用ovirt sdk增量备份时锁住的disk, 此时可通过`./backup_vm.py stop`解决, 忘记backup uuid时可从`/var/log/ovirt-engine/engine.log`检索`backup`来获取, 比如找到的`Change VM '95c839b9-04c6-4f9e-b113-83e0aefcddb1' backup '304dbd1b-1074-4d3d-8c9c-d09b1e117cdf' phase from 'STARTING' to 'READY'`
+
+
+### api log
+- /var/log/httpd/ssl_access_log
+- /var/log/httpd/ssl_request_log
+- /var/log/httpd/ovirt-requests-log
+- /var/log/ovirt-engine/engine.log
+- `/var/log/vdsm/vdsm.log(.\d+.xz)?`
+
+### sdk 增量备份 engine.log 报`Bitmap does not exist`
+ref:
+- [incremental backup failed: Bitmap does not exist](https://github.com/oVirt/ovirt-engine/issues/896)
+- [hybrid backup VM after a snapshot fails - start_nbd_server error=Bitmap does not exist](https://bugzilla.redhat.com/show_bug.cgi?id=2068104)
+- [Dirty Bitmaps and Incremental Backup](https://qemu-project.gitlab.io/qemu/interop/bitmaps.html)
+
+错误起点应在vdsm.log.
+
+解决方法: qcow2 版本要求v3即compat 1.1
+
+ps: 在ovirt 4.4/4.5 存储域中新建的disk image(已启用"启用增量备份"), compat已是1.1, 本次出问题的镜像是centos cloud image, 其compat是0.10
+
+### sdk api调用报`SSL certificate problem: unable to get local issuer certificate`
+engine_url和ca.pem中的域名信息不匹配
+
+### 打开控制台by novnc报`设置 VM ticket 失败`
+使用SPICE访问
+
+### sdk 全备 engine.log 报`Cannot store dirty bitmaps in qcow2 v2 files`
+ref:
+- [Backup fails with "Cannot store dirty bitmaps in qcow2 v2 files"](https://github.com/abbbi/virtnbdbackup#backup-fails-with-cannot-store-dirty-bitmaps-in-qcow2-v2-files)
+- [Features/Qcow3](https://wiki.qemu.org/Features/Qcow3)
+
+原因: qcow2 版本要求v3
+
+查看方法:
+1. file xxx.qcow2
+2. `qemu-img info`: qcow2 v3的compat应是1.1
+
+修改qcow2 compat: `qemu-img amend -f qcow2 -o compat=1.1 /tmp/test.qcow2`
+
+### 查找vm 对应的磁盘
+在存储域下, `grep <disk id>`查找
+
+### backup_vm.py增量备份报`...qemu-img: warning: Could not verify backing image. This may become an error in future versions. Image is not in qcow2 format...RuntimeError("Timeout waiting for qemu-nbd socket")`
+增量备份的目标目录不能保存除backup_vm.py生成外的文件, 否则备份可能报错
+
+### engine db 配置
+`/etc/ovirt-engine/engine.conf.d/10-setup-database.conf`
+
+```
+# su postgres
+# psql -s engine
+```
+
+### upload_disk.py报`Cannot add Virtual Disk. Disk configuration (COW Preallocated backup-None) is incompatible with the storage domain type.`
+上传的disk image时精简的, 需要`--disk-sparse`参数
+
+### python lxml解析disks
+namespaces是xpath()时使用的ns
+
+```python3
+ovf = lxml.etree.parse("vm.ovf")
+
+namespaces = {
+    'ovf': 'http://schemas.dmtf.org/ovf/envelope/1',
+    'xsi': 'http://www.w3.org/2001/XMLSchema-instance'
+}
+
+disk_elements = ovf.xpath(
+    '//Section[@xsi:type="ovf:DiskSection_Type"]/Disk',
+    namespaces=namespaces
+)
+
+for disk_element in disk_elements:
+    # Get disk properties:
+    props = {}
+    for key, value in disk_element.items():
+        key = key.replace('{%s}' % namespaces['ovf'], '')
+        props[key] = value
+    print(props)
+```
+
+注意: `/root/child`这种语法是错误的, 它在xpath里并不表示层级, 而查找child应使用`//child`或`child`

@@ -115,7 +115,7 @@ $ ln -sf /usr/bin/qemu-system-x86_64 /usr/libexec/qemu-kvm
 
     - -c : 表示对输出img进行压缩, 但仅qcow2和qcow支持压缩, 并且这种压缩是只读的， 如果压缩的扇区被重写， 则会被重写为未压缩的数据.
 
-    `qemu-img info [-f fmt] filename`: 查看filename的信息. 如果是稀疏文件则还会显示预计分配大小和实际分配大小; 如果由snapshot则也会显示出来
+    `qemu-img info [--output=json] [-f fmt] filename`: 查看filename的信息. 如果是稀疏文件则还会显示预计分配大小和实际分配大小; 如果由snapshot则也会显示出来
 
     `qemu-img snapshot [-l|-a snapshot|-c snapshot|-d snapshot] filename`.
     - -l : 表示查询并列出镜像文件中的所有快照
@@ -534,3 +534,54 @@ direct并部署真的direct, 它依赖于管理程序配置的网络接口来提
 
 ### `qemu-system-x86_64 -fda test.img`报`qemu: module ui-ui-gtk not found, do you want to install qemu-system-gui package?`
 `apt install qemu-system-gui`
+
+### qemu 修改 compat
+ref:
+- [amend: 修改镜像文件的格式](https://blog.csdn.net/u012324798/article/details/109705017#amend_47)
+
+```
+qemu-img amend -f qcow2 -o ? # 查看支持的选项
+# --- upgrade compat
+qemu-img create -f qcow2 -o compat=0.10 /tmp/test.qcow2 1G
+qemu-img amend -f qcow2 -o compat=1.1 /tmp/test.qcow2
+qemu-img info /tmp/test.qcow2
+# --- down compat
+qemu-img create -f qcow2 -o compat=1.1 /tmp/test.qcow2 1G
+qemu-img amend -f qcow2 -o compat=0.10 /tmp/test.qcow2
+qemu-img info /tmp/test.qcow2
+# -- 转格式并修改compat
+qemu-img convert -f raw CentOS-8-x86_64.raw -O qcow2 -o compat=1.1 CentOS-8-x86_64.qcow2
+```
+
+### qcow2 查看备份chain
+```bash
+--- 如果backing-chain里的依赖缺失, qemu-img info会报错 
+qemu-img info --backing-chain 20231130132345.8a04364d-49d7-4432-a17d-08d06be6348f.198668cf-7f01-467a-badc-85396034c1de.incremental.qcow2
+image: 20231130132345.8a04364d-49d7-4432-a17d-08d06be6348f.198668cf-7f01-467a-badc-85396034c1de.incremental.qcow2
+file format: qcow2
+virtual size: 10 GiB (10737418240 bytes)
+disk size: 3.7 MiB
+cluster_size: 65536
+backing file: 20231130115919.0ec49a4c-06e5-4c08-ad4f-20ecce88b78a.198668cf-7f01-467a-badc-85396034c1de.full.qcow2
+backing file format: qcow2
+Format specific information:
+    compat: 1.1
+    compression type: zlib
+    lazy refcounts: false
+    refcount bits: 16
+    corrupt: false
+    extended l2: false
+
+image: 20231130115919.0ec49a4c-06e5-4c08-ad4f-20ecce88b78a.198668cf-7f01-467a-badc-85396034c1de.full.qcow2
+file format: qcow2
+virtual size: 10 GiB (10737418240 bytes)
+disk size: 1.66 GiB
+cluster_size: 65536
+Format specific information:
+    compat: 1.1
+    compression type: zlib
+    lazy refcounts: false
+    refcount bits: 16
+    corrupt: false
+    extended l2: false
+```
