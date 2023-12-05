@@ -484,6 +484,9 @@ env:
 
 > zstack: 使用bond0(mod 4), 在其上创建bridge设备br_bond0, 再将br_bond0给vm
 
+绑定设备的数据包传输算法是由绑定的模式所决定的，绑定模式共有7种(mode-0 ~ mode-6)，其中mode-1 ~ mode-4支持虚拟机网络(使用网桥)和非虚拟机网络(无网桥)；mode-0、mode-5、mode-6只支持非虚拟机网络(无网桥), ovirt虚拟化平台默认使用的是mode-4.
+
+
 ### aarch64上vm开机报`cpu mode 'host-model' for aarch64 kvm domain on aarch64 host is not supported by hypervisor`
 解决方法:
 1. 通过`qemu-kvm -machine virt -cpu help`

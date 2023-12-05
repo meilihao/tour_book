@@ -5,6 +5,11 @@
 
     kylin具体版本信息在`/etc/.kyinfo`里
 
+- [centos stream 8](https://mirrors.aliyun.com/centos/8-stream)
+
+    替换repo里的`http://mirrors.aliyun.com/centos/$releasever`
+- [centos stream 9](https://mirrors.aliyun.com/centos-stream/9-stream)
+
 ## tools
 - [command-not-found](https://command-not-found.com/)
 - [cmd package search by man](http://manpages.ubuntu.com/manpages/focal/man8/), 比如[cgdisk](http://manpages.ubuntu.com/manpages/focal/man8/cgdisk.8.html)

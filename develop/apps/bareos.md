@@ -1049,7 +1049,7 @@ oracle linux 7.9 x86 bareos-fd启用ovirt插件(仅支持全备):
 
     > bareos-fd ovirt插件是调用ovirt api及会下载快照, 因此bareos-fd可安装在任意机器, 只需要和ovirt-engine-sdk-python同机即可
 
-    `dnf install bareos-common bareos-filedaemon bareos-filedaemon-python-plugins bareos-filedaemon-python3-plugins bareos-filedaemon-ovirt-python-plugin`
+    `dnf install bareos-common bareos-filedaemon bareos-filedaemon-python-plugins-common bareos-filedaemon-python3-plugins bareos-filedaemon-ovirt-python-plugin`
 
     配置hosts: `192.168.88.152 egnine.myovirt.com`, 因此sdk会检查插件参数server和ca是否匹配
 1. 添加bareos-fd
@@ -1474,12 +1474,19 @@ plugin由handle_plugin_event驱动, 以ovirt举例.
 1. **start_backup_job**
 1. prepare_vm_backup
 1. create_vm_snapshot
-1. **start_backup_file**: file
-1. **start_backup_file**: snapshot
-1. start_download
+for {
+    1. **start_backup_file**
 
-    disk snap实际下载是在plugin_io中完成的
-1. **start_backup_file**: disk_metadata
+        1. file
+        2. disk snapshot
+
+            1. start_download
+
+                disk snap实际下载是在plugin_io中完成的
+        3. disk_metadata
+    1. **plugin_io**
+    1. **end_backup_file**
+}
 1. handle_plugin_event#bEventEndBackupJob
 1. end_vm_backup
 
@@ -1493,16 +1500,38 @@ start_backup_file后会调用plugin_io进行写数据到storage, 具体逻辑:
 还原:
 1. handle_plugin_event#bEventStartRestoreJob
 1. **start_restore_job**
-1. **start_restore_file**
-1. prepare_vm_restore
-1. create_vm
-1. create_file
-1. start_upload
+for {
+    1. **start_restore_file**
+    1. **create_file**, use for restore flow
+
+        1. ovf
+            1. prepare_vm_restore
+            1. create_vm
+
+        1. disk
+
+            1. get_vm_disk_by_basename(), add disk
+
+                1. get_or_add_vm_disk
+
+                    ```pytho
+                    # 关联vm
+                    disk_attachments_service = self.vms_service.vm_service(
+                    self.vm.id
+                    ).disk_attachments_service()
+                    ```
+            1. start_upload
+    1. **plugin_io**
+    1. **end_restore_file**
+}
 1. **end_restore_file**
+1. handle_plugin_event#bEventEndRestoreJob
 
 start_restore_file后会调用plugin_io从storage读取, 具体逻辑:
 1. IO_OPEN: 打开文件
 1. IO_WRITE: 从storage读取数据, 可能需要循环读多次写入目标文件, 直至完成或报错
+
+    process_upload
 1. IO_CLOSE: 关闭文件
 
 > 加粗的是bareos plugin的pFuncs
@@ -3181,3 +3210,10 @@ env: bareos 22
 
 原因: 修改了某个storage的ip, 刚好这次备份使用了该storage.
 解决方法: 修正bareos-dir配置里的storage ip
+
+### ovirt node(centos stream 8.6)构建bareos找不到`glusterfs-api-devel,glusterfs-devel`
+ovirt node使用glusterfs 8.6, 需要`dnf -y install centos-release-gluster8`, 对应的repo在[这里](https://mirrors.aliyun.com/centos/8-stream/storage/x86_64/gluster-8)
+
+glusterfs 8.6和6.0 rpm构建上有区别, 而bareos.spec使用的glusterfs依赖描述是6.0的:
+- glusterfs-api-devel = libgfapi-devel
+- glusterfs-devel = libglusterfs-devel + libgfrpc-devel + libgfxdr-devel, 只需安装libglusterfs-devel即可, libgfrpc-devel和libgfxdr-devel会作为其依赖一起安装进来

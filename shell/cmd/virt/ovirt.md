@@ -1,15 +1,16 @@
 # ovirt
-- [oVirt虚拟化关键概念、组件与技术原理](http://simiam.com/2018/07/11/oVirt%E8%99%9A%E6%8B%9F%E5%8C%96%E5%85%B3%E9%94%AE%E6%A6%82%E5%BF%B5%E3%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E6%8A%80%E6%9C%AF%E5%8E%9F%E7%90%86/)
+- [**oVirt虚拟化关键概念、组件与技术原理**](http://simiam.com/2018/07/11/oVirt%E8%99%9A%E6%8B%9F%E5%8C%96%E5%85%B3%E9%94%AE%E6%A6%82%E5%BF%B5%E3%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E6%8A%80%E6%9C%AF%E5%8E%9F%E7%90%86/)
 - [oVirt 架构学习](https://cloud.tencent.com/developer/article/1435899)
 - [编译oVirt相关软件包](https://www.hikunpeng.com/document/detail/zh/kunpengcpfs/ecosystemEnable/oVirt/kunpengovirtoe_04_0004.html)
 - [Next-Gen Backup & DR Solution for oVirt](https://resources.ovirt.org/site-files/2020/Next-Gen%20oVirt%20Backup%20%26%20DR%20Solution%20-%20vinchin%20-%20official%20presentation.pdf)
 - [架构 Background](https://www.ovirt.org/develop/release-management/features/virt/enhance-import-export-with-ova.html)
+- [oVirt导入导出ova格式虚机](https://www.cnovirt.com/archives/938)
 
 oVirt基于KVM，并整合使用了libvirt、gluster、patternfly、ansible等一系列优秀的开源软件，oVirt的定位是替代VMware vsphere，oVirt目前已经成为了企业 虚拟化  环境可选的解决方案，另外相比OpenStack的庞大和复杂，oVirt在企业私有云建设中具备部署和维护使用简单的优势.
 
 oVirt项目中的不同组件主要包含三个部分：
 - ovirt-engine: 用来进行管理虚拟机（创建、开关启停）、配置网络和存储等操作
-- 一个或多个主机（节点）: 用来运行虚拟机。
+- 一个或多个主机（节点, 比如定制的ovirt node）: 用来运行虚拟机
 
 	主机节点是安装有VDSM和libvirt组件的Linux发行版，也包含一些用来实现网络虚拟化和其它系统服务的组件
 - 一个或多个存储节点: 用来存放虚拟机镜像和ISO镜像
@@ -29,6 +30,44 @@ oVirt项目中的不同组件主要包含三个部分：
 10. DWH(Data Warehouse)-数据仓库通过ETL架构进行数据的采集，并将数据保存在history DB(数据库-‘ovirt_engine_history’)内
 11. Reports Engine-使用Jasper Reports架构对history DB内的数据进行页面展示
 12. SPICE client-用户可以通过spice客户端访问虚拟机
+
+概念:
+1. 数据中心是ovirt虚拟化环境中的根容器（最高一级的逻辑项），它包括以下三个子容器（子项）
+
+	1. 集群: 用来保存与集群相关的信息
+
+		集群由一个至多个计算节点（主机）组成，这些主机具有相互兼容处理器内核。一个集群组成了一个虚拟机的迁移域，虚拟机可以被实时迁移到同一集群中的其它主机上。一个数据中心可以包括多个集群，一个集群可以包括多个主机。
+
+	1. 存储: 用来保存存储类型、存储域的信息，以及存储域间的连接信息。存储域在数据中心一级上定义，并可以被数据中心的所有集群使用（即可以被集群中的所有主机挂载）
+	1. 网络: 用来保存与数据中心中的逻辑网络相关的信息，如网络地址、VLAN标签等信息。逻辑网络在数据中心一级上定义，并可以在集群一级上使用
+1. ovirt网络: 用来处理虚拟机间网络连接的逻辑网络是通过计算节点上的基于软件的网桥实现的。在默认情况 下，ovirt-engine在安装过程中会创建一个名为“ovirtmgmt管理网络”的逻辑网络。此外系统管理员还可以添加专用的存储逻辑网络和专用的显示逻辑网络
+1. 存储域就是一系列具有公共存储接口的镜像的集合，存储域中包括了虚拟机模板、快照、数据镜像、ISO文件以及存储域本身的元数据。一个存储域可以由块设备（块存储）组成，也可以由文件系统（文件存储）组成
+
+	分类:
+	1. 数据（Data）存储域：保存ovirt虚拟化环境中的所有虚拟机的磁盘镜像。这些磁盘镜像包括安装的操作系统，或由虚拟机产生或保存的数据。数据存储域支持NFS、iSCSI、FCP、GlusterFS或POSIX兼容的存储系统
+	1. 导出（Export）存储域：它可以在不同数据中心间转移磁盘镜像和虚拟机模板提供一个中间存储，并可以用来保存虚拟机的备份。导出存储域支持NFS存储。一个导出域可以被多个不同的数据中心访问，但它同时只能被一个数据中心使用
+	1. ISO存储域：用来存储ISO文件（也称为镜像，它是物理的CD或DVD的代表）
+
+	导出（Export）存储域和ISO存储域将被数据（Data）存储域取代.
+
+	自动恢复（激活）机制:
+	1. 主机根据其所在数据中心中的存储域元数据信息来监测存储域，当该数据中心中的所有主机都报告某个存储域无法访问时，这个存储域会被认定为“不活跃”.
+	1. ovirt-engine监测到某个存储域不活跃时并不会断开与它的连接，而是会认为这可能是一个临时的网络故障导致的，engine会每隔5分钟尝试重新激活任何不活跃的存储域
+1. 磁盘镜像存储分配策略
+
+	1. 预分配存储（Preallocated Storage）: 虚拟磁盘镜像所需要的所有存储空间在虚拟机创建前就需要被完全分配
+
+		因为在进行写操作时不需要进行磁盘空间分配的动作，所以预分配存储策略有更好的写性能. 但是，预分配存储的大小不能被扩展，这就失去了一些灵活性。另外，它也会降低ovirt-engine进行存储“over-commitment”的能力。预分配存储策略适用于需要大量I/O操作（特别是写操作比较频繁时），并对存储速率有较高要求的虚拟机，一般情况下，作为应用服务器的虚拟机推荐使用预分配存储策略。
+
+	1. 稀疏分配存储（Sparsely Allocated Storage）, 即存储精简配置策略. 在创建虚拟机的时候，为虚拟磁盘镜像设定一个存储空间上限，而磁盘镜像在开始时并不使用任何 存储域中的存储空间。当虚拟机需要向磁盘中写数据时，磁盘会从存储域中获得一定的存储空间（默认为1G），当磁盘数据量达到所设置的磁盘空间上限时将不会再为虚拟磁盘增加容量
+1. 元数据版本
+
+	当前使用的是V3版本: 适用于NFS、GlusterFS、POSIX、iSCSI和FC存储域.
+
+	ovirt-engine在启动时会将每个数据中心中的存储域配置信息下发给各个主机上的VDSM实例，VDSM分根据接收到的存储域配置信息将相关存储域挂载至主机
+1. SPM
+
+	能修改存储域元数据的主机就是SPM主机, 机制是`一人写，多人读`. 它通过SPM主机选举机制产生
 
 ## 部署
 ref:
@@ -213,6 +252,11 @@ admin portal登入后显示数据中心`Default`未初始化, 开始配置:
 Hosted Engine部署:
 1. 可以使用[cnovirt-node-ng-installer iso](https://www.cnovirt.com/%e5%ae%89%e8%a3%85%e5%8c%85%e4%b8%8b%e8%bd%bd), 它已集成了engine appliance rpm包. 因为使用官方最新版ovirt-node-ng-installer-4.5.4-2022120615.el8.iso部署过程中node重启了导致部署失败
 1. 配置hosts和hostname
+
+	```bash
+	echo "192.168.88.151 node.myovirt.com" >> /etc/hosts
+	hostnamectl set-hostname node.myovirt.com
+	```
 1. 准备nfs, 见[oVirt4.4本地存储架构部署教程（v4.4.3）（HostedEngine方式）](https://www.cnovirt.com/archives/2851)
 
 	```bash
@@ -228,8 +272,8 @@ Hosted Engine部署:
 1. Engine
 
 	Admin Portal Password: xxx
-1. 配置nfs: 192.168.88.152:/data/images/nfs
-1. 访问`https://engine.myovirt.com/ovirt-engine`, 用admin@internal
+1. 配置nfs: 192.168.88.151:/data/images/nfs
+1. 导入ca证书并访问`https://engine.myovirt.com/ovirt-engine`, 用admin@internal
 
 ## [api](https://www.ovirt.org/documentation/)
 - [python-ovirt-engine-sdk4](https://github.com/oVirt/python-ovirt-engine-sdk4)
@@ -339,6 +383,11 @@ Hosted Engine部署:
 
 	> backup_vm.py开始备份后会在`/var/run/vdsm/backup`创建同uuid的目录(backup_vm.py stop后会被清理掉), /var/lib/vdsm/storage/transient_disks也有一些文件(结束后也会被清理掉), 记录见`select * from vm_backups`, `select * from vm_backup_disk_map`, `select * from vm_checkpoints`, `select * from vm_checkpoints_disks_map`
 
+	其他:
+	```bash
+	# ./list_storage_domains.py # 仅支持按名称查询
+	```
+
 增量备份分析:
 - cmd_incremental
 
@@ -365,6 +414,7 @@ Hosted Engine部署:
 
 	该pdf包含备份过程中的关键打点
 
+- [3.2.5. 使用增加备份和恢复 API 备份和恢复虚拟机](https://access.redhat.com/documentation/zh-cn/red_hat_virtualization/4.4/html/administration_guide/chap-backups_and_migration#backing_up_and_restoring_virtual_machines_using_the_incremental_backup_and_restore_api)
 - [vacosta94/VirtBKP](https://github.com/vacosta94/VirtBKP)
 - [allwaysoft/ovirtvmbackup](https://github.com/allwaysoft/ovirtvmbackup/blob/master/ovirtvmbackup.py)
 - [oVirt/vdsm/incremental-backup.md](https://github.com/oVirt/vdsm/blob/master/doc/incremental-backup.md)
@@ -375,8 +425,11 @@ Hosted Engine部署:
 - [华为云计算学习：备份之CBT技术](https://www.vinchin.com/blog/vinchin-technique-share-details.html?id=8374)
 - [ovirtsdk4.services](https://ovirt.github.io/python-ovirt-engine-sdk4/master/services.m.html#ovirtsdk4.services.VmService.snapshots_service)
 - [Hybrid Backup](https://www.ovirt.org/media/Hybrid-backup-v8.pdf)
+- [Python SDK 指南](https://access.redhat.com/documentation/zh-cn/red_hat_virtualization/4.4/html-single/python_sdk_guide/index#chap-Python_Examples)
 
-增量备份要求: qcow2 v3即compat 1.1, libvirt 增量备份是基于CBT备份. raw镜像仅支持全备, 因此raw和qcow2 v3混合增量备份时, raw盘还是全备
+增量备份要求:
+1. qcow2 v3即compat 1.1, libvirt 增量备份是基于CBT备份. raw镜像仅支持全备, 因此raw和qcow2 v3混合增量备份时, raw盘还是全备
+2. 需要指定backing_file, 否则备份生成的文件, `qemu-img info --backing-chain`查询不到backing-chain, 从而导致还原出的disk image是错误的
 
 官方sdk不支持差分备份, 需要自实现
 
@@ -486,6 +539,8 @@ Unlock specific VM disk
 - /var/log/ovirt-engine/engine.log
 - `/var/log/vdsm/vdsm.log(.\d+.xz)?`
 
+vdsm loglevel修改: [README.logging](https://github.com/oVirt/vdsm/blob/master/README.logging)
+
 ### sdk 增量备份 engine.log 报`Bitmap does not exist`
 ref:
 - [incremental backup failed: Bitmap does not exist](https://github.com/oVirt/ovirt-engine/issues/896)
@@ -521,7 +576,11 @@ ref:
 在存储域下, `grep <disk id>`查找
 
 ### backup_vm.py增量备份报`...qemu-img: warning: Could not verify backing image. This may become an error in future versions. Image is not in qcow2 format...RuntimeError("Timeout waiting for qemu-nbd socket")`
-增量备份的目标目录不能保存除backup_vm.py生成外的文件, 否则备份可能报错
+情况1:
+1. 增量备份的目标目录存在其他文件, 文件名刚好符合backup_vm.py#find_backing_file的匹配导致使用了错误的backing file
+2. 增量备份时要验证所依赖的backing file, 该文件不能删除, 即不能删除本次备份所有直接依赖的backing file, 间接依赖的backing file可以删除
+
+	因为client.download调用了qemu-img create创建新qcow2, 其参数需要该backing file.
 
 ### engine db 配置
 `/etc/ovirt-engine/engine.conf.d/10-setup-database.conf`
@@ -559,4 +618,37 @@ for disk_element in disk_elements:
     print(props)
 ```
 
-注意: `/root/child`这种语法是错误的, 它在xpath里并不表示层级, 而查找child应使用`//child`或`child`
+或使用绝对路径: `/ovf:Envelope/Section[@xsi:type="ovf:DiskSection_Type"]/Disk`
+
+### export ova报`Operation not permitted abortedcode=100`
+ref:
+- [[Libguestfs] [PATCH v2 2/3] v2v: ovf: Create OVF more aligned with the standard](https://listman.redhat.com/archives/libguestfs/2018-February/018293.html)
+
+仅允许export正在运行的vm
+
+### export ova xml与vms_service().list()获取的xml格式有差异
+ref:
+- [ISO/IEC 17203:2017 - Information technology — Open Virtualization Format (OVF) specification](https://webstore.iec.ch/preview/info_isoiec17203%7Bed2.0%7Den.pdf)
+- [OVF 与 OVA 区别与转换](https://blog.k8s.li/ovf-to-ova.html)
+- [虚拟机包 OVF和OVA的区别](https://blog.51cto.com/wolfgang/1125864)
+
+Centos8.ova是包含vm xml和vm disks的tar包.
+
+```bash
+# tar -xvf Centos8.ova
+vm.ovf
+e0ea67f1-577b-44e1-8c58-15121398beb3
+```
+
+e0ea67f1-577b-44e1-8c58-15121398beb3是`/ovf:Envelope/References/File[@ovf:href="e0ea67f1-577b-44e1-8c58-15121398beb3"]`与`/ovf:Envelope/DiskSection/Disk[@ovf:fileRef="e0ea67f1-577b-44e1-8c58-15121398beb3"]`相对应
+
+export ova时disk xml path是`/ovf:Envelope/DiskSection/Disk`且`Disk[@ovf:fileRef]`仅一层, 使用`connection.system_service().vms_service().list(id=xxx, all_content=True).initialization.configuration.data.encode('utf-8')`时path是`/ovf:Envelope/Section[@xsi:type="ovf:DiskSection_Type"]/Disk`且`Disk[@ovf:fileRef]`有2层, 第二层的内容与export ova的`Disk[@ovf:fileRef]`相同. 通过`upload_ova_as_vm_or_template.py#upload_ova_as_vm_or_template.py`看到, xml差异应是types.ConfigurationType的OVA和OVF不同导致的, 可通过`vms_service().list()`时添加`ovf_as_ova=True`来解决, 此时xml内容与export ova的一致
+
+ovf标准使用的是DiskSection, 即export ova时所采用的xml格式.
+
+### ovirt node 4.4.10备份已关机的vm失败
+[add_bitmap failed: Operation not permitted](https://github.com/oVirt/ovirt-engine/issues/902)
+
+ovirt-engine-4.5.4-1.el8.noarch + ovirt-node-ng-installer-4.5.4-2022120615.el8.iso 上全/增量均备份正常
+
+原因: vdsmd.service权限是vdsm:kvm, 而[path](https://github.com/oVirt/vdsm/blob/v4.40.100.2/lib/vdsm/storage/outOfProcess.py#L152C24-L152C41)是root:root, 应该是之前调试时误操作导致的.

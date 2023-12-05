@@ -531,3 +531,9 @@ bareos winbareos-nsi.spec:
 
 ### dnf download no such command
 `dnf install dnf-plugins-core`
+
+### 查看centos repo变量
+[Yum: How can I view variables like $releasever, $basearch & $YUM0?](https://unix.stackexchange.com/questions/19701/yum-how-can-i-view-variables-like-releasever-basearch-yum0)
+
+### dnf install xxx 报`package yyy is filtered out by exclude filtering`
+包xxx和yyy应该版本对应
