@@ -652,3 +652,6 @@ ovf标准使用的是DiskSection, 即export ova时所采用的xml格式.
 ovirt-engine-4.5.4-1.el8.noarch + ovirt-node-ng-installer-4.5.4-2022120615.el8.iso 上全/增量均备份正常
 
 原因: vdsmd.service权限是vdsm:kvm, 而[path](https://github.com/oVirt/vdsm/blob/v4.40.100.2/lib/vdsm/storage/outOfProcess.py#L152C24-L152C41)是root:root, 应该是之前调试时误操作导致的.
+
+### api调用报`Error during SSO authentication access_denied : Cannot authenticate user ‘admin@N/A’: No valid profile found in credentials..`
+账号错误, 使用了`admin`, 正确应是`admin@internal`
