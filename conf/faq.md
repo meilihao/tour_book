@@ -30,6 +30,25 @@ $ sudo apt install google-chrome-stable
 https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
 https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 
+### [apt安装firefox](https://www.omgubuntu.co.uk/2022/04/how-to-install-firefox-deb-apt-ubuntu-22-04)
+ref:
+- [Firefox Developer Edition and Beta: Try out Mozilla’s .deb package!](https://hacks.mozilla.org/2023/11/firefox-developer-edition-and-beta-try-out-mozillas-deb-package/)
+
+```bash
+sudo snap remove firefox
+sudo add-apt-repository ppa:mozillateam/ppa
+
+echo '
+Package: *
+Pin: release o=LP-PPA-mozillateam
+Pin-Priority: 1001
+' | sudo tee /etc/apt/preferences.d/mozilla-firefox # 改变Firefox软件包的优先级，以确保PPA/deb/apt版本的Firefox总是首选的
+
+echo 'Unattended-Upgrade::Allowed-Origins:: "LP-PPA-mozillateam:${distro_codename}";' | sudo tee /etc/apt/apt.conf.d/51unattended-upgrades-firefox # 希望将来的Firefox升级自动安装
+
+sudo apt update
+sudo apt install firefox
+```
 
 ### 迅雷99永远下不完
 1. 把任务删除，但是不要删除本地文件

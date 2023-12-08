@@ -88,7 +88,7 @@ systemd的时间工具.
 ### example
 ```bash
 timedatectl list-timezones
-timedatectl set-timezone "Asia/Kolkata"
+timedatectl set-timezone "Asia/Kolkata" # 实际就是修改`ls -l /etc/localtime`指向/usr/share/zoneinfo下某个时区
 timedatectl set-timezone UTC
 timedatectl set-time '16:10:40 2015-11-20'
 timedatectl set-time 20151120

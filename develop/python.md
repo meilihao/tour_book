@@ -2527,6 +2527,9 @@ madbg attach <pid>
 ipdb> help # 查看帮助
 ```
 
+### faulthandler
+[Python: 使用 faulthandler 模块获取运行中进程的 traceback 信息](https://mozillazg.com/2017/12/python-use-faulthandler-to-debug-running-process-with-dumping-traceback.html)
+
 ## celery
 ### redis keys
 - celery：表示当前正在队列中的 task，等待被 worker 所接收. celery 消失说明任务已经被启动的 worker 接收了即当前没有等待被接收的任务

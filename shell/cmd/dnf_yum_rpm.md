@@ -171,6 +171,8 @@ rehat开发的包管理软件, 已被dnf取代.
 # yum whatprovides libmysqlclient* # 查找某一包的提供者
 # yum whatprovides '*bin/grep' # 查找某一文件的提供者
 # yum localinstall *.rpm
+# yum debuginfo-install xxx # 安装debuginfo for gdb/lldb
+# repoquery -i cherokee # 查看包来自哪个repo, from yum-utils
 ```
 
 # zypper

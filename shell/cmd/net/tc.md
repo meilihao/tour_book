@@ -5,8 +5,9 @@ ref:
 - [《Linux 高级路由与流量控制手册（2012）》第九章：用 tc qdisc 管理 Linux 网络带宽](https://arthurchiao.art/blog/lartc-qdisc-zh/)
 - [利用Cgroup限制网络带宽](https://guanjunjian.github.io/2017/11/29/study-14-cgroup-network-control-group/)
 - [wondershaper - tc的shell wrapper]
+- [tc](https://tonydeng.github.io/sdn-handbook/linux/tc.html)
 
-TC 是linux自带的模块，可以用来控制网速, from `yum install iproute`.
+TC 是Linux内核提供的流量限速、整形和策略控制机制。它以qdisc-class-filter的树形结构来实现对流量的分层控制, from `yum install iproute`.
 
 tc/qdisc 是 Cilium/eBPF 依赖的最重要的网络基础设施之一.
 
@@ -19,31 +20,52 @@ Martin Devera (devik) 意识到CBQ 太复杂了，并且没有针对很多典型
 - 每个部分的带宽是有保证的（guaranteed bandwidth）
 - 还可以指定每个部分向其他部分借带宽
 
+tc由qdisc、fitler和class三部分组成:
+- qdisc通过队列将数据包缓存起来，用来控制网络收发的速度
+- class用来表示控制策略
+
+	class用来表示控制策略，只用于有分类的qdisc上。每个class要么包含多个子类，要么只包含一个子qdisc。当然，每个class还包括一些列的filter，控制数据包流向不同的子类，或者是直接丢掉
+
+- filter用来将数据包划分到具体的控制策略中
+
+	包括以下几种:
+	- u32：根据协议、IP、端口等过滤数据包
+	- fwmark：根据iptables MARK来过滤数据包
+	- tos：根据tos字段过滤数据包
+
+注意，一般说到qdisc都是指egress qdisc(出口qdisc). 每块网卡实际上还可以添加一个ingress qdisc，不过它有诸多的限制:
+- ingress qdisc不能包含子类，而只能作过滤
+- ingress qdisc只能用于简单的整形
+
+如果相对ingress方向作流量控制的话，可以借助ifb（ Intermediate Functional Block）内核模块。因为流入网络接口的流量是无法直接控制的，那么就需要把流入的包导入（通过 tc action）到一个中间的队列，该队列在 ifb 设备上，然后让这些包重走 tc 层，最后流入的包再重新入栈，流出的包重新出栈.
+
 ## 选项
 格式: `tc [qdisc/class/filter] [add/del/replace] dev 网卡名字 其他参数`
 
 **tc限速主要是将数据包发送到不同类型的队列中**，然后由队列控制发送. 限速队列主要由两种:
-1. 一种是无类队列, 可以对某个网络 接口（interface）上的所有流量进行无差别整形, 包括对对数据进行`重新调度（reschedule）`,`增加延迟（delay）`,`丢弃（drop）`.
+1. 一种是无类队列（只能应用于root队列）, 可以对某个网络 接口（interface）上的所有流量进行无差别整形, 包括对对数据进行`重新调度（reschedule）`,`增加延迟（delay）`,`丢弃（drop）`.
 
 	其中包括以下:
+	- [p|b]fifo：简单先进先出
 	- pfifo_fast(先进先出)
 
 		对所有包都一视同仁.
 
-		pfifo_fast 有三个所谓的 “band”（可理解为三个队列），编号分别为 0、1、2：
+		pfifo_fast 有三个所谓的 “band”（可理解为三个队列）, 每个band内部先进先出，编号分别为 0、1、2：
 
 		- 每个 band 上分别执行 FIFO 规则
 		- 但是，如果 band 0 有数据，就不会处理 band 1；同理，band 1 有数据时， 不会去处理 band 2
 		- 内核会检查数据包的 TOS 字段，将“最小延迟”的包放到 band 0
 
-	- TBF ( 令牌桶过滤器)
+	- TBF ( 令牌桶过滤器) : 只允许以不超过事先设定的速率到来的数据包通过 , 但可能允许短暂突发流量朝过设定值
 
-		TBF 是一个简单 qdisc，对于没有超过预设速率的流量直接透传，但也能容忍超过预 设速率的短时抖动（short bursts in excess of this rate）。 TBF 非常简洁，对网络和处理器都很友好（network- and processor friendly）。 如果只是想实现接口限速，那 TBF 是第一选择.
+		TBF 是一个简单 qdisc，对于没有超过预设速率的流量直接透传，但也能容忍超过预 设速率的短时抖动（short bursts in excess of this rate）。 TBF 非常简洁，对网络和处理器都很友好（network- and processor friendly）。 **如果只是想实现接口限速，那 TBF 是第一选择**.
 
-	- SFQ(随机公平队列) 
+	- SFQ(随机公平队列) : 按照会话对流量排序并循环发送每个会话的数据包
 
 		随机公平排队（SFQ）是公平排队算法族的一个简单实现。相比其他算法，SFQ 精准性要差 一些，但它所需的计算量也更少，而结果几乎是完全公平的（almost perfectly fair）.
-	- ID (前 向随机丢包)
+	- ID (前向随机丢包)
+	- red：Random Early Detection，带带宽接近限制时随机丢包，适合高带宽应用
 	- etc.
 
 
@@ -60,6 +82,11 @@ Martin Devera (devik) 意识到CBQ 太复杂了，并且没有针对很多典型
 	- 如果你不需要整形，只是想看看网络接口（interface）是否过载（so loaded that it has to queue）， 使用 pfifo queue（注意不是 pfifo_fast）。pfifo 内部没有 bands，但会记录 backlog 的大小。
 
 1. 另外一种是分类队列, 一个排队规则中又包含其他 排队规则（qdisc-containing-qdiscs）.
+
+	包括:
+	- cbq：Class Based Queueing，借助EWMA(exponential weighted moving average, 指数加权移动均值 ) 算法确认链路的闲置时间足够长 , 以达到降低链路实际带宽的目的。如果发生越限 ,CBQ 就会禁止发包一段时间。
+	- htb：Hierarchy Token Bucket，在tbf的基础上增加了分层
+	- prio：分类优先算法并不进行整形 , 它仅仅根据你配置的过滤器把流量进一步细分。缺省会自动创建三个FIFO类
 
 	其中由引出了class(类, 表示控制策略)，filter(Classifiers, 过滤器, 用来将用户划入到具体的控制策略中即不同的 class 中)的概念.
 

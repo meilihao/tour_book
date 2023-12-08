@@ -55,6 +55,9 @@ $ dpkg-deb -c xxx.deb # 查看deb内容
 
 # snap
 ```bash
+snap find solitaire # 查找指定程序
+snap info solitaire
+snap remove gnome-42-2204 && snap install gnome-42-2204 # 重装
 snap refresh # 更新snap包
 snap list --all
 snap remove gtk-common-themes --revision=123 # 删除disabled的版本
@@ -146,13 +149,36 @@ dpkg的bug: [dpkg无法解析tar.xz格式-xz compressed control.tar files not su
 ubuntu中由apt-get获得的文件包保存在/var/cache/apt/archives
 
 ### 删除snap
+ref:
+- [Ubuntu 22.04 禁用（彻底移除）Snap](https://sysin.org/blog/ubuntu-remove-snap/)
+
 ```bash
-snap list; sudo snap remove xxx
-sudo apt install ubuntu-software
-sudo snap remove snap-store
-sudo apt purge snapd
+for p in $(snap list | awk '{print $1}'); do
+  sudo snap remove $p
+done # 需要多次执行, 直至提示`No snaps are installed yet`
+
+sudo systemctl stop snapd
+sudo systemctl disable --now snapd.socket
+
+for m in /snap/core/*; do
+   sudo umount $m
+done
+
+sudo apt autoremove --purge snapd
+
+rm -rf ~/snap
+sudo rm -rf /snap
+sudo rm -rf /var/snap
+sudo rm -rf /var/lib/snapd
 sudo rm -rf /var/cache/snapd
-sudo rm -rf ~/snap
+
+sudo sh -c "cat > /etc/apt/preferences.d/no-snapd.pref" << EOL
+Package: snapd
+Pin: release a=*
+Pin-Priority: -10
+EOL # 禁止 apt 安装 snapd
+
+reboot # 否则文件管理器可能还会看到残留的snap loop设备
 ```
 
 ### 路径`debian/rules`
@@ -317,4 +343,22 @@ $ sudo apt-key export 038651BD | sudo gpg --dearmour -o /etc/apt/trusted.gpg.d/s
 方法2:
 ```bash
 $ sudo cp /etc/apt/trusted.gpg /etc/apt/trusted.gpg.d # **推荐**
+```
+
+### snap调试执行
+`SNAP_CONFINE_DEBUG=1 snap run firefox`
+
+### snap list显示`broken`
+查询系统日志, 进行错误处理, 比如重装相应snap package
+
+### snap 操作报`run hook "connect-plug-host-hunspell": cannot perform operation: mount --rbind /dev /tmp/snap.rootfs_qopigF//dev: No such file or directory`
+
+```bash
+systemctl stop snapd
+systemctl stop snapd.socket
+reboot
+sudo rm -rf /var/lib/snapd/cache/*
+sudo rm -rf /tmp/snap.* # 如果还是不能删除, 那stop snapd.socket/snapd时还需要disable
+systemctl start snapd.socket
+systemctl start snapd # 查看日志补全缺失的package
 ```

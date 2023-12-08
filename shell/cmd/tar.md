@@ -105,3 +105,6 @@ $ tar -xvf lfs-backup-*.tar.gz # 可能是tar打包时使用了`-p`导致解压�
 
 ### 解压"xxx.gz"
 `gunzip xxx.gz`
+
+### 解压`test(OEM).tar.gz`失败
+`()`需要转义
