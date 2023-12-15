@@ -26,4 +26,4 @@ vim /etc/udev/rules.d/99-vmware-scsi-udev.rules
 ..., RUN+="/bin/sh -c 'echo 180 >/sys$$DEVPATH/device/timeout'"
 ```
 
-> DEVPATH from `udeadm info /dev/sda`, `/sys$$DEVPATH`即device path
+> DEVPATH from `udevadm info /dev/sda`, `/sys$$DEVPATH`即device path

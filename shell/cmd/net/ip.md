@@ -63,7 +63,7 @@ default via 192.168.0.1 dev bond0
 # ip neigh del 192.168.1.100 dev eth0 # 删除arp映射
 # ip neigh show 192.168.0.167 # 查看对应ip的mac, 前提是内核的ARP表有该记录, 没有则先ping一下
 # arp 192.168.0.167 # 查看ip对应的mac, 但arp已淘汰
-# arping -I ens160 192.168.16.38 # 反查mac, 需同局域网, by `apt install arping`, ens160必须是up
+# arping -I ens160 192.168.16.38 # 反查mac, 需同**局域网**(比如同网段ip), by `apt install arping`, ens160必须是up
 # ip link set dev ens33 multicast on # 启用多播
 # ip maddr # 显示多播地址
 # route -n # 靠前的优先
@@ -299,6 +299,7 @@ ip route flush cache
 example2:
 ref:
 - [Linux 多网关应用场景配置](https://typefo.com/linux/linux-multiple-gateway.html)
+- [Routing Tables](http://linux-ip.net/html/routing-tables.html)
 
 Linux 多网关应用场景, 比如机房服务器有 3 块网卡, eth0 为内网IP, eth1 为电信公网IP, eth2 为联通公网IP, 一般情况下服务器只能配置一个默认网关, 外网客户端只能通过其中一个公网IP访问服务器, 通过配置 Linux 原路返回路由功能, 来实现客户端从哪个网卡进来就从哪个网卡出去. 也就是电信用户访问服务器的电信公网 IP 然后从电信网卡原路返回, 联通用户访问联通公网 IP 然后从联通网卡返回, 服务器本身就可以通过默认的内网网关访问外网.
 

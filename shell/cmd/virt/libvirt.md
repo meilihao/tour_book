@@ -9,6 +9,7 @@ ref:
    支持集群
 - [KubeSphere 虚拟化 KSV 安装体验](https://blog.csdn.net/networken/article/details/125009058)
 - [kubevirt在360的探索之路（k8s接管虚拟化）](https://zyun.360.cn/blog/?p=691)
+- [虚拟机迁移](https://kiosk007.top/post/%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%80%8E%E4%B9%88%E5%81%9A%E5%88%B0%E7%83%AD%E8%BF%81%E7%A7%BB/)
 
 目前使用最广泛的对kvm进行管理的工具和应用程序接口, 它也支持xen, vmware, virtualbox, hyper-v等平台虚拟化, 以及openvz, lxc等容器虚拟化.
 
@@ -538,6 +539,24 @@ eth0不是brigde device.
 
 ### 启动vm报`error creating macvtap interface macvtap@eth0 (52:54:00:56:84:7a): Device or resource busy`
 eth0被用于创建bond0, 此时应使用bond0
+
+### `type=direct,source=eth0,source_mode=bridge,model=e1000`
+ref:
+- [「KVM」- 实现 Host 与 Guest 访问 @20210314](https://blog.51cto.com/u_11101184/3137103)
+
+   放弃 Guest 访问 Host 的做法: Host 本就处于虚拟化的底层, 不应该让 Guest 访问 Host 主机
+- [Linux上虚拟网络与真实网络的映射](https://cloud.tencent.com/developer/article/1082914)
+
+同网段ip的vm使用macvtap0, 与host不通, 但与其他同网段的ip相通
+
+原因: 这实际上不是一个错误, 而是 macvtap 的定义行为. 由于主机的物理以太网连接到 macvtap 网桥的方式, 从guest进入该网桥并转发到物理接口的流量无法返回到host的 IP 堆栈
+
+此外, 从host IP 堆栈发送到物理接口的流量无法返回到 macvtap 网桥以转发到guest
+
+解决方法:
+1. Creating a separate macvtap interface for the host
+1. Using libvirt for creating an isolated network
+1. 多网卡: vms和host使用独立网卡
 
 ### 启动vm报`unsupported configuration: disk type 'virtio' of 'vdb' does not support ejectable media'`
 原因:cdrom使用了virtio.

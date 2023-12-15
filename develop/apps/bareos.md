@@ -3191,6 +3191,24 @@ lstat demo在[docs/manuals/source/DeveloperGuide/api.rst](https://github.com/bar
 ### 并发备份
 - [Concurrent Disk Jobs](https://docs.bareos.org/TasksAndConcepts/VolumeManagement.html#concurrent-disk-jobs)
 - [Concurrent Jobs in Bareos with disk storage](https://svennd.be/concurrent-jobs-in-bareos-with-disk-storage/)
+- [Concurrent Jobs](https://docs.bareos.org/Appendix/Troubleshooting.html#concurrent-jobs)
+
+    涉及:
+    ```
+    Bareos Director:
+    - Maximum Concurrent Jobs (Dir->Director)
+    - Maximum Concurrent Jobs (Dir->Client)
+    - Maximum Concurrent Jobs (Dir->Job) // 并发还原应修改RestoreFiles.conf
+    - Maximum Concurrent Jobs (Dir->Storage)
+
+    Bareos Storage Daemon:
+    - Maximum Concurrent Jobs (Sd->Storage)
+    - Maximum Concurrent Jobs (Sd->Device)
+
+    Bareos File Daemon:
+    - Maximum Concurrent Jobs (Fd->Client)
+    ```
+
 
 bareos一个storage device只能同时备份一个job, 因此需要多个device
 

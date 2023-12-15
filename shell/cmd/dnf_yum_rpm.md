@@ -143,6 +143,7 @@ ref:
 # rpm -e --nodeps packageA # keep deps
 # rpm -K packageA # check signature
 # repoquery -i php-intl # repoquery from yum-utils. 获取包信息, 包括来源repo. `-i`,展示详情
+# repoquery --requires --resolve <package-name> # 显示目标包所依赖的包
 # yum/dnf list installed | grep @epel # 已安装包的来源repo
 # dnf repo-pkgs <repoid> list installed # 同上
 # createrepo /root/rpmbuild/RPMS/aarch64 # 创建repo. rpm repo支持软件多版本共存的, 因此离线部署时便于处理版本变化(只需累加即可)
@@ -173,6 +174,9 @@ rehat开发的包管理软件, 已被dnf取代.
 # yum localinstall *.rpm
 # yum debuginfo-install xxx # 安装debuginfo for gdb/lldb
 # repoquery -i cherokee # 查看包来自哪个repo, from yum-utils
+# rpmreaper # 用作清理系统中无用以及它们所依赖的包，rpmreaper有很直观的ncurses界面来展示已安装的包和它们依赖关系的树形图
+# yum install rpmorphan graphviz
+# rpmdep.pl -dot gzip.dot gzip$ dot -Tpng -o output.png gzip.dot # 生成包依赖的拓扑关系图
 ```
 
 # zypper

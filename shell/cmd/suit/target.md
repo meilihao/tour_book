@@ -425,7 +425,7 @@ Online
 ```
 
 ### 光纤initiator发现的方法
-1. `echo 1 > /sys/class/fc_host/host<N>/issue_lip`, **推荐** # 此时会通过issue_lip重置HBA链路，重新扫描整个链路并配置SCSI target. 该操作是一种异步操作类型，具体完成时间需要参考system log. Linux操作系统自带的lpfc和qla2xxx 驱动支持issue_lip命令.
+1. `echo 1 > /sys/class/fc_host/host<N>/issue_lip`, **推荐** # 此时会通过issue_lip重置HBA链路(会影响正常的链路)，重新扫描整个链路并配置SCSI target. 该操作是一种异步操作类型，具体完成时间需要参考system log. Linux操作系统自带的lpfc和qla2xxx 驱动支持issue_lip命令.
 1. `echo "- - -" |tee -a /sys/class/scsi_host/*/scan` # `- - -`分别代表通道，SCSI目标ID和LUN, 此时破折号充当通配符，表示"重新扫描所有内容"
 
 > 有时明明fc target配置正确但fc client还是不能扫出新盘: 有坏的fc链路占用了相同的盘符(比如sdc), 导致不能扫出. 解决方法:1. `rescan-scsi-bus.sh -r`即移除失效的设备; 2. `reboot`
@@ -443,6 +443,7 @@ qla2xxx.ko支持target模式和initiator模式, 在存储服务器上必须根�
 # modprobe -r qla2xxx
 # modprobe qla2xxx qlini_mode="disabled" # 只支持target模式, 除非重新加载qla2xxx驱动
 # modprobe qla2xxx qlini_mode="enabled"  # 只支持initiator模式, 除非重新加载qla2xxx驱动
+# modprobe qla2xxx qlini_mode="exclusive"  # 支持以 initiator 或 target 模式运行，但是创建为target后即不能作为 initiator
 ```
 
 > 也可通过/etc/modprobe.d/qla2xxx.conf指定qla2xxx驱动参数, 比如`options qla2xxx qlini_mode="enabled"`.

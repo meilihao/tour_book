@@ -527,3 +527,6 @@ systemd service的环境变量与shell env无关, 因此systemd提供了Environm
 见`man 5 systemd.exec`.
 
 > `ExecStartPre=/usr/bin/bash xxx.sh`无用, 因为执行ExecStart前ExecStartPre已结束.
+
+### Failed with result 'start-limit-hit'
+是由于服务定义中的 Restart=on-failure 指令造成的, 服务总是崩溃重启导致启动次数达到了上限
