@@ -5,6 +5,9 @@ ref:
 - [PostgreSQL Plugin](https://docs.bareos.org/master/TasksAndConcepts/Plugins.html#postgresql-plugin)
 - [BareosFdPluginPostgres.py](https://github.com/bareos/bareos/blob/master/core/src/plugins/filed/python/postgres/BareosFdPluginPostgres.py)
 - [PostgreSQL 指南：内幕探索](https://cloud.tencent.com/developer/article/1459719)
+- [PostgreSQL 支持增量备份 (Incremental Backups)](https://www.oschina.net/news/272121/postgresql-incremental-backups)
+
+	新的 pg_combinebackup 工具可用于从完整备份和一系列增量备份重建数据目录
 
 冷备份, 以及逻辑备份都是某一个时间点的备份, 没有增量的概念.
 

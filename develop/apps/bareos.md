@@ -7,6 +7,9 @@
 - [Storage Media Output Format](https://docs.bareos.org/DeveloperGuide/mediaformat.html)
 - [issues](https://bugs.bareos.org/my_view_page.php)
 - [Debugging](https://docs.bareos.org/bareos-23/Appendix/Debugging.html)
+- [华为OceanProtect数据保护新品发布会](https://www.huawei.com/cn/events/data-backup-launch-2023)
+
+    open-eBackup 2024.6.30开源#TODO
 
 Bareos 由 bacula fork而來.
 

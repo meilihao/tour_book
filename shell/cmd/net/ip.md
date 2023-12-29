@@ -153,6 +153,7 @@ ref:
 
 #### 多网卡同IP技术
 参考:
+- [team与bonding的比较](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/7/html/networking_guide/sec-comparison_of_network_teaming_to_bonding)
 - [Bonding vs Team](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/configuring_and_managing_networking/configuring-network-teaming_configuring-and-managing-networking)
 - [linux bond设备删除,删除修改bond](https://blog.csdn.net/weixin_33976326/article/details/116748742)
 
@@ -402,3 +403,24 @@ env:
 
 原因: 修改网络时, 16.159的默认网关被删除.
 解决方案: `ip route add default via 192.168.16.2 dev eth0`
+
+### bond0使用的eth0和eth1 mac启动时小概率对调
+ref:
+- [小斗CentOS7.x网卡名称错乱、及网卡启动失败](https://www.houzhibo.com/archives/684)
+
+1. 通过ip link(与`/sys/class/net/eth0/address`一致)获取eth0的mac
+2. 通过`/sys/class/net`的eth0软连接路径或`udevadm info /sys/class/net/eth0 |grep ID_PATH`(需去除前缀`pci-`)获取id_path
+3. 通过`dmesg |grep <id_path>`获取mac, 对比步骤1获取的mac, 发现步骤1获取的mac是dmesg里eth1的
+
+同时eth0和eth1的udev规则在/etc/udev/rules.d/70-persistent-net.rules中, 是配置正确的. 且`dmesg|grep udev`没有发现报错信息.
+
+正常环境dmesg时序:
+1. kernel枚举device
+1. 网卡rename
+1. 创建bond
+
+检查了问题环境的dmesg, 没有发现异常, 创建bond时也使用了正确的eth0
+
+对调原因: 未知
+
+> ID_PATH 提供了设备的总线拓扑路径，用于唯一标识设备在系统中的位置, 这个路径反映了设备是如何连接到系统的，涉及总线、端口、设备号等信息.

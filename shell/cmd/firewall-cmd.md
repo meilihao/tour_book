@@ -42,7 +42,7 @@ firewalld 中常用的区域名称及测了规则:
 - --list-all 显示当前区域的网卡配置参数、资源、端口以及服务等信息
 - --list-all-zones 显示所有区域的网卡配置参数、资源、端口以及服务等信息
 - --add-service=<服务名> 设置默认区域允许该服务的流量
-- --add-port=<端口号/协议> 设置默认区域允许该端口的流量
+- --add-port=<端口号/协议> 设置默认区域允许该端口的流量, 添加时使用了`--permanent`时, 那么移除时也需要添加它
 - --remove-service=<服务名> 设置默认区域不再允许该服务的流量
 - --remove-port=<端口号/协议> 设置默认区域不再允许该端口的流量
 - --reload 让“永久生效”的配置规则立即生效，并覆盖当前的配置规则
@@ -69,7 +69,7 @@ external
 ### 添加端口
 ```
 // 永久打开一个端口
-firewall-cmd --permanent --zone=public --add-port=80/tcp
+firewall-cmd --permanent --zone=public --add-port=80/tcp --add-port=81/tcp
 // 永久打开某项服务
 firewall-cmd --permanent --zone=public --add-service=http
 // 需重新加载防火墙
@@ -89,9 +89,9 @@ firewall-cmd --list-all
 ### 删除端口
 ```
 // 永久关闭一个端口
-firewall-cmd --zone=public --remove-port=80/tcp
+firewall-cmd --permanent --zone=public --remove-port=80/tcp
 // 永久关闭某项服务
-firewall-cmd --zone=public --remove-service=http
+firewall-cmd --permanent --zone=public --remove-service=http
 ```
 
 ### 进行端口转发
@@ -144,14 +144,24 @@ rule family="ipv4" source address="192.168.10.0/24" service name="ssh" reject" #
 192.168.10.0/24 网段的所有用户访问本机的 ssh 服务
 墙策略中也是最高的
 # firewall-cmd --reload
+# firewall-cmd --complete-reload  # 中断所有连接的重新加载. 两者的区别就是`--reload`无需断开连接，就是firewalld特性之一动态添加规则，`--complete-reload`需要断开连接，类似重启服务
 ```
 
-## 扩展
+## rich rules
+修改rule需要`--reload`, 这里图省事没加
+
+```bash
+# firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="192.168.0.200" port protocol="tcp" port="80" reject' # 限制IP为192.168.0.200的地址禁止访问80端口
+# firewall-cmd --zone=public --list-rich-rules
+# firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="192.168.0.200" port protocol="tcp" port="80" accept' # 解除上面被限制的192.168.0.200
+# firewall-cmd --permanent --remove-rich-rule='rule family="ipv4" source address="192.168.0.200" port protocol="tcp" port="80" accept' # 同上, **推荐**
+# firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="10.0.0.0/24" port protocol="tcp" port="80" reject' # 限制10.0.0.0-10.0.0.255整个段的IP, 禁止访问
+```
 
 ### 运行、停止、禁用firewalld
 ```
 # systemctl start firewalld
-# systemctl status firewalld 或者 firewall-cmd –state
+# systemctl status firewalld 或者 firewall-cmd --state
 # systemctl disable firewalld
 # systemctl stop firewalld
 ```

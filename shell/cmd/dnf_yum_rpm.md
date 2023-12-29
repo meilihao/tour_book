@@ -142,6 +142,7 @@ ref:
 # rpm -e --test centos-release  # 检查谁依赖了这个包
 # rpm -e --nodeps packageA # keep deps
 # rpm -K packageA # check signature
+# rpm -qa --last |grep "nginx" # 查询nginx安装日期
 # repoquery -i php-intl # repoquery from yum-utils. 获取包信息, 包括来源repo. `-i`,展示详情
 # repoquery --requires --resolve <package-name> # 显示目标包所依赖的包
 # yum/dnf list installed | grep @epel # 已安装包的来源repo
@@ -403,6 +404,44 @@ v1->v2的脚本执行顺序:
 1. 执行 v1 的 %preun
 1. 删除 v1 中特有的文件
 1. 执行 v1 中的 %postun
+
+执行流程总结:
+<table>
+<thead>
+<tr>
+<th>command</th>
+<th style="text-align: center">pre</th>
+<th style="text-align: center">post</th>
+<th style="text-align: center">preun</th>
+<th style="text-align: center">postun</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>rpm -i</td>
+<td style="text-align: center">1</td>
+<td style="text-align: center">1</td>
+<td style="text-align: center">-</td>
+<td style="text-align: center">-</td>
+</tr>
+<tr>
+<td>rpm -e</td>
+<td style="text-align: center">-</td>
+<td style="text-align: center">-</td>
+<td style="text-align: center">0</td>
+<td style="text-align: center">0</td>
+</tr>
+<tr>
+<td>rpm -U</td>
+<td style="text-align: center">2</td>
+<td style="text-align: center">2</td>
+<td style="text-align: center">1</td>
+<td style="text-align: center">1</td>
+</tr>
+</tbody>
+</table>
+
+**rpm pre/post/preun/postun每个步骤定义的var, 后续步骤没法使用**
 
 ### 构建rpm报:`error: cannot open Packages database in /var/lib/rpm`
 rpmdb本地数据存储文件损坏.

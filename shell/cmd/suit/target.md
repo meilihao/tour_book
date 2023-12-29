@@ -550,6 +550,9 @@ nqn.2014-08.org.nvmexpress:uuid:75953f3b-77fe-4e03-bf3c-09d5a156fbcd
 ### fc target无法发现
 fc直连可能导致fc target无法发现, 过光纤交换机后正常.
 
+### fc state linkdown
+没接线
+
 # tgtadm
 参考:
 - [github.com/longhorn/go-iscsi-helper](https://github.com/longhorn/go-iscsi-helper/blob/master/iscsi/target.go)
