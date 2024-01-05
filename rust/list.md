@@ -8,6 +8,7 @@
 - [Rust算法题解](https://github.com/rustlang-cn/rust-algos)
 
 ## 教程
+- [easy_rust](https://github.com/Dhghomon/easy_rust)
 - [Rust入门秘籍](https://rust-book.junmajinlong.com/about.html)
 - [微软开放的Rust视频教程](https://www.youtube.com/playlist?list=PLlrxD0HtieHjbTjrchBwOVks_sr8EVW1x)
 - [微软开放的Rust图文教程](https://docs.microsoft.com/zh-cn/learn/paths/rust-first-steps/?WT.mc_id=academic-29077-cxa)

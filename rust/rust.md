@@ -206,7 +206,9 @@ rust中有很多情况确实没有值, 但为了类型安全, 必须把这些情
 1. 用于退出函数的`std::process::exit`, 这类函数永远没有返回值.
 
 #### 类型推导
-rust和go类似, 只能对局部变量/全局变量进行类型推导, 而函数签名等场景下是不允许的, 这是有意为之, 同时常量（const）和静态变量（static）也必须声明类型. 同时rust使用`as`显式转换类型. 
+rust和go类似, 只能对局部变量/全局变量进行类型推导, 而函数签名等场景下是不允许的, 这是有意为之, 同时常量（const）和静态变量（static）也必须声明类型. 同时rust使用`as`显式转换类型.
+
+> as同样可用于导入重命名
 
 rust的类型推导强于go, 因为它支持上下文式的推导. 个人建议不要使用上下文推导而是声明时就指定类型.
 
@@ -233,7 +235,11 @@ rust的类型推导强于go, 因为它支持上下文式的推导. 个人建议�
 
 在 Rust 中，可以通过是否实现 Copy trait 来区分数据类型的值语义和引用语义. 但为了更加精准，Rust 也引用了新的语义：复制（Copy）语义和移动（Move）语义
 - Copy语义：对应值语义, 即实现了 Copy 的类型在进行按位复制时是安全的
+
+    这些Copy的类型都在栈中, 编译器知道它们的大小. 比如`Primitive Types中的整数、浮点数、布尔值(true和false)和char`
 - Move语义：对应引用语义, 在 Rust 中不允许按位复制，只允许移动所有权
+
+    Clone和Copy类似，但通常需要更多的内存. 另外, 必须用显式`.clone()`来调用它即它不会自己克隆
 
 实现了 Copy trait的作用: 实现 Copy trait 的类型同时拥有复制语义，在进行赋值或者传入函数等操作时，默认会进行按位复制.
 
@@ -407,6 +413,8 @@ Rust的表达式一般可以分为位置表达式(Place Expression ）和 值表
 - 本地变量
 - 静态变量
 - 解引用(`*expr`)
+
+    当使用`.`运算符时, 则不需要担心`*`, rust会帮你处理解引用.
 - 数组索引(`expr[expr]`) 
 - 字段引用（`expr.field`) 
 - 位置表达式组合
@@ -424,7 +432,7 @@ let mut声明的**可变绑定**可以对相应的存储单元进行写入.
 
 > const(常量)可以在任意作用域进行定义，而定义的常量贯穿整个程序的生命周期. 在编译的时候，常量就能确定其值, 编译器不一定会给const分配内存空间, 同时编译器**会尽可能将其内联到代码中，所以在不同地方对同一常量的引用并不能保证引用到相同的内存地址**；对于变量出现重复的定义(绑定)会发生变量遮盖，而对于常量则是不允许出现重复的定义的.
 
-> 全局(static)变量和常量类似，但static变量不会被内联，在整个程序中，全局变量只有一个实例, **必须是编译期可确定的常量**，也就是说所有的引用都会指向一个相同的地址. 因为全局变量可变，就会出被多个线程同时访问的情况，因而引发内存不安全的问题，所以对于全局可变(static mut)变量的访问和修改代码就必须在unsafe块中进行定义. 声明static变量时禁止调用普通函数, 但const fn可以, 因为const fn是编译时执行的.
+> 全局(static)变量和常量类似，但static变量不会被内联，在整个程序中，全局变量只有一个实例, **必须是编译期可确定的常量**，也就是说所有的引用都会指向一个**相同的地址**. 因为全局变量可变，就会出被多个线程同时访问的情况，因而引发内存不安全的问题，所以对于全局可变(static mut)变量的访问和修改代码就必须在unsafe块中进行定义. 声明static变量时禁止调用普通函数, 但const fn可以, 因为const fn是编译时执行的.
 
 > 任何需要 static mut 的地方，都可以用 AtomicXXX / Mutex / RwLock 来取代
 
@@ -454,15 +462,18 @@ ref:
 - X? ⇒ Debug with upper-case hexadecimal integers
 - :#? ⇒ 带换行和缩进的Debug打印 : `println!("{:#?}",("t1","t2"))` 
 - o ⇒ Octal : `println!("{:o}",2)`
-- x ⇒ LowerHex : `println!("{:x}",2)`
-- X ⇒ UpperHex : `println!("{:X}",2)`
+- x ⇒ LowerHex : `println!("{:x}",12)`
+- X ⇒ UpperHex : `println!("{:X}",12)`/`println!("{:X}", '居' as u32)`(打印unicode码点)
 - p ⇒ Pointer : `println!("{:p}",&2)`
 - b ⇒ Binary :  : `println!("{:b}",2)`
 - e ⇒ LowerExp : `println!("{:e}",2)`
 - E ⇒ UpperExp : `println!("{:E}",2)`
+- u ⇒ unicode字符: `println!("\u{5C45}")`
 - 命名参数       : `println!("{a} {b} {b}",a = "x", b="y")`
 
-> 想把 a 输出两遍可用: `println!("a is {0}, a again is {0}", a);`
+> 想把 a 输出两遍可用: `println!("a is {0}, a again is {0}", a);`/`println!("a is {a}, a again is {a}", a=1);`
+
+> `println!("{:-^30}", title);`,`-`是填充字符, `<`表示变量在填充字符左边, `>`表示在填充字符右边, `^`表示在填充字符中间
 
 ## 所有权(ownership)
 所有权（系统）是 Rust 最为与众不同的特性，它让 Rust 无需垃圾回收（garbage collector）即可保障内存安全. **所有权的存在就是为了管理堆数据**.
@@ -529,6 +540,31 @@ fn main() {
     let b = a;
     println!("{}", a); // 正常, 因此Dummy有实现Copy
     println!("{}", b);
+}
+```
+
+```rust
+// 获得可变借用
+fn add_hungary(country_name: &mut String) { // first we say that the function takes a mutable reference
+    country_name.push_str("-Hungary"); // push_str() adds a &str to a String
+    println!("Now it says: {}", country_name);
+}
+
+fn main() {
+    let mut country = String::from("Austria");
+    add_hungary(&mut country); // we also need to give it a mutable reference.
+}
+
+// ----
+// 获得所有权, 并将country设为可变
+fn adds_hungary(mut country: String) { // Here's how: adds_hungary takes the String and declares it mutable!
+    country.push_str("-Hungary");
+    println!("{}", country);
+}
+
+fn main() {
+    let country = String::from("Austria"); // country is not mutable, but we are going to print Austria-Hungary. How?
+    adds_hungary(country);
 }
 ```
 
@@ -1000,8 +1036,8 @@ rust编译器目前可以支持的常量表达式有字面量、元组、数组�
 rust代码使用`.rs`扩展名, 且必须是utf-8编码.
 
 注释由rustdoc解析, 支持:
-- 元素级：这些注释适用于模块中的元素, 例如结构体、枚举声明、函数及特征常量等. 它们应该出现在元素的上方. 对于单行注释, 它们以`///`开头, 而对于多行
-注释, 则以`/*`开头，以`*/`结尾.
+- 元素级：这些注释适用于模块中的元素, 例如结构体、枚举声明、函数及特征常量等. 它们应该出现在元素的上方. 对于单行注释, 它们以`//`开头, 而对于多行
+注释, 则以`/*`开头，以`*/`结尾, 但它也可用在代码中间, 比如`let some_number/*: i16*/ = 100;`
 - 模块级：这些是出现在根层级的注释, 例如 main.rs、 lib.rs, 以及其他任意模块, 可使用`//!`表示单行注释的开始, 使用`/*!`表示多行注释的开始, 并将`*/`
 作为结尾标记. 它们适用于概述软件包和某些示例.
 
@@ -1252,7 +1288,7 @@ Rust 引用永远不为空. 没有跟 C 的 NULL 或 C++ 的 nullptr 对应的�
 	如果元组中只包含一个元素, 应该在后面添加一个逗号, 以区分括号表达式和元组. 元组内部也可以一个元素都没有 这个类型单独有一个名字， unit （单元类型）.
 	访问元组内部元素有两种方法, 一种是“模式匹配”（ pattern destructuring ）, 另外一种是“数字索引”.
 
-	unit 类型是 Rust 最简单的类型之一， 是占用空间最小的类型之一. 空元组与空结构体 struct Foo 一样，都是占用0字节空间. `std::mem::size_of`函数可以计算一个类型所占用的内存空间.
+	unit 类型是 Rust 最简单的类型之一， 是占用空间最小的类型之一. 空元组与空结构体 struct Foo 一样，都是占用0字节空间. `std::mem::size_of`函数可以计算一个类型所占用的内存空间. `std::mem::size_of_val`函数可以计算一个值所占用的内存空间.
 
 	> 元组只允许用常量作为索引
 
@@ -1278,7 +1314,7 @@ Rust 引用永远不为空. 没有跟 C 的 NULL 或 C++ 的 nullptr 对应的�
 
 	tuple struct 一个特别有用的场景，那就是当它只包含一个元素的时候，就是所谓的newtype idiom. 因为它实际上让我们非常方便地在一个类型的基础上创建了一个新的类型.
 
-	通过关键字 type, 可创建一个新的类型名称，但是这个类型不是全新的类型，而只是一个具体类型的别名, 在编译器看来, 这个别名与原先的具体类型是一模一样. 而使用 tuple struct 做包装，则是 创造了一个全新的类型，它跟被包装的类型不能发生隐式类型转换, 可以具有不同的方法, 满足不同的 trait, 完全按需而定.
+	`type CharacterVec = Vec<char>;`通过关键字 type, 可创建一个新的类型名称，但是这个类型**不是全新的类型，而只是一个具体类型的别名**, 在编译器看来, 这个别名与原先的具体类型是一模一样. 而使用 tuple struct 做包装，则是**创造了一个全新的类型，它跟被包装的类型不能发生隐式类型转换**, 可以具有不同的方法, 满足不同的 trait, 完全按需而定.
 
 	`Account { name, .. }`的`...`表示不关心Account除name外的其他字段; `Account { name, ..account1 }`的`account1`表示Account除name外的其他字段来自于account1实例, 该形式叫struct更新语法.
 
@@ -1296,6 +1332,8 @@ Rust 引用永远不为空. 没有跟 C 的 NULL 或 C++ 的 nullptr 对应的�
 
 	> Rust 的枚举与 F#、OCaml 和 Haskell 这样的函数式编程语言中的 代数数据类型（algebraic data types）最为相似
 
+    > struct是用于将多个事物集合在一起, 而枚举则是用于将多个选择集合在一起
+
 	两种形式:
 	1. 枚举
 
@@ -1307,6 +1345,8 @@ Rust 引用永远不为空. 没有跟 C 的 NULL 或 C++ 的 nullptr 对应的�
 			...
 		}
 		```
+
+        没有`=N`时, Rust 给 enum 的每个arm提供了一个以 0 开头的数字, 供它自己使用; 上一个arm有`=N`, 但下一个没有时, Rust就会从前一个arm加1来赋值给当前arm.
 	1 标签联合
 
 		enum可承载多个不同的数据结构中的一种, 比如元组和struct.
@@ -1378,16 +1418,24 @@ ref:
 - [字符串操作 - 《Rust程序设计 - 17.3 String与str》]()
 - [rust原生类型](https://doc.rust-lang.org/std/index.html#primitives)
 
+> primitive types (primitive = very basic)
+
 基本数据类型也叫标量类型(scalar type), 表示只能存储单个值的类型.
 
 rust有四种主要的标量类型:整型, 浮点, 布尔, 字符型.
 
 - bool : true, false
-- char : 单个字符, 大小为四个字节(four bytes)，并代表了一个 Unicode 标量值（Unicode Scalar Value）, 等价于go的rune. char 由单引号包裹, 不同于字符串使用双引号.
+- char : 单个字符, 大小为4B, 并代表了一个 Unicode 标量值（Unicode Scalar Value）, 等价于go的rune. char 由单引号包裹, 不同于字符串使用双引号.
 
 	对于ASCII字符用`u8`表示.
+
+    只有u8能转换成char, 其他无符号整数会报错.
+
+    `.len()`会返回字符串的字节数, `.chars().count()`返回字符数
 	
 	> Unicode 标量值包含从 U+0000 ~ U+D7FF 和 U+E000 ~ U+10FFFF 在内的值.
+
+    > 如果要打印&str或char的字节, 则可以在字符串前写上`b`
 - 整数
 
 	整数是一个没有小数部分的数字. 有符号整数范围: -2^(n-1)~2^(n-1)-1; 无符号范围: 0~2^n-1
@@ -1402,11 +1450,13 @@ rust有四种主要的标量类型:整型, 浮点, 布尔, 字符型.
     128 bit     i128    u128
     Arch    isize   usize // arch 是由 CPU 构架决定的大小的整型类型, 与指针占用的空间大小一致, 在 x86 机器上为 32 位，在 x64 机器上为 64 位. 即isize和usize是自适应类型, 它们主要作为某些集合的索引.
 
+    `<type>::MIN, <type>::MAX`可表示整数的最小/大值
+
     > Rust 要求数组索引必须是 usize 值.
 
     > 所有数值字面量支持任意位置添加`_`以方便阅读, 并且支持后缀表示类型, 比如`0x_ff_u8`
 
-    > 整数自动推导时**默认是i32**, 即使在 64 位机器上也是 i32.
+    > **整数自动推导时默认是i32, 即使在 64 位机器上也是 i32**.
 
     > 字面量后面可以跟后缀，可代表该数字的具体类型，从而省略掉显示类型标记, **个人不推荐**.
 
@@ -1449,6 +1499,12 @@ rust有四种主要的标量类型:整型, 浮点, 布尔, 字符型.
 	标准库 std::f32和std::f64都提供了 IEEE 所需的特殊常量值, 比如INFINITY （无穷大）、 NEG INFINITY （负无穷大）、 NAN （非数字值）,MIN（最小有限值)和MAX(最大有限值）.
 
 	> 非0数除以0是inf; 0除以0是Nan; `inf * 0.0`=Nan; `inf/inf`=NaN.
+
+    部分方法:
+    - .floor(): 给下一个最低的整数
+    - .ceil(): 给下一个最高的整数
+    - .round(): 四舍五入. 如果小数部分大于等于0.5，返回数值加1;如果小数部分小于0.5，返回相同数值
+    - .trunc():只是把小数点号后的部分截掉
 - 数组
 
 	数组Array是 Rust内建的原始集合类型, 数组的特点为:
@@ -1457,6 +1513,8 @@ rust有四种主要的标量类型:整型, 浮点, 布尔, 字符型.
 	- 默认不可变
 
 	数组的类型签名为`[T;N]. T是一个泛型标记, 代表数组中元素的某个具体类; N代表数组的长度, 是一个编译时常量, 必须在编译时确定其值.
+
+    `[1..5]` 表示左闭右开区间,`[1..=5]`则表示全闭区间
 
 	数组是在栈（stack）而不是在堆（heap）上为数据分配内存空间. 对于原始固定长度数组，只有实现了 Copy trait 的类型才能作为其元素，也就是说，只有可以在栈上存放的元素才可以存放在该类型的数组中.
 
@@ -1506,7 +1564,7 @@ rust有四种主要的标量类型:整型, 浮点, 布尔, 字符型.
 
 	> 字符串slice内容必须是有效的utf-8字符串. 如果尝试从一个多字节字符的中间位置创建字符串 slice，则程序将会因错误而退出.
 
-	> str 是 Rust 核心语言类型, 就是字符串切片（String Slice）, 常常以引用的形式出现（&str）. String 类型是 Rust 标准公共库提供的一种数据类型, 它有所有权, 它的功能更完善——它支持字符串的追加、清空等实用的操作. String 和 str 除了同样拥有一个字符开始位置属性和一个字符串长度属性以外还有一个容量（capacity）属性. String 和 str 都支持切片，切片的结果是 &str 类型的数据.
+	> str 是 Rust 核心语言类型, 就是字符串切片（String Slice）, 常常以引用的形式出现（&str）. String 类型是 Rust 标准公共库提供的一种数据类型(是一个指针, 数据在堆上), 它有所有权, 它的功能更完善——它支持字符串的追加、清空等实用的操作. String 和 str 除了同样拥有一个字符开始位置属性和一个字符串长度属性以外还有一个容量（capacity）属性. String 和 str 都支持切片，切片的结果是 &str 类型的数据.
 
 	> 与go不同, rust slice没有cap, 且没法直接创建, 必须依赖数组或 Vec并通过引用来创建; Go 中使用`:`来引用片段, 而 Rust 使用 `..`.
 
@@ -1518,6 +1576,8 @@ rust有四种主要的标量类型:整型, 浮点, 布尔, 字符型.
 
 	本质上, 字符串字面量属于 [str 类型](https://github.com/rust-lang/rust/blob/master/library/core/src/str/mod.rs#L122), 只不过它是静态生命周期字符串`&'static str`.
 	所谓静态生命周期即程序生命周期.
+
+    > `r#""`等价于go的"``", 如果字符串包含`#`, 那么两侧可加更多`#`来解决. 它的其他用途是使用它就可以使用关键字(如let、fn等)作为变量名, 比如`let r#let = 6; // The variable's name is let`
 
 	rust字符串因为包含长度, 因此不是以`\0`表示结束.
 
@@ -1582,7 +1642,9 @@ String类型由三部分组成：
 ```rust
 String::New()
 xxx.to_string() # 实现了Display trait的类型和字符串字面量
-String::from("hello")
+String::from("hello") # 从&str中创建一个String
+format!() # format宏
+let my_string: String = "Try to make this a String".into() # 使用From trait
 ```
 
 基础类型变String:
@@ -1612,9 +1674,16 @@ Rust 中字符串分为以下几种类型:
 - Path ，表示路径，定义于 std ::path 模块中. Path 包装了 OsStr, 没有所有权
 - PathBuf. 与 Path 配对, Path 的可变版本. PathBuf 包装了 OsString, 有所有权
 
+> std::ffi是std的一部分，它帮助将Rust与其他语言或操作系统一起使用. 它有OsString和CString这样的类型，它们就像操作系统的String或语言C的String一样，它们各自也有自己的&str类型:OsStr和CStr.
+
+> 当必须与一个没有Unicode的操作系统一起工作时，可以使用OsString。所有的Rust字符串都是unicode，但不是每个操作系统支持:
+> - Unix系统(Linux等)上的字符串可能是很多没有0的字节组合在一起。而且有时你会把它们读成Unicode UTF-8
+> - Windows上的字符串可能是由随机的16位值组成的，没有0。有时你会把它们读成Unicode UTF-16
+> - 在Rust中，字符串总是有效的UTF-8，其中可能包含0
+
 字符串迭代:
 - 按字节: bytes
-- 按字符: chars
+- 按字符: chars/char_indices
 
 字符串修改:
 - 拼接: 
@@ -1930,6 +1999,9 @@ std::collections提供了4种通用集合类型:
         println!("{}", i);
     }
     ```
+
+    Vec.with_capacity()获取Vec的cap.
+    Vec.pop()从Vec中取出最后一项.
 1. Key-Value映射: 无序哈希表(HashMap), 有序哈希表(BTreeMap)
 
     HashMap要求key是必须可哈希的类型，BTreeMap的key必须是可排序的
@@ -1966,6 +2038,8 @@ std::collections提供了4种通用集合类型:
     }
     ```
 
+    建议使用Map.get(x)获得Option, 而不是Map[x], 避免程序崩溃
+
     > 对于像 i32 这样的实现了 Copy trait 的类型，其值可以拷贝进哈希 map。对于像 String 这样拥有所有权的值，其值将被移动而哈希 map 会成为这些值的所有者
 
     > 如果将值的引用插入哈希 map，这些值本身将不会被移动进哈希 map。但是这些引用指向的值必须至少在哈希 map 有效时也是有效的.
@@ -1977,6 +2051,8 @@ std::collections提供了4种通用集合类型:
 
     集合类型实际就是把Key-Value映射的Value设置成空元组.
 1. 优先队列: 基于二叉最大堆(BinaryHeap)实现.
+
+    它把最大的元素放在前面，但其他元素是按任意顺序排列的
 
 无论是Vec还是HashMap，使用这些集合容器类型，最重要的是理解容量（Capacity）和大小（Size/Len）:
 - 容量是指为集合容器分配的内存容量
@@ -2155,6 +2231,8 @@ fn main() {
 	- Borrowed, 用于包裹引用
 	- Owned, 用于包裹所有者
 
+        ToOwned 特征意味着它是一种可以转变为拥有所有权的类型. 例如, str 通常是一个引用 (&str), 可将其转换为一个拥有所有权的String
+
 	Cow<T>的功能是：以不可变的方式访问借用内容，以及在需要可变借用或所有权的时候再clone其借用的数据. 它实现了Deref. Cow<T>旨在减少复制操作，提高性能，一般用于读多写少的场景. Cow<T>的另一个用处是统一实现规范.
 
 	Cow<T>使用:
@@ -2189,7 +2267,9 @@ fn main() {
 	```
 
 	`Cell<T>`没有运行时开销, 但不推荐用它包裹大的结构体.
-- RefCell<T>：提供了类型的**内部可变性**，并且不需要实现 Copy 特征. 它用于运行时的锁定以确保安全性
+- RefCell<T>：提供了类型的**内部可变性**，并且不需要实现 Copy 特征. 它用于**运行时**的锁定以确保安全性
+
+    > 它是在运行时而不是编译时检查借用, 因此即使错误也可能编译通过, 比如使用了2次`borrow_mut()`, 可编译, 但运行崩溃.
 
 	与 Cell<T> 类似， RefCell<T> 是只包含一个 T 类型值的泛型类型. 但与 Cell 不同， RefCell 支持借用它的 T 类型值的引用.
 
@@ -2200,7 +2280,10 @@ fn main() {
 	- borrow : 回一个 Ref<T>，基本上是对 ref_cell 中值的共享引用. 如果这个值已经被可修改地借用了，这个方法会panic
 	- borrow_mut : 返回一个 RefMut<T>，基本上是对 ref_cell 中值的可修改引用。如果这个值已经被借用了，这个方法会panic.
 
-	上述两个 borrow 方法之所以会panic，是因为试图破坏 Rust 中 mut 引用是排他引用的规则.
+	上述两个 borrow 方法之所以会panic，是因为试图破坏 Rust 中 mut 引用是排他引用的规则. 即`.borrow()和.borrow_mut()`可以做与&和&mut相同的事情, 规则都是一样的:
+    - 多个不可变借用可以
+    - 一个可变的借用可以
+    - 但可变和不可变借用在一起是不行的
 
 	唯一的不同是，常规情况下把引用保存到变量， Rust结构体会通过编译时检查来确保安全地使用它。如果检查失败，编译器会报错。而 RefCell 会通过**运行时借用检查器**检查强制应用相同的规则(即有运行时开销)。因此如果开发者破坏了规则，就会收到panic
 
@@ -2356,6 +2439,8 @@ fn main() {
 
 在定义数据结构时，对于额外的、暂时不需要的泛型参数，用 PhantomData 来“拥有”它们，这样可以规避编译器的报错.
 
+函数名后没有`<T>`时, Rust会认为T是一个具体的类型, 因此它不能省略.
+
 ## trait
 在开发复杂系统的时候，常常会强调接口和实现要分离, 这是一种良好的设计习惯，它把调用者和实现者隔离开，双方只要按照接口开发，彼此就可以不受对方内部改动的影响. 接口就是这样, 是对不同数据结构中相同行为的一种抽象.
 
@@ -2390,7 +2475,7 @@ rust没有传统面向对象编程语言中的继承概念. Rust通过 trait 将
 
 trait 告诉 Rust 编译器某个特定类型拥有可能与其他类型共享的功能. 可以通过 trait 以一种抽象的方式定义共享的行为. 可以使用 trait bounds 指定泛型是任何拥有特定行为的类型.
 
-rust支持trait的默认实现: 有时为 trait 中的某些或全部方法提供默认的行为，而不是在每个类型的每个实现中都定义自己的行为是很有用的, 但明确定义该方法可覆盖其默认实现.
+**rust支持trait的默认实现**: 有时为 trait 中的某些或全部方法提供默认的行为，而不是在每个类型的每个实现中都定义自己的行为是很有用的, 但明确定义该方法可覆盖其默认实现. 如果trait没有默认实现, 那么实现该trait的类型必须提供自己的实现.
 
 > Clone 宏让数据结构可以被复制，而 Copy 则让数据结构可以在参数传递的时候自动按字节拷贝
 
@@ -2963,6 +3048,8 @@ From Into 是定义于 std::convert 模块中的两个 trait. 它们定义了 fr
 1. 值类型到值类型的转换：`From<T> / Into<T> / TryFrom <T>/ TryInto<T>`
 1. 引用类型到引用类型的转换：`AsRef<T> / AsMut<T>`
 
+    - AsRef 用于从一个类型向另一个类型提供引用
+
 ## 流程控制
 主流编程语言都会有常用的流程控制语句:条件语句和循环语句. Rust也有但叫做流程控制表达式.
 
@@ -2974,7 +3061,7 @@ From Into 是定义于 std::convert 模块中的两个 trait. 它们定义了 fr
 
 	`match expr {}`或`if let pat = expr {}`. `if let`是match的简写, 表示仅关心一种模式匹配的情况而忽略其他情况, 不加`else{}`分支时即放弃了穷举可能性.
 
-	Rust 的模式匹配吸取了函数式编程语言的优点，强大优雅且效率很高. 它可以用于 struct / enum 中匹配部分或者全部内容.
+	Rust 的模式匹配吸取了函数式编程语言的优点，强大优雅且效率很高. 它可以用于 struct / enum 中匹配部分或者全部内容. 同时match必须返回相同的类型.
 
 	```rust
 	use std::str::FromStr;
@@ -3013,6 +3100,45 @@ From Into 是定义于 std::convert 模块中的两个 trait. 它们定义了 fr
 			println!("at ({}m, {}m)", x, y)
 	}
 	```
+
+    ```rust
+    fn match_colours(rbg: (i32, i32, i32)) {
+        match rbg {
+            (r, _, _) if r < 10 => println!("Not much red"),
+            (_, b, _) if b < 10 => println!("Not much blue"),
+            (_, _, g) if g < 10 => println!("Not much green"),
+            _ => println!("Each colour has at least 10"),
+        }
+    }
+
+    fn main() {
+        let first = (200, 0, 0);
+        let second = (50, 50, 50);
+        let third = (200, 50, 0);
+
+        match_colours(first);
+        match_colours(second);
+        match_colours(third);
+
+    }
+    ```
+
+    用@给match的表达式的值起一个名字，然后就可以使用它:
+    ```rust
+    fn match_number(input: i32) {
+        match input {
+        number @ 4 => println!("{} is an unlucky number in China (sounds close to 死)!", number),
+        number @ 13 => println!("{} is unlucky in North America, lucky in Italy! In bocca al lupo!", number),
+        _ => println!("Looks like a normal number"),
+        }
+    }
+
+    fn main() {
+        match_number(50);
+        match_number(13);
+        match_number(4);
+    }
+    ```
 
 - 错误跳转: 在错误跳转中，当调用的函数返回错误时，Rust 会提前终止当前函数的执行，向上一层返回错误
 
@@ -3114,6 +3240,20 @@ fn main() {
 }
 ```
 
+rust break还能返回值:
+```rust
+fn main() {
+    let mut counter = 5;
+    let my_number = loop {
+        counter +=1;
+        if counter % 53 == 3 {
+            break counter;
+        }
+    };
+    println!("{}", my_number);
+}
+```
+
 > 在 C 语言中 for 循环使用三元语句控制循环，但是 Rust 中没有这种用法，需要用 while 循环来代替. 且没有 do-while 的用法(do 被规定为保留字)
 
 > loop 循环可以通过 break 关键字类似于 return 一样使整个循环退出并给予外部一个返回值.
@@ -3205,6 +3345,30 @@ if let 是 match 的一个语法糖，它当值匹配某一模式时执行代码
 
 
 ## 生命周期
+```rust
+struct City<'a> {
+    name: &'a str,
+    date_founded: u32,
+}
+```
+上面`'a`含义: 如果name的生命期至少与City一样长, 才接受name的输入.
+
+```rust
+struct Adventurer<'a> {
+    name: &'a str,
+    hit_points: u32,
+}
+
+impl Adventurer<'_> {
+    fn take_damage(&mut self) {
+        self.hit_points -= 20;
+        println!("{} has {} hit points left!", self.name, self.hit_points);
+    }
+}
+```
+
+`<'_>`被称为 "匿名生命期", 表示正在使用引用的标记, 是为了不必总是写诸如impl<'a> Adventurer<'a>这样的东西，因为类型上已经显示了生命期.
+
 Rust 生命周期机制是与所有权机制同等重要的资源管理机制, 引入这个概念主要是应对复杂类型系统中资源管理的问题.
 
 在 Rust 中, 堆内存的生命周期会默认和其栈内存的生命周期绑定在一起, 并保留leaked机制, 显式通过`Box::leak() / Box::into_raw() / ManualDrop`等动作, 让堆内存在需要的时候, 可以有超出帧存活期的生命周期. 
@@ -3563,7 +3727,7 @@ fn plus_one(x: i32) -> i32 {
 方法是在结构体的上下文中被定义(或者是枚举或 trait 对象的上下文).
 
 #### 方法
-impl 块的另一个有用的功能是: 允许在 impl 块中定义不以 self 作为参数的函数, 这被称为 关联函数（associated functions, 在主流的编程语言中, 这也被称为静态方法）, 因为它们与结构体相关联. 它们仍是函数而不是方法, 因为它们并不作用于一个结构体的实例. 比如`String::from`关联函数. 它类似于面向对象编程语言中的静态方法. 这些方法在类型自身上即可调用, 并且不需要类型的实例来调用, 调用方法是`<类型名>::<函数名>`
+impl 块的另一个有用的功能是: 允许在 impl 块中定义不以 self (即self/&self/&mut self)作为参数的函数, 这被称为 关联函数（associated functions, 在主流的编程语言中, 这也被称为静态方法）, 因为它们与结构体相关联. 它们仍是函数而不是方法, 因为它们并不作用于一个结构体的实例. 比如`String::from`关联函数. 它类似于面向对象编程语言中的静态方法. 这些方法在类型自身上即可调用, 并且不需要类型的实例来调用, 调用方法是`<类型名>::<函数名>`
 
 > 结构体允许拥有多个 impl 块.
 
@@ -3678,6 +3842,8 @@ Rust 的 闭包（closures）是可以保存进变量或作为参数传递给其
 
 闭包可以作为函数参数，这一点直接提升了Rust语言的抽象表达能力. 当它作为函数参数传递时，可以被用作泛型的trait限定，也可以直接作为trait对象来使用.
 
+> 在函数外部，一个闭包可以在Fn、FnMut和FnOnce之间自行决定，但在函数内部你必须选择一个.
+
 闭包无法直接作为函数的返回值，如果要把闭包作为返回值，必须使用trait对象.
 
 ### 闭包与所有权
@@ -3789,6 +3955,30 @@ Rust 为此提供了高阶生命周期 Higher-Ranked Lifetime, 也叫高阶 trai
 
 ```rust
 fn main() {
+    let num_vec = vec![2, 4, 6];
+
+    let double_vec = num_vec
+        .iter()
+        .map(|number| { println!("A {:?}", number);number+1})
+        .map(|number| { println!("B {:?}",number); number+2})
+        .filter(|v| {println!("C {:?}",v); *v>4})
+        .take({println!("D");2})
+        .collect::<Vec<i32>>();   
+        
+    println!("{:?}", double_vec);
+}
+// output:
+// D
+// A 2
+// B 3
+// C 5
+// A 4
+// B 5
+// C 7
+// [5, 7]
+
+
+fn main() {
     // 这里 Vec<T> 在调用 iter() 时被解引用成 &[T]，所以可以访问 iter()
     let result = vec![1, 2, 3, 4]
         .iter()
@@ -3802,8 +3992,8 @@ fn main() {
 实际执行:
 1. 在 collect() 执行的时候，它实际试图使用 FromIterator 从迭代器中构建一个集合类型，这会不断调用 next() 获取下一个数据
 1. 此时的 Iterator 是 Take，Take 调自己的 next()，也就是它会调用 Filter 的 next()
-1. Filter 的 next() 实际上调用自己内部的 iter 的 find()，此时内部的 iter 是 Map，find() 会使用 try_fold()，它会继续调用 next()，也就是 Map 的 next()
 1. Map 的 next() 会调用其内部的 iter 取 next() 然后执行 map 函数。而此时内部的 iter 来自 Vec<i32>
+1. Filter 的 next() 实际上调用自己内部的 iter 的 find()，此时内部的 iter 是 Map，find() 会使用 try_fold()，它会继续调用 next()，也就是 Map 的 next()
 
 这种函数式编程的写法，代码是漂亮了，然而这么多无谓的函数调用，性能肯定很差吧？毕竟，函数式编程语言的一大恶名就是性能差. 实际 Rust 大量使用了 inline 等优化技巧, 这样非常清晰友好的表达方式，性能和 C 语言的 for 循环差别不大.
 ```
@@ -3812,9 +4002,12 @@ fn main() {
 
 iterator trait 有大量的方法，但绝大多数情况下，只需要定义它的关联类型 Item 和 next() 方法:
 - Item 定义了每次从迭代器中取出的数据类型
-- next() 是从迭代器里取下一个值的方法。当一个迭代器的 next() 方法返回 None 时，表明迭代器中没有数据了
+- next() 是从迭代器里取下一个值(返回Option)的方法。当一个迭代器的 next() 方法返回 None 时，表明迭代器中没有数据了
 
-> iter()生成一个不可变引用的迭代器. 如果需要一个获取所有权并返回拥有所有权的迭代器，则可以调用 into_iter. 类似的, 如果希望迭代可变引用，则可以调用 iter_mut().
+选择迭代器:
+- iter() 引用的迭代器, 生成一个不可变引用的迭代器
+- iter_mut() 可变引用的迭代器
+- into_iter() 值的迭代器(不是引用), 获取所有权并返回拥有所有权的迭代器
 
 <table>
 <thead>
@@ -3935,14 +4128,14 @@ Rust可以自定义迭代器适配器
 Rust提供了for循环之外的用于消费迭代器内数据的方法，叫做消费器（Consumer）.
 
 Rust标准库std::iter::Iterator中常用的消费器：
-- any ：可以查找容器中是否存在满足条件的元素
-- fold ：该方法接收两个参数，第一个为初始值，第二个为带有两个参数的闭包。其中闭包的第一个参数被称为累加器，它会将闭包每次迭代执行的结果进行累计，并最终作为fold方法的返回值
+- any ：可以查找容器中是否存在满足条件的元素, 匹配到一个就停止
+- fold ：该方法接收两个参数，第一个为初始值，第二个为带有两个参数的闭包。其中闭包的第一个参数被称为累加器即初始值，它会将闭包每次迭代执行的结果进行累计，并最终作为fold方法的返回值
 
     fold等同于其他语言的reduce或inject.
 - collect ：专门用来将迭代器转换为指定的集合类型
 - `all`
 - `for_each`
-- `position`
+- `position`: 返回None或一个带有位置号的Option
 - max_by 和 min_by : 根据提供的自定义比较方法返回迭代器产生的最大值和最小值
 - count 方法从一个迭代器中取, 直到它返回 None，然后返回这个迭代器包含多少项
 - max 和 min : 分别返回迭代器产生项的最大值和最小值。迭代器的项类型必须实现 std::cmp::Ord，这样项与项之间才能比较
@@ -3954,6 +4147,11 @@ Rust标准库std::iter::Iterator中常用的消费器：
 - find : 从迭代器中取得第一个闭包返回 true 的值，或者如果没有找到合适的项则返回None
 - extend: 如果类型实现了 std::iter::Extend 特型，那么它的 extend 方法可以将一个迭代器的项添加到集合中
 - partition : 把一个迭代器的项分成两个集合，然后使用闭包决定哪一项属于哪个集合
+- cycle : 永远不会结束, 一直循环迭代
+- sum: 把所有的东西加在一起
+- chunks(N): 将Vec切分为最多N个值的子Vec
+- windows(N): 将从0开始取N个值组成一个Vec, 直到Vec包含最后一个值
+- match_indices() : 把 String 或 &str 里面所有匹配到的东西都提取出来，并给出索引
 
 ## 错误处理
 Rust 没有异常, 而是将错误分为两个主要类别:
@@ -3963,7 +4161,29 @@ Rust 没有异常, 而是将错误分为两个主要类别:
 
     处理方案:
     - `Option<T>` :  解决有值和无值的问题
+
+            ```rust
+            enum Option<T> {
+                None,
+                Some(T),
+            }
+            ```
+
+            Option支持`is_some()/is_none()/and_then()/and()`
+
+            > and_then() : 输入是一个 Option，输出也是一个 Option
+
+            > and() : 类似`&&`, 返回None或最后一个Some(T)
     - `Result<T,E>`
+
+            ```rust
+            enum Result<T, E> {
+                Ok(T),
+                Err(E),
+            }
+            ```
+
+            Result支持`is_some()/is_none()/is_ok()/is_err()`
 
     > 可用类似 thiserror  的库定义好项目中主要的错误类型，并随着项目的深入，不断增加新的错误类型，让系统中所有的潜在错误都无所遁形
 
@@ -4018,6 +4238,10 @@ Result把错误封装在  `Result<T, E>` 类型中, 同时提供了`?`操作符(
 
 注意: 在不同的错误类型之间是无法直接使用的, 需要实现 From trait 在二者之间建立起转换的桥梁, 这会带来额外的麻烦. 而 anyhow 实现了 anyhow::Error 和任意符合 Error trait  的错误类型之间的转换，因此可以使用 ? 操作符而不必再手工转换错误类型
 
+`?`可用于展开Result:
+- 如果是Ok, 返回Result里面的内容
+- 如果是Err, 则将错误传回
+
 `?`内部被展开成类似这样的代码:
 ```rust
 match result {
@@ -4050,7 +4274,7 @@ fn main() {
 
 Option 和 Result 类型之间的转换:
 - ok:  Result -> Option, 丢弃Err
-- ok_or: Option -> Result
+- ok_or/ok_or_else: Option -> Result
 
 rust中的错误处理是通过返回Result<T, E>类型的方式进行的. Result<T, E>类型是Option<T>类型的升级版本.
 
@@ -4188,6 +4412,9 @@ panic = "abort"
 
 ## 宏
 ref:
+- [Writing macros](https://github.com/Dhghomon/easy_rust?tab=readme-ov-file#writing-macros)
+
+    [编写宏(翻译版)](https://github.com/kumakichi/easy_rust_chs?tab=readme-ov-file#%E7%BC%96%E5%86%99%E5%AE%8F)
 - [内置宏 from <<rust程序设计>> 第20章 20.2]()
 - [调试宏 from <<rust程序设计>> 第20章 20.2]()
 - [<<The Little Book of Rust Macros>>]
@@ -4222,6 +4449,13 @@ rust宏和c/c++中的宏完全不是一个概念. 它是一种安全版的编译
 > derive可以根据名称实现一个或多个特征, 是一个过程宏，它只是简单地为实现它的类型的 impl 块生成代码, 并实现特征方法或任何
 关联函数.
 
+> todo: 类似unimplemented, 效果是代码能编译, 但执行到则会panic. 类似unreachable, 但它是针对永远不会用的代码.
+
+> column!():输出那一列
+> file!():输出文件名称
+> line!():输出行号
+> module_path!():输出模块的位置
+
 一般的经验法则是，宏可以在函数无法提供所需解决方案的情况下使用，其中的代码具有相当的重复性，或者在需要检查类型结构体并在编译期生成代码的情况下使用宏.
 
 同时应该谨慎地使用宏，它们会使代码难以维护和理解. 同时大量使用宏会导致性能损失, 因为会产生大量重复的代码，这会影响 CPU 指令缓存.
@@ -4246,7 +4480,9 @@ macro_rules! 是 Rust 中定义宏的主要方式. 并非所有的宏都是以�
 使用 macro_rules! 定义的宏完全基于模式匹配实现逻辑。宏的主体就是一系列规则的`( 模式1 ) => ( 模板1 );`.
 
 具体到宏使用的语法形式又分为以下两种:
-- 调用宏 : 比如`println!, assert_eq!, thread_local!等可以当作函数调用的宏. 这种形式的宏通常由声明宏来实现, 也可以通过过程宏实现.
+- 调用宏 : 比如`println!, assert_eq!, thread_local!, dbg!等可以当作函数调用的宏. 这种形式的宏通常由声明宏来实现, 也可以通过过程宏实现.
+
+    dbg!是 println! 的一个很好的替代品，因为它的输入速度更快，提供的信息更多
 - 属性宏 : 也就是形如`#[derive(Debug)]或#[cfg]`这种形式的语法. 这种形式的宏可以通过过程宏来实现, 也可通过编译器插件来实现
 
 按宏的来源，可以分为以下两类:
@@ -5463,6 +5699,8 @@ fn main() {
 ## 并发
 常见并发模型是并行分叉-合并, 分叉（fork）就是启动一个新线程，而合并（join）就是等待线程完成.
 
+> Rust使用的线程被称为`OS线程`.
+
 ```rust
 use std::thread;
 fn main() {
@@ -5620,9 +5858,17 @@ rust语言层面支持并发工具:
 
 #### 同步共享数据
 与 C++ 不同，Rust 中受保护的数据保存在 Mutex 内部. rust有互斥锁`Mutex<T>`和读写锁`RwLock<T>`:
-- RwLock读写锁：是多读单写锁，也叫共享独占锁. 它允许多个线程读，单个线程写。但是在写的时候，只能有一个线程占有写锁；而在读的时候，允许任意线程获取读锁。读锁和写锁不能被同时获取。
+- RwLock读写锁：是多读单写锁，也叫共享独占锁. 它允许多个线程读，单个线程写。但是在写的时候，只能有一个线程占有写锁；而在读的时候，允许任意线程获取读锁。读锁和写锁不能被同时获取
+
+    它和RefCell一样，遵循这些规则:
+    - 很多.read()变量可以
+    - 一个.write()变量可以
+    - 但多个.write()或.read()与.write()一起是不行的
+
+    可使用std::mem::drop(mutex_changer)手动去除锁定
 - Mutex互斥锁：只允许单个线程读和写
 
+    Mutex在MutexGuard超出范围时就会被解锁, 但也可使用std::mem::drop(mutex_changer)手动超出MutexGuard范围.
 
 > Mutex 的实现依赖于 CPU 提供的 atomic, 可以把 Mutex 想象成一个粒度更大的 atomic，只不过这个 atomic 无法由 CPU 保证，而是通过软件算法来实现.
 
