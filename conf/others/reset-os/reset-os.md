@@ -18,6 +18,9 @@
 ## other
 - [Ubuntu上安装番茄时钟](https://zhuanlan.zhihu.com/p/350023097)
 
+    `pip3 install tomato-clock`
+- [alarm clock](https://alarm-clock-applet.github.io/)
+
 ## repo
 ```
 # from https://www.atzlinux.com/faq.htm#apt-hand-other from install v2raylui

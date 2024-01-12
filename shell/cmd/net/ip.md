@@ -57,7 +57,7 @@ default via 192.168.0.1 dev bond0
 # ip route delete 192.168.1.0/24 dev eth0 # 删除路由
 # ip route flush 192.168.1.0/24 # 清理所有192.168.1.0/24相关的所有路由
 # ip route flush cache  #   清空路由表项缓存，下次通信时内核会查main表（即命令route输出的表）以确定路由
-# ip neigh # 查看显示内核的ARP表(ip-mac映射, 本机不会缓存自己ip的arp映射), 与`nmap -sP 192.168.0.0/24 `即可查到某个ip的mac
+# ip neigh # 查看显示内核的ARP表(即同局域网的ip-mac映射, 本机不会缓存自己ip的arp映射), 与`nmap -sP 192.168.0.0/24 `即可查到某个ip的mac
 # ip neigh add 192.168.1.100 lladdr 00:0c:29:c0:5a:ef dev eth0 # 添加arp映射
 # ip neigh flush dev wlp3s0 # 清除arp缓存
 # ip neigh del 192.168.1.100 dev eth0 # 删除arp映射
@@ -424,3 +424,17 @@ ref:
 对调原因: 未知
 
 > ID_PATH 提供了设备的总线拓扑路径，用于唯一标识设备在系统中的位置, 这个路径反映了设备是如何连接到系统的，涉及总线、端口、设备号等信息.
+
+## 一键接管后, 原机ip ping不通
+env:
+- 原机: 16.142
+- 接管机: 16.124, mac=52:54:00:7F:EC:01
+- 一键接管server: 16.159
+- ping机: 0.234
+
+原机上系统日志报: 16.142和接管机上的mac冲突, 导致原机网关route消失. 具体日志为`NetworkManager[799]: ... conflict for address 192.168.16.142 detected with host 52:54:00:7F:EC:01 on interface 'ens3'`
+
+推测: 一键接管后, 接管机启动时的ip还是16.142, 它启动过程中才会由接管agent去修改ip为16.124
+改进方案:
+- 原机网卡配置信息中添加mac地址进行绑定, 已测试
+- 接管前接管机的系统盘上的ip信息要已被替换, 未测试

@@ -121,7 +121,7 @@ systemd-ask-password-conso
 
 1. 如何激活服务并在启动时启用或禁用服务（即系统启动时自动启动服务）
         # systemctl is-active httpd.service
-        # systemctl enable httpd.service
+        # systemctl enable --now httpd.service # `--now`即同时start service
         # systemctl disable httpd.service
 1. 如何屏蔽（让它不能启动）或显示服务（如 httpd.service）
         # systemctl mask httpd.service

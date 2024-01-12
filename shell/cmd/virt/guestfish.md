@@ -107,14 +107,21 @@ libguestfs的一些工具用于Windows客户机镜像的操作时， 需要先�
 
 virt-inspector探测image信息.
 
-## guestfish shell
+## [guestfish shell](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-guest_virtual_machine_disk_access_with_offline_tools-the_guestfish_shell#doc-wrapper)
 image权限需要`qemu:qemu`, 且qemu用户能访问到该文件
 
 ```bash
 # guestfish --rw --add disk.img [-i] # -i: (--inspector) - Inspect the disks and mount the filesystems, 如果执行探测成功会自动执行run
 ><fs> run
 ><fs> list-filesystems
+/dev/sda1: xfs
+/dev/centos/root: xfs
+/dev/centos/swap: swap
+><fs> xfs-repair /dev/centos/root
+><fs> mount /dev/centos/root /
 ```
+
+支持的其他命令 from [guestfish - the guest filesystem shell](https://www.libguestfs.org/guestfish.1.html): ls, ll, cat, more, download, tar-out, ...
 
 
 ## 场景

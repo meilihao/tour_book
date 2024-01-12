@@ -7,6 +7,10 @@
 - [aylei / leetcode-rust](https://github.com/aylei/leetcode-rust)
 - [Rust算法题解](https://github.com/rustlang-cn/rust-algos)
 
+### 重写命令行
+- [github.com/samuela/rustybox](https://github.com/samuela/rustybox)
+- [github.com/uutils/coreutils](https://github.com/uutils/coreutils)
+
 ## 教程
 - [easy_rust](https://github.com/Dhghomon/easy_rust)
 - [Rust入门秘籍](https://rust-book.junmajinlong.com/about.html)

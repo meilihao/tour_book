@@ -747,6 +747,12 @@ help: `virt-install <参数> ?`
         change-media                   更改 CD 介质或者软盘驱动器
         console                        连接到客户会话
 
+            前提:
+            1.  vim /etc/default/grub `GRUB_CMDLINE_LINUX_DEFAULT="console=tty0 console=ttyS0,115200n8"` && `grub2-mkconfig -o /boot/grub2/grub.cfg`
+
+               GRUB_CMDLINE_LINUX_DEFAULT会片接在GRUB_CMDLINE_LINUX后
+            1. `systemctl enable --now serial-getty@ttyS0.service`
+
             退出用`Ctrl + Shift + 5`
         cpu-stats                      显示域 cpu 统计数据
         create                         从一个 XML 文件创建一个域
