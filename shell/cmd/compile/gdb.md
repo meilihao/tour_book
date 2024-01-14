@@ -228,11 +228,44 @@ $ gdb -x gdbinit # 仅使用gdb script
 ### 开启core dump
 ref:
 - [Core文件去哪里了](https://www.jianshu.com/p/7317910210a4)
+- [How to collect core dump file of a crashing program that is shipped in Red Hat Enterprise Linux](https://access.redhat.com/solutions/56021)
+- [How to enable core and change core path](https://forums.rockylinux.org/t/how-to-enable-core-and-change-core-path/6422)
 
 生成core文件：先用`$ ulimit -c ${0|1024|unlimited}`(0表示关闭)开启core，当程序出错会自动生成core文件, 调试core时用`gdb a.out core`
 
+生成规则: `/proc/sys/kernel/core_pattern`
+
 core dump位置:
 - ubuntu 20.04:/var/lib/apport/coredump
+- `coredumpctl list`
+
+手动生成core文件: `gcore pid`
 
 ### [dump memory](https://blog.csdn.net/ztguang/article/details/51015758)
 `pmap`+`dump binary memory my_binary_file.bin 0x22fd8a 0x22fd8a+450`
+
+### coredump调试
+ref:
+- [gdb调试之函数调用栈——backtrace](https://doc.embedfire.com/linux/imx6/base/zh/latest/linux_debug/backtrace.html)
+- [Need to load debugging symbols for shared library in GDB](https://stackoverflow.com/questions/30281766/need-to-load-debugging-symbols-for-shared-library-in-gdb)
+
+结合traceback调试
+
+```
+# gdb ./test[.debug] test.core
+(gdb) info sharedlibrary # 查看依赖的so
+From                To                  Syms Read   Shared Object Library
+0x0000fffff7f9f890  0x0000fffff7fb65c0  Yes (*)     /usr/local/lib/libtest.so.1
+...
+(gdb) add-symbol-file ./libsrc/libtest.dbg 0x0000fffff7f9f890 # 替换为带debug的so
+(gdb) info threads # 显示所有线程
+(gdb) thread <hread_num> # 切换线程
+(gdb) bt # 显示线程堆栈信息
+(gdb) bt full # 显示栈中所有信息如：函数参数，本地变量等
+(gdb) frame <N> # 选择栈帧
+(gdb) p *ctx # 打印变量
+(gdb) p *(struct plugin_private_context*)ctx->plugin_private_context # 根据源码强转打印gdb无法识别类型的变量
+```
+
+### traceback内容是`No debugger available on this platform, please install one to get proper stack traces`
+`dnf install gdb`

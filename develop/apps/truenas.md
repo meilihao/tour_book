@@ -68,9 +68,12 @@ middlewared doc: `src/middlewared/middlewared/docs/index.rst`
 见api文档的`/core/debug`接口
 
 ### api调用
+ref:
+- [SCALE API Reference](https://www.truenas.com/docs/scale/api/)
+
 rest api到ws api的映射: `/device/get_info` -> `device.get_info()`, 实现是`DeviceService(Service)`的`async def get_info(self, _type)`, 即逻辑实现均是`XXXService(Service)`的`yyy`方法.
 
-没在代码里找打api文档, 推测它可能是具体api实现上的`@accepts()/@returns()`生成的.
+没在代码里找到api文档, 推测它可能是具体api实现上的`@accepts()/@returns()`生成的.
 
 webui通过websocket api进行调用, api req由`src/middlewared/middlewared/main.py#Application.on_message`中的`if message['msg'] == 'method'`逻辑处理.
 
@@ -126,17 +129,18 @@ class Resource(object):
 
 > log位置: /var/log/middlewared.log
 
-### middlewared处理http逻辑
+### middlewared 加载plugins
+- version: 23.10.1
+
 在`src/middlewared/middlewared/main.py#Middleware.__initialize`
 
-### 加载plugins
 入口在`src/middlewared/middlewared/main.py#Middleware.__initialize`的`setup_funcs = await self.__plugins_load()`->跳转可得, 是通过`src/middlewared/middlewared/utils/plugins.py#LoadPluginsMixin`的`_load_plugins`来加载的:
-1. 获得plugins_dirs, plugins_dirs=(main_plugins_dir + Middleware.overlay_dirs)下的plugins目录
-
-    plugins下`.py`结尾的文件或以`base/linux`结尾的目录即是plugin的入口  
+1. 获得plugins_dirs即plugins目录
 1. 通过load_modules()加载, 并放入services变量
 
-    `load_modules()`原理: 递归遍历文件或目录, 找出匹配的mod, 再用`importlib.import_module`导入即可.    
+    `load_modules()`原理: 递归遍历文件或目录, 找出匹配的mod, 再用`importlib.import_module`导入即可.
+
+    `mod.setup`=`async def setup(middleware)`用于初始化mod  
 1. 迭代处理services变量, 再调用`self.add_service(service)`即可载入plugin生成service.
 
 ### `middleware.call()`

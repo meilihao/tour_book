@@ -6,6 +6,10 @@
 - [Best VMware Backup Software Tools. Top 10 VMware Backup Solutions](https://www.baculasystems.com/blog/top-10-vmware-backup-solutions/)
 - [Storage Media Output Format](https://docs.bareos.org/DeveloperGuide/mediaformat.html)
 - [issues](https://bugs.bareos.org/my_view_page.php)
+- [Debugging](https://docs.bareos.org/bareos-23/Appendix/Debugging.html)
+- [华为OceanProtect数据保护新品发布会](https://www.huawei.com/cn/events/data-backup-launch-2023)
+
+    open-eBackup 2024.6.30开源#TODO
 
 Bareos 由 bacula fork而來.
 
@@ -1055,6 +1059,8 @@ oracle linux 7.9 x86 bareos-fd启用ovirt插件(仅支持全备):
 1. 添加bareos-fd
 
     关闭firewalld, selinux
+
+注意: [RedHat already announced last year the EOL of their product RedHat Virtualization (mid 2024).](https://bugs.bareos.org/view.php?id=1380)
 
 ## 概念
 - volume : Bareos将在其上写入备份数据的单个物理磁带（或可能是单个文件）
@@ -3188,8 +3194,33 @@ lstat demo在[docs/manuals/source/DeveloperGuide/api.rst](https://github.com/bar
 ### 并发备份
 - [Concurrent Disk Jobs](https://docs.bareos.org/TasksAndConcepts/VolumeManagement.html#concurrent-disk-jobs)
 - [Concurrent Jobs in Bareos with disk storage](https://svennd.be/concurrent-jobs-in-bareos-with-disk-storage/)
+- [Concurrent Jobs](https://docs.bareos.org/Appendix/Troubleshooting.html#concurrent-jobs)
+
+    涉及:
+    ```
+    Bareos Director:
+    - Maximum Concurrent Jobs (Dir->Director)
+    - Maximum Concurrent Jobs (Dir->Client)
+    - Maximum Concurrent Jobs (Dir->Job) // 并发还原应修改RestoreFiles.conf
+    - Maximum Concurrent Jobs (Dir->Storage)
+
+    Bareos Storage Daemon:
+    - Maximum Concurrent Jobs (Sd->Storage)
+    - Maximum Concurrent Jobs (Sd->Device)
+
+    Bareos File Daemon:
+    - Maximum Concurrent Jobs (Fd->Client)
+    ```
+
 
 bareos一个storage device只能同时备份一个job, 因此需要多个device
+
+可能影响备份还原速率的其他参数:
+- sd
+
+    ~~Allow Bandwidth Bursting = true~~
+    ~~File Device Concurrent Read = true~~, Allow Bandwidth Bursting + File Device Concurrent Read经测试, 网络波动很大, 总体性能还是下降的
+    Maximum Network Buffer Size = 655365, fd同改
 
 ### [bareos 22.1.0编译报`sorry, unimplemented: non-trivial designated initializers not supported`](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=55606)
 
@@ -3217,3 +3248,28 @@ ovirt node使用glusterfs 8.6, 需要`dnf -y install centos-release-gluster8`, �
 glusterfs 8.6和6.0 rpm构建上有区别, 而bareos.spec使用的glusterfs依赖描述是6.0的:
 - glusterfs-api-devel = libgfapi-devel
 - glusterfs-devel = libglusterfs-devel + libgfrpc-devel + libgfxdr-devel, 只需安装libglusterfs-devel即可, libgfrpc-devel和libgfxdr-devel会作为其依赖一起安装进来
+
+### bareos-fd崩溃
+ref:
+- [Segmentation fault when creating a TPad in PyROOT](https://sft.its.cern.ch/jira/si/jira.issueviews:issue-html/ROOT-9042/ROOT-9042.html)
+- [Backup failures on concurent backups using ovirt-plugin](https://bugs.bareos.org/view.php?id=1380)
+
+```
+# --- 20.0.1
+Thread 3 (Thread 0x7f803435a700 (LWP 11029)):
+#0  0x00007f80362fd0ca in __waitpid (pid=pid@entry=11208, stat_loc=stat_loc@entry=0x7f8034358f7c, options=options@entry=0) at ../sysdeps/unix/sysv/linux/waitpid.c:30
+#1  0x00007f803637fb1d in SignalHandler (sig=11) at ./core/src/lib/signal.cc:216
+#2  <signal handler called>
+#3  0x00007f8034facde4 in ?? () from /lib/x86_64-linux-gnu/libpython3.7m.so.1.0
+#4  0x00007f8034fd2c66 in ?? () from /lib/x86_64-linux-gnu/libpython3.7m.so.1.0
+#5  0x00007f8034fc7795 in _PyModule_ClearDict () from /lib/x86_64-linux-gnu/libpython3.7m.so.1.0
+#6  0x00007f8034f12d9d in PyImport_Cleanup () from /lib/x86_64-linux-gnu/libpython3.7m.so.1.0
+#7  0x00007f8034f08478 in Py_EndInterpreter () from /lib/x86_64-linux-gnu/libpython3.7m.so.1.0
+#8  0x00007f80352b09d9 in filedaemon::freePlugin (plugin_ctx=0x7f802c022870) at ./core/src/plugins/filed/python/python-fd.cc:317
+#9  0x000056010b76e2c6 in filedaemon::FreePlugins (jcr=jcr@entry=0x7f802c02f6d0) at ./core/src/filed/fd_plugins.cc:1914
+#10 0x000056010b775d69 in filedaemon::process_director_commands (jcr=0x7f802c02f6d0, dir=dir@entry=0x56010bf06060) at ./core/src/filed/dir_cmd.cc:524
+#11 0x000056010b7763ec in filedaemon::handle_director_connection (dir=dir@entry=0x56010bf06060) at ./core/src/filed/dir_cmd.cc:602
+#12 0x000056010b779924 in filedaemon::HandleConnectionRequest (config=<optimized out>, arg=0x56010bf06060) at ./core/src/filed/socket_server.cc:91
+```
+
+上面是官方[0001328: File Daemon Crash when Using Python bareos-fd-postgres Plugin](https://bugs.bareos.org/view.php?id=1328)的traceback, 而我是在bareos 22.1.0 自实现的fd plugin上遇到, 报错堆栈类似, 并给bareos提了[bug](https://bugs.bareos.org/view.php?id=1579). 官方排查到是与pycurl有关.

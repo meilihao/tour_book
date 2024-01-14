@@ -1,10 +1,13 @@
-# ovirt
+# ~~ovirt~~
 - [**oVirt虚拟化关键概念、组件与技术原理**](http://simiam.com/2018/07/11/oVirt%E8%99%9A%E6%8B%9F%E5%8C%96%E5%85%B3%E9%94%AE%E6%A6%82%E5%BF%B5%E3%80%81%E7%BB%84%E4%BB%B6%E4%B8%8E%E6%8A%80%E6%9C%AF%E5%8E%9F%E7%90%86/)
 - [oVirt 架构学习](https://cloud.tencent.com/developer/article/1435899)
 - [编译oVirt相关软件包](https://www.hikunpeng.com/document/detail/zh/kunpengcpfs/ecosystemEnable/oVirt/kunpengovirtoe_04_0004.html)
 - [Next-Gen Backup & DR Solution for oVirt](https://resources.ovirt.org/site-files/2020/Next-Gen%20oVirt%20Backup%20%26%20DR%20Solution%20-%20vinchin%20-%20official%20presentation.pdf)
 - [架构 Background](https://www.ovirt.org/develop/release-management/features/virt/enhance-import-export-with-ova.html)
 - [oVirt导入导出ova格式虚机](https://www.cnovirt.com/archives/938)
+- [About oVirt’s future](https://lists.ovirt.org/archives/list/users@ovirt.org/thread/HEKKBM6MZEKBEAXTJT45N5BZT72VI67T/)
+
+	**RHV进入维护阶段, 将虚拟化迁入OpenShift. ovirt迁入开源的OKD虚拟化**.
 
 oVirt基于KVM，并整合使用了libvirt、gluster、patternfly、ansible等一系列优秀的开源软件，oVirt的定位是替代VMware vsphere，oVirt目前已经成为了企业 虚拟化  环境可选的解决方案，另外相比OpenStack的庞大和复杂，oVirt在企业私有云建设中具备部署和维护使用简单的优势.
 
@@ -426,6 +429,9 @@ Hosted Engine部署:
 - [ovirtsdk4.services](https://ovirt.github.io/python-ovirt-engine-sdk4/master/services.m.html#ovirtsdk4.services.VmService.snapshots_service)
 - [Hybrid Backup](https://www.ovirt.org/media/Hybrid-backup-v8.pdf)
 - [Python SDK 指南](https://access.redhat.com/documentation/zh-cn/red_hat_virtualization/4.4/html-single/python_sdk_guide/index#chap-Python_Examples)
+
+备份要求:
+- VM状态必须是Up/Down
 
 增量备份要求:
 1. qcow2 v3即compat 1.1, libvirt 增量备份是基于CBT备份. raw镜像仅支持全备, 因此raw和qcow2 v3混合增量备份时, raw盘还是全备

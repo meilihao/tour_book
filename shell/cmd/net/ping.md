@@ -6,6 +6,7 @@ ping过ICMP（Internet控制消息协议）工作, 可用来测试本机与目�
 
 ## 选项
 - -c count :   ping指定次数后停止ping
+- -I : 指定源ip, windows则使用`-S`
 - -l : 指定网卡
 - -i interval : 设定间隔几秒发送一个ping包，默认一秒ping一次
 - -w : 以秒为单位, 整个程序会话的deadline时间. 使用`-w`时`-c`将被忽略

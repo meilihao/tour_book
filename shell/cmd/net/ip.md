@@ -57,13 +57,13 @@ default via 192.168.0.1 dev bond0
 # ip route delete 192.168.1.0/24 dev eth0 # 删除路由
 # ip route flush 192.168.1.0/24 # 清理所有192.168.1.0/24相关的所有路由
 # ip route flush cache  #   清空路由表项缓存，下次通信时内核会查main表（即命令route输出的表）以确定路由
-# ip neigh # 查看显示内核的ARP表(ip-mac映射, 本机不会缓存自己ip的arp映射), 与`nmap -sP 192.168.0.0/24 `即可查到某个ip的mac
+# ip neigh # 查看显示内核的ARP表(即同局域网的ip-mac映射, 本机不会缓存自己ip的arp映射), 与`nmap -sP 192.168.0.0/24 `即可查到某个ip的mac
 # ip neigh add 192.168.1.100 lladdr 00:0c:29:c0:5a:ef dev eth0 # 添加arp映射
 # ip neigh flush dev wlp3s0 # 清除arp缓存
 # ip neigh del 192.168.1.100 dev eth0 # 删除arp映射
 # ip neigh show 192.168.0.167 # 查看对应ip的mac, 前提是内核的ARP表有该记录, 没有则先ping一下
 # arp 192.168.0.167 # 查看ip对应的mac, 但arp已淘汰
-# arping -I ens160 192.168.16.38 # 反查mac, 需同局域网, by `apt install arping`, ens160必须是up
+# arping -I ens160 192.168.16.38 # 反查mac, 需同**局域网**(比如同网段ip), by `apt install arping`, ens160必须是up
 # ip link set dev ens33 multicast on # 启用多播
 # ip maddr # 显示多播地址
 # route -n # 靠前的优先
@@ -153,6 +153,7 @@ ref:
 
 #### 多网卡同IP技术
 参考:
+- [team与bonding的比较](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/7/html/networking_guide/sec-comparison_of_network_teaming_to_bonding)
 - [Bonding vs Team](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/configuring_and_managing_networking/configuring-network-teaming_configuring-and-managing-networking)
 - [linux bond设备删除,删除修改bond](https://blog.csdn.net/weixin_33976326/article/details/116748742)
 
@@ -171,6 +172,23 @@ ref:
 # cat /boot/config-4.15.0-30deepin-generic |grep -i bonding
 CONFIG_BONDING=m
 ```
+
+bond mode 1/4区别:
+1. mode 1:
+
+    主备模式, 只有一个网卡在使用中
+    
+    优点就是很安全, 两块网卡同时坏的概率很低
+    缺点则是利用率低下，只有50%的利用率
+
+    应用场景一般是服务器的管理口, 管理口一般没有太高的网络需求, 稳定第一
+1. mode 4:
+
+    链路聚合模式, 相当于两块小网卡合并一起当作一个大网卡用, 类似1+1=2
+    前置条件1: 交换机需要支持IEEE802.3ad(链路聚合标准), 并且在交换机上进行相应配置
+    前置条件2: ethtool支持获取每个slave的速率和双工设定
+
+    应用场景一般是业务网了, 需要的大的带宽的情况比较适合
 
 team安装:
 ```bash
@@ -282,6 +300,7 @@ ip route flush cache
 example2:
 ref:
 - [Linux 多网关应用场景配置](https://typefo.com/linux/linux-multiple-gateway.html)
+- [Routing Tables](http://linux-ip.net/html/routing-tables.html)
 
 Linux 多网关应用场景, 比如机房服务器有 3 块网卡, eth0 为内网IP, eth1 为电信公网IP, eth2 为联通公网IP, 一般情况下服务器只能配置一个默认网关, 外网客户端只能通过其中一个公网IP访问服务器, 通过配置 Linux 原路返回路由功能, 来实现客户端从哪个网卡进来就从哪个网卡出去. 也就是电信用户访问服务器的电信公网 IP 然后从电信网卡原路返回, 联通用户访问联通公网 IP 然后从联通网卡返回, 服务器本身就可以通过默认的内网网关访问外网.
 
@@ -384,3 +403,38 @@ env:
 
 原因: 修改网络时, 16.159的默认网关被删除.
 解决方案: `ip route add default via 192.168.16.2 dev eth0`
+
+### bond0使用的eth0和eth1 mac启动时小概率对调
+ref:
+- [小斗CentOS7.x网卡名称错乱、及网卡启动失败](https://www.houzhibo.com/archives/684)
+
+1. 通过ip link(与`/sys/class/net/eth0/address`一致)获取eth0的mac
+2. 通过`/sys/class/net`的eth0软连接路径或`udevadm info /sys/class/net/eth0 |grep ID_PATH`(需去除前缀`pci-`)获取id_path
+3. 通过`dmesg |grep <id_path>`获取mac, 对比步骤1获取的mac, 发现步骤1获取的mac是dmesg里eth1的
+
+同时eth0和eth1的udev规则在/etc/udev/rules.d/70-persistent-net.rules中, 是配置正确的. 且`dmesg|grep udev`没有发现报错信息.
+
+正常环境dmesg时序:
+1. kernel枚举device
+1. 网卡rename
+1. 创建bond
+
+检查了问题环境的dmesg, 没有发现异常, 创建bond时也使用了正确的eth0
+
+对调原因: 未知
+
+> ID_PATH 提供了设备的总线拓扑路径，用于唯一标识设备在系统中的位置, 这个路径反映了设备是如何连接到系统的，涉及总线、端口、设备号等信息.
+
+## 一键接管后, 原机ip ping不通
+env:
+- 原机: 16.142
+- 接管机: 16.124, mac=52:54:00:7F:EC:01
+- 一键接管server: 16.159
+- ping机: 0.234
+
+原机上系统日志报: 16.142和接管机上的mac冲突, 导致原机网关route消失. 具体日志为`NetworkManager[799]: ... conflict for address 192.168.16.142 detected with host 52:54:00:7F:EC:01 on interface 'ens3'`
+
+推测: 一键接管后, 接管机启动时的ip还是16.142, 它启动过程中才会由接管agent去修改ip为16.124
+改进方案:
+- 原机网卡配置信息中添加mac地址进行绑定, 已测试
+- 接管前接管机的系统盘上的ip信息要已被替换, 未测试

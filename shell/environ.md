@@ -153,4 +153,4 @@ no-login shell是在终端下直接输入 bash 或者`bash -c "CMD"`来启动的
 
 ## FAQ
 ### web terminal bash 输入后退键变空格
-解决方法: 缺`ncurses-base`或使用`export TERM=linux`
+解决方法: 缺`ncurses-base`或使用`export TERM=linux`/`export TERM=xterm-256color`
