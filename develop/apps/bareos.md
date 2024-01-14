@@ -1242,7 +1242,7 @@ status client=t3-fd  #客户端名称t3-fd的状态信息, 如果支持plugin, �
 status client   # 查看 client  的状态
 status dir      # 查看director 的状态
 status storage  # 查看 storage 的状态
-status jobid=11 # 查看运行中job的状态, 比如速率等
+status jobid=11 # 查看运行中job的状态, 比如速率等. 获取速率时需要连接sd, sd备份耗尽带宽时会报`Failed to connect to Storage daemon xxx`
 
 # truncate
 truncate volstatus=Purged storage=<storage> pool=<pool> volume=<volume> [drive=<drivenum>] yes

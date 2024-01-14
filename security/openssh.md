@@ -249,5 +249,7 @@ AuthenticationMethods publickey,password
 
 修改方法: 注释`AuthenticationMethods`并重启ssh, `ssh -i <private key> root@192.168.1.2`直接登入成功.
 
+openssh 9.2没有AuthenticationMethods, 保证其他如`当前配置`, 即可使用root+password登入.
+
 ### 无法使用密码登入
 开启`PasswordAuthentication yes`并重启sshd

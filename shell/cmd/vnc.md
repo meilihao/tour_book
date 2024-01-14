@@ -3,6 +3,8 @@
 - [How to Install and Configure VNC Server on Ubuntu](https://www.tecmint.com/install-and-configure-vnc-server-on-ubuntu/)
 - [Ubuntu 20.04 上安装和配置 VNC](https://xie.infoq.cn/article/cf473dc0dea917b0b2a546ecd)
 
+tigvnc还[未支持wayland](https://github.com/TigerVNC/tigervnc/issues/158)
+
 ## 安装
 
 ### tigervnc(**推荐**)
@@ -102,6 +104,8 @@ tigervnc-standalone-server启动时默认绑定localhost. 因为vncserver没有�
 解决方法:
 - 在`/etc/vnc.conf`中追加`$localhost = "no";`(**`;`不能省略**), 重启系统再重新运行`vncserver`即可.
 - vncserver使用参数`-localhost no`
+
+没有`/etc/vnc.conf`时, 找`/etc/tigervnc/vncserver-config-defaults`
 
 ### vncserver修改分辨率
 解决方案:
