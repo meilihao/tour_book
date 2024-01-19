@@ -1152,6 +1152,8 @@ install 常用参数说明展开目录:
       选项:
       - model: netdev model, 可用`qemu-system-x86_64 -net nic,model=?`获取
       - mac=52:54:00:01:02:03 : 指定mac, 对于 QEMU 或 KVM 虚拟机, 它必须是`52:54:00`, **注意检查mac重复, 实际发现随机生成有较高的概率**
+
+      桥接和NAT区别: VM发包时, 源addr会被NAT修改掉; 桥接不修改.
 - 存储配置
 
    - disk : 指定虚拟机的磁盘存储位置

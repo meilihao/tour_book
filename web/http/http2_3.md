@@ -20,6 +20,15 @@ ref:
 - [Current results of QUIC interop test runner](https://interop.seemann.io/)
 - [**闷棍暴打面试官HTTP3-上篇**](https://zhuanlan.zhihu.com/p/580021385)
 - [5.5.2 面向HTTP 3.0时代的高性能网络协议栈](https://developer.aliyun.com/article/1229379)
+- [甩掉TCP协议的HTTP/3，真的很牛吗？](https://dbaplus.cn/news-160-5556-1.html)
+
+    0-RTT存在前向安全问题
+
+    QUIC更耗CPU和内存, 至少需要增加20%的服务器成本
+
+    开源协议栈的选择有很多，比较知名的有：Google的quiche，cloudflare的quiche，lsquic，亚马逊的s2n-quic
+
+    丢包就需要重传，传统的TCP对于重传包有“二义性”，无法精确地计算RTT。而QUIC采用单调递增的Packet Number方式，解决了重传包的“二义性”问题，RTT计算准确.
 
 HTTP/3不存在明文的不安全版本.
 

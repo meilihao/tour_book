@@ -530,3 +530,7 @@ systemd service的环境变量与shell env无关, 因此systemd提供了Environm
 
 ### Failed with result 'start-limit-hit'
 是由于服务定义中的 Restart=on-failure 指令造成的, 服务总是崩溃重启导致启动次数达到了上限
+
+### 是否使用systemd
+- `stat /sbin/init`
+- `if [ -d /run/systemd/system ];`

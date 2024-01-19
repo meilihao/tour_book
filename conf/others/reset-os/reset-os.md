@@ -21,6 +21,16 @@
     `pip3 install tomato-clock`
 - [alarm clock](https://alarm-clock-applet.github.io/)
 
+## Dell PowerEdge T630
+安装系统选basic graphics mode/字符安装, 估计与其内置显卡次(显存32M, 分辨率最高`1024*768`)有关.
+
+os:
+- debian 12
+
+    - kde wayland可运行, 需手动执行startplasma-wayland, ok; startplasma-x11, failed
+    - gnome, 启动桌面失败
+- fedora worktation 39: basic graphics mode, ok
+
 ## repo
 ```
 # from https://www.atzlinux.com/faq.htm#apt-hand-other from install v2raylui
