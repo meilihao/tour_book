@@ -138,3 +138,25 @@ vscode的go插件启用了gopls, 但gopls总是崩溃.
 
 #### [vscode go依赖更新](https://github.com/golang/vscode-go/blob/master/docs/commands.md#go-installupdate-tools)
 打开golang 项目, 右键选择`Go: Show All Commands...`(或Ctrl+Shift+P) -> 输入`Go: Install/Update Tools`, 在下拉中选中该命令 -> 选择全部插件, 点击输入框右侧的"ok"按钮即可.
+
+#### VSCode 运行go test显示打印日志 & 不使用test cache
+`文件->首选项->设置->工作区设置->在setting.json中编辑`, 在settings节点下添加`"go.testFlags": ["-v", "-count=1"]`, 保存即可
+
+> [`"go.testFlags": ["-v"]`](https://github.com/Microsoft/vscode-go/issues/1377)
+
+### 粘包
+- [FixedHeaderReceiveFilter](https://github.com/zboyco/go-server/blob/master/socket.go)
+
+	实现bufio.SplitFunc
+
+	go内置了4个splitFunc,当然也支持自定义:
+
+	type SplitFunc func(data []byte, atEOF bool) (advance int, token []byte, err error)
+	splitFUnc的功能就是:根据两个参数返回下一次Scan需要前进几个字节(advance)，分割出来的数据(token)，以及错误(err)
+	参数:
+		-- data(字节切片): 	 缓冲区的有效数据
+		-- atEOF(bool):		是否已经输入完成(scanner是否扫描到源的结尾了),若没有则duplicate扩容!
+	返回值:
+		-- advance(int):	Scan需要前进几个字节(advance)
+		-- token(字节切片):	 分割出来的数据
+		-- err(error):		错误

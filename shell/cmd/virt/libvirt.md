@@ -1252,3 +1252,22 @@ dhclient br0 / ifconfig br0 192.168.1.2 netmask 255.255.255.0 # 设置br0的IP�
 ```
 
 搭建open vswitch bridge见[这里](https://docs.openeuler.org/zh/docs/22.03_LTS/docs/Virtualization/%E5%87%86%E5%A4%87%E4%BD%BF%E7%94%A8%E7%8E%AF%E5%A2%83.html).
+
+## xml
+- backingStore
+
+    <backingStore> 元素通常用于表示虚拟磁盘的后端存储（Backing Store）. 后端存储是一种虚拟磁盘的特性，它指的是虚拟磁盘的底层数据来源或依赖关系.
+
+   ```xml
+   <disk type='file' device='disk'>
+     <driver name='qemu' type='qcow2'/>
+     <source file='/path/to/vm_disk.qcow2'/>
+     <backingStore type='file' index='1'>
+       <format type='qcow2'/>
+       <source file='/path/to/base_image.qcow2'/>
+     </backingStore>
+   </disk>
+   ```
+
+   在这个例子中, vm_disk.qcow2 是虚拟机的磁盘镜像，它有一个后端存储（<backingStore>）指向 base_image.qcow2. 这表示 vm_disk.qcow2 是基于 base_image.qcow2 创建的，两者之间存在一种依赖关系.
+

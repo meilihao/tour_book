@@ -110,6 +110,10 @@ RocksDB是一个嵌入式的K-V（任意字节流）存储. 所有的数据在�
 
     并发只需要锁最大高度和节点
 
+参数:
+- write-buffer-size = "128MB" # RocksDB memtable 的大小
+- max-write-buffer-number = 5 # 最多允许几个 memtable 存在
+
 ## SSTFile(SSTTable)
 > sst单个文件没有重复
 > level0同层可能有重复; level1-level N 同层没有重复, 因为其由上层合并而来, 但层间可能有重复
@@ -140,6 +144,9 @@ Get()流程：
     对于 L1 层以及 L1 层以上层级的文件，每个 SSTable 没有交叠，可以使用二分查找快速找到 key 所在的 Level 以及 SSTfile.
 
 > 如果启用 Level Style Compaction, L0 存储着 RocksDB 最新的数据，Lmax 存储着比较老的数据，L0 里可能存着重复 keys，但是其他层文件则不可能存在重复 key.
+
+参数:
+- target-file-size-base = "32MB" # sst 文件的大小
 
 ## RocksDB的典型场景（低延时访问）:
 1. 需要存储用户的查阅历史记录和网站用户的应用

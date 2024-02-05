@@ -6,3 +6,7 @@
 
 ## 优化
 - [TLS 加速技术：Intel QuickAssist Technology（QAT）解决方案](https://my.oschina.net/vivotech/blog/8817307)
+- [简单一招竟把 nginx 服务器性能提升 50 倍](https://my.oschina.net/u/4090830/blog/10979685)
+
+	ngx_http_gzip_static_module
+

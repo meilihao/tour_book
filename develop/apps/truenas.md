@@ -171,10 +171,8 @@ class DiskService(CRUDService):
 ### table定义
 `class xxxModel(sa.Model)`
 
-### 获取middlewared.deb
-根据[scale-build/conf/sources.list](https://github.com/truenas/scale-build/blob/master/conf/sources.list)找到[middlewared.deb](https://apt.tn.ixsystems.com/apt-direct/angelfish/{22.02-RC.2,nightlies}/angelfish/pool/main/m/middlewared/)
-
-> middlewared发布RELEASE后会删除了上述url中的`22.02/angelfish`路径即没法下到RELEASE版deb.
+### ~~获取middlewared.deb~~
+根据[scale-build/conf/sources.list](https://github.com/truenas/scale-build/blob/master/conf/sources.list)找到[middlewared.deb](https://apt.tn.ixsystems.com/apt-direct/angelfish/{22.02-RC.2,nightlies}/angelfish/pool/main/m/middlewared/), 从22.02发布后, truenas删除了上述url中的`22.02/angelfish`路径即没法下到RELEASE版deb, 同时该方法获取middlewared还要解决包依赖问题, 因此**应从iso中提前源码**.
 
 配置vscode阅读middlewared.deb提取源码:
 ```bash
@@ -247,6 +245,7 @@ os提取版middlewared的vscode配置(**推荐, 毕竟TrueNAS-SCALE-22.02.0.iso�
 DECIMAL       HEXADECIMAL     DESCRIPTION
 --------------------------------------------------------------------------------
 0             0x0             Squashfs filesystem, little endian, version 4.0, compression:gzip, size: 1369983003 bytes, 6 inodes, blocksize: 131072 bytes, created: 2022-02-18 16:15:16
+# 先用文件管理器挂载iso
 # mount -t squashfs -o loop  TrueNAS-SCALE.update  /mnt/squashfs
 # cd /mnt/squashfs
 # tree .
