@@ -36,6 +36,8 @@
 - [Comprehensive Rust](https://google.github.io/comprehensive-rust/)
 - [Hands-On Data Structures and Algorithms with Rust](https://www.amazon.co.jp/-/en/Claus-Matzinger/dp/178899552X)
 
+	[code](https://github.com/PacktPublishing/Hands-On-Data-Structures-and-Algorithms-with-Rust)
+
 ## gui
 - [Pop!_OS COSMIC 桌面使用 Rust GUI 库 Iced 取代 GTK](https://www.oschina.net/news/212636/cosmic-desktop-iced-toolkit)
 - [Slint 1.0 正式发布，Rust 编写的原生 GUI 工具包](https://www.oschina.net/news/235410/slint-1-0-released)
