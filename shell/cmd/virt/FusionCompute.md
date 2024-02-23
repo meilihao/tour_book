@@ -45,6 +45,9 @@ vm cdrom底层可用nbd, 避免拷贝iso. 对比过vrm和cna的fs(`df -h`)变化
 
 	cbt第一次备份大小是virtual size
 
+注意:
+1. "iscsi"挂入CNA的盘不能作为vm系统盘
+
 ## 备份
 ref:
 - [云祺容灾备份系统「华为FusionCompute备份」实操演示](https://www.bilibili.com/video/BV1cm4y1K7yb)
@@ -138,3 +141,21 @@ VRM:
 ### vrm
 - pg_hba.conf在/opt/gaussdb/data下. 登入db: `psql -U galax vrm`+`SingleLOUD!1`(不行的话试试ssh gandalf/root密码)
 - 代码是java, 在/opt/galax/vrmportal/tomcat/webapps/ROOT/WEB-INF下
+
+### novnc
+前端:
+1. browser -> vrm返回vrm proxy url(wss)
+	
+	返回的端口是6084, 但wss链接时实际使用的是6083
+
+	看vrm上websockify进程有个`--proxy-port 6084`可能与此有关, 官方websockify没有这个参数
+2. browser打开vrm proxy url
+3. vrm proxy(novnc) -> CNA nginx 5903 -> CNA qemu-kvm 5903(localhost)
+
+	qemu-kvm vnc的授权方式是sasl, 参考[VNC 身份验证](https://documentation.suse.com/zh-cn/sles/15-SP2/html/SLES-all/cha-libvirt-connect.html#sec-libvirt-connect-auth-vnc), 可得实际由/etc/sasl2/qemu.conf配置里的saslauthd验证身份.
+
+	再根据`saslauthd -m /run/saslauthd -a pam`的参数`pam`和vm xml的`graphics.authz+authz`推断应该是使用os用户鉴权.
+
+	> `testsaslauthd -u hehe -p 123  [-f /run/saslauthd/mux]      //验证sasl工作是否正常`
+
+	> novnc授权文件在`/opt/galax/vrmportal/tomcat/webapps/OmsPortal/novnc/utils/websockify`下, 但实际发现其授权里的vnc_username+vnc_port和CNA上的vm xml的authz.identity对不上???

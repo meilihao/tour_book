@@ -52,3 +52,9 @@
 - [OrioleDB 构建现代云原生存储引擎](https://www.oschina.net/p/orioledb)
 
 	没有VACUUM
+
+### 人大金仓
+- [PostgreSQL 9.6 与 人大金仓 8（Kingbase 8） 的差异化对比](https://blog.csdn.net/mcgrady1234/article/details/121978733)
+
+
+	Kingbase 8 是基于 PostgreSQL 9.6 的

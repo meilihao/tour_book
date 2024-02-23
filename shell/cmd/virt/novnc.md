@@ -45,7 +45,7 @@ websockify --cert=/usr/share/novnc/self.pem ...
 websockify --cert=/usr/share/novnc/self.pem --key=/usr/share/novnc/self.key ... # 当cert和key分开存储时使用该命令
 ```
 
-> 仅使用tls时可用`ssl_only=true`
+> 仅使用tls时可用`ssl_only=true`, 此时也支持配置`--ssl-version tlsv1_2 --ssl-ciphers xxx`
 
 ### novnc vm鼠标不可用
 测试环境是chrome 64, 为不可用, 但chrome 111是可用的
