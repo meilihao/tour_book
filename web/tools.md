@@ -1,3 +1,8 @@
+# tools
+## ip
+### 获取ip
+- [api64.ipify.org](https://api64.ipify.org/)
+
 ### 测试网站
 - [检测网站的SSL安全性](https://www.ssllabs.com/ssltest/index.html)
 

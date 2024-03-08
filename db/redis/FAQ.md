@@ -105,6 +105,9 @@ Redis被配置为保存数据库快照，但它目前不能持久化到硬盘, �
 `redis-cli monitor`
 
 ### 模拟redis aof文件损坏
+ref:
+- [Redis之AOF重写及其实现原理](https://blog.csdn.net/hezhiqiang1314/article/details/69396887)
+
 ```bash
 cp /var/lib/redis/appendonly.aof . # 获取正常aof文件
 redis-check-aof appendonly.aof # 获得size=59962
@@ -121,7 +124,29 @@ ExecStartPre=/usr/bin/bash -c "echo 'y'|redis-check-aof --fix /var/lib/redis/app
 
 > 追加`||true`原因: appendonly.aof不存在或大小为0时, redis-check-aof会报错
 
+> aof超过6G时遇到启动redis时, 因为redis-check-aof执行长, 导致systemd启动redis超时
+
+    解决方法:
+    1. edis-cli 手动重写
+
+        ```bash
+        > bgrewriteaof
+        ```
+    1. redis.conf
+
+        ```conf
+        auto-aof-rewrite-percentage 参数表示当当前 AOF 文件大小超过上次重写后 AOF 文件大小的百分比时，触发 AOF 重写机制，默认值为 100
+        auto-aof-rewrite-min-size 参数表示当当前 AOF 文件大小超过指定值时，才可能触发 AOF 重写机制，默认值为 64 MB
+        ```
+
+        环境已应用了该配置, 但aof还是涨到了6G, 按照业务数据量应该是不可能, 不知为什么没生效, 又因为redis都是缓存数据, 直接删除aof即可 by `find /var/log/redis -mindepth 1 -name appendonly.aof -size +1G/+512M -delete`.
+
 ### 应用连接redis报`LOADING Redis is loading the dataset in memory`
 如果在系统将数据集完全加载到内存并使 Redis 准备好之前, 连接请求到达就会触发该报错
 
 解决方法: 应用等待, 或使用 info 命令检查redis是否正在加载.
+
+### Redis 4.0 混合持久化
+Redis 4.0前, aof是全量的日志; 4.0开始支持混合持久化, 此时aof是自持久化开始到持久化结束的这段时间发生的增量 AOF 日志，通常这部分 AOF 日志很小. 开启后aof rewrite的时候就直接把 rdb 的内容写到 aof 文件开头.
+
+开启混合持久化: `aof-use-rdb-preamble yes`

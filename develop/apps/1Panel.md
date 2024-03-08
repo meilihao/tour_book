@@ -13,6 +13,16 @@ ref:
 代码入口:
 - web : `cmd/server/cmd/root.go`的`server.Start`
 
+	```go
+	...
+	rootRouter := router.Routers() // 构建routes
+	...
+	```
+
 ## FAQ
 ### 1pctl源码
 1pctl是对1panel的脚本封装
+
+### tls cert操作
+在`backend/app/service/website_*.go`, 比如:
+- 创建ca: `(WebsiteCAService) Create()`

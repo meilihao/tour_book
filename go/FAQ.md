@@ -566,3 +566,24 @@ defer func(){
 }()
 
 ```
+
+### root切换用户执行命令报`Permission denied`
+ref:
+- [https://stackoverflow.com/questions/58137996/exec-command-with-credential-in-a-new-user-namespace-gets-error-operation-not](https://stackoverflow.com/questions/58137996/exec-command-with-credential-in-a-new-user-namespace-gets-error-operation-not)
+
+	未测试
+
+在terminal中切换到newuser(8361), touch /mnt/nas/test/t.log是成功的, 但用syscall.Credential不可行.
+```go
+	cmd := exec.Command("touch", "/mnt/nas/test/t.log")
+	cmd.SysProcAttr = &syscall.SysProcAttr{}
+    cmd.SysProcAttr.Credential = &syscall.Credential{
+		Uid:         uint32(8361),
+		Gid:         uint32(1002),
+		NoSetGroups: true,
+	}
+```
+
+
+换成`cmd := exec.Command("sudo", "-u", "newuser", "touch", "/mnt/nas/test/t.log")`
+

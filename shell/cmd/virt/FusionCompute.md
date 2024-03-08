@@ -26,6 +26,9 @@ ref:
 - [**HCIA-Cloud Computing**](https://space.bilibili.com/630399494/channel/collectiondetail?sid=548989)
 - [华为云计算HCIA V5.0](https://space.bilibili.com/412127397/channel/collectiondetail?sid=1479257)
 - [FusionCompute8.0部署环境](https://space.bilibili.com/341704369)
+- [华为FusionCompute详解（二）FusionCompute总体介绍以及规划部署](https://blog.csdn.net/qq_46254436/article/details/105810195)
+- [华为FusionCompute详解（一）FusionSphere虚拟化套件介绍](https://blog.csdn.net/qq_46254436/article/details/105807057)
+- [**华为FusionCompute 8.x部署文档**](https://www.bilibili.com/read/cv19164631/)
 
 ## VRM/CNA
 - db: VRM使用gaussdb; CNA未使用db
@@ -51,8 +54,11 @@ vm cdrom底层可用nbd, 避免拷贝iso. 对比过vrm和cna的fs(`df -h`)变化
 ## 备份
 ref:
 - [云祺容灾备份系统「华为FusionCompute备份」实操演示](https://www.bilibili.com/video/BV1cm4y1K7yb)
-- [FusionComputeGolangSDK](https://github.com/KubeOperator/FusionComputeGolangSDK)
+- [sdk: go-fusion-compute](https://github.com/LawyZheng/go-fusion-compute)
+- [sdk: FusionComputeGolangSDK](https://github.com/KubeOperator/FusionComputeGolangSDK)
+- [sdk: eSDK_FC_SDK_Java](https://github.com/jacklongway/eSDK_FC_SDK_Java)
 - [针对FusionComputer场景数据保护，AnyBackup有何妙招](https://www.aishu.cn/cn/blog/60)
+- [VMware 虚拟化编程(10) — VMware 数据块修改跟踪技术 CBT](https://www.cnblogs.com/jmilkfan-fanguiju/p/10589802.html)
 
 flow:
 - [华为FusionCompute](https://storware.gitbook.io/backup-and-recovery/protecting-virtual-machines/virtual-machines/huawei-fusion-compute)
@@ -62,11 +68,65 @@ flow:
 - [华为虚拟化备份方案](https://www.hcieonline.com/03-%E5%A4%87%E4%BB%BD/)
 - [eSDK Cloud V100R005C00 开发指南(FusionSphere Backup&Restore SDK)](https://download.huawei.com/edownload/e/download.do?actionFlag=download&nid=EDOC1000067596&partNo=h001&mid=SUPE_DOC&_t=1501982801000)
 
-底层是普通延迟置零, 首次创建cbt备份后, disk.source变为qcow2 compat 1.1, backingStore.source应该是原先的磁盘.
+底层是普通延迟置零, 首次创建cbt备份后, disk.source(应该就是disk的增量)变为qcow2 compat 1.1, backingStore.source应该是原先的磁盘.
+
+### CBT
+ref:
+- [**华为云计算学习：备份之CBT技术**](https://blog.csdn.net/yangshihuz/article/details/104600311)
+- [什么是CBT](https://itnobita.com/archives/yun-ji-suan-bi-ji)
+
+CBT需要内存位图和CBT文件:
+- 内存位图
+
+	以1bit大小的0和1记录虚拟机的每个块的变更信息进行登记，0表示未改变，1表示改变.
+
+	每次备份后会被重置重置为0
+
+- CBT文件
+
+	用来记录不同备份点上的数据块的CBT版本号
+
+	> CBT版本号: 用于标识备份次数相对应的序号(大小4字节)，用来标记可从第几次备份中找到数据
+
+	每次全备后可重置版本号.
+
+备份过程:
+1. 第一次: 
+
+	内存位图mb0全为0; CBT文件cbt0全为0
+
+	备份: 全备+cb0
+2. 第2次
+
+	步骤:
+	1. mb1=copy(mb0), 将mb0全置0变为mb2
+	2. 根据mb1更新cbt0相应位置为1, 得到cbt1
+
+	备份: 数据变化量+cbt1
+3. ...
+
+cbt大小预估: `(volGB * 2<<30)/(sectorOfBlock*512) * 4B`
+
+> 观察到7/1/2G卷的cbt文件都是8.1M???, 应该是预留了空间存储其他数据.
 
 ### `BCManager和FusionCompute Scoket接口`使用
 1. 打CBT快照前, 不能存在prepareBackupResource
 1. 第一次cbt备份, getCbtDiffBitmap返回的bitNum和bit1Num均为0
+
+	第二次cbt备份(上一次cbt快照未删除), getCbtDiffBitmap返回的bitNum和bit1Num均为0.
+
+	原因: BlockNum不能为0
+
+	> GetCbtDiffBitmapReq不要使用`, omitempty`, 容易报400; 也没必要使用SnapUuid, 实际测试SnapUuid没有效果
+
+	vinchin(by `截取VNA请求`)每次BlockNum的step是1024, 具体传参:
+	- 全备: ChgID为空即"0"
+	- 增量: ChgID为cbtbackup snap的pre ChgID
+
+		备份内容是pre ChgID ~ cur ChgID的变化数据
+
+	有效即根据返回的bit1Num计算.
+
 1. version找不到指定值, 用0
 1. sequence: 单调递增即可, server返回同样的sequence
 1. 读远端磁盘文件的返回: header+ployload(包含了file data)
@@ -80,12 +140,58 @@ flow:
 	可能的错误:
 	- `x509: cannot validate certificate for xxx because it doesn't contain any IP SANs`: 因为server使用了自签名证书, 使用`tls.Config{InsecureSkipVerify: true}`即可
 1. prepareBackupResource限制8个socket, 可以根据resp error(10300412/10300413)判断
+
+	并发vm的两个盘, 它们备份资源返回的hostPort都是35001, 小盘备份完成时CNA会关闭35001导致大盘备份失败, 参考vinchin推测FusionCompute本身设计就是这样.
+
+	vinchin备份时(多vm):
+	- 快照模式=串行: 逐台vm逐个disk备份再删除snap都是串行操作.
+
+		```go
+		for _,vm:=range vms{
+			createSnap
+			scanVmDisk
+			for _,d:=range vm.Disks{
+				tranDisk
+			}
+			deleteSnap
+			执行保留策略
+		}
+		```
+	- 快照模式=并行: 创建快照并行, 逐台vm逐个disk备份再删除snap即都是串行操作
+
+		```go
+		wg:=sync.WaitGroup{}
+
+		for _,vm:=range vms{
+			wg.Add(1)
+
+			go func(){
+				defer wg.Done()
+
+				createSnap
+			}
+		}
+
+		wg.Wait()
+
+		for _,vm:=range vms{
+			scanVmDisk
+			for _,d:=range vm.Disks{
+				tranDisk
+			}
+			deleteSnap
+			执行保留策略
+		}
+		```
+
 1. 创建vm by VRM CreateVm:
 
  空闲cpu: CpuQuantity
  空闲内存: MemQuantityMB, 没有vrm管理页面没有显示可用的空闲内存, 参考CpuQuantity, 找到MemQuantityMB
 
 ## FAQ
+### [X-Auth-UserType](https://zhuanlan.zhihu.com/p/648587865)
+
 ### vm和host网段不通
 vm使用端口组的VLAN应为0, 表示不使用VLAN标签, 再用nmtui配置ip即可
 
@@ -128,7 +234,7 @@ VRM:
 - 查询CBT
 
 	- 10430043: 创建CBT快照成功后, 该接口返回`"cbtflag": true`
-- createVmSnapshot:
+- createVmSnapshot with CBTbackup:
 
 	- 10300026: 安装Tools. 安装Tools后, 在vm关机下也可执行创建CBT快照
 - 查询虚拟机卷CBT差量位图
@@ -159,3 +265,10 @@ VRM:
 	> `testsaslauthd -u hehe -p 123  [-f /run/saslauthd/mux]      //验证sasl工作是否正常`
 
 	> novnc授权文件在`/opt/galax/vrmportal/tomcat/webapps/OmsPortal/novnc/utils/websockify`下, 但实际发现其授权里的vnc_username+vnc_port和CNA上的vm xml的authz.identity对不上???
+
+### 截取VNA请求
+```bash
+# vim /usr/local/nginx/conf/nginx.conf
+修改`/var/log/galaxenginlog/vna-nginx/nginx-access.log`对于的format, `log_format format_main escape=json '... $request_body'`, 参考[nginx记录post数据](https://cloud.tencent.com/developer/article/1501467)
+# /usr/local/nginx/sbin/nginx -s reload
+```

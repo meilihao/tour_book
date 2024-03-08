@@ -8,7 +8,7 @@ mod工具在module-init-tools.
 - -a : 分析所有可用的模块
 - -v : 输出详细信息
 
-depmod会遍历文件/lib/modules/`uname -r`/modules.dep解析模块依赖关系, 该文件由depmod -a 命令建立的，保存了内核模块的依赖关系.
+depmod会遍历文件/lib/modules/`uname -r`/modules.dep解析模块依赖关系, 该文件在编译kernel时由depmod命令建立的，保存了内核模块的依赖关系.
 
 # lsmod
 显示已加载内核模块的状态, 信息来自`/proc/modules`.

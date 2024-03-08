@@ -509,3 +509,7 @@ server {
     error_page 497 https://$server_name$request_uri;
 }
 ```
+
+### 截取request/respone body
+ref:
+- [记录response body和header到access.log](https://blog.csdn.net/be5yond/article/details/121999456)

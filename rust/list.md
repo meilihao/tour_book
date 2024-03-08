@@ -1,4 +1,6 @@
 # rust
+ref:
+- [美国 CISA 建议放弃 C/C++，消除内存安全漏洞](https://www.oschina.net/news/269933/cisa-the-case-for-memory-safe-roadmaps)
 
 ## 解题和example
 - [github.com/QMHTMY/RustBook](https://github.com/QMHTMY/RustBook)
@@ -6,6 +8,9 @@
 - [数据结构和算法](https://www.hackertouch.com/data-structures-and-algorithms.html)
 - [aylei / leetcode-rust](https://github.com/aylei/leetcode-rust)
 - [Rust算法题解](https://github.com/rustlang-cn/rust-algos)
+- [rust-by-practice](https://github.com/sunface/rust-by-practice)
+
+	答案在repo的solutions目录里
 
 ### 重写命令行
 - [github.com/samuela/rustybox](https://github.com/samuela/rustybox)

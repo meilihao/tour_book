@@ -27,6 +27,9 @@ style: [Linux kernel coding style](https://www.kernel.org/doc/Documentation/proc
 
 **接口在 C 语言中，表现为一组函数指针的集合; 放在 C++ 中，即为虚表**.
 
+## 编译器
+- ARM linux 使用[Linaro](http://www.linaro.org/downloads/)
+
 ## 关键词
 由ANSI标准定义的C语言关键词共32个 :
 ```
@@ -828,6 +831,8 @@ const也可修饰函数的返回值, 即返回值不可改变.
 `extern char a[]`和`extern char a[100]`没有区别, 因为仅是声明不分配空间, 因此编译器无需知道数组的长度.
 
 ## gnuc c 对 ANSI C的扩展
+在使用 gcc 编译 C 程序的时候，如果使用`-ansi -pedantic`编译选项，则会告诉编译器不使用 GNU 扩展语法.
+
 ### 1. 柔性数组(flexible array, 也叫零长数组/变长数组)
 c99中, strut的最后一个元素(它前面需至少有一个其他成员)允许是未知长度的数组, 该数组即是柔性数组, sizeof返回的struct大小不包括柔性数组, 该数组用malloc()函数进行动态分配.
 
@@ -845,12 +850,18 @@ sizeof(*p) // 4, 因为sizeof(type_a)为4即type_a大小不包括柔性数组
 结构体成员a的作用与指针类似, 但替换为指针时就还需为它malloc一次. 因此它不但能减少内存空间分配的次数提高执行效率, 还可保持结构体空间的连续性.
 ### 2. case关键字支持范围匹配
 ```c
-case 'a' ... 'z': // from 'a'~'z'
+case 'a' ... 'z': // 即['a','z']
 break;
 ```
 ### 3. typeof关键字获取变量类型
 ```c
 typeof(x) // 通常用在宏定义上
+
+#def ine min(x,y) ({ \
+const typeof(x) _x = (x); \
+const typeof(y) _y = (y); \
+(void) (&_x == &_y); \ // 检查 _x 和 _y 的类型是否一致
+_x < _y ? _x : _y; })
 ```
 
 ### 4. 可变参数宏
@@ -895,6 +906,27 @@ int main(void)
 }
 ```
 
+```c
+unsigned char data[MAX] = { [0 ... MAX-1] = 0 };
+
+const struct file_operations ext2_file_operations = {
+    .llseek     = generic_file_llseek,
+    .read_iter  = ext2_file_read_iter,
+    .write_iter = ext2_file_write_iter,
+    .unlocked_ioctl = ext2_ioctl,
+#ifdef CONFIG_COMPAT
+    .compat_ioctl   = ext2_compat_ioctl,
+#endif
+    .mmap       = ext2_file_mmap,
+    .open       = dquot_file_open,
+    .release    = ext2_release_file,
+    .fsync      = ext2_fsync,
+    .get_unmapped_area = thp_get_unmapped_area,
+    .splice_read    = filemap_splice_read,
+    .splice_write   = iter_file_splice_write,
+};
+```
+
 6. 当前函数名
 
 GNU C中预定义两个标志符保存当前函数的名字，`__FUNCTION__`保存函数在源码中的名字，`__PRETTY__FUNCTION __`保存带语言特色的名字. 在C函数中这两个名字是相同的.
@@ -917,7 +949,16 @@ GNU C允许使用特殊属性对函数、变量和类型加以修饰, 以便进�
     #define ATTRIB_NORET __attribute__((noreturn)) ....
     asmlinkage NORET_TYPE void do_exit(long error_code) ATTRIB_NORET;  
     ```
+- unused 属性作用于函数和变量，表示该函数或变量可能不会用到，这个属性可以避免编译器产生警告信息
+- aligned 属性用于变量、结构体或联合体，指定变量、结构体或联合体的对齐方式，以字节为单位
 
+    ```c
+    struct example_struct {
+        char a;
+        int b;
+        long c;
+    } __attribute__((aligned(4))); // 以 4 字节对齐
+    ```
 - packed属性作用是取消变量和类型在编译时的对齐优化, 按照实际占用字节数进行对齐, 通常出现在协议包的定义中. 例如：
 
     ```
@@ -961,6 +1002,17 @@ GNU C允许使用特殊属性对函数、变量和类型加以修饰, 以便进�
         return 0;
     }  
     ```
+8. 内建函数GNU C 提供了大量内建函数，其中大部分是标准 C 库函数的 GNU C 编译器内建版本，例如 memcpy() 等，它们与对应的标准 C 库函数功能相同
+
+不属于库函数的其他内建函数的命名通常以 `__builtin`, 比如:
+1. 内建函数 `__builtin_return_address (LEVEL)` 返回当前函数或其调用者的返回地址，参数 LEVEL 指定调用栈的级数，如 0 表示当前函数的返回地址， 1 表示当前函数的调用者的返回地址
+1. 内建函数 `__builtin_constant_p(EXP)` 用于判断一个值是否为编译时常数，如果参数EXP 的值是常数，函数返回 1，否则返回 0
+1. 内建函数 `__builtin_expect(EXP, C)` 用于为编译器提供分支预测信息，其返回值是整数表达式 EXP 的值， C 的值必须是编译时常数
+
+
+Linux内核编程时常用的likely()和unlikely()底层调用的likely_notrace()、unlikely_notrace()就是基于`__builtin_expect(EXP,C)`实现的.
+
+通过 likely() 和 unlikely() 暗示分支容易成立还是不容易成立.
 
 ## FAQ
 ### 语句表达式
@@ -1269,3 +1321,16 @@ printf("time:%llx\n",140734794339647l); // hex
 printf("time:%lld\n",140734794339647l); // 十进制
 printf("time:%llu\n",140734794339647l);
 ```
+
+### linux `do { } while(0)`
+常规认为: 它只会执行一次，加不加 `do {} while(0)` 效果是完全一样的.
+
+其实它的用法主要用于宏定义中. 它的使用完全是为了保证宏定义的使用者能无编译错误地使用宏，它不对其使用者做任何假设.
+
+### linux goto
+Linux 内核源代码中对 goto 的应用非常广泛, 但是一般只限于错误处理中. 这种将 goto 用于错误处理的用法实在是简单而高效，只需保证在错误处理时注销、资源释放等，与正常的注册、资源申请顺序相反.
+
+### 浮点处理
+浮点参数`-mfloat-abi=soft/softfp/hard`, softfp 使用了硬件的 FPU, 但是函数的参数仍然使用整型寄存器来传递, 完全硬浮点则直接使用 FPU的寄存器传递参数.
+
+一个含有浮点运算的程序若使用hard ABI会比softfp ABI快5% ～ 40%, 如果浮点负载重, 结果可能会快 200% 以上.

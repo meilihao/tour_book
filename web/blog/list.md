@@ -152,3 +152,6 @@
 - [Hydration](https://my.oschina.net/u/4090830/blog/10141047)
 
     "hydration"（水合）是指通过客户端 JavaScript 将静态 HTML 网页转化为动态网页的过程，以实现对 HTML 元素的事件处理。这个过程可以通过将事件处理程序附加到 HTML 元素上来完成
+
+## https
+- [HTTPS过程详解，tcpdump抓包一步一步分析](https://blog.csdn.net/simonchi/article/details/107563574)
