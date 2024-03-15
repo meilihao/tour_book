@@ -452,7 +452,7 @@ lazy_static限制:
 1. 使用 lazy_static 宏定义的全局静态变量如果有析构函数是不会被调用的, 因为是静态生命周期
 1. lazy_static 宏中不能定义太多的全局静态变量，否则会引发线程恐慌. 这是因为在它调用了内部的宏, rust对宏的递归调用有调用次数限制, 可通过`#![recursion_limit="128"]`属性修改,默认值为 32.
 
-> 赋值号左边的部分是一个“模式”，`let (mut a, mut b) = (1, 2);`是对 tuple 的模式解构，`let Point { x : ref a, y : ref b} = p;`是对结构体的模式解构.
+> 赋值号左边的部分是一个“模式”，`let (mut a, mut b) = (1, 2);`是对 tuple 的模式解构; `let Point { x : ref a, y : ref b} = p;`是对结构体的模式解构, `ref`= `let a =  &p.a`
 
 格式化输出
 ref:
@@ -554,6 +554,37 @@ fn main() {
 ```
 
 ```rust
+fn main() {
+    let mut s = String::from("hello, ");
+
+    let r1 = &mut s;
+    r1.push_str("world");
+    let r2 = &mut s;
+    r2.push_str("!");
+    
+    println!("{}",r1); // 注释这行后或将r2改为r2不报错. 报错: 同生命周期内s存在多个可变引用
+}
+
+fn main() {
+    // 报错, 从不可变对象借用为可变
+    let s = String::from("hello, ");
+
+    borrow_object(&mut s)
+}
+
+fn borrow_object(s: &mut String) {}
+
+fn main() {
+    let mut s = String::from("hello, ");
+
+    // 正确, 从可变对象借用为不可变
+    borrow_object(&s);
+    
+    s.push_str("world");
+}
+
+fn borrow_object(s: &String) {}
+
 // 获得可变借用
 fn add_hungary(country_name: &mut String) { // first we say that the function takes a mutable reference
     country_name.push_str("-Hungary"); // push_str() adds a &str to a String
@@ -1159,6 +1190,20 @@ Rust 引用永远不为空. 没有跟 C 的 NULL 或 C++ 的 nullptr 对应的�
 
 	> Rust 的类型推断基于 Hindly-Milner 类型系统.
 
+
+    在Rust中, ref和&都是用于引用传递的关键字，但它们在模式匹配中有些微的区别. 其中，ref用于将一个变量绑定为其值的引用，而&则直接将变量绑定为引用。 这意味着，当使用ref时，需要在变量名前加上ref关键字，而使用&则直接在变量名前加上&符号.
+    ```rust
+    fn main() {
+        let c = '中';
+
+        let r1 = &c;
+        // fill the blank，dont change other code
+        let ref r2 = c;
+
+        assert_eq!(*r1, *r2);
+    }
+    ```
+
 - 静态变量:  **需要明确指定常量的数据类型**
 
 	- 不可变: `static X:T = T::new();`
@@ -1537,13 +1582,27 @@ rust有四种主要的标量类型:整型, 浮点, 布尔, 字符型.
 	- 元素均为同类型
 	- 默认不可变
 
-	数组的类型签名为`[T;N]. T是一个泛型标记, 代表数组中元素的某个具体类; N代表数组的长度, 是一个编译时常量, 必须在编译时确定其值.
+	数组的类型签名为`[T;N]. T是一个泛型标记, 代表数组中元素的某个具体类; N代表数组的长度, 是一个编译时常量, 必须在**编译期已知**.
 
     `[1..5]` 表示左闭右开区间,`[1..=5]`则表示全闭区间
+
+    `let list: [i32; 100] = [1; 100];`即成员100个且值都是1.
 
 	数组是在栈（stack）而不是在堆（heap）上为数据分配内存空间. 对于原始固定长度数组，只有实现了 Copy trait 的类型才能作为其元素，也就是说，只有可以在栈上存放的元素才可以存放在该类型的数组中.
 
 	未来rust 还将支持VLA (variable-length array ）数组即可变长度数组. 对于可变长度数组, 将会基于可以在栈上动态分配内存的函数来实现.
+
+    ```rust
+    fn main() {
+        let names = [String::from("Sunfei"), "Sunface".to_string()];
+
+        // `get` returns an Option<T>, it's safe to use
+        let name0 = names.get(0).unwrap();
+
+        // but indexing is not safe, 可能越界
+        let _name1 = &names[1];
+    }
+    ```
 - range
 
 	Range是标准库提供的类型，用来生成从一个数字开始到另一个数字之前结束的所有数字的序列.
@@ -1552,7 +1611,7 @@ rust有四种主要的标量类型:整型, 浮点, 布尔, 字符型.
 
 	`(1..5)` 表示左闭右开区间,`（1..=5）`则表示全闭区间. 它们分别是 `std::ops::Range`和`std::ops::Rangelnclusive`的实例.
 
-- slice
+- slice: 签名是`&[T]`
 
 	slice是对一个数组(包括固定大小数组和动态数组)的**引用**片段, 不持有所有权. 在底层，切片是一个胖指针, 代表一个指向数组起始位置的指针和数组长度. 如果用`[T]`类型表示连续序列，那么切片类型就是`&[T]`和`&mut[T]`.
 
@@ -1602,7 +1661,7 @@ rust有四种主要的标量类型:整型, 浮点, 布尔, 字符型.
 	本质上, 字符串字面量属于 [str 类型](https://github.com/rust-lang/rust/blob/master/library/core/src/str/mod.rs#L122), 只不过它是静态生命周期字符串`&'static str`.
 	所谓静态生命周期即程序生命周期.
 
-    > `r#""`等价于go的"``", 如果字符串包含`#`, 那么两侧可加更多`#`来解决. 它的其他用途是使用它就可以使用关键字(如let、fn等)作为变量名, 比如`let r#let = 6; // The variable's name is let`
+    > `r#""#`(至少包含一个`#`)等价于go的"``", 如果字符串包含`#`, 那么两侧可加更多`#`来解决. 它的其他用途是使用它就可以使用关键字(如let、fn等)作为变量名, 比如`let r#let = 6; // The variable's name is let`
 
 	rust字符串因为包含长度, 因此不是以`\0`表示结束.
 
@@ -1628,6 +1687,67 @@ rust有四种主要的标量类型:整型, 浮点, 布尔, 字符型.
     - 静态存储区. 有代表性的是字符串字面量, `＆'static str`字符串被直接存储到己编译的可执行文件中, 随着程序启动而加载
     - 堆分配 : 如果`&str`字符串是通过 String 字符串取切片生成的, 则存储在堆上. 因为 String 字符串是堆配的, `&str` 不过是其在堆上的切片
     - 栈分配:  str::from_utf8 就可以将栈分配的`[u8;N]`转换为`&str`
+
+    ```rust
+    // 要使用 str 类型，只能配合 Box. & 可以用来将 Box<str> 转换为 &str 类型
+    // 1
+    fn main() {
+        let s: Box<str> = "hello, world".into();
+        greetings(&s) // 实际是greetings(&(*s)), 只能指针自动解引用了
+     }
+     
+     fn greetings(s: &str) {
+         println!("{}",s)
+     }
+    // 2
+    fn main() {
+        let s: Box<&str> = "hello, world".into();
+        greetings(*s) // 栈上保留的智能指针，指向的是&str，所以 *s 解引用，解的是智能指针
+    }
+
+    fn greetings(s: &str) {
+        println!("{}", s);
+    }
+    ```
+
+    ```rust
+    fn main() {
+        let s1 = String::from("hello,");
+        let s2 = String::from("world!");
+        let s3 = s1.clone() + &s2; // 只能将 String 跟 &str 类型进行拼接，并且 String 的所有权在此过程中会被 move. `s1.clone() + s2.clone()`是错误语法
+        assert_eq!(s3,"hello,world!");
+        println!("{}",s1);
+    }
+    ```
+
+    ```rust
+    fn main() {
+        let s = "你好，世界"; // s是utf-8数组
+        // 修改以下代码行，让代码工作起来
+        let slice = &s[0..3];
+
+        assert!(slice == "你");
+    }
+    ```
+
+    ```rust
+    // &String 可以被隐式地转换成 &str 类型.
+    fn main() {
+        let mut s = String::from("hello world");
+
+        // here, &s is `&String` type, but `first_letter` needs a `&str` type.
+        // it works because `&String` can be implicitly converted to `&str, If you want know more ,this is called `Deref` 
+        let letter = first_letter(&s);
+
+        println!("the first letter is: {}", letter);
+
+        s.clear();
+    }
+
+    fn first_letter(s: &str) -> &str {
+        &s[..1]
+    }
+    ```
 - 原生指针
 
 	可表示内存地址 的类型称指针. Rust 提供了多种类型的指针，包括引用(Reference)、原生指针(Raw Pointer)、函数指针(fn Pointer)和智能指针(Smart Pointer).
@@ -1686,6 +1806,15 @@ fn main() {
     for c in s.chars() { // 等同go的 `range []rune(s)`
         println!("{}", c);
     }
+}
+
+fn main() {
+    let s1 = String::from("hi,中国");
+    let h = &s1[0..1]; // `s1[0]`是错误语法: `String` cannot be indexed by `{integer}`
+    assert_eq!(h, "h");
+
+    let h1 = &s1[3..6];
+    assert_eq!(h1, "中");
 }
 ```
 
@@ -2184,7 +2313,7 @@ Rust 有不止一种指针类型, 常见的几种指针类型:
 - `&T` : 指向类型T的借用指针, 也称为引用, 无权释放内存, 无权写数据, 是 Copy 类型.
 
 	类似C中的`const T*`
-- `&mnut T` : 指向类型T的mut型借用指针, 无权释放内存, 有权写数据, 不是Copy类型.
+- `&mut T` : 指向类型T的mut型借用指针, 无权释放内存, 有权写数据, 不是Copy类型.
 
 	类似C中的`T*`
 - `*const T` : 指向类型T的只读裸(即原始)指针, 没有生命周期信息, 无权写数据. 它是 Copy 类型。这类似于&T，只是它可以为空值.
@@ -2464,7 +2593,80 @@ fn main() {
 
 在定义数据结构时，对于额外的、暂时不需要的泛型参数，用 PhantomData 来“拥有”它们，这样可以规避编译器的报错.
 
-函数名后没有`<T>`时, Rust会认为T是一个具体的类型, 因此它不能省略.
+impl后没有`<T>`时, Rust会认为T是一个具体的类型, 因此它不能省略. 比如:
+```rust
+struct Point<T> {
+    x: T,
+    y: T,
+}
+
+impl Point<f32> { // 是针对 impl 的特化
+    fn distance_from_origin(&self) -> f32 {
+        (self.x.powi(2) + self.y.powi(2)).sqrt()
+    }
+}
+
+fn main() {
+    let p = Point{x: 5f32, y: 10f32};
+    println!("{}",p.distance_from_origin())
+}
+```
+
+### const泛型参数
+Const 泛型是针对值的泛型.
+
+const 泛型参数只能使用以下形式的实参:
+一个单独的 const 泛型参数
+一个字面量 (i.e. 整数, 布尔值或字符).
+一个具体的 const 表达式( 表达式中不能包含任何 泛型参数)
+
+```rust
+fn foo<const N: usize>() {}
+
+fn bar<T, const M: usize>() {
+    foo::<M>(); // ok: 符合第一种
+    foo::<2021>(); // ok: 符合第二种
+    foo::<{20 * 100 + 20 * 10 + 1}>(); // ok: 符合第三种
+    
+    foo::<{ M + 1 }>(); // error: 违背第三种，const 表达式中不能有泛型参数 M
+    foo::<{ std::mem::size_of::<T>() }>(); // error: 泛型表达式包含了泛型参数 T
+    
+    let _: [u8; M]; // ok: 符合第一种
+    let _: [u8; std::mem::size_of::<T>()]; // error: 泛型表达式包含了泛型参数 T
+}
+```
+
+```rust
+#![allow(incomplete_features)]
+#![feature(generic_const_exprs)]
+
+// 隐含: 传入的类型必须是 编译期已知 大小的
+fn check_size<T>(val: T)
+where
+    Assert<{ core::mem::size_of::<T>() < 768 }>: IsTrue, // 大括号里边是一个表达式, 返回一个bool. 当返回true的时候，也就是Assert<true>才实现了IsTrue.
+{
+    print_type_of(&val);
+    //...
+}
+
+fn main() {
+    check_size([0u8; 767]); // 数组在编译器已知长度
+    check_size([0i32; 191]);
+    check_size(["hello你好"; 47]); // &str is a string reference, containing a pointer and string length in it, so it takes two word long, in x86-64, 1 word = 8 bytes
+    check_size([(); 31].map(|_| "hello你好".to_string()));  // String is a smart pointer struct, it has three fields: pointer, length and capacity, each takes 8 bytes
+    check_size(['中'; 191]); // A char takes 4 bytes in Rust
+}
+
+pub enum Assert<const CHECK: bool> {} // 编译器能确定`const CHECK`的值
+
+pub trait IsTrue {}
+
+impl IsTrue for Assert<true> {}
+
+fn print_type_of<T>(_: &T) {
+    println!("{}", std::any::type_name::<T>())
+}
+```
 
 ## trait
 在开发复杂系统的时候，常常会强调接口和实现要分离, 这是一种良好的设计习惯，它把调用者和实现者隔离开，双方只要按照接口开发，彼此就可以不受对方内部改动的影响. 接口就是这样, 是对不同数据结构中相同行为的一种抽象.
@@ -2846,6 +3048,8 @@ trait 和 trait bound 让开发者使用泛型类型参数来减少重复，并�
 
 	目前 impl Trait 只可以在输入的参敬和返回值这两个位置使用.
 
+    使用特征作为函数返回值时, 里面的`if...else`应该返回相关的类型, 否则使用`Box<dyn xxx>`.
+
 	```rust
 	pub fn impl_trait(){
 	    use std::fmt::Debug;
@@ -2903,6 +3107,43 @@ trait 和 trait bound 让开发者使用泛型类型参数来减少重复，并�
 	将impl Trait 用于返回值位置的时候，实际上等价于给返回类型增加一种 trait 限定范围.
 
 	Rust 2018 版本中，为了在语义上和 impl Trait 语法相对应, 专门为动态分发的 trait对象增加了 dyn Trait. impl Trait 表静态分发, dyn Trait 代表动态分发.
+
+    ```rust
+    trait Draw {
+        fn draw(&self) -> String;
+    }
+
+    impl Draw for u8 {
+        fn draw(&self) -> String {
+            format!("u8: {}", *self)
+        }
+    }
+
+    impl Draw for f64 {
+        fn draw(&self) -> String {
+            format!("f64: {}", *self)
+        }
+    }
+
+    fn main() {
+        let x = 1.1f64;
+        let y = 8u8;
+
+        // draw x
+        draw_with_box(Box::new(x));
+
+        // draw y
+        draw_with_ref(&y);
+    }
+
+    fn draw_with_box(x: Box<dyn Draw>) {
+        x.draw();
+    }
+
+    fn draw_with_ref(x: &dyn Draw) {
+        x.draw();
+    }
+    ```
 1. 标签 trait. 对类型的约束, 可以直接作为一种`标签`使用
 
 	对类型的约束, 即直接作为一种"标签"使用.
@@ -3148,7 +3389,7 @@ From Into 是定义于 std::convert 模块中的两个 trait. 它们定义了 fr
     }
     ```
 
-    用@给match的表达式的值起一个名字，然后就可以使用它:
+    用@给match的表达式的值起一个名字即将一个与模式相匹配的值绑定到新的变量上，然后就可以使用它:
     ```rust
     fn match_number(input: i32) {
         match input {
@@ -3162,6 +3403,44 @@ From Into 是定义于 std::convert 模块中的两个 trait. 它们定义了 fr
         match_number(50);
         match_number(13);
         match_number(4);
+    }
+
+    enum Message {
+        Hello { id: i32 },
+    }
+
+    fn main() {
+        let msg = Message::Hello { id: 5 };
+
+        match msg {
+            Message::Hello {
+                id:  id@3..=7,
+            } => println!("id 值的范围在 [3, 7] 之间: {}", id),
+            Message::Hello { id: newid@(10 | 11 | 12) } => { // @后的括号不能丢
+                println!("id 值的范围在 [10, 12] 之间: {}", newid)
+            }
+            Message::Hello { id } => println!("Found some other id: {}", id),
+        }
+    }
+    ```
+
+    ```rust
+    enum MyEnum {
+        Foo,
+        Bar
+    }
+
+    fn main() {
+        let mut count = 0;
+
+        let v = vec![MyEnum::Foo,MyEnum::Bar,MyEnum::Foo];
+        for e in v {
+            if matches!(e , MyEnum::Foo) { // 使用`if e == MyEnum::Foo`报错: an implementation of `PartialEq` might be missing for `MyEnum`. 其他解决方法: 为MyEnum添加`#[derive(PartialEq)]`. enum比较需要实现PartialEq的原因: enum的值不像c那样都是整数, 比如[如何理解PartialEq过程宏 for enum的实现 ？](https://rustcc.cn/article?id=1bad1c3c-03e0-437a-b90f-e0793d7023b2)
+                count += 1;
+            }
+        }
+
+        assert_eq!(count, 2);
     }
     ```
 
@@ -3348,6 +3627,36 @@ fn main() {
 }
 ```
 
+当有多层循环时，你可以使用 continue 或 break 来控制外层的循环:
+```rust
+fn main() {
+    let mut count = 0;
+    'outer: loop {
+        'inner1: loop {
+            if count >= 20 {
+                // This would break only the inner1 loop
+                break 'inner1; // `break` is also ok 
+            }
+            count += 2;
+        }
+
+        count += 5;
+
+        'inner2: loop {
+            if count >= 30 {
+                // This breaks the outer loop
+                break 'outer;
+            }
+
+            // This will continue the outer loop
+            continue 'outer;
+        }
+    }
+
+    assert!(count == 30)
+}
+```
+
 ### match 表达式与模式匹配
 match 用于匹配各种情况, 有点类似其他编程语言中的switch或case.
 
@@ -3363,11 +3672,127 @@ Rust 的模式匹配被广泛应用在状态机处理、消息处理和错误处
 
 > rust不支持switch, 而是使用match. 很多语言摒弃 switch 的原因都是因为 switch 容易存在因忘记添加 break 而产生的串接运行问题，Java 和 C# 这类语言通过安全检查杜绝这种情况出现.
 
+```rust
+enum Direction {
+    East,
+    West,
+    North,
+    South,
+}
+
+fn main() {
+    let dire = Direction::South;
+    match dire {
+        Direction::East => println!("East"),
+        Direction::South | Direction::North  => { // matching South or North here
+            println!("South or North");
+        },
+        _ => println!("West"),
+    };
+}
+
+// matches! 看起来像 match, 但是它可以做一些特别的事情
+fn main() {
+    let alphabets = ['a', 'E', 'Z', '0', 'x', '9' , 'Y'];
+
+    // fill the blank with `matches!` to make the code work
+    for ab in alphabets {
+        assert!(matches!(ab, 'a'..='z' | 'A'..='Z' | '0'..='9'))
+    }
+}
+```
+
+匹配守卫（match guard）是一个位于 match 分支模式之后的额外 if 条件，它能为分支模式提供更进一步的匹配条件:
+```rust
+fn main() {
+    let num = Some(4);
+    let split = 5;
+    match num {
+        Some(x) if x < split => assert!(x < split),
+        Some(x) => assert!(x >= split),
+        None => (),
+    }
+}
+```
+
+使用 `..` 忽略一部分值:
+```rust
+fn main() {
+    let numbers = (2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048);
+
+    match numbers {
+        (first,..,last) => {
+           assert_eq!(first, 2);
+           assert_eq!(last, 2048);
+        }
+    }
+}
+```
+
+使用模式 &mut V 去匹配一个可变引用时，需要格外小心，因为`匹配出来的 V 是一个值，而不是可变引用`, 因此需要用`ref mut`去修饰:
+```rust
+fn main() {
+    let mut v = String::from("hello,");
+    let r = &mut v; // &mut String
+
+    print_type_of(&r);
+
+    // println!("{}", v); // 报错: cannot borrow `v` as immutable because it is also borrowed as mutable. 同时存在可变的r,v
+
+    match r { // 不被转移所有权. 
+       &mut ref mut value => {
+           // r.push_str("t"); // 同时存在value和r, 生命周期不出问题: 推测, 在match r代码块, 编译器认为里面还是在使用r, value是r的变形, 没有多出其他可变引用
+           value.push_str(" world!") // 把`&mut ref mut value`看作`&mut X`, value匹配到v, ref mut用于修饰value, 因此这里就是创建了一个可变引用`&mut String`即value
+       }
+    }
+
+    match *r { // String
+       ref mut value => value.push_str(" world!") // 不被转移所有权. value匹配到v, ref mut修饰value, 因此这里就是创建了一个可变引用`&mut String`即value
+    }
+
+    match r { // 匹配到&mut String
+       value => { // 转移r的所有权: 发生移动是因为 `r` 的类型为 `&mut String`, 它没有实现 `Copy` 特征
+            print_type_of(&value);
+            value.push_str(" world!") 
+       }
+    }
+
+
+    // println!("{}", r); // 报错: match已经拿走r的值的所有权
+    println!("{}", v); // 能打印, 说明所有权还在
+}
+
+fn print_type_of<T>(_: &T) {
+    println!("{}", std::any::type_name::<T>())
+}
+```
+
 ### if let while let 达式
 Rust 还提供了 if let和while let 表达式 用来在某些场合替 match 表达式.
 
 if let 是 match 的一个语法糖，它当值匹配某一模式时执行代码而忽略所有其他值. 在 if let 中可包含一个 else, else 块中的代码与 match 表达式中的 `_` 分支块中的代码相同.
 
+```rust
+fn main() {
+    let o = Some(7);
+
+    // 移除整个 `match` 语句块，使用 `if let` 替代
+    match o {
+        Some(i) => {
+            println!("This is a really long string and `{:?}`", i);
+        }
+        _ => {}
+    };
+}
+
+fn main() {
+    let o = Some(7);
+
+    if let Some(i) = o {
+        println!("This is a really long string and `{:?}`", i);
+    }
+}
+```
 
 ## 生命周期
 ```rust
@@ -3758,8 +4183,10 @@ impl 块的另一个有用的功能是: 允许在 impl 块中定义不以 self (
 
 impl实例方法的变体, 根据限制由少到多排列的:
 - &self 作为第一个参数, 此方法仅提供对类型实例的读取访问权限
+
+    `&self`实际上是 `self: &Self` 的缩写或者说语法糖
 - &mut self 作为第一个参数, 此方法提供对类型实例的可变访问
-- self 作为第一个参数, 这些方法拥有调用它的实例的所有权，并且类型在后续调用时将失效
+- self 作为第一个参数, 这些方法拥有调用它的实例的**所有权**，并且类型在后续调用时将失效
 
 ### 高阶函数
 高阶函数是指以函数作为参数或返回值的函数，它是函数式编程语言最基础的特性
@@ -4882,6 +5309,51 @@ trait 对象给了我们运行时的多态性. Trait 对象是不确定大小的
 > 1. 不允许返回 Self，是因为 trait object 在产生时，原来的类型会被抹去，所以 Self 究竟是谁不知道
 > 1. 不允许携带泛型参数，是因为 Rust 里带泛型的类型在编译时会做单态化，而 trait object 是运行时的产物，两者不能兼容.
 
+```rust
+trait MyTrait {
+    fn f(&self) -> Self;
+}
+
+impl MyTrait for u32 {
+    fn f(&self) -> u32 { 42 }
+}
+
+impl MyTrait for String {
+    fn f(&self) -> String { self.clone() }
+}
+
+fn my_function(x: impl MyTrait) -> impl MyTrait  {
+    x.f()
+}
+
+fn main() {
+    my_function(13_u32);
+    my_function(String::from("abc"));
+}
+
+// ---
+trait MyTrait {
+    fn f(&self) -> Box<dyn MyTrait>;
+}
+
+impl MyTrait for u32 {
+    fn f(&self) -> Box<dyn MyTrait> { Box::new(42) }
+}
+
+impl MyTrait for String {
+    fn f(&self) -> Box<dyn MyTrait> { Box::new(self.clone()) }
+}
+
+fn my_function(x: Box<dyn MyTrait>) -> Box<dyn MyTrait> {
+    x.f()
+}
+
+fn main() {
+    my_function(Box::new(13_u32));
+    my_function(Box::new(String::from("abc")));
+}
+```
+
 **Rust 2018 edition开始, trait object 的语法会被要求加上 dyn 关键字即`impl Shape for dyn Round`**, 2015可用`impl Shape for Round`.
 
 dyn(动多态, 类似golang的接口):
@@ -5001,6 +5473,103 @@ trait形式:
 	```
 
 	它在trait中声明了相关类型.
+
+    关联类型主要用于提升代码的可读性:
+    ```rust
+    struct Container(i32, i32);
+
+    // 使用关联类型实现重新实现以下特征
+    // trait Contains {
+    //    type A;
+    //    type B;
+
+    trait Contains<A, B> {
+        fn contains(&self, _: &A, _: &B) -> bool;
+        fn first(&self) -> i32;
+        fn last(&self) -> i32;
+    }
+
+    impl Contains<i32, i32> for Container {
+        fn contains(&self, number_1: &i32, number_2: &i32) -> bool {
+            (&self.0 == number_1) && (&self.1 == number_2)
+        }
+        // Grab the first number.
+        fn first(&self) -> i32 { self.0 }
+
+        // Grab the last number.
+        fn last(&self) -> i32 { self.1 }
+    }
+
+    fn difference<A, B, C: Contains<A, B>>(container: &C) -> i32 {
+        container.last() - container.first()
+    }
+
+    fn main() {
+        let number_1 = 3;
+        let number_2 = 10;
+
+        let container = Container(number_1, number_2);
+
+        println!("Does container contain {} and {}: {}",
+            &number_1, &number_2,
+            container.contains(&number_1, &number_2));
+        println!("First number: {}", container.first());
+        println!("Last number: {}", container.last());
+        
+        println!("The difference is: {}", difference(&container));
+    }
+    // --- 
+    struct Container(i32, i32);
+
+    // A trait which checks if 2 items are stored inside of container.
+    // Also retrieves first or last value.
+    trait Contains {
+        // Define generic types here which methods will be able to utilize.
+        type A;
+        type B;
+
+        fn contains(&self, _: &Self::A, _: &Self::B) -> bool;
+        fn first(&self) -> i32;
+        fn last(&self) -> i32;
+    }
+
+    impl Contains for Container {
+        // Specify what types `A` and `B` are. If the `input` type
+        // is `Container(i32, i32)`, the `output` types are determined
+        // as `i32` and `i32`.
+        type A = i32;
+        type B = i32;
+
+        // `&Self::A` and `&Self::B` are also valid here.
+        fn contains(&self, number_1: &i32, number_2: &i32) -> bool {
+            (&self.0 == number_1) && (&self.1 == number_2)
+        }
+        // Grab the first number.
+        fn first(&self) -> i32 { self.0 }
+
+        // Grab the last number.
+        fn last(&self) -> i32 { self.1 }
+    }
+
+    fn difference<C: Contains>(container: &C) -> i32 {
+        container.last() - container.first()
+    }
+
+    fn main() {
+        let number_1 = 3;
+        let number_2 = 10;
+
+        let container = Container(number_1, number_2);
+
+        println!("Does container contain {} and {}: {}",
+            &number_1, &number_2,
+            container.contains(&number_1, &number_2));
+        println!("First number: {}", container.first());
+        println!("Last number: {}", container.last());
+        
+        println!("The difference is: {}", difference(&container));
+    }
+    ```
 1. trait依赖
 
 	`trait Subtrait: Supertrait {}`: 所有实现 Subtrait 的类型都是所有实现 Supertrait 的类型的子集

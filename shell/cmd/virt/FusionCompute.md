@@ -40,11 +40,17 @@ vm cdrom底层可用nbd, 避免拷贝iso. 对比过vrm和cna的fs(`df -h`)变化
 配置模式:
 - 普通延迟置零: raw, disk size初始是创建时的大小
 
+	根据磁盘容量为磁盘分配空间，创建时不会擦除物理设备上保留的任何数据，但后续从虚拟机首次执行写操作时会按需要将其置零. 创建速度比“普通”模式快；IO性能介于“普通”和“精简”两种模式之间.
+
 	cbt第一次备份大小是virtual size
 - 普通: raw, disk size初始是创建时的大小
 
+	根据磁盘容量为磁盘分配空间，在创建过程中会将物理设备上保留的数据置零. 这种格式的磁盘性能要优于其他两种磁盘格式，但创建这种格式的磁盘所需的时间可能会比创建其他类型的磁盘长，且预留空间和实际占用空间相等，建议系统盘使用该模式.
+
 	cbt第一次备份大小是virtual size
 - 精简: raw, disk size初始是4K
+
+	该模式下，系统首次仅分配磁盘容量配置值的部分容量，后续根据使用情况，逐步进行分配，直到分配总量达到磁盘容量配置值为止.
 
 	cbt第一次备份大小是virtual size
 
@@ -109,6 +115,8 @@ cbt大小预估: `(volGB * 2<<30)/(sectorOfBlock*512) * 4B`
 
 > 观察到7/1/2G卷的cbt文件都是8.1M???, 应该是预留了空间存储其他数据.
 
+> 7G盘全备getCbtDiffBitmap返回的bitNum=3584和bit1Num=2991, bitNum!=bit1Num, 推测qcow也有bitmap, 可以辅助判断哪些数据块有数据. 
+
 ### `BCManager和FusionCompute Scoket接口`使用
 1. 打CBT快照前, 不能存在prepareBackupResource
 1. 第一次cbt备份, getCbtDiffBitmap返回的bitNum和bit1Num均为0
@@ -118,14 +126,18 @@ cbt大小预估: `(volGB * 2<<30)/(sectorOfBlock*512) * 4B`
 	原因: BlockNum不能为0
 
 	> GetCbtDiffBitmapReq不要使用`, omitempty`, 容易报400; 也没必要使用SnapUuid, 实际测试SnapUuid没有效果
+	> 备份时, prepareBackupResource使用的Snap必须存在
+	> CNA重启好后CBT快照的ChgID会从1重新开始
 
 	vinchin(by `截取VNA请求`)每次BlockNum的step是1024, 具体传参:
 	- 全备: ChgID为空即"0"
 	- 增量: ChgID为cbtbackup snap的pre ChgID
 
-		备份内容是pre ChgID ~ cur ChgID的变化数据
+		备份内容是pre ChgID ~ cur ChgID的变化数据, 因此如果ChgID为cur ChgID, 返回的Bit1Num是0.
 
 	有效即根据返回的bit1Num计算.
+
+	GetCbtDiffBitmapReq可以先仅传Type和VolCBTCreateTime
 
 1. version找不到指定值, 用0
 1. sequence: 单调递增即可, server返回同样的sequence
@@ -141,7 +153,7 @@ cbt大小预估: `(volGB * 2<<30)/(sectorOfBlock*512) * 4B`
 	- `x509: cannot validate certificate for xxx because it doesn't contain any IP SANs`: 因为server使用了自签名证书, 使用`tls.Config{InsecureSkipVerify: true}`即可
 1. prepareBackupResource限制8个socket, 可以根据resp error(10300412/10300413)判断
 
-	并发vm的两个盘, 它们备份资源返回的hostPort都是35001, 小盘备份完成时CNA会关闭35001导致大盘备份失败, 参考vinchin推测FusionCompute本身设计就是这样.
+	并发备份vm的两个盘, 它们备份资源返回的hostPort都是35001, 小盘备份完成时CNA会关闭35001导致大盘备份失败, 参考vinchin推测FusionCompute本身设计就是这样.
 
 	vinchin备份时(多vm):
 	- 快照模式=串行: 逐台vm逐个disk备份再删除snap都是串行操作.
@@ -184,10 +196,14 @@ cbt大小预估: `(volGB * 2<<30)/(sectorOfBlock*512) * 4B`
 		}
 		```
 
+	并发还原是没有问题的.
+
 1. 创建vm by VRM CreateVm:
 
  空闲cpu: CpuQuantity
  空闲内存: MemQuantityMB, 没有vrm管理页面没有显示可用的空闲内存, 参考CpuQuantity, 找到MemQuantityMB
+ vmName/portGroupName可以重复
+ 网卡的mac需要唯一, 空表示自动生成, 否则填具体mac
 
 ## FAQ
 ### [X-Auth-UserType](https://zhuanlan.zhihu.com/p/648587865)

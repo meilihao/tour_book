@@ -869,7 +869,7 @@ help: `virt-install <参数> ?`
         domblkstat                     获得域设备块状态
         domcontrol                     域控制接口状态
         domif-getlink                  获取虚拟接口链接状态
-        domifaddr                      Get network interfaces' addresses for a running domain
+        domifaddr <name>               Get network interfaces' addresses for a running domain. 获取虚拟机的IP地址(NAT DHCP分配的)
         domiflist <name>               列出所有域虚拟接口
         domifstat                      获得域网络接口状态
         dominfo                        域信息
@@ -937,7 +937,7 @@ help: `virt-install <参数> ?`
         net-create                     从一个 XML 文件创建一个网络
         net-define                     define an inactive persistent virtual network or modify an existing persistent one from an XML file
         net-destroy                    销毁（停止）网络
-        net-dhcp-leases                print lease info for a given network
+        net-dhcp-leases <default>      print lease info for a given network: 给domain分配的ip(包括之前分配的还在租约内的ip)
         net-dumpxml                    XML 中的网络信息
         net-edit                       为网络编辑 XML 配置.  `virsh net-edit default`
         net-event                      Network Events

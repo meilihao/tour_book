@@ -309,6 +309,7 @@ iscsiadm:
 # iscsiadm -m node -o show
 # --- 查看连接后状态
 # iscsiadm -m session -o show # logout设备不显示在输出中. 输出中的`[n]`, 其中n是session id, 其实就是`/sys/class/iscsi_session/session<n>`, 该目录中的device/target<scsi path>是该target导出的scsi设备. 如果是磁盘格式为`target35:0:0:0`(其子目录下只有`target35:0:0:0`), 如果是磁带柜格式为`target34:0:0`(其子目录下有`target34:0:0:0`(磁带柜),`target34:0:0:1`(磁带)等).
+# # iscsiadm -m session -o show -r 1
 # iscsiadm -m node -T iqn.2006-01.com.openfiler:Foundation [-P 3] -o show # 查看target
 # --- 发现
 # iscsiadm -m discovery -t st -p 192.168.10.10 # **需先发现, 再设置chap, 最后login**
@@ -428,7 +429,7 @@ Online
 1. `echo 1 > /sys/class/fc_host/host<N>/issue_lip`, **推荐** # 此时会通过issue_lip重置HBA链路(会影响正常的链路)，重新扫描整个链路并配置SCSI target. 该操作是一种异步操作类型，具体完成时间需要参考system log. Linux操作系统自带的lpfc和qla2xxx 驱动支持issue_lip命令.
 1. `echo "- - -" |tee -a /sys/class/scsi_host/*/scan` # `- - -`分别代表通道，SCSI目标ID和LUN, 此时破折号充当通配符，表示"重新扫描所有内容"
 
-> 有时明明fc target配置正确但fc client还是不能扫出新盘: 有坏的fc链路占用了相同的盘符(比如sdc), 导致不能扫出. 解决方法:1. `rescan-scsi-bus.sh -r`即移除失效的设备; 2. `reboot`
+> 有时明明fc target配置正确但fc client还是不能扫出新盘: 有坏的fc链路占用了相同的盘符(比如sdc), 导致不能扫出. 解决方法:1. `rescan-scsi-bus.sh -r`(rescan-scsi-bus.sh from sg3_utils)即移除失效的设备; 2. `reboot`
 
 ### Could not create Qla2xxxFabricModule in configFS | Could not create Target in configFS | 看不到FC fabric
 `modprobe tcm_qla2xxx`
@@ -449,6 +450,10 @@ qla2xxx.ko支持target模式和initiator模式, 在存储服务器上必须根�
 > 也可通过/etc/modprobe.d/qla2xxx.conf指定qla2xxx驱动参数, 比如`options qla2xxx qlini_mode="enabled"`.
 
 > 其实qlini_mode默认是"exclusive"模式: 默认支持initiator模式, 通过操作target驱动提供的configfs接口, 可切换到target模式, 还可以再切回initiator模式.
+
+### fc盘位置
+1. `lsblk -S`, 找`TRAN=fc`
+1. `/dev/disk/by-path/fc-*`
 
 ### rm -rf "/sys/kernel/config/target/core/iblock_0", 删除失败
 target configfs与普通的文件系统有一定的差异导致删除失败.
@@ -552,6 +557,30 @@ fc直连可能导致fc target无法发现, 过光纤交换机后正常.
 
 ### fc state linkdown
 没接线
+
+### target冲突
+一键接管起来的vm里面有保护原机时的iscsi session, 导致原机iscsi连接断开. vm里的iscsid.service停止后, 原机iscsi device重新上线(有重连操作).
+
+原因: vm存在一个libvirt NAT DHCP分配的ip, iscsi target就在host上, 导致vm iscsi也能连接到iscsi target, 且它的iscsi initiator与原机相同.
+
+根本原因:
+- [iscsi_check_for_session_reinstatement](https://elixir.bootlin.com/linux/v5.4.17/source/drivers/target/iscsi/iscsi_target_login.c#L198)
+
+    根据系统target日志, 进到了iscsi_check_for_session_reinstatement逻辑, 根据函数名中的`session reinstatement`和`RFC 7143的6.3.5. Session Reinstatement, Closure, and Timeout`, 原因就是session reinstatement终止了原session.
+
+- [RFC 7143 - Internet Small Computer System Interface (iSCSI) Protocol (Consolidated) : 6.3.5. Session Reinstatement, Closure, and Timeout](https://tex2e.github.io/rfc-translater/html/rfc7143.html)
+
+    Session reinstatement causes all the tasks that were active on the old session to be immediately terminated by the target without further notice to the initiator.
+
+### iscsi config
+iscsi通过`/var/lib/iscsi`来实现永久配置:
+- nodes:
+    
+    session配置
+- send_targets
+
+    iSCSI portals的配置信息
+- ...
 
 # tgtadm
 参考:

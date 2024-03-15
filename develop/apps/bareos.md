@@ -2734,6 +2734,10 @@ SD networking messed up (restart daemon).
 
 原因: 未知
 
+### 备份一直卡在排队中
+情况:
+1. dir client: MaximumConcurrentJob=0导致
+
 ### 文件备份到tape全量成功, 增量和差异会一直运行中
 joblog报`No slot defined in catalog (slot=0) for Volume "Incremental-0015" on "autochanger_xxx" (dev/tape/by-id/xxx-nst)`
 

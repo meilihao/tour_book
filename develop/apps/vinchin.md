@@ -16,3 +16,7 @@ self.db_user = "vinchin"
 self.db_password = "yunqi123456"
 self.db_name = "vinchin_db"
 ```
+
+### log
+1. 存储设备里:`<storage_uuid>/task_log`
+1. `/var/log/vinchin`
