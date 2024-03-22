@@ -1,5 +1,5 @@
 # guestfish
-guestfish是一套虚拟机镜像管理的利器, 提供一系列对镜像管理的工具, 也提供对外的API.
+guestfish是一套虚拟机镜像管理的利器, 提供一系列对镜像管理的工具, 也提供对外的API. Guestfish 是libguestfs项目中的一个工具软件，提供修改虚机镜像内部配置的功能, 基于libguestfs.
 
 guestfish主要包含以下工具：
 - guestfish : 挂载镜像，并提供一个交互的shell
@@ -82,7 +82,9 @@ guestfish主要包含以下工具：
 
 	virt-tar-out -a t.qcow2 /root data.tar
 - virt-v2v :其他格式虚拟机镜像转KVM镜像
-- virt-win-reg : 注册表导入镜像
+- virt-win-reg : 修改windows硬盘镜像中的注册表
+
+	- [16.10.3. 使用 virt-win-reg](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/6/html/virtualization_administration_guide/sect-virt-win-reg-use)
 - libguestfs-test-tool :测试libguestfs
 - hivex : 解压windows注册表文件
 - hivexregedit :合并、并导出注册表文件内容
@@ -94,6 +96,8 @@ guestfish主要包含以下工具：
 安装: `yum install libguestfs-tools libguestfs-winsupport`, 默认安装不支持windows.
 
 # libguestfs-tools
+
+> libguestfs-test-tool可检查libguestfs-tools环境是否正常, 正常输出`===== TEST FINISHED OK =====`
 
 libguestfs是用于访问和修改虚拟机的磁盘镜像的一组工具集合. 它提供了访问和编辑客户机中的文件、 脚本化修改客户机中的信息、 监控磁盘使用和空闲的统计信
 息、 P2V、 V2V、 创建客户机、 克隆客户机、 备份磁盘内容、 格式化磁盘、 调整磁盘大小等非常丰富的功能.
@@ -133,7 +137,9 @@ ref:
 
 原理:
 1. 执行guestfish -a会动一个进程，也就是那个shell壳子，姑且称之为main program
-2. 运行run的时候，会创建一个child process，在child process中，利用libvirt启动一个称为appliance的虚拟机。
+2. 运行run的时候，会创建一个child process，在child process中，利用libvirt启动一个称为appliance的虚拟机
+
+	appliance使用supermin和host的kernel制作而成
 3. 在appliance中，运行了linux kernel和一系列用户空间的工具(LVM, ext2等)，以及一个后台进程guestfsd
 4. main process中的libguestfs和这个guestfd通过RPC进行交互
 5. 由child process的kernel来操作disk image

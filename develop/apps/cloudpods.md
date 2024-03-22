@@ -1,4 +1,9 @@
 # cloudpods
+ref:
+- [Cloudpods 4.0](https://www.yunion.cn/article/html/20240102.html)
+
+	3.11 为 3.0 的最后一个小版本，将作为 cloudpods 的第一个 LTS 版本长期维护。之后将进入 4.0 时代.
+
 ## 概念
 - 内置私有云: 管理本地IDC的未云化资源(on-premise), 主要是裸机, KVM虚拟机(Libvirt), VMware ESXi虚拟机(vSphere)
 - 纳管私有云(priate cloud): zstack, openstack, 阿里飞天等

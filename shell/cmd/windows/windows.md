@@ -1,5 +1,10 @@
 # windows
 
+
+## 注册表
+- 网络配置: `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\<InterfaceGUID>`
+- initiator iqn, 见[/shell/cmd/suit/target.md]
+
 ## FAQ
 ### 安装驱动
 [`pnputil -i -a *.inf`, 需管理员权限](https://help.aliyun.com/document_detail/217543.html#section-1kb-hov-812)

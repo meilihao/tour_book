@@ -73,6 +73,10 @@ flow:
 - [eBackup有哪几种备份组网方式，各备份组网方式主要的应用场景及备份流程？](https://blog.51cto.com/u_15069486/4057651)
 - [华为虚拟化备份方案](https://www.hcieonline.com/03-%E5%A4%87%E4%BB%BD/)
 - [eSDK Cloud V100R005C00 开发指南(FusionSphere Backup&Restore SDK)](https://download.huawei.com/edownload/e/download.do?actionFlag=download&nid=EDOC1000067596&partNo=h001&mid=SUPE_DOC&_t=1501982801000)
+- [华为发布全闪备份一体机旗舰新品，并宣布备份软件开源](https://www.163.com/dy/article/IMDEST6Q0511B8LM.html)
+
+	开源时间线:
+	- [open-eBackup：共建数据备份新生态](https://we.yesky.com/blog/309938)
 
 底层是普通延迟置零, 首次创建cbt备份后, disk.source(应该就是disk的增量)变为qcow2 compat 1.1, backingStore.source应该是原先的磁盘.
 

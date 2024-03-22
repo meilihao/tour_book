@@ -582,6 +582,27 @@ iscsi通过`/var/lib/iscsi`来实现永久配置:
     iSCSI portals的配置信息
 - ...
 
+### windows initiator iqn
+ref:
+- [Changing the hostname (IP address) or IQN of a SQL server target or staging host](https://cd.delphix.com/docs/18.0.0.0/changing-the-hostname-ip-address-or-iqn-of-a-sql-s)
+
+    iscsicli操作iscsi
+
+修改 initiator iqn:
+1. windows自带工具:
+
+    `iSCSI 发起程序`-`配置`里的`发起程序名称`即iqn, 点击`更改`按钮即可
+
+1. 手动修改:
+
+    `iSCSI 发起程序`里的初始initiator iqn直接通过hostname拼接而成, 不保存在注册表, 手动修改后保存在注册表里. **已在windows server 2008/2012上验证是该情况**
+
+    修改默认的iqn后在`HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\iSCSI\Discovery`的DefaultInitiatorName里出现了该iqn(默认iqn情况下, Discovery下没有DefaultInitiatorName这一项), 修改该值后, `iSCSI 发起程序`里的iqn还是原值, 在重启或`net stop msiscsi + net start msiscsi`后变为新值
+
+    > msiscsi restart后`iSCSI 发起程序`首次启动比较慢, 可能与存在一些无用的iscsi target有关
+
+    > vm环境可通过virt-win-reg处理
+
 # tgtadm
 参考:
 - [github.com/longhorn/go-iscsi-helper](https://github.com/longhorn/go-iscsi-helper/blob/master/iscsi/target.go)

@@ -20,3 +20,6 @@ self.db_name = "vinchin_db"
 ### log
 1. 存储设备里:`<storage_uuid>/task_log`
 1. `/var/log/vinchin`
+
+### 虚拟机备份
+不知Vinhin技术细节, 但备份到qcow2上应该挺合适, 尤其是增量/差分都可基于backing_chains进行.

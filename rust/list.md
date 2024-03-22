@@ -16,6 +16,9 @@ ref:
 - [github.com/samuela/rustybox](https://github.com/samuela/rustybox)
 - [github.com/uutils/coreutils](https://github.com/uutils/coreutils)
 
+### blog
+- [Actix-Blog](https://github.com/Dengjianping/Actix-Blog)
+
 ## 教程
 - [easy_rust](https://github.com/Dhghomon/easy_rust)
 - [Rust入门秘籍](https://rust-book.junmajinlong.com/about.html)
@@ -42,6 +45,12 @@ ref:
 - [Hands-On Data Structures and Algorithms with Rust](https://www.amazon.co.jp/-/en/Claus-Matzinger/dp/178899552X)
 
 	[code](https://github.com/PacktPublishing/Hands-On-Data-Structures-and-Algorithms-with-Rust)
+- [Rust 秘典（死灵书）](https://nomicon.purewhite.io)
+- [Rust By Practice( Rust 练习实践 )](https://practice-zh.course.rs/)
+
+	第18章开始没有更新了 - 2024.3.21
+- [Rust 参考手册 - The Rust Language Reference](https://minstrel1977.gitee.io/rust-reference/types.html)
+- [Rust语言圣经](https://course.rs)
 
 ## gui
 - [Pop!_OS COSMIC 桌面使用 Rust GUI 库 Iced 取代 GTK](https://www.oschina.net/news/212636/cosmic-desktop-iced-toolkit)
