@@ -148,10 +148,11 @@ rule family="ipv4" source address="192.168.10.0/24" service name="ssh" reject" #
 ```
 
 ## rich rules
-修改rule需要`--reload`, 这里图省事没加
+修改rule需要`firewall-cmd --reload`, 这里图省事没加
 
 ```bash
 # firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="192.168.0.200" port protocol="tcp" port="80" reject' # 限制IP为192.168.0.200的地址禁止访问80端口
+# firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="192.168.0.200" reject' # 限制IP为192.168.0.200的地址禁止访问
 # firewall-cmd --zone=public --list-rich-rules
 # firewall-cmd --permanent --add-rich-rule='rule family="ipv4" source address="192.168.0.200" port protocol="tcp" port="80" accept' # 解除上面被限制的192.168.0.200
 # firewall-cmd --permanent --remove-rich-rule='rule family="ipv4" source address="192.168.0.200" port protocol="tcp" port="80" accept' # 同上, **推荐**

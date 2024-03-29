@@ -22,4 +22,11 @@ self.db_name = "vinchin_db"
 1. `/var/log/vinchin`
 
 ### 虚拟机备份
-不知Vinhin技术细节, 但备份到qcow2上应该挺合适, 尤其是增量/差分都可基于backing_chains进行.
+> 增量和差异是互斥的
+
+vm disk使用qcow2保存, 没用backing_chains
+
+> 增量/差分场景都可基于backing_chains进行.
+
+#### 瞬间恢复
+创建disk.img通过NFS(`/mnt/kvinfs`)导出, 在fc host的数据存储里创建NAS存储, 再使用该共享img启动vm
