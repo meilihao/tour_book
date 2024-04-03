@@ -155,3 +155,6 @@
 
 ## https
 - [HTTPS过程详解，tcpdump抓包一步一步分析](https://blog.csdn.net/simonchi/article/details/107563574)
+
+## demo
+- [用 Vue 全家桶纯手工搓了一个开源版「抖音」，高仿度接近 100%](https://www.oschina.net/news/286027)

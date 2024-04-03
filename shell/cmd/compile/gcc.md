@@ -234,3 +234,11 @@ C++23   未完全支持（标准还在发展中）  从GCC 11版本开始支持C
 查看方法, 前提是没有strip so:
 `strings libdhnetsdk.so | grep GLIB`
 `strings libdhnetsdk.so | grep GCC`
+
+### `__stack_chk_fail_local`
+在makefile CFLAGS中加入`-fno-stack-protector`
+
+注意是在gcc编译时加上参数，不是在ld链接时加上. 需要`make clean + make`
+
+### `skipping incompatible /usr/lib/gcc/x86_64-linux-gnu/12/libgcc.a when searching for -lgcc`
+构建使用了`gcc -m32`, os是64位, 没有32位的`lgcc`, 需要`lib32gcc-12-dev`

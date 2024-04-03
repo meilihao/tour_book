@@ -558,6 +558,36 @@ fc直连可能导致fc target无法发现, 过光纤交换机后正常.
 ### fc state linkdown
 没接线
 
+### iscsi session
+在 iSCSI 协议中，iSCSI session 指的是 iSCSI 发起方 (Initiator) 与 iSCSI 目标方 (Target) 之间的逻辑连接. 一个 iSCSI session 可以包含多个连接 (Connection)，每个连接代表一条 TCP/IP 连接.
+
+iSCSI session 由以下几个要素定义：
+- 会话 ID (SSID)：一个**唯一**的标识符，用于区分不同的 iSCSI session. SSID 由发起方部分 (ISID) 和目标方部分 (Target Portal Group Tag) 组成
+
+    查询方法: `iscsiadm -m session -P 1`
+- 目标方 (Target)：提供存储空间的 iSCSI 设备
+- 发起方 (Initiator)：请求访问存储空间的 iSCSI 设备
+- LUN (Logical Unit Number)：逻辑单元号，用于标识目标方上的特定存储空间
+- 连接 (Connection)：一条 TCP/IP 连接，用于传输 iSCSI 数据
+
+在 iSCSI 协议中，iSCSI session reinstatement 是指在连接断开后重新建立 iSCSI session 的过程.
+
+iSCSI session reinstatement 的判断方法如下：
+1. 发起方会在 Session Reinstatement Request 消息中包含一个 Session ID
+1. 目标方会根据 Session ID 来判断是否需要进行 session reinstatement
+
+如果目标方收到 Session Reinstatement Request 消息，并且 Session ID 是有效的，则目标方会执行以下操作：
+1. 验证发起方的身份
+1. 恢复 session 的状态
+1. 返回 Session Reinstatement Response 消息
+
+如果目标方收到 Session Reinstatement Request 消息，但 Session ID 是无效的，则目标方会返回 Session Reinstatement Response 消息，并指示错误代码.
+
+
+在 iSCSI 协议中，iSCSI 多路径 指的是允许**多个 iSCSI 发起方 (Initiator) **通过多条路径访问**同一个 iSCSI 目标方 (Target)** 的功能.
+
+> FC 多路径 指的是允许**多个 FC 主机 (HBA)** 通过多条路径访问**同一个 FC存储设备** 的功能
+
 ### target冲突
 一键接管起来的vm里面有保护原机时的iscsi session, 导致原机iscsi连接断开. vm里的iscsid.service停止后, 原机iscsi device重新上线(有重连操作).
 
@@ -582,6 +612,7 @@ iscsi通过`/var/lib/iscsi`来实现永久配置:
     iSCSI portals的配置信息
 - ...
 
+
 ### windows initiator iqn
 ref:
 - [Changing the hostname (IP address) or IQN of a SQL server target or staging host](https://cd.delphix.com/docs/18.0.0.0/changing-the-hostname-ip-address-or-iqn-of-a-sql-s)
@@ -602,6 +633,7 @@ ref:
     > msiscsi restart后`iSCSI 发起程序`首次启动比较慢, 可能与存在一些无用的iscsi target有关
 
     > vm环境可通过virt-win-reg处理
+
 
 # tgtadm
 参考:
