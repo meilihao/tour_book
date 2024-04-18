@@ -7,11 +7,13 @@
 
 ## 选项
 - -r : 删除双引号
+- -S : sort keys
 
 ## example
 ```bash
 $ jq -r .arch version.json
 $  curl http://localhost:5984/ussfed_tmm -s | jq  # `-s`作用: 忽略curl的process header, 否则jq的输出内容带该信息
+$ jq -S . my_file > sorted_file
 ```
 
 ## FAQ
