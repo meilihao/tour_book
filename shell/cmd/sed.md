@@ -35,7 +35,7 @@ function：
 - d ：删除，因为是删除啊，所以 d 后面通常不接任何咚咚；
 - i ：插入， i 的后面可以接字串，而这些字串会在新的一行出现(目前的上一行)；
 - p ：列印，亦即将某个选择的数据印出。通常 p 会与参数 sed -n 一起运行～
-- s ：取代，可以直接进行取代的工作哩！通常这个 s 的动作可以搭配正规表示法！例如 1,20s/old/new/g 就是啦！
+- s ：取代, s后跟分隔符. 通常这个 s 的动作可以搭配正规表示法！例如 1,20s/old/new/g 就是啦！
 
 sed内置命令N的作用: 不会清空模式空间(pattern space)内容, 并且从输入文件中读取下一行数据, 追加到模式空间中, 两行数据以`\n`连接. 即将当前读入行和用N命令添加的下一行拼成"一行".
 
@@ -44,6 +44,14 @@ sed内置命令N的作用: 不会清空模式空间(pattern space)内容, 并且
 
 ## 例
 ```
+$ sed -i '/2222222222/a3333333333' test.txt # 在匹配行后插入新行
+$ sed -i '/2222222222/i3333333333' test.txt # 在匹配行前追加新行
+$ sed -i '/2222222222/a\3333333333' test.txt # 在匹配行后插入新行. 在书写的时候为便与区分，往往会在i和a前面加一个反加一个反斜扛
+$ sed -i '/2222222222/i\3333333333' test.txt # 在匹配行前追加新行. 同上
+$ sed -i 'N;4addpdf' a.txt # 在指具体行号后加一行内容, 这里是第4行
+$ sed -i 'N;4ieepdf' a.txt # 在指具体行号前加一行内容, 这里是第4行
+$ sed -i -e :a -e '$!N;s/.*n(.*directory)/1/;ta' -e 'P;D' server.xml # 删除指定文件的上一行
+$ sed -i '/pattern="%/{n;d}' server.xml # 删除指定文件的下一行
 $ sed -i 's/^#\s*StrictHostKeyChecking.*$/    StrictHostKeyChecking no/' /etc/ssh/ssh_config # 整行替换
 $ sed -n '3,7 p' data # 打印3~7行
 $ sed -n '/linux/I p' data # 查找指定字符串
@@ -71,8 +79,6 @@ $ sed -n "/test_string/p" a.log # **仅检测sed匹配到的内容**
 $ sed -i "s@if \[ -f /etc/exports \] && grep -q@if [ -f /etc/exports ] # \&\& grep -q@" b.bak # `&`表示引用及引用被匹配到的字符串, 因此必须转义, 否则此例会导致在被替换字符串中出现两次匹配内容.
 $ sed -i "/LFS_Sources_Root=\${LFSRoot}\/sources/d" build/tcl.sh # 删除行
 $ echo sources/linux-5.8.1.tar.xz |sed 's/linux\-\(.*\)\.tar\.xz/\1/g' => sources/5.8.1 # 提取变量, 因为sed是匹配替换因此"sources/"被保留了
-$ sed -i '/2222222222/a\3333333333' test.txt # 在匹配行前插入新行
-$ sed -i '/2222222222/i\3333333333' test.txt # 在匹配行后追加新行
 $ sed -i "s/max_dbs_open = 100.*/max_dbs_open = 1000/g" /etc/couchdb/default.ini # 匹配里使用通配符
 $ sed -i -r "s/([0-9]{1,3}\.){3}([0-9]{1,3})/127.0.0.1/g" <file> # 替换文件中的ip
 $ sed -i 's@os id="\(.*\)@os id="https://xxx"@' <file> # 替换virt xml的osinfo

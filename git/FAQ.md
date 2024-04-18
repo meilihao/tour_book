@@ -478,3 +478,11 @@ git diff branch1 branch2 <file_path> # 比较指定文件差异
 
 ### 设置默认remote
 `git branch --set-upstream-to origin/master`
+
+### git push无响应且`ssh -T git@github.com -vvv`卡在`expecting SSH2_MSG_KEX_ECDH_REPLY`
+ref:
+- [SSH使用问题以及解决方案(expecting SSH2_MSG_KEX_ECDH_REPLY) ](https://github.com/johnnian/Blog/issues/44)
+
+git push之前正常, 2024.3月末出现该问题.
+
+ifconfig tun0 mtu 1400

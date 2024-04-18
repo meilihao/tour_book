@@ -3,7 +3,6 @@
 ## 插件
 语言插件:
 - C/C++
-- C++ Intellisense
 - Switcher : 能在头文件和 C/C++ 文件之间跳转
 - shellman :  Linux shell 脚本辅助工具, 提供了便捷的shell script 自动补全和联想等功能
 - Go
@@ -11,10 +10,12 @@
 - Python
 - Ruff : 基于 Rust 编写的高性能 Python 代码分析工具 (Python linter)
 - x86 and x86_64 Assembly
+- ASM Code Lens
 - vscode-proto3
 - Clang-Format : format proto3 using by google
 
     `apt install clang-format`
+- CMake
 
 db:
 - database client
@@ -29,6 +30,7 @@ git:
 
 markdown:
 - Markdown Preview Enhanced : Markdown 预览增强插件
+- markdownlint
 
 增强:
 - Remote Development : 远程开发

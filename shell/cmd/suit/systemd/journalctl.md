@@ -143,7 +143,7 @@ $ sudo journalctl -b -u nginx.serviceqq
  -o json-pretty
 
 # 指定日志文件占据的最大空间
-$ sudo journalctl --vacuum-size=1G
+$ sudo journalctl --vacuum-size=1G // /etc/systemd/journald.conf#SystemMaxUse=100M + systemctl restart systemd-journald
 
 # 指定日志文件保存多久
 $ sudo journalctl --vacuum-time=1years
