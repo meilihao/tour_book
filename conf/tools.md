@@ -1,3 +1,15 @@
+# tools
+# 输入法
+ubuntu 24.04:
+```
+sudo apt install fcitx5
+sudo apt install fcitx5-chinese-addons
+sudo apt install fcitx5-frontend-qt6
+im-config # 推荐使用fcitx5配置工具
+```
+
+ubuntu 24.04 + fcitx(v4) + sogou(依赖fcitx)无法工作.
+
 # download/下载
 
 ## focus
