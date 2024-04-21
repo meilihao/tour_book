@@ -19,6 +19,7 @@ sudo 命令具有如下功能：
 ## examples
 ```bash
 $ sudo KKZONE=cn env # sudo 传入env
+$ sudo env https_proxy=127.0.0.1:20171 dnf install sublime-text # env应在sudo后, 否则无法生效
 ```
 
 ## FAQ
