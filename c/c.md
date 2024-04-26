@@ -86,6 +86,25 @@ D 存储级别关键词（6个）
     5.const [‘kɔnstənt]：与volatile合称“cv特性”，指定变量不可被当前线程/进程改变（但有可能被系统或其他线程/进程改变）
     6.volatile [‘vɑlət!]：与const合称“cv特性”，指定变量的值有可能会被系统或其他进程/线程改变，强制编译器每次从内存中取得该变量的值
 
+        用它修饰变量，相当于告诉编译器该变 量会从外部改变，不要针对其做编译优化.
+
+        volatile主要用在与硬件相关的操作中，如读取或者写入寄存器等，在多线程的环境中同步的作用有限
+
+        ```c
+        int get_value(volatile int *ptr){
+            return (*ptr) + (*ptr)*(*ptr);
+        }
+
+        / ===
+        int get_value(volatile int *ptr){
+            int a = *ptr
+            int b = *ptr
+            int c = a*b
+            int d=*ptr
+            return d+c;
+        }
+        ```
+
 > register变量大小必须小于等于寄存器大小, 且是单个值; 因为register变量可能不在内存中, 因此不能使用`&`操作符.
 
 静态局部变量与自动变量区别:
