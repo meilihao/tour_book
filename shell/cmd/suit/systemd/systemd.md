@@ -96,6 +96,15 @@ WantedBy=multi-user.target
 - BindsTo：与Requires类似，它指定的 Unit 如果退出，会导致当前 Unit 停止运行
 - Before：如果该字段指定的 Unit 也要启动，那么必须在当前 Unit 之后启动
 - After：如果该字段指定的 Unit 也要启动，那么必须在当前 Unit 之前启动
+
+	在systemd中，After指定的服务是定义了启动顺序，而不是停止顺序.
+
+	当After指定的服务停止时，并不会直接导致本服务停止. 相反，它只是表示本服务可以在指定的服务启动之后启动，但并不意味着本服务会在指定的服务停止之后停止.
+
+	如果想要在某个服务停止后停止本服务，可以使用Requires和Wants指令，这些指令表示依赖关系。Requires指定了本服务所需的其他服务，如果这些服务没有运行，则本服务无法启动。Wants类似于Requires，但是不会导致依赖的服务必须成功启动，而是只是希望它们启动（如果可能的话）.
+
+	**注意**:
+	- 在oracle linux 7.9上多次遇到B.service设置After A.service后, B还是在A前启动了: A确实先启动, 但第一次启动失败了, 因为配置了Restart, 第二次启动成功了, 即时序: A(失败)->B(成功)->A(成功).
 - Conflicts：这里指定的 Unit 不能与当前 Unit 同时运行
 - Condition...：当前 Unit 运行必须满足的条件，否则不会运行
 - Assert...：当前 Unit 运行必须满足的条件，否则会报启动失败
@@ -534,3 +543,31 @@ systemd service的环境变量与shell env无关, 因此systemd提供了Environm
 ### 是否使用systemd
 - `stat /sbin/init`
 - `if [ -d /run/systemd/system ];`
+
+### 控制服务启动间隔
+```conf
+[Unit]
+Description=Service A
+Requires=serviceB.service
+After=serviceB.service
+
+[Service]
+ExecStartPre=/bin/sleep 10   # 在启动 Service A 之前延时 10 秒
+ExecStart=/path/to/serviceA
+ExecStartPost=/bin/sleep 5   # 在启动 Service A 之后延时 5 秒
+
+[Install]
+WantedBy=multi-user.target
+```
+### 服务停止后子进程没有停止
+env:
+- supervisor `ExecStart=/usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf`
+- supervisord.conf
+
+	command=/bin/bash -c "python pre_server.py && uwsgi -i uwsgi.ini"
+
+	ps: 直接使用`command=uwsgi -i uwsgi.ini`时, 停止supervisor, uwsgi能正常停止. 因为需要处理前置逻辑, 而uwsgi没有pre hook, 因此使用了上述的写法
+
+停止supervisor后, uwsgi log显示kill workers后, 又重新reload了uwsgi并创建workers后继续执行.
+
+将supervisor.service的KillMode从process改为control-group, 或使用`stopasgroup=true`, 均未测试.

@@ -12,9 +12,13 @@ ref:
 
 	答案在repo的solutions目录里
 
-### 重写命令行
+### 重写
+#### 命令行
 - [github.com/samuela/rustybox](https://github.com/samuela/rustybox)
 - [github.com/uutils/coreutils](https://github.com/uutils/coreutils)
+
+#### other
+- [Redis for rust 正式开源，使用 Rust 重塑 Redis 内核](https://www.oschina.net/news/288813/redis-for-rust-open-source)
 
 ### blog
 - [Actix-Blog](https://github.com/Dengjianping/Actix-Blog)

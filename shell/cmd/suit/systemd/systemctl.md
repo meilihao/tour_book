@@ -61,8 +61,26 @@ chen      2151     1  0 09:00 ?        00:00:00 /lib/systemd/systemd --user
   ....
 ```
 1. 分析启动时的关键链
-       # systemd-analyze critical-chain
- 重要：Systemctl接受服务（.service），挂载点（.mount），套接口（.socket）和设备（.device）作为单元。
+       # systemd-analyze critical-chain xxx.service
+ 重要：Systemctl接受服务（.service），挂载点（.mount），套接口（.socket）和设备（.device）作为单元
+
+1. 启动时序图: systemd-analyze plot
+
+       关键路径用红色高亮显示
+
+       **注意**: 仅显示启动成功的, 需要留意某些使用了Restart服务, 比如第一次启动失败, 之后启动成功.
+1. systemd-analyze dot | dot -Tsvg > /tmp/test.svg
+
+       生成依赖图
+1. systemd-analyze condition xxx
+
+       测试 systemd 单元文件中的条件和断言.
+1. systemd-analyze verify [/etc/systemd/system/backup.service]
+
+       检查语法是否正确
+1. systemd-analyze cat-config systemd/system/display-manager.service
+
+       输出配置文件
 
 1. 列出所有可用单元
  ```shell
