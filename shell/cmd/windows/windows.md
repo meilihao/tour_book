@@ -43,3 +43,11 @@ windows为了区分计算机系统上的存储设备, 每个存储设备都标�
 
 ### 获取cpu序列号
 `wmic CPU get ProcessorID`
+
+### 是否支持virtio网卡
+1. 列出系统中所有网络适配器的信息，包括驱动程序名称（DriverName）和制造商（Manufacturer）等
+
+	- PowerShell: `Get-NetAdapter | Select-Object Name, InterfaceDescription, DriverName, DriverVersion, Manufacturer`
+	- cmd: `wmic nic get AdapterType, Name, Manufacturer, NetConnectionID`
+1. 如果 VirtIO 网卡已正确安装并且正在使用，应该能在输出中找到相关信息，比如驱动程序名称可能包含 "virtio" 或者制造商是 "Red Hat"
+

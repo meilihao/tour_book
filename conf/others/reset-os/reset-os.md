@@ -51,3 +51,10 @@ sudo apt install clang-13 lldb-13 lld-13  llvm-13 llvm-13-dev
 ### 清理/var/spool/postfix/maildrop
 - 清理全部: `sudo postsuper -d ALL`
 - 清理其中的某个: `postcat -q 165EA1AF2`
+
+## FAQ
+### 安装os时如何打开terminal
+- centos
+
+    - Ctrl-Alt-F2: 进入terminal
+    - Ctrl-Alt-F6: 回到图形安装界面
