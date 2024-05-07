@@ -2,6 +2,7 @@
 参考:
 - [如何使用 top 命令](https://diabloneo.github.io/2019/08/29/How-to-use-top-command/)
 - [Linux top 命令里的内存相关字段（VIRT, RES, SHR, CODE, DATA）](https://liam.page/2020/07/17/memory-stat-in-TOP/)
+- [计算Linux系统的CPU利用率](https://bravey.github.io/2019-03-31-%E8%AE%A1%E7%AE%97Linux%E7%B3%BB%E7%BB%9F%E7%9A%84CPU%E5%88%A9%E7%94%A8%E7%8E%87)
 
 > 默认刷新频率: 3s.
 
@@ -181,6 +182,7 @@ top 支持显示一个定位信息，可以看到自己现在处于第几行，�
 
 ## example
 ```bash
+# top -n 1 # 仅执行一次, 且分屏
 # top -bn 1 # 完成显示(不分屏)top信息1次
 # top -d 2 -n 1 -b # 输出重定向
 # top -p <pid> # 仅显示指定进程, 适合排查numa下cpu问题, 再通过F选择P和NU列即可

@@ -22,11 +22,16 @@ ref:
 
 ## example
 ```bash
+# ld -verbose # 显示当前链接器使用的默认链接脚本的信息, 将输出信息重定向到新的lds文件中,并去掉开头和结尾多余的字符(否则会报错)
 # ld [-L/usr/lib64] -luring --verbose # test liburing, like `gcc -lhdf5 --verbose`
 ```
 
 ## 链接脚本
 链接过程可由链接脚本(linker script, 扩展名一般是`.ld/.lds`)控制, 其主要用于规定如何把输入obj文件内的section放入elf文件中, 并控制输出文件内各部分在程序地址空间内的布局.
+
+链接脚本具有定制最终生成的二进制文件的作用,它可以定制各种不同的段,定义变量,指定各个段的地址等.
+
+> x86 linux链接脚本见[`vmlinux.lds.S`](https://github.com/torvalds/linux/blob/master/arch/x86/kernel/vmlinux.lds.S)
 
 链接器可生成全局变量`_binary_*_start`和`_binary_*_size`, 以便在程序中定位指令的位置和大小.
 
