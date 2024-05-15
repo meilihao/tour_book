@@ -253,6 +253,12 @@ DST主要包括spindup马达磁头臂起转测试、Buffer RAM/Flash ROM检测�
 # smartclt
 > from smartmontools
 
+## 选项
+
+- -j : json output
+
 ## 例
 
     # smartclt -a /dev/sde
+    # smartclt -i /dev/sde
+    # smartclt -H /dev/sde

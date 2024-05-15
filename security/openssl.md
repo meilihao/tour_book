@@ -99,6 +99,56 @@ def rsaPublicDecrypt(S):
     return str(m)
 ```
 
+## pem
+ref:
+- [PKCS1与PKCS8的小知识](https://www.jianshu.com/p/a428e183e72e)
+
+    PKCS1仅针对rsa
+- [X.509、PKCS文件格式介绍](https://chanjarster.github.io/post/x509-pkcs-file-formats/)
+
+    ASN.1是一种用来定义数据结构的接口描述语言, 其有一套关联的编码规则，这些编码规则用来规定如何用二进制来表示数据结构, DER是其中一种.
+
+    PEM是一个用来存储和发送密码学key、证书和其他数据的文件格式的事实标准。许多使用ASN.1的密码学标准（比如X.509和PKCS）都使用DER编码，而DER编码的内容是二进制的，不适合与邮件传输（早期Email不能发送附件），因此使用PEM把二进制内容转换成ASCII码.
+
+    PKCS8用于加密或非加密地存储Private Certificate Keypairs（不限于RSA）
+
+    PKCS #12定义了通常用来存储Private Keys和Public Key Certificates（即X.509）的文件格式，使用基于密码的对称密钥进行保护. 注意Private Keys和Public Key Certificates是复数形式, 这意味着PKCS #12文件实际上是一个Keystore, PKCS #12文件可以被用做Java Key Store（JKS）.
+- [pkcs8](https://github.com/youmark/pkcs8)
+
+    Go package implementing functions to parse and convert private keys in PKCS#8 format, as defined in RFC5208 and RFC5958
+
+RSA私钥存在PKCS1和PKCS8两种格式，通过openssl生成的私钥格式为PKCS1,公钥格式为PKCS8:
+PKCS1:
+```
+-----BEGIN RSA PRIVATE KEY-----
+...
+-----END RSA PRIVATE KEY-----
+```
+
+PKCS8:
+```
+-----BEGIN PUBLIC KEY-----
+...
+-----END PUBLIC KEY-----
+```
+
+pem相关命令:
+```bash
+$ --- pkcs1 转 pkcs8
+$ openssl pkcs8 -topk8 -inform PEM -in pkcs1.pem -outform PEM -out pkcs8.pem -nocrypt # 不加密
+$ openssl pkcs8 -topk8 -in private-key.p1.pem -out private-key.p8.pem # 加密
+$ --- pkcs8 加密/非加密互转
+$ openssl pkcs8 -topk8 -in private-key.p8.nocrypt.pem -out private-key.p8.crypt.pem # 非加密->加密
+$ openssl pkcs8 -topk8 -in private-key.p8.crypt.pem -out private-key.p8.nocrypt.pem -nocrypt # 加密 -> 非加密
+$ --- pkcs8 转 pkcs1
+$ openssl rsa -in private-key.p8.pem -out private-key.p1.pem
+$ --- pem 转 der
+$ openssl rsa -in pkcs1.pem -out pkcs1.der -outform DER
+$ openssl pkcs8 -topk8 -inform PEM -in pkcs1.pem -outform DER -nocrypt -out pkcs8.der
+$ --- 查看der
+$ openssl asn1parse -i -in pkcs8.der -inform DER
+```
+
 ## FAQ
 ### 网站不支持ALPN提示"No ALPN negotiated"
 [ALPN介绍](https://imququ.com/post/enable-alpn-asap.html),检查是否支持ALPN的命令:

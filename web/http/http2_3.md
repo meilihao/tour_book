@@ -111,6 +111,10 @@ env:
 
 能编译成功, 启动tengine有监听2443端口(`ss -anlp |grep 2443`).
 
+> 启用http3必须配置listen+`add_header Alt-Svc`, nginx同样是这样.
+
+> 验证http3是否启用用`https://http3check.net`或chrome F12里的Network查看请求的protocol
+
 http3.conf:
 ```conf
 worker_processes  1;

@@ -1,6 +1,7 @@
 ## base
 - [30个实用SQL语句，玩转PostgreSQL](https://mp.weixin.qq.com/s?__biz=Mzg3MjA5OTkzMw==&mid=2247484562&idx=1&sn=6774d5e3131fbc74a4f2ed9df03ca5fd)
 - [An Overview of PostgreSQL Indexes](https://www.enterprisedb.com/postgres-tutorials/overview-postgresql-indexes)
+- [PostgreSQL 16 Installation on Ubuntu 22.04](https://dev.to/johndotowl/postgresql-16-installation-on-ubuntu-2204-51ia)
 
 ## 进阶
 - [PostgreSQL黑科技大集会](https://yq.aliyun.com/articles/2727)
@@ -21,6 +22,7 @@
 - [PostgreSQL流复制之主备切换](https://www.modb.pro/db/235078)
 - [pacemaker+drbd+postgres](https://www.insight-ltd.co.jp/tech_blog/postgresql/440/)
 - [PolarDB for PostgreSQL高可用原理](https://developer.aliyun.com/article/789048)
+- [开源RDS替代：开箱即用、自动驾驶的数据库发行版 Pigsty](https://cloud.tencent.com/developer/article/2231205)
 - [Pigsty : pg集群方案](https://www.oschina.net/news/197066/pigsty-1-5-released)
 - [Patroni + Etcd + PostgreSQL 部署集群](https://www.modb.pro/db/107608)
 - [基于Patroni的PostgreSQL高可用环境部署](https://developer.aliyun.com/article/775029)

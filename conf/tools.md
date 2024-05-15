@@ -41,7 +41,7 @@ $ sudo apt install lxde lxde-common
 
 安装xfce4:
 ```sh
-$ sudo apt install xfce4
+$ sudo apt install xfce4/xubuntu-desktop # xubuntu-desktop需要更多空间, 也更接近XUbuntu
 ```
 
 安装Ubuntukylin:
@@ -68,6 +68,11 @@ KDE Plasma Desktop environment:`sudo apt install kubuntu-desktop`
 当前正在使用的显示管理器: `cat /etc/X11/default-display-manager`.
 设置默认显示管理器: `sudo dpkg-reconfigure <sddm/gdm3/lightdm>`
 进入桌面自动打开应用: `~/.config/autostart/*.desktop`
+
+## xfce4 plugin
+- xfce4-systemload-plugin
+
+       `顶部任务栏` 右键选`面板`-> `添加新项目` -> 输入`plugin`, 选中`系统负载监控器`-> 点`添加`
 
 ## 主题
 

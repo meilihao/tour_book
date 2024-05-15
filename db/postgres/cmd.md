@@ -141,3 +141,16 @@ SELECT u.datname  FROM pg_catalog.pg_database u where u.datname='xxx'; # 检查�
 pg_dump -h localhost -U postgres testdb > db.sql
 psql -h localhost -U postgres -d testdb < db.sql
 ```
+
+## install
+env: ubuntu 24.04
+
+```bash
+$ apt install postgresql postgresql-contrib
+$ sudo sed -i '/^host/s/ident/md5/' /etc/postgresql/16/main/pg_hba.conf
+$ sudo sed -i '/^local/s/peer/trust/' /etc/postgresql/16/main/pg_hba.conf
+$ echo "host all all 0.0.0.0/0 md5" | sudo tee -a /etc/postgresql/16/main/pg_hba.conf
+$ sudo systemctl restart postgresql
+$ sudo -u postgres psql
+postgres=# ALTER USER postgres PASSWORD 'postgres';
+```

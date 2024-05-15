@@ -97,3 +97,5 @@ https通信过程:
 　　10. SSL 的握手部分结束，SSL 安全通道的数据通讯开始，客户和服务器开始使用相同的对称密钥进行数据通讯，同时进行通讯完整性的检验。
 
 
+## tools
+- [SSL 通配证书](https://www.oschina.net/news/291664/httpsok-1-11-0-released)

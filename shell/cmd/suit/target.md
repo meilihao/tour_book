@@ -308,8 +308,8 @@ iscsiadm:
 # iscsiadm -m node
 # iscsiadm -m node -o show
 # --- 查看连接后状态
-# iscsiadm -m session -o show # logout设备不显示在输出中. 输出中的`[n]`, 其中n是session id, 其实就是`/sys/class/iscsi_session/session<n>`, 该目录中的device/target<scsi path>是该target导出的scsi设备. 如果是磁盘格式为`target35:0:0:0`(其子目录下只有`target35:0:0:0`), 如果是磁带柜格式为`target34:0:0`(其子目录下有`target34:0:0:0`(磁带柜),`target34:0:0:1`(磁带)等). 也可用于判断session是否离线, 离线后可重新login
-# # iscsiadm -m session -o show -r 1
+# iscsiadm -m session -o show # logout设备不显示在输出中. 输出中的`[n]`, 其中n是session id, 其实就是`/sys/class/iscsi_session/session<n>`, 该目录中的device/target<scsi path>是该target导出的scsi设备. 如果是磁盘格式为`target35:0:0:0`(其子目录下只有`target35:0:0:0`), 如果是磁带柜格式为`target34:0:0`(其子目录下有`target34:0:0:0`(磁带柜),`target34:0:0:1`(磁带)等).
+# iscsiadm -m session -o show -r 1 -P2 # `iSCSI Session State`用于判断session是否离线(LOGGED_IN是在线; FREE/FAILED等是离线, 如果target重新上线, 其状态会重新自动变为LOGGED_IN), 离线后可重新login
 # iscsiadm -m node -T iqn.2006-01.com.openfiler:Foundation [-P 3] -o show # 查看target
 # --- 发现
 # iscsiadm -m discovery -t st -p 192.168.10.10 # **需先发现, 再设置chap, 最后login**

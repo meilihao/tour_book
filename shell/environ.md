@@ -86,6 +86,11 @@ done <<< "$IN"
 - LINES : 当前终端可显示的行数
 - COLUMNS : 当前终端可显示的列数
 
+# XDG_SESSION_TYPE
+当前使用的显示服务器类型
+
+> loginctl + `loginctl show-session [SESSION_ID] | egrep 'Display|Type'`(SESSION_ID from `loginctl`的输出), 看结果包含x11还是wayland
+
 # 配置文件
 `bashrc`与`profile`都用于保存用户的环境信息，`bashrc`用于非交互式`no-login shell`,比如x-window下启动的终端，而profile用于交互式`login shell`.
 

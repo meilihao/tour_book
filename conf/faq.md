@@ -307,3 +307,16 @@ google-chrome-stable --proxy-server="socks5://127.0.0.1:1080" // 需梯子
 env: ubuntu 22.04
 
 解决方法: 先启动向日葵服务`systemctl status runsunloginclient.service`, 再点击图标启动即可.
+
+### todesk无法启动
+env:ubuntu 24.04
+
+`todeskd.service`报`[pulseaudio] backend-native.c: org.bluez.ProfileManager1.RegisterProfile() failed: org.bluez.Error.NotPermitted: UUID already registered`.
+
+给`/usr/lib/systemd/user/pulseaudio.service`添加`--system`参数并`systemctl --user daemon-reload`+`systemctl --user restart pulseaudio.service`后错误消失, 但todesk依旧core dump.
+
+[按照官方技术支持](https://uc.todesk.com/serviceSupport/workOrderDetail?id=79318), 查看`lscpu |grep -i avx2`, 当前cpu没有avx2, 让安装了低版本的[v4.1.0](https://dl.todesk.com/linux/todesk_4.1.0_amd64.deb), 能启动, 连接远程可能报错:
+1. 连接卡在1%: 取消重试
+1. `未知错误(12202)`: 12202是不支持低版本的主控和其他设备同时远程一个被控的提示
+
+官方客服回复: 高版本需要avx2.

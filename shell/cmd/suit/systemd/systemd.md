@@ -571,3 +571,6 @@ env:
 停止supervisor后, uwsgi log显示kill workers后, 又重新reload了uwsgi并创建workers后继续执行.
 
 将supervisor.service的KillMode从process改为control-group, 或使用`stopasgroup=true`, 均未测试.
+
+### `Unit pulseaudio.service could not be found`
+`systemctl --user status pulseaudio.service`正常

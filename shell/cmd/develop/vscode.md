@@ -39,6 +39,13 @@ markdown:
 - koroFileHeader : 自动插入文件头部信息, 快捷键是`Ctrl + Alt +i`
 - Chinese (Simplified) Language Pack for Visual Studio Code : vscode中文语言包
 
+## setting.json
+```
+{
+    "go.testFlags": ["-v", "-count=1"]
+}
+```
+
 ## FAQ
 ### 插件log
 Help -> `Toggle Developer Tools`

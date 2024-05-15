@@ -57,6 +57,29 @@ TLS协议的最终目的是协商出会话过程使用的对称密钥和加密�
 
 TLS 1.2还支持流加密和CBC分组模式的块加密方法，使用MAC来进行完整性校验数据，这两种方式均被证明有一定的安全缺陷. 但是有研究表明AEAD也有一定局限性：使用同一密钥加密的明文达到一定长度后，就不能再保证密文的安全性。因此，TLS 1.3中引入了密钥更新机制，一方可以（通常是服务器）向另一方发送Key Update（KU）报文，对方收到报文后对当前会话密钥再使用一次HKDF，计算出新的会话密钥，使用该密钥完成后续的通信.
 
+> `openssl ciphers -V 'ALL'|grep "1.3"`
+
+
+AEAD 是一种加密模式，它提供了加密和认证机制，并允许用户附加额外的关联数据.
+
+GCM 是 AEAD 加密模式的一种具体实现.
+
+#### aesgcm
+ref:
+- [对称加密算法AES之GCM模式简介及在OpenSSL中使用举例](https://blog.csdn.net/fengbingchun/article/details/106113185)
+- [EVP Authenticated Encryption and Decryption](https://wiki.openssl.org/index.php/EVP_Authenticated_Encryption_and_Decryption)
+- [Secrets Manager 加密模型](https://www.keepersecurity.com/zh_CN/security.html)
+
+gcm组成:
+- Key：对称密钥，它的长度可以为128、192、256bits，用来加密明文的密码
+- IV(Initialisation Vector) ：初始向量，它的选取必须随机。通常以明文的形式和密文一起传送。它的作用和MD5的”加盐”有些类似，目的是防止同样的明文块，始终加密成同样的密文块
+- AAD(Additional Authenticated Data)：附加身份验证数据。AAD数据不需要加密，通常以明文形式与密文一起传递给接收者
+- Mac tag(MAC标签)：将确保数据在传输和存储过程中不会被意外更改或恶意篡改。该标签随后在解密操作期间使用，以确保密文和AAD未被篡改。在加密时，Mac tag由明文、密钥Key、IV、AAD共同产生
+
+gcm对明文没有严格限制, 考虑性能, 内存, nonce唯一性等因素, 不建议太大.
+
+未找到解密前验证mac的方法, 因为AES-GCM的加密和身份验证是同时进行的，这意味着在解密过程中也需要验证MAC, 见[gcm工作模式](https://blog.csdn.net/T0mato_/article/details/53160772).
+
 ### ssl_ciphers选择
 筛选命令(只包含tls1.2):
 ```sh

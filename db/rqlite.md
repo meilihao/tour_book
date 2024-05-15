@@ -17,8 +17,8 @@ rqlite默认通过`http://localhost:4001`访问server.
 server:
 ```bash
 # cd rqlite-v8.23.0-linux-amd64
-# mkdir -p data
-# ./rqlited -node-id 1 data1 # node1
+# mkdir -p data1
+# ./rqlited -node-id1 data1 # node1
 ```
 
 client:

@@ -1,3 +1,15 @@
+# [pnpm](https://www.pnpm.cn/)
+ref:
+- [与nodejs的兼容性](https://www.pnpm.cn/installation)
+
+pnpm - 速度快、节省磁盘空间的软件包管理器
+
+```bash
+$ curl -fsSL https://get.pnpm.io/install.sh | sh -
+$ pnpm config set registry https://registry.npmmirror.com/
+$ pnpm config get registry
+```
+
 # npm
 
 [npm官方文档](https://docs.npmjs.com/)

@@ -105,3 +105,13 @@ do-release-upgrade
 hwe: Ubuntu LTS enablement（也叫 HWE 或 Hardware Enablement）stacks 用于支持不断更新的硬件技术, 能够为现存的 Ubuntu LTS 提供更新的内核与图形支持, 适用于桌面版、服务器版甚至 Cloud 版和虚拟镜像.
 
 `apt install linux-generic-hwe-22.04`
+
+### appimage启动报`AppImages require FUSE to run`
+ref:
+- [I get some errors related to something called “FUSE”](https://docs.appimage.org/user-guide/troubleshooting/fuse.html#i-get-some-errors-related-to-something-called-fuse)
+
+`sudo apt install libfuse2`
+
+### appimage启动报`The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now. You need to make sure that /tmp/.mount_PDManeJSlQFH/chrome-sandbox is owned by root and has mode 4755`
+解决方法:
+- 追加`--no-sandbox`参数
