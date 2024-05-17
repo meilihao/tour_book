@@ -93,6 +93,13 @@
 - [NGINX源码阅读](http://www.cnblogs.com/ourroad/p/4863758.html)
 - [Nginx源码分析之启动过程](http://www.rowkey.me/blog/2014/09/24/nginx-bootstrap/)
 - [Nginx基本配置备忘](https://zhuanlan.zhihu.com/p/24524057)
+- [Zstd](https://blog.gakaki.com/guide/zstd_chrome)
+
+    [zstd-nginx-module](https://github.com/tokers/zstd-nginx-module)
+
+    browser:
+    - chrome: 118, 需要手动打开
+    - fireforx: 126
 
 ## 架构
 - [构建需求响应式亿级商品详情页](http://blog.jobbole.com/90359/)

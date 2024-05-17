@@ -54,6 +54,11 @@ $ sudo apt install ubuntukylin-desktop
 apt install ubuntu-gnome-desktop
 ```
 
+安装mate:
+```
+apt install ubuntu-mate-desktop
+```
+
 卸载lxqt:
 ```sh
 $ sudo apt purge lxqt-* liblxqt*

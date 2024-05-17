@@ -3,6 +3,7 @@ ref:
 - [etcd、Zookeeper和Consul性能对比](https://my.oschina.net/u/588516/blog/5512628)
 - [一篇文章带你搞懂 etcd 3.5 的核心特性](https://cloud.tencent.com/developer/article/1836291)
 - [多维度解析etcd，一个比zookeeper更加优秀的键值对存储系统](https://www.cnblogs.com/traditional/p/9445930.html)
+- [**《彻底搞懂 etcd 系列》**](https://www.zhihu.com/column/c_1248405562469597184)
 
 etcd 应用场景包括但不限于分布式数据库、服务注册与发现 、 分布式锁 、 分布式消息队列 、 分布式系统选主等.
 
@@ -42,7 +43,7 @@ etcdctl选项:
     --advertise-client-urls
     --initial-advertise-peer-urls
     --initial-cluster-token
-    --initial-cluster
+    --initial-cluster # 所有节点的peer通信地址
     --initial-cluster-state new
     ```
 
@@ -63,17 +64,43 @@ etcdctl选项:
             --name // 每个成员必须有指定不同的名字标记, 否则发现会因为重复名字而失败
             --initial-advertise-peer-urls 
             --advertise-client-urls
-            --discovery
+            --discovery # 通过它, 获取其他node的peer通信地址
             ```
     1. dns 自发现
 
         DNS SRV records 可以作为发现机制使用
 
-        `-discovery-srv`可以用于设置 DNS domain name，在这里可以找到发现 SRV 记录.
+        `-discovery-srv`可以用于设置 DNS domain name，在这里可以找到发现DNS SRV记录:
+        - _etcd-server-ssl._tcp.example.com: tls
+        - _etcd-server._tcp.example.com
+        - _etcd-client-ssl._tcp.example.com
+        - _etcd-client._tcp.example.com
+
+        举例, `discovery-srv=example.com`:
+        ```bash
+        $ dig +noall +answer SRV _etcd-server._tcp.example.com
+        _etcd-server._tcp.example.com. 300 IN  SRV  0 0 2380 infra0.example.com.
+        _etcd-server._tcp.example.com. 300 IN  SRV  0 0 2380 infra1.example.com.
+        _etcd-server._tcp.example.com. 300 IN  SRV  0 0 2380 infra2.example.com.
+
+
+        $ dig +noall +answer SRV _etcd-client._tcp.example.com
+        _etcd-client._tcp.example.com. 300 IN SRV 0 0 2379 infra0.example.com.
+        _etcd-client._tcp.example.com. 300 IN SRV 0 0 2379 infra1.example.com.
+        _etcd-client._tcp.example.com. 300 IN SRV 0 0 2379 infra2.example.com.
+
+
+        $ dig +noall +answer infra0.example.com infra1.example.com infra2.example.com
+        infra0.example.com.  300  IN  A  10.0.1.10
+        infra1.example.com.  300  IN  A  10.0.1.11
+        infra2.example.com.  300  IN  A  10.0.1.12
+        ```
+
+        多个etcd集群可用`-discovery-srv-name`区分
 
         需要配置:
         ```
-        --discovery-srv
+        --discovery-srv # 通过它, 可获取其他node的peer通信地址
         --initial-advertise-peer-urls
         --initial-cluster-token
         --initial-cluster-state
@@ -176,3 +203,11 @@ etcd支持单机和cluster两种模式.
 etcd运行时默认会监听两个端口:
 - 2379 : 用于与client交互
 - 2380 : 用于与peer交互, 主要是传输raft协议相关的消息
+
+## FAQ
+### advertise-peer-urls的必要性
+作用: 其他member使用, 其他member通过该地址与本member通信
+
+必要性:
+1. 网络环境复杂: 如果节点处于一个复杂的网络环境中, 使用listen-peer-urls监听的地址可能无法正确被其他节点识别和访问, 导致集群通信问题
+2. 多网卡情况: 如果节点有多个网卡或网络接口, 使用listen-peer-urls中的地址可能不是期望的广播地址, 可能导致其他节点无法正确连接到该节点

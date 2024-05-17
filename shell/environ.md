@@ -91,6 +91,9 @@ done <<< "$IN"
 
 > loginctl + `loginctl show-session [SESSION_ID] | egrep 'Display|Type'`(SESSION_ID from `loginctl`的输出), 看结果包含x11还是wayland
 
+# XDG_CURRENT_DESKTOP
+当前使用的桌面类型, 比如UKUI, GNOME
+
 # 配置文件
 `bashrc`与`profile`都用于保存用户的环境信息，`bashrc`用于非交互式`no-login shell`,比如x-window下启动的终端，而profile用于交互式`login shell`.
 
