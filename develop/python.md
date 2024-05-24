@@ -1221,6 +1221,9 @@ lambda语法格式：`lambda 变量 : 要执行的语句`, 比如`lambda x : x *
 ## 调试
 参考:
 - [Python 代码调试技巧](https://www.ibm.com/developerworks/cn/linux/l-cn-pythondebugger/index.html)
+- [使用gdb调试Python程序](https://ponder.work/2020/12/29/debug-python-with-gdb/)
+
+    `gdb python <pid>`
 
 ## 性能
 对于 Python 来说,充分利用多核性能的阻碍主要在于 Python 的 全局解释器锁 (GIL). GIL 确保 Python 进程一次只能执行一条指令,无论当前有多少个核心. 该问题可以通过一些方法来避免,比如标准库的 multiprocessing,或 numexpr、Cython 等技术,或分布式计算模型等.
@@ -2531,6 +2534,8 @@ ipdb> help # 查看帮助
 [Python: 使用 faulthandler 模块获取运行中进程的 traceback 信息](https://mozillazg.com/2017/12/python-use-faulthandler-to-debug-running-process-with-dumping-traceback.html)
 
 ## celery
+- `--pool`: pool
+
 ### redis keys
 - celery：表示当前正在队列中的 task，等待被 worker 所接收. celery 消失说明任务已经被启动的 worker 接收了即当前没有等待被接收的任务
 - `_kombu.binding.celery`: celery 使用 kombu 维护消息队列
@@ -2538,3 +2543,6 @@ ipdb> help # 查看帮助
 - `_kombu.binding.celeryev`: kombu 维护, 用来记下当前连接的 worker
 - unacked：被 worker 接收了但是还没开始执行的 task 列表
 - unacked_index：用户标记上面 unacked 的任务的 id，理论上应该与 unacked 一一对应的
+
+### FAQ
+`celery -A your_celery_app worker --concurrency=128`并发数是128, 发现子进程有115个左右, 但从日志里看实际并发不超过6个.

@@ -413,7 +413,9 @@ $ sudo zfs set dedup=on mypool/projects # 启用去重
 **dedup**只对开启后的新数据块有效. 根据经验: **不推荐使用, 不如用压缩**
 
 ## [属性](https://openzfs.github.io/openzfs-docs/man/7/zfsprops.7.html)
-- avali: 文件系统中的可用空间
+- avail: 文件系统中的可用空间
+
+	- fs : avail = refquota + usedbysnapshots - used
 - used : 只读属性，表明此数据集及其所有后代占用的磁盘空间量.
 	
 	可根据此数据集的配额和预留空间来检查该值. 使用的磁盘空间不包括数据集的预留空间，但会考虑任何后代数据集的预留空间. 数据集占用其父级的磁盘空间量以及以递归方式销毁该数据集时所释放的磁盘空间量应为其使用空间和预留空间的较大者.
@@ -542,6 +544,7 @@ zfs 0.8.1 rename后`/dev/zvol/{datapath}`会跟着变化, 且mkfs正常.
 `lsblk` # using by drbd, lvm, kvm. lvm可用`ls /dev/mapper/*`查看, 用`dmsetup remove /dev/dm-2`删除; kvm可用`virsh ls+ virtsh shutdown`命令处理.
 `lsof -t /dev/zd640`
 `lsof -t <pool_mount_path>`
+`blkid /dev/zd640`: 看看该盘是什么类型的磁盘. 如果zd640是lvm盘, 而lvm.conf未配置过过滤该设备, 那么就可能被lvm占用
 
 ### zfs 类clone 无法挂载
 `XFS (zd32): Filesystem has duplicate UUID adf19c69-ebc4-4622-97e2-1ab899f8f5c3 - can't mount` from `syslog`.

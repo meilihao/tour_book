@@ -320,3 +320,9 @@ env:ubuntu 24.04
 1. `未知错误(12202)`: 12202是不支持低版本的主控和其他设备同时远程一个被控的提示
 
 官方客服回复: 高版本需要avx2.
+
+### 停止gvfs
+```bash
+systemctl --user stop gvfs-daemon
+systemctl --user mask gvfs-daemon
+```

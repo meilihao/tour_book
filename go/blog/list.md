@@ -54,6 +54,7 @@
 - [Golang 调度器 GMP 原理与调度全分析](https://learnku.com/articles/41728)
 - [GO GMP调度实现原理5w字长文史上最全](https://segmentfault.com/a/1190000041938854)
 - [golang源码分析](https://www.modb.pro/u/535208)
+- [ 技术笔记 ( 高性能/分布式/kubernetes/golang/kv引擎等 )](https://github.com/rfyiamcool/notes)
 
 ## RPC
  - ~~[Thrift RPC 使用指南实战(附golang&PHP代码)](http://blog.csdn.net/liuxinmingcode/article/details/45696237)~~
