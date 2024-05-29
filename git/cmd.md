@@ -143,3 +143,4 @@ $ git stash clear
 ## log
 - `git log [--stat] [-n] [-p] <file>` : 查看提交记录,"--stat"表示会显示提交的统计信息,"-n"表示选择显示前n条记录,"-p"表示按补丁格式显示commit的变更,"file"表示指定文件
 - `git blame <file>` : 以列表方式查看指定文件的提交历史
+- `git log --after="2024-1-1" --reverse -3 --date=iso --pretty=format:'"%h","%an","%ad","%s","%b"'` : after(含)之后的log; `--reverse`: 倒叙; `-3`: 只要3个; pretty见[PRETTY FORMATS](https://git-scm.com/docs/pretty-formats)
