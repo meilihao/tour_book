@@ -1353,3 +1353,9 @@ DSM在[这里](https://www.synology.com/zh-tw/support/download/VirtualDSM?versio
 	1. 跳过创建Synology账号
 	1. "设备分析"页不勾选, 直接提交
 1. 访问`http://xxx:5000`
+
+## FAQ
+### [为什么很多NAS厂家都采用btrfs系统，而不是更稳定的zfs?](https://www.zhihu.com/question/620874316)
+采用btrfs系统的厂家特别多，如群晖，极空间，绿联，铁马威，爱速特等，而采用ZFS系统的特别少，只有truenas和威联通采用.
+
+原因: zfs吃硬件

@@ -149,3 +149,9 @@ SECTIONS
 ```
 
 liburing is so, use `-lcurl  -Wl,-Bdynamic  -luring`
+
+### 查看libc版本
+`/usr/lib/x86_64-linux-gnu/libc.so.6`
+
+### libc.so.6 is needed by XXX
+在相同arm64 iso安装的出来的os上分别构建并安装rpm报libc依赖错误. 打包出的rpm中混入了x86 binary导致依赖了其他版本的libc.

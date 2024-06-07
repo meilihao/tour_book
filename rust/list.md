@@ -168,6 +168,7 @@ ref:
 - mdbook: 对标 gitbook
 - zola: 对标 hugo
 - orm: diesel(不支持异步), sea-orm(支持异步), sqlx
+- tklog: log
 
 ## example
 - 练手rustlings，小练习 可以让你习惯阅读和编写 Rust 

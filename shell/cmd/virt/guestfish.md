@@ -35,6 +35,8 @@ guestfish主要包含以下工具：
 
 	virt-edit -a t.qcow2 /root/anaconda-ks.cfg
 - virt-filesystems : 显示镜像文件系统信息
+
+    - [New tool: virt-filesystems](https://github.com/libguestfs/libguestfs/commit/fbc2555903be8c88ad9430d871cf0d27c8fded1e)
 - virt-format : 格式化镜像内部磁盘
 - virt-inspector : 镜像信息测试
 
@@ -115,14 +117,39 @@ virt-inspector探测image信息.
 image权限需要`qemu:qemu`, 且qemu用户能访问到该文件
 
 ```bash
+# --- 不支持lsblk
 # guestfish --rw --add disk.img [-i] # -i: (--inspector) - Inspect the disks and mount the filesystems, 如果执行探测成功会自动执行run
 ><fs> run
 ><fs> list-filesystems
 /dev/sda1: xfs
 /dev/centos/root: xfs
 /dev/centos/swap: swap
-><fs> xfs-repair /dev/centos/root
+><fs> pvs
+/dev/sda2
+><fs> lvs
+/dev/centos/root
+/dev/centos/swap
+><fs> xfs-repair /dev/centos/root [forcelogzero:true] # `forcelogzero:true`=`xfs_repair -L`
 ><fs> mount /dev/centos/root /
+```
+
+```bash
+$ --- 支持lsblk
+$ virt-rescue --format=raw  -a /dev/zvol123
+...
+Welcome to virt-rescue, the libguestfs rescue shell.
+
+Note: The contents of / (root) are the rescue appliance.
+You have to mount the guest’s partitions under /sysroot
+before you can examine them.
+
+><rescue> lsblk       
+NAME MAJ:MIN RM SIZE RO TYPE MOUNTPOINT
+sda    8:0    0   1G  0 disk 
+sdb    8:16   0   4G  0 disk /
+><rescue> mount /dev/sda /sysroot/
+><rescue> ls /sysroot/
+lost+found  test
 ```
 
 支持的其他命令 from [guestfish - the guest filesystem shell](https://www.libguestfs.org/guestfish.1.html): ls, ll, cat, more, download, tar-out, ...

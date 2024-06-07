@@ -28,6 +28,7 @@ PV管理工具
 - pvscan: 简要显示物理卷信息
 
     ```bash
+    # pvscan -vvv # show log
     # pvscan --reportformat json
     ```
 - pvdisplay: 显示物理卷详细信息
@@ -41,6 +42,7 @@ VG管理工具
 
     ```bash
     # vgscan --reportformat json
+    # vgchange -ay [fedora_localhost-live] # active vg
     ```
 - vgdisplay: 显示卷组详细信息. `-v`, 显示其上的lv和构成该vg的pv信息
 - vgcreate: 创建卷组

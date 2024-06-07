@@ -236,6 +236,29 @@ Color myColor = Color::RED; // 使用作用域解析运算符(::)访问枚举值
 #### class
 类是 C++ 的核心特性，是面向对象的基础，允许将数据和操作这些数据的函数封装为一个对象.
 
+```c++
+// polardbx-engine/extra/IS/src/client/client_service.h
+class ClientService {
+ public:
+  ClientService() = default; // 用default修饰, 使之成为缺省构造函数
+  virtual ~ClientService() = default;
+
+  const std::string &get(const std::string &key) { return map_[key]; }
+  void set(const std::string &key, const std::string &val);
+  const std::string set(const char *strKeyVal, uint64_t len);
+  int serviceProcess(easy_request_t *r, void *args);
+
+ protected:
+  std::map<const std::string, const std::string> map_;
+
+ private:
+  ClientService(const ClientService &other);  // copy constructor. 拷贝构造函数是一种特殊的构造函数，它在创建对象时，是使用同一类中之前创建的对象来初始化新创建的对象
+  const ClientService &operator=(
+      const ClientService &other);            // assignment operator. 赋值运算符
+
+};
+```
+
 #### 字符串
 c++11支持原始字符串字面值(raw string literals),类似于golang中的<code>``</code>, 它适用于太多字符需要转义的场景, 比如`cout<<R"(c:\fiiles\)";`
 
@@ -1414,7 +1437,8 @@ int main() {
 ```
 
 ### 抽象类和纯虚函数
-如果一个类包含至少一个纯虚函数（以 = 0 结尾），则该类被认为是抽象类，不能直接实例化，只包含纯虚函数而没有成员变量的抽象类和 Java 中的接口（Interface）功能类似。
+如果一个类包含至少一个纯虚函数（以 = 0 结尾），则该类被认为是抽象类，不能直接实例化，只包含纯虚函数而没有成员变量的抽象类和 Java 中的接口（Interface）功能类似. 同时这个方法必须在派生类(derived class)中被实现.
+
 ```c++
 // Interface in C++
 class IShape {

@@ -58,3 +58,12 @@ btrfs 其他常用命令如下：
 - 创建子卷快照(子卷快照必须存放与当前子卷的同一父卷中)：btrfs subvolume snapshot SUBVOL PARVOL
 - 删除快照同删除子卷一样：btrfs subvolume delete MOUNT_POIN/DIR
 - 修改fs uuid: btrfstune -U $(uuidgen) /dev/sdb1
+
+## snap
+ref:
+- [Btrfs 详解：快照](https://linux.cn/article-16287-1.html)
+- [使用 Btrfs 快照进行增量备份](https://linux.cn/article-12653-1.html)
+
+## 进阶
+ref:
+- [文件系统系列专题之 Btrfs](https://blog.csdn.net/zhuzongpeng/article/details/127115533)

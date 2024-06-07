@@ -44,6 +44,7 @@ echo -e "\e[1;42m Green Background \e[0m"
 
 ## 例
 ```sh
+$ echo -e '\u8FD9' # 将\u编码的文本转换成中文
 $ echo $HOME #输出当前用户的home目录
 $ echo test #输出字符串
 $ printf "%-5s %-10s %-4.2f\n" 3 Jeff 77.564
