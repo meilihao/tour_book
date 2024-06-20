@@ -585,3 +585,11 @@ Format specific information:
     corrupt: false
     extended l2: false
 ```
+### 基于后端镜像创建镜像
+ref:
+- [QCOW2 backing files & overlays](https://kashyapc.fedorapeople.org/virt/lc-2012/snapshots-handout.html)
+- [`create [--object OBJECTDEF] [-q] [-f FMT] [-b BACKING_FILE [-F BACKING_FMT]] [-u] [-o OPTIONS] FILENAME [SIZE]`](https://qemu-project.gitlab.io/qemu/tools/qemu-img.html)
+
+创建的镜像文件仅记录与后端镜像文件的差异部分, 后端镜像文件不会被修改. 除非在QEMU monitor中使用`commit`命令或者`qemu-img commit`命令去手动提交这些改动. 这种情况下, size参数不是必须需的，其值默认为后端镜像文件的大小. 另外, 使用`-b backfile`与`-o backing_file=backfile`是等价的.
+
+`qemu-img create -f qcow2 -b CentOS-Stream-GenericCloud-x86_64-9-20240617.0.x86_64.qcow2 -F qcow2 centos9.img`
