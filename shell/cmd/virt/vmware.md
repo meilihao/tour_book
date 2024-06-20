@@ -4,6 +4,7 @@
 ref:
 - [vmware虚拟机网络配置详解](https://blog.51cto.com/u_15169172/2710721)
 - [虚拟机 VMware Workstation 16 PRO 的网络配置](https://blog.csdn.net/weixin_41905135/article/details/123858658)
+- [VMware Workstation Pro for Personal Use (For Linux)下载地址](https://support.broadcom.com/group/ecx/productdownloads?subfamily=VMware+Workstation+Pro)
 
 vmware为提供了三种网络工作模式：Bridged（桥接模式）、NAT（网络地址转换模式）、Host-Only（仅主机模式）.
 
