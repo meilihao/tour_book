@@ -10,6 +10,7 @@ ref:
 - [KubeSphere 虚拟化 KSV 安装体验](https://blog.csdn.net/networken/article/details/125009058)
 - [kubevirt在360的探索之路（k8s接管虚拟化）](https://zyun.360.cn/blog/?p=691)
 - [虚拟机迁移](https://kiosk007.top/post/%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%80%8E%E4%B9%88%E5%81%9A%E5%88%B0%E7%83%AD%E8%BF%81%E7%A7%BB/)
+- [fedora 40 设置虚拟化环境](https://docs.fedoraproject.org/en-US/quick-docs/virtualization-getting-started/)
 
 目前使用最广泛的对kvm进行管理的工具和应用程序接口, 它也支持xen, vmware, virtualbox, hyper-v等平台虚拟化, 以及openvz, lxc等容器虚拟化.
 
