@@ -443,3 +443,6 @@ env:
 
 ### 获取active_interface
 `ip route get 8.8.8.8 | awk 'NR==1 {print $5}'`
+
+### mac克隆
+通过nmtui即可, 需要重启
