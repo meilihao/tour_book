@@ -331,3 +331,17 @@ env:ubuntu 24.04
 systemctl --user stop gvfs-daemon
 systemctl --user mask gvfs-daemon
 ```
+
+### 输入法切换
+env: fedora 40 + kde + fcitx5, 自带的`输入法选择器`无法切换输入法
+
+```bash
+$ imsettings-info # 当前输入法信息
+$ imsettings-list # 支持的输入法
+$ imsettings-switch fcitx5 # 切换输入法
+```
+
+### firefox + fcitx5无法输入中文
+env: fedora 40 + kde + fcitx5
+
+使用chrome
