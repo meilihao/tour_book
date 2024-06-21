@@ -11,6 +11,7 @@ ref:
 - [rust-by-practice](https://github.com/sunface/rust-by-practice)
 
 	答案在repo的solutions目录里
+- [一个用rust实现 简易应用管理系统](https://github.com/shanliu/lsys)
 
 ### 重写
 #### 命令行

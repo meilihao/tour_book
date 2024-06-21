@@ -20,6 +20,7 @@ env: k8s 1.14.1 / Rancher v2.2.3
 - [【重识云原生】第六章容器6.3.6节——kubelet组件](https://blog.csdn.net/junbaozi/article/details/126979695)
 - [【重识云原生】第六章容器6.3.8节——kube-proxy](https://mp.csdn.net/mp_blog/creation/editor/126999935)
 - [全景剖析阿里云容器网络数据链路（二）：Terway EN](https://my.oschina.net/u/3874284/blog/5951984)
+- [Kubernetes 存储设计](https://icyfenix.cn/immutable-infrastructure/storage/storage-evolution.html)
 
 Kubernetes 最主要的设计思想是从更宏观的角度，以统一的方式来定义任务之间的各种关系，并且为将来支持更多种类的关系留有余地.
 

@@ -34,7 +34,7 @@ ref:
 - db: VRM使用gaussdb; CNA未使用db
 
 ## vm
-vm cdrom底层可用nbd, 避免拷贝iso. 对比过vrm和cna的fs(`df -h`)变化, 应该不是全量拷贝到某个节点在做nbd, 而是先拷贝部分, 等到vm读cdrom时, 再通过nbd+websocket读取所需部分. 因为关掉操作光驱的弹窗, 再用dd取代nbd设备报`Input/output error`, 缺点: 安装过程慢.
+vm cdrom底层可用nbd设备, 避免拷贝iso. 对比过vrm和cna的fs(`df -h`)变化, 应该不是全量拷贝到某个节点再做nbd, 而是先拷贝部分, 等到vm读cdrom时, 再通过nbd+websocket读取所需部分. 因为关掉操作光驱的弹窗, 再用dd读取nbd设备报`Input/output error`, 缺点: 安装过程慢. 该方案类似于[jsnbd](https://blog.csdn.net/jiangwei0512/article/details/134388491)
 
 ### disk
 配置模式:

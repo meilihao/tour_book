@@ -18,7 +18,7 @@ WebTransport 是WebRTC体系下的一套浏览器API,提供低延迟,client和se
 
 WebTransport 与 WebSocket区别
 1. 传输层协议: 一个是基于UDP，一个是基于TCP. WebSocket基于TCP，从而也自带TCP协议本身的缺陷，比如队头阻塞
-1. WebSocket 是基于消息的协议，所以不需要考虑数据分包，封装的问题. WebTransport 是基于流式的协议，在传递消息的时候需要自己再增加一层数据的封装格式, 使用起来会比WebSocket略麻烦.
+1. WebSocket 是**基于消息的协议，所以不需要考虑数据分包，封装的问题**. WebTransport 是**基于流式的协议**，在传递消息的时候需要自己再增加一层数据的封装格式, 使用起来会比WebSocket略麻烦.
 1. WebTransport 支持不可靠的UDP发送，这个扩宽了新的场景，这个是WebSocket所不能对比的
 
 ## FAQ

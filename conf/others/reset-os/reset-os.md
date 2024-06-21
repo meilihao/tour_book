@@ -9,7 +9,7 @@
 
     1. 书签
     1. SwitchyOmega
-    1. better-onetab/OneTab
+    1. better-onetab/OneTab+数据
     1. Bookmarks clean up
 1. postman
 1. wechat

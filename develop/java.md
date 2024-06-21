@@ -2,6 +2,54 @@
 参考:
 - [Snailclimb/JavaGuide](https://github.com/Snailclimb/JavaGuide)
 
+## insall
+JRE和JDK的区别： JRE是Java Runtime Envrionment，是用来运行Java环境的，并不能用来开发；JDK是Java Development Kit，是Java的开发组件，既能运行Java程序又能进行开发
+JRE中带不带headless的区别： 带headless的是用来运行不包含GUI的java程序的，不带headless的可以运行带GUI的java程序
+
+### repo源安装 
+```bash
+# apt install openjdk-8-jre/openjdk-8-jdk
+# sudo update-alternatives --config java # 切换java version
+```
+### 使用ppa
+1. 使用ppa/源方式安装
+```
+sudo add-apt-repository ppa:webupd8team/java
+sudo apt-get update
+```
+### 安装oracle-java-installer
+参考:
+  - [Ubuntu 安装 JDK 7 / JDK8 的两种方式](http://www.cnblogs.com/a2211009/p/4265225.html)
+
+```
+# jdk7
+sudo apt-get install oracle-java7-installer
+#　jdk8
+sudo apt-get install oracle-java8-installer
+```
+
+  如果因为防火墙或者其他原因,导致相应的installer下载速度很慢,可以中断操作，然后先下载好相应jdk的tar.gz包,放在文件夹:
+
+  /var/cache/oracle-jdk7-installer             (jdk7)
+
+  /var/cache/oracle-jdk8-installer             (jdk8)
+
+  下面,再安装一次installer即可．此时installer会默认使用该tar.gz包．
+
+1. 设置系统默认jdk
+```
+# jdk7
+sudo update-java-alternatives -s java-7-oracle
+# jdk8
+sudo update-java-alternatives -s java-8-oracle
+```
+
+1. 测试jdk 是是否安装成功
+```
+java -version
+javac -version
+```
+
 ## 前提
 server环境jdk可用: [dragonwell](https://dragonwell-jdk.io/)
 
@@ -876,6 +924,13 @@ getName():          [Lcom.example.TestClassNames$$Lambda$1;
 getCanonicalName(): com.example.TestClassNames$$Lambda$1/1175962212[]
 getSimpleName():    TestClassNames$$Lambda$1/1175962212[]
 toString():         class [Lcom.example.TestClassNames$$Lambda$1;
+```
+
+# 构建
+Apache Ant和Maven都是流行的构建工具，它们各自具有不同的优势和适用场景。 Ant的构建模型相对简单，适合较小的项目或需要简单构建过程的场景；而Maven的依赖管理功能和插件架构更加灵活和强大，更适合于大型项目或需要高度自动化的构建过程.
+
+```bash
+$ apt install ant
 ```
 
 # java框架

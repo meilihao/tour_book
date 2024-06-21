@@ -6,6 +6,15 @@ ref:
 - [虚拟机 VMware Workstation 16 PRO 的网络配置](https://blog.csdn.net/weixin_41905135/article/details/123858658)
 - [VMware Workstation Pro for Personal Use (For Linux)下载地址](https://support.broadcom.com/group/ecx/productdownloads?subfamily=VMware+Workstation+Pro)
 
+  ```bash
+  $ sudo apt install linux-headers-$(uname -r)         // Ubuntu/Debian
+  $ sudo dnf install "kernel-devel-$(uname -r)"        // AlmaLinux/Fedora
+  ```
+
+  **vmware workstation 17.5.2 无法在 kernel 6.9.4 上构建所需的内核模块**, 兼任列表见[Supported host operating systems for Workstation Pro 16.x, 17.x and Workstation Player 16.x, 17.x](https://knowledge.broadcom.com/external/article/315653/supported-host-operating-systems-for-wor.html)
+
+  vmware kernel module src位置见[VMware, Debian Kernel Upgrade](https://wiki.debian.org/VMware). patch在[VMware vmmon & vmnet 17.5.1 and Linux kernel 6.8.0 won't compile](https://unix.stackexchange.com/questions/773558/vmware-vmmon-vmnet-17-5-1-and-linux-kernel-6-8-0-wont-compile), 但当前只支持到17.5.1
+
 vmware为提供了三种网络工作模式：Bridged（桥接模式）、NAT（网络地址转换模式）、Host-Only（仅主机模式）.
 
 打开vmware虚拟机，可以在选项栏的“编辑”下的“虚拟网络编辑器”中看到VMnet0（桥接模式）、VMnet1（仅主机模式）、VMnet8（NAT模式）, 它们分别表示各自模式下的虚拟交换机. windows网络连接管理解决仅可见VMware Network Adapter VMnet1和VMware Network Adapter VMnet8.

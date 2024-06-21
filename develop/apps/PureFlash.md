@@ -1,6 +1,21 @@
 # PureFlash
+ref:
+- [全闪分布式存储之PureFlash](https://cloud.tencent.com/developer/article/2363606)
+- [部署](https://github.com/cocalele/PureFlash/blob/master/docker/run-all.sh)
+
+## 组件
+1. pfconductor
+
+    集群控制模块
+
+    res:
+    - [数据库初始化脚本](https://github.com/cocalele/pfconductor/blob/master/res/init_s5metadb.sql)
+    - [pfcli](https://github.com/cocalele/pfconductor/blob/master/pfcli)
 
 ## build
+ref:
+- [build_and_run.txt](https://github.com/cocalele/PureFlash/blob/master/build_and_run.txt)
+
 os: CentOS Stream 9
 
 1. deps
@@ -51,8 +66,13 @@ os: CentOS Stream 9
 # ./pfcli --help
 ```
 
-### FAQ
-#### build PureFlash get: `error: ‘logic_error’ is not a member of ‘std’`
+## FAQ
+### `error: package java.net.http does not exist`
+[Package java.net.http](https://docs.oracle.com/en/java/javase/17/docs/api/java.net.http/java/net/http/package-summary.html)是java 11开始加入的, 刚开始是安装了jdk 8, 后来安装jdk 17, 检查后JAVA_HOME使用的还是java 8的, 经检查是`~/.bashrc`里设置的, 取消即可.
+
+官方编译用了[jdk 14](https://github.com/cocalele/PureFlash/blob/master/build_and_run.txt).
+
+### build PureFlash get: `error: ‘logic_error’ is not a member of ‘std’`
 other like: `error: ‘runtime_error’ is not a member of ‘std’`
 
 add `[stdexcept](https://stackoverflow.com/questions/4861777/missing-stdruntime-error-in-qtmingw)`:

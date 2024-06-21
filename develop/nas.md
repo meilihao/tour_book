@@ -1103,6 +1103,7 @@ $ smbpasswd -w 123456	# 存储用于连接 LDAP 服务的bind password, 非常�
 ## other nas
 ### 群辉
 ref:
+- [极摩客K8在PVE8.1下使用AMD 8845HS 部署H群晖](https://weibo.com/ttarticle/p/show?id=2309405037922197045683)
 - [黑群DSM7.X引导文件（2022年5月5日更新）](https://wp.gxnas.com/11849.html)
 - [黑群晖DSM6.24和DSM7.x测试版](https://dl.gxnas.com:1443/?dir=/%E9%BB%91%E7%BE%A4%E6%99%96/%E9%BB%91%E7%BE%A4%E6%99%96DSM6.24%E5%92%8CDSM7.x%E6%B5%8B%E8%AF%95%E7%89%88)
 - [私人定制专属的RedPill-DSM7.X引导文件并添加扩展驱动（编译DSM7.X引导教程）](https://wp.gxnas.com/11358.html)

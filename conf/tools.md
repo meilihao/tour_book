@@ -285,7 +285,7 @@ $ mkdir -p /home/chen/tmpfs
 ```
 # gedit /etc/fstab,加入以下内容:
 # tmpfs
-tmpfs /home/chen/tmpfs tmpfs size=256m 0 0
+tmpfs /home/chen/tmpfs tmpfs rw,nodev,nosuid,size=256m 0 0
 ```
 
 ## terminal弹窗

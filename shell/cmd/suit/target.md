@@ -449,7 +449,10 @@ qla2xxx.ko支持target模式和initiator模式, 在存储服务器上必须根�
 
 > 也可通过/etc/modprobe.d/qla2xxx.conf指定qla2xxx驱动参数, 比如`options qla2xxx qlini_mode="enabled"`.
 
-> 其实qlini_mode默认是"exclusive"模式: 默认支持initiator模式, 通过操作target驱动提供的configfs接口, 可切换到target模式, 还可以再切回initiator模式.
+> 其实qlini_mode默认是"exclusive"模式: 默认支持initiator模式, 通过操作target驱动提供的configfs接口, 可切换到target模式(前提是当前没有挂载fc盘), 还可以再切回initiator模式.
+
+ps:
+qlini_mode="exclusive"时, `/sys/class/fc_host/host<N>`, N也会出现在`/proc/scsi/scsi |grep ' scsi<N> '`里, 表明fc分配过来的scsi设备还存在于当前系统, 此时用lsblk去查看也可能看不到该设备, 但`ls -l /sys/class/scsi_device/<xxx>/device/block/`(`sg_map -x`)能看到设备, 但该盘的size是0, 可根据`udevadm info <问题盘>`里的的信息(比如FC_TARGET_WWPN)查找分配来源. 该情况是vmware san分配的, 且已取消分配, 但不知为什么fc还能扫描到这些盘).
 
 ### fc盘位置
 1. `lsblk -S`, 找`TRAN=fc`
