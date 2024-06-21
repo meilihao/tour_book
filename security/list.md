@@ -1,6 +1,9 @@
 ## books
 - [*https权威指南](#)
 
+## base
+- [如果让你来设计消息加密](https://cloud.tencent.com/developer/article/2373493)
+
 ## crypto
 - [写给开发人员的实用密码学](https://thiscute.world/posts/practical-cryptography-basics-1/)
 - [Nodejs开发加密货币](https://www.gitbook.com/book/imfly/bitcoin-on-nodejs/details)
