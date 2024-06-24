@@ -192,12 +192,25 @@ $ sudo update-grub # for debian/ubuntu
 ref:
 - [Enable Zram on Linux For Better System Performance](https://fosspost.org/enable-zram-on-linux-better-system-performance)
 
+debian:
+```bash
+$ sudo apt install systemd-zram-generator zram-tools # 推荐使用zram-tools, 因为它可以设置为开机自启, 而systemd-zram-generator的systemd-zram-setup不可以
+sudo vim /etc/systemd/zram-generator.conf
+[zram0]
+compression-algorithm = zstd
+zram-size = min(ram/2,4096)
+swap-priority = 100
+$ sudo systemctl daemon-reload
+$ sudo systemctl start systemd-zram-setup@zram0
+```
+
+opensuse:
 ```bash
 $ sudo zypper install systemd-zram-service zram-generator
 $ sudo vim /etc/systemd/zram-generator.conf
 [zram0]
 compression-algorithm = zstd
-zram-size = 4G
+zram-size = min(ram/2,4096)
 swap-priority = 100
 $ sudo systemctl daemon-reload
 $ sudo systemctl start systemd-zram-setup@zram0

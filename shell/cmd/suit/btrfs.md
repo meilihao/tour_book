@@ -19,7 +19,7 @@ btrfs可以在 Subvolume 的基础上制作快照，几点需要注意：
 ```bash
 # btrfs subvolume create sub1 # 必须在btrfs mountpoint下执行. 属于不同的 Subvolume 间的文件不能建立硬链接, 且rm命令无法删除subvolume
 # btrfs subvolume del sub1 # 删除subvolume # 返回信息中的`Delete subvolume (no-commit)`，表示 Subvolume 被删除了，但没有提交, 即删除操作在内存里面生效了，但磁盘上的内容还没删，意味着如果这个时候系统 Crash 掉，这个 Subvolume 有可能还会回来. Btrfs 这样做的好处是删除速度很快，不会影响使用，缺点是有可能在后台 Commit 的过程中系统挂掉，导致 Commit 失败.
-# btrfs subvolume del -c sub2Delete subvolume (commit): '/mnt/btrfs/sub1' # 在删除 Subvolume 的时候指定 -c 参数，这样 btrfs命令会等提交完成之后再返回
+# btrfs subvolume del -c sub2Delete subvolume (commit): '/mnt/btrfs/sub1' # 在删除 Subvolume 的时候指定 -c 参数，这样 btrfs命令会等提交完成之后再返回, 否则就需要`btrfs subvolume sync <mountpoint>`
 # btrfs subvolume list /mnt/bfs # 获取subvolume的列表. `-s`表示只显示snapshot
 # btrfs property get -ts /mnt/bfs/sub1 # 查看 Subvolume 的只读状态
 # btrfs property set -ts /mnt/bfs/sub1/ ro true # 设置 Subvolume 的只读状态
@@ -67,3 +67,18 @@ ref:
 ## 进阶
 ref:
 - [文件系统系列专题之 Btrfs](https://blog.csdn.net/zhuzongpeng/article/details/127115533)
+
+## FAQ
+### fstab
+```bash
+# cat /etc/fstab
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+# / was on /dev/nvme0n1p3 during installation
+UUID=ca75d517-3282-4a44-8f1b-5f19937034a5 /               btrfs   defaults,subvol=@rootfs 0       0
+UUID=ca75d517-3282-4a44-8f1b-5f19937034a5 /home           btrfs   defaults,subvol=home    0       0
+UUID=ca75d517-3282-4a44-8f1b-5f19937034a5 /opt            btrfs   defaults,subvol=opt     0       0
+# /boot was on /dev/nvme0n1p2 during installation
+UUID=2af5d19c-6376-47c6-b81d-9a4826f0069b /boot           ext4    defaults        0       2
+# /boot/efi was on /dev/nvme0n1p1 during installation
+UUID=3CA2-D74B  /boot/efi       vfat    umask=0077      0       1
+```

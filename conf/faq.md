@@ -324,7 +324,7 @@ env:ubuntu 24.04
 #### fedora 40
 安装[todesk-v4.7.2.0-x86_64.rpm](https://dl.todesk.com/linux/todesk-v4.7.2.0-x86_64.rpm)后, 点击图标无法启动, 且在terminal启动报`/opt/todesk/bin/ToDesk: error while loading shared libraries: libappindicator3.so.1: cannot open shared object file: No such file or directory`.
 
-解决: 参考[Fedora/CentOS/RedHat](https://www.todesk.com/linux.html)安装文档, 执行`dnf install libappindicator-gtk3`再启动即可.
+解决: 参考[Fedora/CentOS/RedHat](https://www.todesk.com/linux.html)安装文档, 执行`dnf install libappindicator-gtk3`再启动即可. debian安装`libappindicator3-1`
 
 ### 停止gvfs
 ```bash
