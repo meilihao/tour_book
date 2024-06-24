@@ -187,3 +187,20 @@ GRUB_TIMEOUT_STYLE=menu
 $ sudo grub2-mkconfig -o "$(readlink -e /etc/grub2.cfg)" # for fedora/centos
 $ sudo update-grub # for debian/ubuntu
 ```
+
+### zram
+ref:
+- [Enable Zram on Linux For Better System Performance](https://fosspost.org/enable-zram-on-linux-better-system-performance)
+
+```bash
+$ sudo zypper install systemd-zram-service zram-generator
+$ sudo vim /etc/systemd/zram-generator.conf
+[zram0]
+compression-algorithm = zstd
+zram-size = 4G
+swap-priority = 100
+$ sudo systemctl daemon-reload
+$ sudo systemctl start systemd-zram-setup@zram0
+$ sudo zramctl
+$ sudo swapon --show
+```
