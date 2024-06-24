@@ -15,6 +15,8 @@
 	1. 点`安装`即可
 	1. 用rsync拷贝iso(比cp快), 比如`rsync --progress -v ubuntukylin-20.04-pro-sp1-amd64.iso /media/chen/Ventoy`
 	1. 执行`sync`并计算iso checksum
+
+        可用`iostat -d -m -x 5`监控磁盘写入, 避免sync很长时还以为是sync卡住
 	1. reboot并开始安装os
 1. Rufus, 推荐, 也支持windows
 1 . [live-usb-install](http://sourceforge.net/projects/liveusbinstall/files/?source=navbar)
