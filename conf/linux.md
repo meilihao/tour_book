@@ -177,3 +177,13 @@ tpm资料,[TPM安全芯片](http://baike.baidu.com/view/687208.htm),[Trusted Pla
 # deepin
 ## 升级内核
 `sudo apt install linux-image-deepin-stable-amd64 linux-headers-deepin-stable-amd64`
+
+### 启动时显示grub
+```bash
+$ sudo vim /etc/default/grub
+GRUB_TIMEOUT=10
+GRUB_TIMEOUT_STYLE=menu
+...
+$ sudo grub2-mkconfig -o "$(readlink -e /etc/grub2.cfg)" # for fedora/centos
+$ sudo update-grub # for debian/ubuntu
+```
