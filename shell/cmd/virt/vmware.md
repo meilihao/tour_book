@@ -7,6 +7,7 @@ ref:
 - [VMware Workstation Pro for Personal Use (For Linux)下载地址](https://support.broadcom.com/group/ecx/productdownloads?subfamily=VMware+Workstation+Pro)
 
   ```bash
+  $ sudo apt install make pkexec                       // 需要构建工具
   $ sudo apt install linux-headers-$(uname -r)         // Ubuntu/Debian
   $ sudo dnf install "kernel-devel-$(uname -r)"        // AlmaLinux/Fedora
   ```
@@ -32,3 +33,6 @@ vmware为提供了三种网络工作模式：Bridged（桥接模式）、NAT（�
 vmware仅支持两层嵌套:
 1. 第一层由硬件虚拟化
 2. 第二层由软件模拟
+
+### vmware workstation pro 17.5.2 创建vm时无法选中`virtualization engine`
+电脑本身支持虚拟化. 在编辑vm中选中即可

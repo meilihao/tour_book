@@ -2,6 +2,9 @@
 参考:
 - [How to Install and Configure VNC Server on Ubuntu](https://www.tecmint.com/install-and-configure-vnc-server-on-ubuntu/)
 - [Ubuntu 20.04 上安装和配置 VNC](https://xie.infoq.cn/article/cf473dc0dea917b0b2a546ecd)
+- [Fedora 41 安装程序正从 X11 向 Wayland 应用过渡](https://www.oschina.net/news/299076/fedora-41-anaconda-wayland)
+
+	作为替代，项目团队遵循 Fedora Workstation 的建议，改用 Gnome Remote Desktop (grd) 和更好的 Remote Desktop Protocol (RDP)，后者能为用户提供更好的性能和安全性
 
 tigvnc还[未支持wayland](https://github.com/TigerVNC/tigervnc/issues/158)
 

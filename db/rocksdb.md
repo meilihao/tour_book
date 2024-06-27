@@ -26,6 +26,8 @@
 
 > go+[badger](https://github.com/dgraph-io/badger)也是不错的选择, 特别是cgo问题无法解决的时候
 
+> 推荐使用xxx.fb/xxx.fb.myrocks分支的代码, 下载方式: `https://codeload.github.com/facebook/rocksdb/tar.gz/refs/heads/xxx.fb`
+
 RocksDB的目的是成为一套能在服务器压力下，真正发挥高速存储硬件（特别是Flash 和 RAM）性能的高效单点数据库系统. 它是一个C++库，允许存储任意长度二进制kv数据, 支持原子读写操作, 因此本质上来说它是一个可插拔式的存储引擎选择.
 
 > rocksdb解决的是写多读少的场景需求; B+解决的是读多写少.

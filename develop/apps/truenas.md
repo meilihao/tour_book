@@ -1,7 +1,15 @@
 # truenas scale
+ref:
+- [TrueNAS SCALE Clustering Overview](https://www.truenas.com/blog/truenas-scale-clustering/)
+
 version: 22.02
 
 > 22.02至少需要python 3.9, 推荐系统自带, 否则需要处理很多python相关依赖, 很耗时且可能根本无法处理(比如debian.org bullseye下载的python3.9-minimal有libc版本要求)
+
+## 安装
+ref:
+- [TrueNAS安装及使用教程](https://www.ethanzhang.xyz/2023/05/14/TrueNAS%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/)
+- [设置TrueNAS-SCALE为中文](https://mi-d.cn/9431)
 
 ## zfs
 zfs pool挂载在`/mnt`下.

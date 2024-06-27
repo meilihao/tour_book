@@ -6,6 +6,9 @@
 
 > ldd不是一个可执行程序，而只是一个shell脚本,它显示可执行模块的dependency的工作原理，其实质是通过ld-linux.so（elf动态库的装载器）来实现的.
 
+## 选项
+- -v : 输出detail
+
 ## 补充
 
 一个可执行文件链接了哪些动态库呢或在遇到“error while loading shared libraries”时，我们难免会对此产生好奇.
@@ -45,3 +48,10 @@ $ldd chrome | grep 'not found'
 guestfish依赖的libselinux版本不对
 
 > readelf -d xxx.so // SONAME包含主版本
+
+### ldd xxx.so报`no version information available`
+情况:
+1. 依赖的so不存在, 需要安装
+2. 依赖的so存在若干版本, 但使用了错误的版本
+
+	比如: 调用的qt库版本与可执行程序编译时用的qt库版本不一致
