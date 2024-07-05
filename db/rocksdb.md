@@ -52,7 +52,7 @@ RocksDB是一个嵌入式的K-V（任意字节流）存储. 所有的数据在�
     # ldconfig
     ```
 
-    > 编译7.10.2发现gcc-c++需要支持c++17, 推荐gcc8
+    > 编译7.10.2发现gcc-c++需要支持c++17, 推荐gcc8, 仅[gcc](/shell/cmd/compile/gcc.md)
 
     > rocksdb的cmake是针对windows 64-bit的, 见CMakeLists.txt
 

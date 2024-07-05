@@ -444,8 +444,24 @@ $ sudo zfs set dedup=on mypool/projects # 启用去重
 > Reservation是最小值, quota是最大值.
 
 ## zdb
+ref:
+- [Turbocharging ZFS Data Recovery](https://www.delphix.com/blog/openzfs-pool-import-recovery)
+
+选项:
+- -G, --dump-debug-msg: zdb结束前dump出zfs_dbgmsg内容
+
 - `zdb -l /dev/sdj` : 查看磁盘上的zpool信息
 - `zdb -dddddddd testpool` : 查看写入的range
+- `zdb -c -eFX -G <pool>`:  检查无法import的pool, 很慢
+- `zdb -dep <disk_dir/disk> -G <pool>`: 检查无法import的pool, 慢
+- `zdb -V -ep <disk_dir/disk> -G <pool>`: 检查无法import的pool, 快
+- `/proc/spl/kstat/zfs/dbgmsg` : import log, 按时间戳变化分割日志
+
+## lib
+ref:
+- [zpool-status](https://pypi.org/project/zpool-status/)
+
+	json output
 
 ## FAQ
 ### quota于refquota区别
@@ -703,6 +719,13 @@ zpool set listsnapshots=on rpool # zfs list时也输出snap信息, 默认是off
 
 ### arcstat
 最大 ARC 缓存内存（c）、当前 ARC 缓存大小（arcsz）、从 ARC 缓存中读取的数据（read）等信息
+
+字段:
+- c : the target size of the ARC in bytes
+- c_max : the maximum size of the ARC in bytes
+- size : the current size of the ARC in bytes
+
+> arcstat from `/proc/spl/kstat/zfs/arcstats`
 
 ### 调整arc大小
 `/etc/modprobe.d/zfs.conf`:

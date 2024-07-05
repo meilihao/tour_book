@@ -18,8 +18,7 @@ btrfs可以在 Subvolume 的基础上制作快照，几点需要注意：
 
 ```bash
 # btrfs subvolume create sub1 # 必须在btrfs mountpoint下执行. 属于不同的 Subvolume 间的文件不能建立硬链接, 且rm命令无法删除subvolume
-# btrfs subvolume del sub1 # 删除subvolume # 返回信息中的`Delete subvolume (no-commit)`，表示 Subvolume 被删除了，但没有提交, 即删除操作在内存里面生效了，但磁盘上的内容还没删，意味着如果这个时候系统 Crash 掉，这个 Subvolume 有可能还会回来. Btrfs 这样做的好处是删除速度很快，不会影响使用，缺点是有可能在后台 Commit 的过程中系统挂掉，导致 Commit 失败.
-# btrfs subvolume del -c sub2Delete subvolume (commit): '/mnt/btrfs/sub1' # 在删除 Subvolume 的时候指定 -c 参数，这样 btrfs命令会等提交完成之后再返回, 否则就需要`btrfs subvolume sync <mountpoint>`
+# btrfs subvolume del [-c] sub1 # 或指定id(`--subvolid 263 <mountpoint>`). 删除subvolume # 返回信息中的`Delete subvolume (no-commit)`，表示 Subvolume 被删除了，但没有提交, 即删除操作在内存里面生效了，但磁盘上的内容还没删，意味着如果这个时候系统 Crash 掉，这个 Subvolume 有可能还会回来. Btrfs 这样做的好处是删除速度很快，不会影响使用，缺点是有可能在后台 Commit 的过程中系统挂掉，导致 Commit 失败. 在删除 Subvolume 的时候指定 -c 参数，这样 btrfs命令会等提交完成之后再返回, 否则就需要`btrfs subvolume sync <mountpoint>`
 # btrfs subvolume list /mnt/bfs # 获取subvolume的列表. `-s`表示只显示snapshot
 # btrfs property get -ts /mnt/bfs/sub1 # 查看 Subvolume 的只读状态
 # btrfs property set -ts /mnt/bfs/sub1/ ro true # 设置 Subvolume 的只读状态

@@ -2,9 +2,9 @@
 ref:
 - [TrueNAS SCALE Clustering Overview](https://www.truenas.com/blog/truenas-scale-clustering/)
 
-version: 22.02
+version: 24.04
 
-> 22.02至少需要python 3.9, 推荐系统自带, 否则需要处理很多python相关依赖, 很耗时且可能根本无法处理(比如debian.org bullseye下载的python3.9-minimal有libc版本要求)
+> `22.02至少需要python 3.9/24.04至少需要python 3.11`. 推荐系统自带, 否则需要处理很多python相关依赖, 很耗时且可能根本无法处理(比如debian.org bullseye下载的python3.9-minimal有libc版本要求)
 
 ## 安装
 ref:
@@ -22,10 +22,12 @@ middlewared设置的主要参数:
 - `--log-handler=file`: 日志输出方式, 支持console, file(`/var/log/middlewared.log`). 
 
 ### console setup
-进入其terminal `console setup`的命令是`/etc/netcli`
+进入其terminal `console setup`的命令是`/usr/bin/cli --menu --pager`(by python3)
 
-配置ip项: `Configure Network Interfaces`
-配置gateway项: `Configure Default Route`
+> 以前版本, 比如22.02是`/etc/netcli`
+
+配置ip项: `Configure network interfaces`
+配置gateway项: `Configure static routes`
 
 > 设置ip和gateway并重启后即可使用webui
 
@@ -176,8 +178,32 @@ class DiskService(CRUDService):
         cli_namespace = 'storage.disk'
 ```
 
+middleware.call('system.advanced.config'))['kdump_enabled']:
+1. SystemAdvancedService(ConfigService)
+1. ConfigService.config
+1. self.middleware.call('datastore.config', datastore, options)
+1. Config.config()
+1. `self.query(name, [], options)`
+
 ### table定义
 `class xxxModel(sa.Model)`
+
+### EventSource
+`SystemHealthEventSource(EventSource)`初始化代码:
+```py
+# common/event_source/manager.py
+async def subscribe(self, subscriber, ident, name, arg):
+            ...
+            self.middleware.logger.trace("Creating new instance of event source %r:%r", name, arg)
+            self.instances[name][arg] = self.event_sources[name](
+                self.middleware, name, arg,
+                functools.partial(self._send_event, name, arg),
+                functools.partial(self._unsubscribe_all, name, arg),
+            )
+```
+
+### 开发者模式
+truenas 24.04 rootfs只读, 解除需开启该模式[`install-dev-tools`](https://www.truenas.com/docs/scale/scaletutorials/systemsettings/advanced/developermode/)
 
 ### ~~获取middlewared.deb~~
 根据[scale-build/conf/sources.list](https://github.com/truenas/scale-build/blob/master/conf/sources.list)找到[middlewared.deb](https://apt.tn.ixsystems.com/apt-direct/angelfish/{22.02-RC.2,nightlies}/angelfish/pool/main/m/middlewared/), 从22.02发布后, truenas删除了上述url中的`22.02/angelfish`路径即没法下到RELEASE版deb, 同时该方法获取middlewared还要解决包依赖问题, 因此**应从iso中提前源码**.
@@ -241,7 +267,7 @@ os提取版middlewared的vscode配置(**推荐, 毕竟TrueNAS-SCALE-22.02.0.iso�
     }
     ```
 
-### TrueNAS-SCALE-22.02.0.iso里提取middlewared
+### TrueNAS-SCALE-24.04.1.1.iso里提取middlewared
 > iso/live下的squashfs里不包含middlewared
 
 用ncdu统计iso文件大小, 在逐个排查, 最终定位在`TrueNAS-SCALE.update`.
@@ -254,34 +280,56 @@ DECIMAL       HEXADECIMAL     DESCRIPTION
 --------------------------------------------------------------------------------
 0             0x0             Squashfs filesystem, little endian, version 4.0, compression:gzip, size: 1369983003 bytes, 6 inodes, blocksize: 131072 bytes, created: 2022-02-18 16:15:16
 # 先用文件管理器挂载iso
-# mount -t squashfs -o loop  TrueNAS-SCALE.update  /mnt/squashfs
-# cd /mnt/squashfs
+# mount -t squashfs -o loop  /media/chen/ISOIMAGE/TrueNAS-SCALE.update  /mnt/truenas/squashfs
+# cd /mnt/truenas/squashfs
 # tree .
 .
 ├── manifest.json
 ├── rootfs.squashfs
 └── truenas_install
+    ├── fhs.py
     ├── __init__.py
     └── __main__.py
 
-1 directory, 4 files
+1 directory, 5 files
 # cat manifest.json |jq .
 {
-  "date": "2022-02-18T16:15:15.940514",
-  "version": "22.02.RELEASE",
-  "size": 5450135961,
+  "date": "2024-05-29T16:30:12.599848",
+  "version": "24.04.1.1",
+  "size": 5232902963,
   "checksums": {
-    "rootfs.squashfs": "c1fdaf7032c2c2605e2c9d96e06aba086e06a643",
-    "truenas_install/__main__.py": "f6eebffdce4cb8da52ade2bd16b3e9613f8c1048",
+    "rootfs.squashfs": "71f4721ceb9e40ce8a34c38b1326052f0ae4f3d5",
+    "truenas_install/__main__.py": "54e3669c57fef1a9714e182ec9a16f0e72e951db",
+    "truenas_install/fhs.py": "94bf7b8fe25f6d3c8d95c788c95c664bedb08b33",
     "truenas_install/__init__.py": "da39a3ee5e6b4b0d3255bfef95601890afd80709"
   },
-  "kernel_version": "5.10.93+truenas"
+  "kernel_version": "6.6.29-production+truenas"
 }
-# mkdir /mnt/squashfs2
-# mount -t squashfs -o loop  rootfs.squashfs  /mnt/squashfs2 # 经分析rootfs.squashfs是已安装好middlewared的镜像
+# mkdir /mnt/truenas/squashfs2
+# mount -t squashfs -o loop  /mnt/truenas/squashfs/rootfs.squashfs /mnt/truenas/squashfs2 # 经分析rootfs.squashfs是已安装好middlewared的镜像
 ```
 
-### TrueNAS-SCALE-22.02.0.iso安装原理
+vscode源码阅读配置:
+```bash
+$ scp -r /mnt/truenas/squashfs2/usr/lib/python3/dist-packages/middlewared ~/test/truenas/deb # 因为iso挂载的squashfs是只读的
+$ vim /test/truenas/deb/middlewared/.env
+PYTHONPATH=/home/chen/test/truenas/deb:/mnt/truenas/squashfs2/usr/lib/python3/dist-packages:/usr/lib/python3/dist-packages
+$ cat /test/truenas/deb/middlewared/.vscode/settings.json
+{
+    "python.autoComplete.extraPaths": [
+        "/home/chen/test/truenas/deb",
+        "/mnt/truenas/squashfs2/usr/lib/python3/dist-packages",
+        "/usr/lib/python3/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/chen/test/truenas/deb",
+        "/mnt/truenas/squashfs2/usr/lib/python3/dist-packages",
+        "/usr/lib/python3/dist-packages"
+    ]
+}
+```
+
+### TrueNAS-SCALE 22.02/24.04 iso安装原理
 见[scale-build/conf/cd-files/](https://github.com/truenas/scale-build/tree/TS-22.02.0.1/conf/cd-files)
 
 推测:
@@ -291,6 +339,7 @@ DECIMAL       HEXADECIMAL     DESCRIPTION
     1. `mount /cdrom/TrueNAS-SCALE.update /mnt -t squashfs -o loop`
     1. `(cd /mnt && echo "$json" | python3 -m truenas_install)`即执行`/mnt/truenas_install`里的代码
 
+可结合iso的fs(`live/filesystem.squashfs`)一起验证.
 
 ## FAQ
 ### db
@@ -346,3 +395,6 @@ env: Ubuntu 20.04
 
 ### [构建`github.com/truenas/py-libzfs`, 运行`libzfs.c:6:10: fatal error: Python.h: No such file or directory`]
 `apt install python3-dev`
+
+### sshd_config被还原
+truenas scale 24.04具有还原机制, 手动修改后, 过段时间后会被根据db里的配置还原.

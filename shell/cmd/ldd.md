@@ -55,3 +55,6 @@ guestfish依赖的libselinux版本不对
 2. 依赖的so存在若干版本, 但使用了错误的版本
 
 	比如: 调用的qt库版本与可执行程序编译时用的qt库版本不一致
+
+### 查看so依赖的GLIBC版本
+`strings /usr/lib/x86_64-linux-gnu/libgbm.so.1 | grep ^GLIBC`

@@ -24,3 +24,5 @@ ref:
 - [miaridb : mariadb-java-client](https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client)
 - [postgres : postgresql-42.2.20.jar](https://mvnrepository.com/artifact/org.postgresql/postgresql)
 - [oracle]()
+
+有时所需jar命令存在, 但dbeaver还是报找不到driver: 清空`库`标签页, 重新添加jar即可

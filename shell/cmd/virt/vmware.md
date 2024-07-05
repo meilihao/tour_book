@@ -12,7 +12,7 @@ ref:
   $ sudo dnf install "kernel-devel-$(uname -r)"        // AlmaLinux/Fedora
   ```
 
-  **vmware workstation 17.5.2 无法在 kernel 6.9.4 上构建所需的内核模块**, 兼任列表见[Supported host operating systems for Workstation Pro 16.x, 17.x and Workstation Player 16.x, 17.x](https://knowledge.broadcom.com/external/article/315653/supported-host-operating-systems-for-wor.html)
+  **vmware workstation 17.5.2 无法在fedora 40 + kernel 6.9.4/ubuntu 24.04 + kernel 6.8 上构建所需的内核模块**, 兼任列表见[Supported host operating systems for Workstation Pro 16.x, 17.x and Workstation Player 16.x, 17.x](https://knowledge.broadcom.com/external/article/315653/supported-host-operating-systems-for-wor.html)
 
   vmware kernel module src位置见[VMware, Debian Kernel Upgrade](https://wiki.debian.org/VMware). patch在[VMware vmmon & vmnet 17.5.1 and Linux kernel 6.8.0 won't compile](https://unix.stackexchange.com/questions/773558/vmware-vmmon-vmnet-17-5-1-and-linux-kernel-6-8-0-wont-compile), 但当前只支持到17.5.1
 
@@ -36,3 +36,15 @@ vmware仅支持两层嵌套:
 
 ### vmware workstation pro 17.5.2 创建vm时无法选中`virtualization engine`
 电脑本身支持虚拟化. 在编辑vm中选中即可
+
+### 卸载
+ref:
+- [Uninstall Workstation Pro from a Linux Host](https://docs.vmware.com/en/VMware-Workstation-Pro/17/com.vmware.ws.using.doc/GUID-05E4C876-F32C-49D2-82B4-8C759691E7F5.html)
+
+```bash
+$ su root
+# vmware-installer -u vmware-workstation
+```
+
+### [Open Virtualization Format (OVF) Tool](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest)
+`ovftool TrueNAS-SCALE-24.04.1.1.vmx  truenas.ovf`, ovf可被virtualbox导入.

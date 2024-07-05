@@ -194,7 +194,7 @@ ref:
 
 debian:
 ```bash
-$ sudo apt install systemd-zram-generator zram-tools # 推荐使用zram-tools, 因为它可以设置为开机自启, 而systemd-zram-generator的systemd-zram-setup不可以
+$ sudo apt install systemd-zram-generator zram-tools # 推荐使用zram-tools(/etc/default/zramswap), 因为它可以设置为开机自启, 而systemd-zram-generator的systemd-zram-setup不可以
 sudo vim /etc/systemd/zram-generator.conf
 [zram0]
 compression-algorithm = zstd
@@ -216,4 +216,59 @@ $ sudo systemctl daemon-reload
 $ sudo systemctl start systemd-zram-setup@zram0
 $ sudo zramctl
 $ sudo swapon --show
+```
+
+### 钉钉无法登入
+ref:
+- [在 openSUSE-Leap-15.5-DVD-x86_64 中使用钉钉 dingtalk_7.0.40.30829_amd64](https://forum.suse.org.cn/t/topic/16484)
+- [在 Linux "rpm" 系发行版上运行钉钉应用程序](https://tedding.dev/2023/06/16/188c2ae4970.html)
+
+env:
+- kubuntu 24.04
+- com.alibabainc.dingtalk_7.5.20.40605_amd64.deb
+
+报错原因:
+- 找不到`xxx.so`
+- `libpango undefined symbol: hb_ot_metrics_get_position`
+
+patch:
+```bash
+# diff Elevator.sh Elevator.sh.bak
+2d1
+< export LD_LIBRARY_PATH=/snap/gnome-42-2204/176/usr/lib/x86_64-linux-gnu:/snap/gnome-42-2204/176/usr/lib/x86_64-linux-gnu/pulseaudio:$LD_LIBRARY_PATH
+```
+
+### kubuntu 24.04 安装com.tencent.wechat(**推荐**)
+使用[铜豌豆](https://www.atzlinux.com/allpackages.htm)打包的com.tencent.wechat
+
+```bash
+apt -y install wget
+wget -c -O atzlinux-v12-archive-keyring_lastest_all.deb https://www.atzlinux.com/atzlinux/pool/main/a/atzlinux-archive-keyring/atzlinux-v12-archive-keyring_lastest_all.deb
+apt -y install ./atzlinux-v12-archive-keyring_lastest_all.deb
+apt update
+apt install com.tencent.wechat
+```
+
+### kubuntu 24.04 安装wechat from opencloudos(**还不可用**)
+ref:
+- [OpenCloudOS 支持 Linux 原生版微信，开启生态新篇章](https://www.cnblogs.com/OpenCloudOS/p/18252948)
+
+	[rpm](https://mirrors.opencloudos.tech/opencloudos/9.2/extras/x86_64/os/Packages/wechat-beta_1.0.0.242_amd64.rpm)
+
+将wechat-beta_1.0.0.242_amd64.rpm解压, 拷贝到相应目录, 根据启动报错修改wechat.desktop:
+```bash
+$ sudo vim /usr/share/applications/wechat.desktop
+...
+Exec=env LD_LIBRARY_PATH=/opt/wechat-beta:$LD_LIBRARY_PATH /usr/bin/wechat %U
+...
+```
+
+修改后能打开wechat, 出现扫二维码登入界面, 此时点关闭会crash.
+
+### 优麒麟weixin无法启动(**版本旧**)
+根据`journalctl -f`的提示, 修改chrome-sandbox权限:
+```bash
+$ cd /opt/weixin
+$ sudo chown root:root chrome-sandbox
+$ sudo chmod 4755 chrome-sandbox
 ```

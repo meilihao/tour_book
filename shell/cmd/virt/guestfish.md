@@ -133,6 +133,11 @@ image权限需要`qemu:qemu`, 且qemu用户能访问到该文件
 ><fs> mount /dev/centos/root /
 ```
 
+ext4:
+```bash
+><fs> e2fsck /dev/centos/root [forceall:true] # correct:可能还是会报错
+```
+
 ```bash
 $ --- 支持lsblk
 $ virt-rescue --format=raw  -a /dev/zvol123
