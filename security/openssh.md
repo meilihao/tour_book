@@ -227,10 +227,11 @@ ssh-keyscan -t ed25519 -p 22 xxx.com
 ```bash
 puttygen id_rsa -o id_rsa.ppk
 puttygen id_rsa.ppk -O private-openssh -o id_rsa.pem
+puttygen id_rsa.pem -L # 查看结果
 ```
 或直接:
 ```bash
-puttygen id_rsa -O private-openssh -o id_rsa.pem
+puttygen id_rsa -O private-openssh -o id_rsa.pem # ubuntu 20.04 不可行, 但上面的方法可以
 ```
 
 ### ssh root 密码无法登入

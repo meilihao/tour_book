@@ -431,7 +431,7 @@ ref:
 $ go install github.com/lintingzhen/commitizen-go@master
 $ whereis commitizen-go
 /home/chen/git/go/bin/commitizen-go
-$ sudo /home/chen/git/go/bin/commitizen-go install
+$ sudo /home/chen/git/go/bin/commitizen-go install # 需要在git repo里执行, 此后即可在git repo里使用`git cz`
 $ git cz
 ```
 

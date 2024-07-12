@@ -159,6 +159,9 @@ class Resource(object):
 1. 根据`grep -r "query(" $(grep -rl "enclosure")`, 发现`enclosure.query`实际是`src/middlewared/middlewared/plugins/enclosure.py#EnclosureService.query()`
 1. 最后也调到了`src/middlewared/middlewared/plugins/enclosure_/ses_enclosure_linux.py#EnclosureService.get_ses_enclosures()`
 
+查找call对于的服务名:
+1. plugin可根据其namespace来查找
+
 ### `src/middlewared/middlewared/service.py#CRUDService.query()`中的`self._config`是什么?
 通过`grep -r "\._config = "`查找, 发现CRUDService父类定义`class Service(object, metaclass=ServiceBase)`中的ServiceBase.__new__()设置了`_config`, 其实就是CRUDService子类如DiskService的嵌套类`class Config`(但经过metaclass修改).
 
@@ -181,9 +184,17 @@ class DiskService(CRUDService):
 middleware.call('system.advanced.config'))['kdump_enabled']:
 1. SystemAdvancedService(ConfigService)
 1. ConfigService.config
+
+    ```python
+    options['extend'] = self._config.datastore_extend
+    options['extend_context'] = self._config.datastore_extend_context
+    options['prefix'] = self._config.datastore_prefix
+    ```
 1. self.middleware.call('datastore.config', datastore, options)
 1. Config.config()
 1. `self.query(name, [], options)`
+
+    - columns.extend(list(alias.c)): 执行datastore_exten
 
 ### table定义
 `class xxxModel(sa.Model)`
@@ -204,6 +215,8 @@ async def subscribe(self, subscriber, ident, name, arg):
 
 ### 开发者模式
 truenas 24.04 rootfs只读, 解除需开启该模式[`install-dev-tools`](https://www.truenas.com/docs/scale/scaletutorials/systemsettings/advanced/developermode/)
+
+[也可使用`sudo /usr/local/libexec/disable-rootfs-protection`, 但没有enable-rootfs-protection, 且未验证](https://forums.truenas.com/t/truenas-scale-24-04-0-root-fs-read-only/4235/4)
 
 ### ~~获取middlewared.deb~~
 根据[scale-build/conf/sources.list](https://github.com/truenas/scale-build/blob/master/conf/sources.list)找到[middlewared.deb](https://apt.tn.ixsystems.com/apt-direct/angelfish/{22.02-RC.2,nightlies}/angelfish/pool/main/m/middlewared/), 从22.02发布后, truenas删除了上述url中的`22.02/angelfish`路径即没法下到RELEASE版deb, 同时该方法获取middlewared还要解决包依赖问题, 因此**应从iso中提前源码**.

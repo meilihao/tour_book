@@ -371,3 +371,6 @@ $ --- use apt repo: <bookworm>-backports
 $ sudo apt-cache search linux-image
 $ sudo apt install linux-headers-6.6.13+bpo-amd64 linux-image-6.6.13+bpo-amd64
 ```
+
+### dpkg script位置
+`/var/lib/dpkg/info/*.{postinst,postrm,preinst,prerm}`

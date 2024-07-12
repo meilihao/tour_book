@@ -1,6 +1,8 @@
 # journalctl
 journald是systemd独有的日志系统，替换了sysVinit中的syslog守护进程,使用journalctl用来读取日志.
 
+**在部分场景(系统盘故障导致rootfs变只读), journalctl提供比/var/log/message更多日志**
+
 > 一些发行版已经配置了日志，以便将日志写入磁盘（/var/log/journal），而其他发行版将日志保存在内存中（/run/log/journal）.
 
 # 选项

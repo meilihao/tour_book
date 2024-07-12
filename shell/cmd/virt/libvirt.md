@@ -676,6 +676,11 @@ virDomainGetID可能返回4294967295, 它即[`^uint32(0)=(unsigned int)-1)`](htt
 ### GPU 透传
 打开 iommu, VT-d
 
+### domain type
+- kvm: linux kvm
+- qemu: 完全虚拟化
+- hvf: 苹果公司虚拟化
+
 ## uefi shell
 - exit : 进入qemu machine(virt-4.0)的类似bios界面的字符uefi firmware settings界面.
 

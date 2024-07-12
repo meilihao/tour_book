@@ -1,6 +1,7 @@
 # smart
 参考:
 - [硬盘SMART属性详解](https://blog.zqifei.com/%E7%A1%AC%E7%9B%98SMART%E5%B1%9E%E6%80%A7%E8%AF%A6%E8%A7%A3.html)
+- [failed command: READ FPDMA QUEUED](https://www.cnblogs.com/ggzhangxiaochao/p/14042332.html)
 
 S.M.A.R.T(Self-Monitoring Analysis And Reporting Technology), 即"自我监测、分析及报告技术", 是一种自动监控硬盘驱动器完好状况和报告潜在问题的技术标准. 支持S.M.A.R.T技术的硬盘可以通过硬盘上的监测指令和主机上的监测软件对磁头、盘片、马达、电路的运行情况、历史记录及预设的安全值进行分析、比较. 当出现安全值范围以外的情况时, 就会自动向用户发出警告.
 
@@ -255,6 +256,7 @@ DST主要包括spindup马达磁头臂起转测试、Buffer RAM/Flash ROM检测�
 
 ## 选项
 
+- -x : 输出信息比`-a`多
 - -j : json output
 
 ## 例
@@ -262,3 +264,27 @@ DST主要包括spindup马达磁头臂起转测试、Buffer RAM/Flash ROM检测�
     # smartclt -a /dev/sde
     # smartclt -i /dev/sde
     # smartclt -H /dev/sde
+
+```bash
+smartctl -a <device> 检查该设备是否已经打开SMART技术
+smartctl -s on <device> 如果没有打开SMART技术，使用该命令打开SMART技术
+smartctl -t short <device> 后台检测硬盘，消耗时间短
+smartctl -t long <device> 后台检测硬盘，消耗时间长
+smartctl -C -t short <device> 前台检测硬盘，消耗时间短
+smartctl -C -t long <device> 前台检测硬盘，消耗时间长。其实就是利用硬盘SMART的自检程序
+smartctl -X <device> 中断后台检测硬盘
+smartctl -l selftest <device> 显示硬盘检测日志
+smartctl -l error <device> 显示硬盘错误汇总
+smartctl -i /dev/sda 确认硬盘是否打开了SMART支持
+smartctl -H /dev/sda  查看硬盘的健康状况
+smartctl -A   /dev/sda  查看硬盘的详细信息
+```
+
+## FAQ
+### ssd io 报错:`READ FPDMA QUEUED/WRITE FPDMA QUEUED`
+ref:
+- [LINUX挂载硬盘等命令报错：READ FPDMA QUEUED](https://blog.csdn.net/weixin_41653901/article/details/135452834)
+- [Kernel.org Bugzilla – Bug 203475](https://bugzilla.kernel.org/show_bug.cgi?id=203475#c14)
+- [关于Linux报错解决方案：READ FPDMA QUEUED](https://blog.csdn.net/qq_35292921/article/details/116654211)
+
+intel ssd系统盘遇到`WRITE FPDMA QUEUED`, rootfs变成只读.

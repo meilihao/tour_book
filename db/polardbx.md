@@ -11,3 +11,4 @@ ref:
 - [polardbx 组件及其repo](https://github.com/polardb/polardbx-sql/blob/main/docs/zh_CN/README.md)
 - [PolarDB-X v2.2.1 生产级关键能力开源升级](https://www.oschina.net/news/233895/polardb-x-2-2-1-released)
 - [PolarDB-X 源码解读（番外）：如何实现一个 Paxos](https://zhuanlan.zhihu.com/p/490329189)
+- [数据库容灾 | MySQL MGR 与阿里云 PolarDB-X Paxos 的深度对比](https://my.oschina.net/u/5635191/blog/11405762)
