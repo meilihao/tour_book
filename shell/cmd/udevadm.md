@@ -7,9 +7,9 @@ udev 管理工具
 ## example
 ```bash
 # udevadm monitor # 监视内核发出的设备事件(以"KERNEL"标记)， 以及udev在处理完udev规则之后发出的事件(以"UDEV"标记)，并在控制台上输出事件的设备路径(devpath)
-# udevadm info --query=path --name=/dev/zd123 # 从udev数据库中提取设备信息
+# udevadm info --json=pretty --query=path --name=/dev/zd123 # 从udev数据库中提取设备信息
 # udevadm info /sys/class/net/enp2s0 | grep ID_PATH= # 获取设备路径. PCI ID 是连接到系统的设备的唯一标识符.
-# udevadm info -a -p /sys/class/net/enp2s0 # 返回属性
+# udevadm info -a -p /sys/class/net/enp2s0 # 返回属性. `-a`逐级递归父设备直到sysfs的根节点
 # udevadm test /sys/class/net/eth0 # 测试应用到eth0上的rule是否能生效
 ```
 

@@ -5,9 +5,10 @@ gpt分区工具. 与fdisk类似, 也分为两种模式: 命令模式(直接进�
 
 >  重启或使用`partprobe -s `让kernel刷新分区表, 即将新的分区表变更同步至kernel; 或仅刷新指定设备`partprobe /dev/zd123`
 
-> sfdisk是fdisk的非交互式变体.
+> gparted是parted的gui版
 
 ## 选项
+- j: json输出
 - m : 可解析格式
 
 ## 判断是否系统盘
@@ -17,7 +18,7 @@ gpt分区工具. 与fdisk类似, 也分为两种模式: 命令模式(直接进�
 ## example
 ```bash
 # parted -l /dev/nvme0n1 | grep "Partition Table" # 查看磁盘分区方案(是否是gpt)
-# parted /dev/sda print # 打印分区
+# parted [-j] /dev/sda print # 打印分区
 # parted /dev/sda mklabel gpt # 设为gpt磁盘
 # parted /dev/sdb mkpart primary 0 50% # 划取一半做个分区
 ```

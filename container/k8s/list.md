@@ -1,5 +1,8 @@
 # k8s
 
+## base
+- [10 张图，说透 Kubernetes 架构原理，这会算是真懂了](https://my.oschina.net/morflameblog/blog/11572634)
+
 ## new
 - [Kubernetes release](https://kubernetes.io/releases/)
 - [Kubernetes dev roadmap](https://www.kubernetes.dev/resources/release/)

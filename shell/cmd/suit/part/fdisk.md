@@ -1,5 +1,7 @@
 # fdisk
-管理硬盘设备.  推荐[**使用`parted`的gpt分区**](https://wiki.archlinux.org/index.php/Partitioning_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)).
+基于菜单的管理硬盘分区工具.  推荐[**使用`parted`的gpt分区**](https://wiki.archlinux.org/index.php/Partitioning_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)).
+
+> cfdisk是fdisk tui(terminal ui)版, ui基于curses库; sfdisk是fdisk的非交互式(一切操作都在命令行参数中给出)变体, 适合在命令行和脚本中使用.
 
 磁盘分区的id:
 - 83 : 主分区和逻辑分区

@@ -14,11 +14,14 @@ EOF
 # bash -c "cat >> /etc/tigervnc/vncserver-config-defaults" <<'EOF'
 # session必选,必须与当前桌面匹配,可以在/usr/share/xsessions目录的文件中查看当前桌面
 session=gnome
-geometry=1024x768
+geometry=1920x1024
 EOF
 # vncpasswd
 # systemctl start vncserver@:1 # 1为vncserver.users对应的桌面
 # systemctl enable vncserver@:1
+# systemctl restart vncserver@:1
 ```
 
-建议配合realvnc的client使用
+建议配合realvnc的client使用.
+
+> geometry修改后可能需要重启并重新设置分辨率

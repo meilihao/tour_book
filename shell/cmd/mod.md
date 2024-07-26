@@ -99,6 +99,10 @@ modprobe需要一个最新的modules.dep(`/lib/modules/$(uname -r)/modules.dep`)
 显示内核符号和模块符号表的信息. 信息来自`/proc/kallsyms`
 
 # dracut
+ref:
+- [dracut.bootup](https://man7.org/linux/man-pages/man7/dracut.bootup.7.html)
+- [Dracut on shutdown](https://github.com/redhat-plumbers/dracut-fedora/blob/main/man/dracut.asc)
+
 Dracut 是一个用于构建 initramfs cpio 档案的工具.
 
 在`/etc/dracut.conf.d`配置, 配置文件格式是`add_drivers+=" xxx xxx "`(**两边需有空格**)
@@ -112,6 +116,13 @@ Dracut 是一个用于构建 initramfs cpio 档案的工具.
 # dracut --include /custom-content.conf /etc/custom-content.conf --force # 使用 --include <sourcePath> <targetPath> 在 initramfs 中包含额外文件
 # dracut --install "/custom-content.conf /custom-content0.conf" --force # --install 可用于在 initramfs 中包含文件. 与 --include 的主要区别在于: 文件安装在 initramfs 中, 与它们在系统中的位置相同.
 # man dracut.conf
+```
+
+> mkinitrd（make initial ramdisk）是一个兼容包装器, 它调用dracut来生成initramfs.
+
+# update-initramfs
+```bash
+# update-initramfs
 ```
 
 ## FAQ
@@ -184,3 +195,35 @@ rtl8812AU, 4.3.14, 4.4.0-47-generic, x86_64: installed
 
 src残留:
 1. `/usr/src`
+
+### 查看initrd
+lsinitrd xxx.img
+
+### dracut添加驱动
+ref:
+- [Installing Native KVM Drivers](https://support.huaweicloud.com/intl/en-us/usermanual-ims/ims_01_0326.html)
+
+    **推荐使用修改`/etc/dracut.conf`的方法**
+
+```bash
+# check for virtio drivers
+lsinitrd /boot/initramfs-$version.img | grep virtio
+
+# if not found, add them
+cd /boot
+dracut -f initramfs-$version.img --add-drivers "virtio virtio_pci virtio_blk virtio_scsi virtio_net virtio_ring"
+
+# prove it worked
+lsinitrd /boot/initramfs-$version.img | grep virtio
+```
+
+drivers:
+- qla2xxx
+- sg : scsi
+- mpt3sas: sas
+- ahci: sata
+
+### dracut/update-initramfs
+dracut/update-initramfs都是管理initramfs的工具.
+
+dracut 主要用于 Fedora、CentOS/RHEL 等, update-initramfs 用于 Debian、Ubuntu 等发行版.

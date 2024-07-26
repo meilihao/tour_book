@@ -12,6 +12,7 @@
 - [Regulex](https://jex.im/regulex)
 - [regex101](https://regex101.com/)
 - [regexper,推荐](https://regexper.com/)
+- [regexr-cn](https://regexr-cn.com/)
 - [pyregex](http://www.pyregex.com/)
 - [debuggex](https://www.debuggex.com/)
 - [*Regex Tester - Golang](https://regex-golang.appspot.com/assets/html/index.html)

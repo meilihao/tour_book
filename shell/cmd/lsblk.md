@@ -25,6 +25,11 @@
 - -t : 显示拓扑结构信息
 - --json : json输出
 
+## example
+```bash
+$ lsblk -td # 显示磁盘的物理/逻辑扇区大小
+```
+
 ## FAQ
 ### holders,slaves
 sysfs 有 `/sys/block/$device/{holders,slaves}` 来表示哪些设备依赖于哪些设备, 比如lvm或软raid. 在lsof和fuser都找不到被占用问题时可尝试.

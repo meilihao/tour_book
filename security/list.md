@@ -83,6 +83,7 @@
 
 ## 双因子认证
 - [linux 双因子认证登录](2017_08_21_001.md)
+- [Go进阶40:2FA-Google-Authenticator双因素认证后端实现](https://zh.mojotv.cn/go/golang-2fa)
 
 ## 加密文件系统
 - [Chrome OS 基于 EXT4 Encryption 的用户数据安全保护机制](https://paper.seebug.org/433/)

@@ -656,6 +656,15 @@ ref:
 - usb3 : qemu-xhci
 - usb2 : ich9-ehci1
 
+### debug vm boot
+ref:
+- [开虚拟机串口控制台](https://docs.redhat.com/zh_hans/documentation/red_hat_enterprise_linux/9/html/configuring_and_managing_virtualization/proc_opening-a-virtual-machine-serial-console_assembly_connecting-to-virtual-machines)
+
+1. 编辑grub启动项, 追加`console=ttyS0,115200`, 按ctrl+x启动即可
+1. `virsh console xxx`, 启动信息会输出在terminal里
+
+> 遇到vm centos 7.7 使用ide/sata启动后图形界面卡住(底层大概是进入了dracut), 但其grub追加`console=ttyS0,115200`后能正常进入系统或使用virtio后进入dracut. 这种情况通常是vmware vm接管到kvm, 因initramfs里的驱动差异导致的. 解决方法: 启动时选恢复模式, 再执行`dracut -f`(dracut会自动识别硬件并更新initramfs里的驱动), 最后重启即可.
+
 ### virbr0和virbr0-nic
 ref:
 - [libvirt之virbr0和virbr0-nic](https://xiaoz.info/2020/01/08/libvirt-virbr0/)

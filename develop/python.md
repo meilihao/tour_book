@@ -1,4 +1,8 @@
 # python
+ref:
+- [How is Python 2 supported in RHEL after 2020?](https://access.redhat.com/solutions/4455511)
+
+    RHEL 9以及之后版本不支持python 2
 
 缺点:
 1. json序列化/反序列化没有go简单

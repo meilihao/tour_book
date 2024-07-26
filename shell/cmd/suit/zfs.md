@@ -13,6 +13,9 @@
 - [zfs share(nas)](https://wiki.debian.org/ZFS#File_Sharing)
 - [在Linux上安装和使用ZFS](https://www.escapelife.site/posts/caf259ea.html)
 - [Zfs_ondiskformat.pdf](http://www.giis.co.in/Zfs_ondiskformat.pdf)
+- [ZFS IOPS limit](https://dokuwiki.fl8.jp/01_linux/13_storage/31_zfs_iops_limit)
+
+	cgcreate + cgset
 
 ```sh
 # ubuntu 18.04

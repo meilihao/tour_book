@@ -5,11 +5,11 @@
 - [C语言读取GPT分区信息](https://blog.csdn.net/qq_37734256/article/details/88384750)
 - [使用 sgdisk 管理分区](https://linux.cn/article-10771-1.html)
 
-gdisk是支持gpt的分区工具.
+gdisk是基于菜单的支持gpt的分区工具.
 
 > from gdisk_1.0.5-1_amd64
 
-> cgdisk: 支持终端窗口功能的gdisk
+> cgdisk: 支持tui(终端窗口)的gdisk; sgdisk是gdisk非交互式(一切操作都在命令行参数中给出)变体, 适合在命令行和脚本中使用.
 
 ## example
 ```bash
@@ -44,6 +44,8 @@ The operation has completed successfully.
 ```
 
 ## gdisk分区代号
+通过`l`输出所有分区代号:
+
 - EF02  BIOS boot partition
 
     gnu grub用它来引导基于legacy bios但启动设备上却包含GPT格式分区表时的操作系统. 这种结构有时候被称为BIOS/GPT启动.
@@ -58,6 +60,8 @@ The operation has completed successfully.
 - [Creating GPT partitions easily on the command line](https://suntong.github.io/blogs/2015/12/26/creating-gpt-partitions-easily-on-the-command-line/)
 
 > sgdisk支持linux+unix, gdisk支持linux.
+
+> `'s/\s*\([\+0-9a-zA-Z]*\).*/\1/'`作用: 提取命令内容, 比如从`  +1M # 1 MB BIOS boot partition`提取出`+1M`.
 
 ```bash
 # sed -e 's/\s*\([\+0-9a-zA-Z]*\).*/\1/' << EOF | gdisk /dev/nbd0

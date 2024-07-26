@@ -556,3 +556,6 @@ func main() {
 
 ### `go install -v github.com/go-delve/delve/cmd/dlv@latest`报`_cgo_export.c:3:10: fatal error: stdlib.h: No such file or directory`
 `apt install g++`
+
+### pkg
+`// #cgo pkg-config: udev`=`// #cgo LDFLAGS: -ludev`

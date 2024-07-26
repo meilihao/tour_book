@@ -100,3 +100,20 @@ $ tar -xvzf vscode-server-linux-x64.tar.gz --strip-components 1 -C ~/.vscode-ser
 ```
 
 保证有$HOME/.vscode-server/bin/$COMMIT_ID/server.sh，这样vscode再连接服务器就不会报错了.
+
+### python env
+参考:
+- [Using Python environments in VS Code](https://code.visualstudio.com/docs/python/environments#_environment-variable-definitions-file)
+
+`${project}/.vscode/settings.json`:
+```json
+{
+	"python.envFile": "${workspaceFolder}/.vscode/.env",
+	"python.pythonPath":"/usr/bin/python3"
+}
+```
+
+`${workspaceFolder}/.vscode/.env`:
+```conf
+PYTHONPATH=/xxx1:/xxx2
+```
