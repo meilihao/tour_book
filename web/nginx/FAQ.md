@@ -521,3 +521,14 @@ ref:
 场景:
 1. client(比如browser)在nginx响应前关闭连接
 1. upstream reset连接
+
+### 链式证书顺序
+1. server.pem->...->ca.pem
+
+### pem/crt换转
+```bash
+$ openssl x509 -in cert.pem -out cert.crt -outform DER # pem转crt
+$ openssl x509 -inform DER -in yourdownloaded.crt -out outcert.pem -text  # crt转pem
+```
+
+> crt=cer

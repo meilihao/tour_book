@@ -242,3 +242,11 @@ C++23   未完全支持（标准还在发展中）  从GCC 11版本开始支持C
 
 ### `skipping incompatible /usr/lib/gcc/x86_64-linux-gnu/12/libgcc.a when searching for -lgcc`
 构建使用了`gcc -m32`, os是64位, 没有32位的`lgcc`, 需要`lib32gcc-12-dev`
+
+### invalid use of undefined type 'struct stat64'
+添加:
+```c
+#define __USE_LARGEFILE64 // [Required for spl stat.h](https://github.com/johnramsden/zectl/issues/33)
+#define _LARGEFILE_SOURCE
+#define _LARGEFILE64_SOURCE
+```
