@@ -34,7 +34,7 @@ ubuntu 24.04 + fcitx(v4) + sogou(依赖fcitx)无法工作.
 # 美化
 
 ## 桌面
-安装lxde:
+安装lxde(基于GTK2):
 ```sh
 $ sudo apt install lxde lxde-common
 ```
@@ -57,6 +57,12 @@ apt install ubuntu-gnome-desktop
 安装mate:
 ```
 apt install ubuntu-mate-desktop
+```
+
+安装lxqt:
+```
+# apt install lxqt # 精简版
+# apt install task-lxqt-desktop # 完整版
 ```
 
 卸载lxqt:

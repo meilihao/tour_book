@@ -117,3 +117,18 @@ $ tar -xvzf vscode-server-linux-x64.tar.gz --strip-components 1 -C ~/.vscode-ser
 ```conf
 PYTHONPATH=/xxx1:/xxx2
 ```
+
+### Remote-SSH报`Failed to set up socket for dynamic port forward to remote port <port>`
+ref:
+- [VSCode Remote SSH Connection Failed](https://stackoverflow.com/questions/60507713/vscode-remote-ssh-connection-failed)
+
+修改remote端的sshd配置:
+```bash
+# vim /etc/ssh/sshd_config
+...
+AllowTcpForwarding  = yes
+...
+# systemctl restart sshd
+```
+### python调试时`Copy Value`的值被截断
+可在`DEBUG CONSOLE`打印一下再复制

@@ -374,3 +374,6 @@ $ sudo apt install linux-headers-6.6.13+bpo-amd64 linux-image-6.6.13+bpo-amd64
 
 ### dpkg script位置
 `/var/lib/dpkg/info/*.{postinst,postrm,preinst,prerm}`
+
+### `apt install`报`unknown system group 'plocate' in statoverride file; the system group got removed`
+plocate组不存在, 打开`/var/lib/dpkg/statoverride`, 删除plocate所在行.

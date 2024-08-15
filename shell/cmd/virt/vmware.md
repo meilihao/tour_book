@@ -27,7 +27,7 @@ vmware为提供了三种网络工作模式：Bridged（桥接模式）、NAT（�
 
 ## FAQ
 ### 支持kvm虚拟化
-选择vm右键选择编辑->cpu->勾选`向客户机操作系统公开硬件辅助的虚拟化`和`I/O MMU`
+选择vm右键选择编辑->cpu->勾选`向客户机操作系统公开硬件辅助的虚拟化`和`I/O MMU(或硬件CPU和MMU)`
 
 ### 嵌套虚拟化
 vmware仅支持两层嵌套:
@@ -48,3 +48,31 @@ $ su root
 
 ### [Open Virtualization Format (OVF) Tool](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest)
 `ovftool TrueNAS-SCALE-24.04.1.1.vmx  truenas.ovf`, ovf可被virtualbox导入.
+
+### VMWare启用嵌套虚拟化后使用libguestfs时报"libguestfs: error: could not create appliance through libvirt...qemu-system-x86_64: error: failed to set MSR 0x48f to 0x7fffff00036dfb...qemu-system-x86_64: .../qemu-4.2.1/target/i386/kvm.c:2655: kvm_buf_set_msrs: Assertion `ret == cpu->kvm_msr_buf->nmsrs' failed. [code=1 int1=-1]"
+ref:
+- [解决 AMD CPU 使用 VMWare 在嵌套虚拟化中用 qemu 启动虚拟机提示 Assertion ret == cpu-kvm_msr_buf-nmsrs failed](https://blog.csdn.net/kunyus/article/details/106986126)
+- [`[37/47] KVM: introduce module parameter for ignoring unknown MSRs accesses`](https://patchwork.kernel.org/project/kvm/patch/1250686963-8357-38-git-send-email-avi@redhat.com/)
+
+  这个配置并没有真正解决问题，只是通过配置这个参数可以使 kvm 忽略相关错误
+- [**Assertion `ret == cpu->kvm_msr_buf->nmsrs' failed**](https://bugs.launchpad.net/qemu/+bug/1661386)
+
+  ESXi 6.0.0 Build 2494585, 有问题.
+
+  `the problem is that with PMU disabled in VMWare config, it's not giving the right info to the guest to know it's disabled.`, 因此推测是vmware bug, 打开vmware `启用虚拟化CPU性能计数器`或嵌套vm使用`-cpu host,pmu=off`可能有用(未验证).
+
+- [nested virt: kvm crash "kvm_put_msrs: Assertion `ret == cpu->kvm_msr_buf->nmsrs' failed."](https://github.com/kubernetes/minikube/issues/2968)
+
+env:
+- cpu: intel
+
+解决:
+```bash
+# sudo tee /etc/modprobe.d/qemu-system-x86.conf << EOF
+options kvm ignore_msrs=1
+EOF
+# reboot
+```
+
+ps:
+1. `VMware ESXi, 7.0.3, 21930508`, 正常
