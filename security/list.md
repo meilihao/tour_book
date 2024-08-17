@@ -63,6 +63,8 @@
 - [证书透明度是什么？它是怎么工作的?](https://razeen.me/post/what-ct-is-and-how-it-works.html)
 - [Introducing CFSSL - CloudFlare's PKI toolkit](https://blog.cloudflare.com/introducing-cfssl/)
 - [用CloudFlare的PKI工具CFSSL生成Certificate Bundle](https://www.lijiaocn.com/%E6%8A%80%E5%B7%A7/2018/10/13/cfssl-cloudflare-pki-toolkit.html)
+- [CloudFlare 开源证书管理工具 cfssl 详细使用教程](https://zhuanlan.zhihu.com/p/596891203)
+- [**聊聊CFSSL**](https://cloud.tencent.com/developer/article/2353039)
 
 ## 校验
 - [扫盲文件完整性校验——关于散列值和数字签名](2015_05_23_006.md)

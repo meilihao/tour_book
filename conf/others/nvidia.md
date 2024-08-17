@@ -12,7 +12,7 @@ nvidia-detect # 其实直接使用`lspci | egrep 'VGA|3D'`也可
 ```bash
 sudo bash -c "echo blacklist nouveau > /etc/modprobe.d/blacklist-nvidia-nouveau.conf"
 sudo bash -c "echo options nouveau modeset=0 >> /etc/modprobe.d/blacklist-nvidia-nouveau.conf"
-sudo update-initramfs -u
+sudo update-initramfs -u # for ubuntu / sudo dracut --force # for fedora, rhel, centos
 sudo reboot
 ```
 
@@ -27,6 +27,11 @@ sudo apt --purge remove nvidia* bumblebee* # nvidia-detect不算
 ```
 
 1. 安装nvidia
+前提:
+```bash
+sudo  dnf install kernel-devel libglvnd
+```
+
 change to non GUI mode: Ctrl+Alt+F2 (works on DeepinOS) or Ctrl+Alt+F1(works on Other Distro)
 
 **经测试小米笔记本GeForce 940MX使用nvidia官方驱动成功(需结合下方的修改`lightdm.conf+xorg.conf+.xinitrc`), 而deepin 20.1 apt驱动失败**
