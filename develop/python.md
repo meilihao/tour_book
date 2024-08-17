@@ -1638,6 +1638,7 @@ Egg 和 Wheel 本质上都是一个 zip 格式包，Egg 文件使用 .egg 扩展
 
 
 # lib
+## [argparse](https://pinvondev.github.io/blog/Python/2019/03/28/argparse/%20Or%20/blog/Python/argparse/)
 ## Pyro
  - [Pyro简单使用(一)](https://www.cnblogs.com/flyingzl/articles/1870799.html)
 
@@ -2481,6 +2482,8 @@ paramiko.util.log_to_file("<log_file_path>", level = "WARN") # level in [DEBUG, 
     ```
 
 ### pdb
+`apt install python3-ipdb`
+
 ```
 pdb 命令行：
     1）进入命令行 Debug 模式，python -m pdb xxx.py

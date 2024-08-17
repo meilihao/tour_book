@@ -116,3 +116,4 @@ operators, find支持的逻辑运算符:
     # find . -type f|xargs file|grep "CRLF" # 查找所有使用`CRLF`换行的文件
     # find . -newer f1 ! -newer f2 # 查找更改时间比f1新但比f2旧的问题
     # find -D rates . -path "./a" -prune -o -name a # 使用`-D`调试find逻辑
+    # find . -name "__pycache__" -type d -print -exec rm -rf {} \;

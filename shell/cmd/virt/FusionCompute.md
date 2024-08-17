@@ -29,9 +29,33 @@ ref:
 - [华为FusionCompute详解（二）FusionCompute总体介绍以及规划部署](https://blog.csdn.net/qq_46254436/article/details/105810195)
 - [华为FusionCompute详解（一）FusionSphere虚拟化套件介绍](https://blog.csdn.net/qq_46254436/article/details/105807057)
 - [**华为FusionCompute 8.x部署文档**](https://www.bilibili.com/read/cv19164631/)
+- [华为超融合软件 FusionCube eStorage](https://www.ithome.com/0/788/011.htm)
+- [华为超融合FusionCube解决方案笔记](https://blog.csdn.net/weixin_48375618/article/details/125975429)
+- [基于华为超融合FusionCube 1000 的方案设计实践](https://www.talkwithtrend.com/Article/261607)
 
 ## VRM/CNA
 - db: VRM使用gaussdb; CNA未使用db
+
+## 部署
+ref:
+- [华为FusionCompute 8.x部署文档](https://www.bilibili.com/read/cv19164631/)
+
+### vrm
+1. 字符界面配置安装os选项, 见`华为FusionCompute 8.x部署文档`
+1. 初始化
+
+	root登入进行初始化
+	```bash
+	# vrmInit
+	# cd cd /opt/galax/root/vrm/tomcat/script/
+	# sh modifyVrmNodeMemory.sh <M>
+	```
+
+1. 访问web portal
+
+	web portal需要初始后才能使用
+
+> db在/opt/gaussdb by mount/lsblk
 
 ## vm
 vm cdrom底层可用nbd设备, 避免拷贝iso. 对比过vrm和cna的fs(`df -h`)变化, 应该不是全量拷贝到某个节点再做nbd, 而是先拷贝部分, 等到vm读cdrom时, 再通过nbd+websocket读取所需部分. 因为关掉操作光驱的弹窗, 再用dd读取nbd设备报`Input/output error`, 缺点: 安装过程慢. 该方案类似于[jsnbd](https://blog.csdn.net/jiangwei0512/article/details/134388491)
@@ -219,7 +243,7 @@ vm使用端口组的VLAN应为0, 表示不使用VLAN标签, 再用nmtui配置ip�
 单纯慢, 多等待
 
 ### vm
-- 挂载Tools: libvirt vm xml添加cdrom+vmtools-linux.iso相关配置
+- 挂载Tools: `资源池`-`<虚拟机>`-`更多`-`Tools`-`挂载Tools`/libvirt vm xml添加cdrom+vmtools-linux.iso相关配置
 
 	ref:
 	- [FusionCompute 安装，linux下安装vmtools报错Unsupported linux distribution](https://blog.csdn.net/csdnxiaohua/article/details/128832029)
@@ -239,11 +263,15 @@ vm使用端口组的VLAN应为0, 表示不使用VLAN标签, 再用nmtui配置ip�
 	1. 查看vm详情中的`Tools`状态
 
 	centos 7.9成功, centos 8.1失败.
+
+	> `资源池`-`<虚拟机>`显示Tools版本, 推测是从vm串口中获取的
 ### ssh
 ref:
 - [华为FusionCompute-VRM密码重置](https://blog.csdn.net/sj349781478/article/details/122662166)
 
 VRM/CNA不能直接用root登入, 需用其他账号比如gandalf, 再`su root`+`root密码`切换到root
+
+> root密码是安装vrm时指定的
 
 ### 端口
 VRM:
@@ -292,3 +320,9 @@ VRM:
 修改`/var/log/galaxenginlog/vna-nginx/nginx-access.log`对于的format, `log_format format_main escape=json '... $request_body'`, 参考[nginx记录post数据](https://cloud.tencent.com/developer/article/1501467)
 # /usr/local/nginx/sbin/nginx -s reload
 ```
+
+### 上传iso
+需要在`资源池`-`存储`-`数据存储`-`文件`里进行, CNA的`数据存储`-`文件`没有上传按钮.
+
+### 创建vm无法选中端口组
+分布式交换机需要先创建`上行链路组`, 再创建vm即可

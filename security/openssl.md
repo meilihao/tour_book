@@ -12,6 +12,7 @@
 
     > 支付宝/微信均使用aes cbc加密内容
 - [使用 OpenSSL 加密和解密文件](https://linux.cn/article-13368-1.html)
+- [浅析自签名证书应用](https://m.freebuf.com/articles/es/285265.html)
 
 ## 优化
 - [3.4.3 SSL 层优化实践](https://www.thebyte.com.cn/http/ssl-performance.html)
@@ -233,3 +234,32 @@ SAN无法对所有ip进行授权, 只能使用多SAN的形式指定多个ip地�
 
 密钥KEY：AES标准规定区块长度只有一个值，固定为128Bit，对应的字节为16位。AES规定密钥长度只有三个值，128Bit、192Bit、256Bit，对应的字节为16位、24位和32位，密钥KEY不能公开传输，用于加密和解密数据；
 初始化向量IV：该字段可以公开，用于将加密随机化。同样的明文被多次加密也会产生不同的密文，避免了较慢的重新产生密钥的过程，初始化向量与密钥相比有不同的安全性需求，因此IV通常无须保密。然而在大多数情况中，不应当在使用同一密钥的情况下两次使用同一个IV，**推荐初始化向量IV为16位的随机值**.
+
+### [添加/删除ca cert](https://manuals.gfi.com/en/kerio/connect/content/server-configuration/ssl-certificates/adding-trusted-root-certificates-to-the-server-1605.html)
+```bash
+# --- debian/ubuntu
+# cp ca.pem /usr/local/share/ca-certificates/
+# update-ca-certificates
+# ---- Remove your CA.
+# rm /usr/local/share/ca-certificates/ca.pem
+# update-ca-certificates --fresh
+```
+
+### 查看系统支持的ca cert
+```bash
+$ awk -v cmd='openssl x509 -noout -subject' '
+    /BEGIN/{close(cmd)};{print | cmd}' < /etc/ssl/certs/ca-certificates.crt
+$ awk -v decoder='openssl x509 -noout -subject -enddate 2>/dev/null' '
+  /BEGIN/{close(decoder)};{print | decoder}
+' < /etc/ssl/certs/ca-certificates.crt
+```
+
+### 内网https证书
+ref:
+- [Requirements and restrictions on IP addresses in SSL certificates](https://www.geocerts.com/support/ip-address-in-ssl-certificate)
+- [Can an SSL Certificate Be Issued For an IP Address? ](https://sectigostore.com/page/ssl-certificate-for-ip-address/)
+- [All publicly trusted SSL Certificates issued to internal names and reserved IP addresses
+will expire before November 1, 2015.](https://www.digicert.com/kb/advisories/internal-names.htm)
+- [Guidance on Internal Names](https://cabforum.org/working-groups/server/internal-names/)
+
+证书服务商的证书只支持公网ip/域名(即可验证所有权), 内网https证书都是使用自签名即不可信.

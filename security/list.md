@@ -92,3 +92,6 @@
 
 ## vpn
 - [用 NetworkManager 配置 WireGuard 虚拟私有网络](https://linux.cn/article-13379-1.html)
+
+## 渗透
+- Acunetix Web Vulnerability Scanner（简称AWVS）是一款知名的自动化网络漏洞扫描工具.

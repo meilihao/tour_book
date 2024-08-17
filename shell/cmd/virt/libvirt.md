@@ -379,6 +379,16 @@ $ sudo systemctl restart libvirtd
 
 解决方法: `virsh undefine xxx --nvram`
 
+### `type=direct,source=eth0,source_mode=bridge,model=e1000`无法ping通网关
+
+env:
+- host: ip,172.16.25.157;gateway,172.16.25.1;os,oracle linux 7.9
+- vm: ip,172.16.25.159;gateway,172.16.25.1;os,windows server 2012
+
+vm无法ping通172.16.25.1, 将驱动换成virtio问题仍旧, 留意到vm 网卡状态上`已发送`挺多, 但`已接收`=0.
+
+待解决.
+
 ### `virsh insall`报`unsupported configuration: ACPI requires UEFI on this architecture`
 [aarch64 KVM只支持UEFI BIOS，编译源码时未安装edk2, 无法识别Firmware文件](https://support.huaweicloud.com/trouble-kunpengcpfs/kunpengkvm_09_0006.html)
 
@@ -413,7 +423,8 @@ $ sudo systemctl restart libvirtd
 # cat update-device.xml
 <disk type='file' device='cdrom'>
   <driver name='qemu' type='raw'/>
-  <target dev='sda' bus='scsi'/>
+  <source file='/tmp/SLES-11-DVD-i586-GM-DVD1.iso'/>
+  <target dev='sda' bus='scsi'/> # dev需要与bus对应
   <readonly/>
   <address type='drive' controller='0' bus='0' target='0' unit='0'/>
 </disk>
@@ -647,6 +658,12 @@ vnc端口5900已被占用, 修改端口即可
 ### [virt-install报`Failed to get "write" lock`](https://serverfault.com/questions/1057939/not-able-to-start-virtual-machine-domain-in-kvm-failed-to-get-write-lock)
 xml disk中多次使用了相同的盘, 此时`fuser, lsof, lslocks`均没法反映该情况
 
+### virsh list报`error: Failed to initialize libvirt`
+env:
+- FusionCompute
+
+应是认证问题, 切换到root后正常.
+
 ### 使用usb 2/3
 ref:
 - [虚拟机配置](https://docs.openeuler.org/zh/docs/22.03_LTS/docs/Virtualization/%E8%99%9A%E6%8B%9F%E6%9C%BA%E9%85%8D%E7%BD%AE.html)
@@ -723,6 +740,8 @@ ref:
 - [QEMU中的命令行参数及其monitor中的命令， 在virsh中的对应关系](http://wiki.libvirt.org/page/QEMUSwitchToLibvirt) 
 - [热迁移虚拟机](https://docs.openeuler.org/zh/docs/20.03_LTS_SP3/docs/Virtualization/%E7%83%AD%E8%BF%81%E7%A7%BB%E8%99%9A%E6%8B%9F%E6%9C%BA.html)
 - [centos7上使用virt-install命令创建kvm虚拟机](https://blog.51cto.com/u_11555417/2341874)
+- [Networking](http://wiki.libvirt.org/page/Networking)
+- [MacVTap](https://virt.kernelnewbies.org/MacVTap)
 
 如下命令启动虚拟机： `virsh create <name of virtual machine>` : 通过`virsh create <vmname>.xml`创建的虚拟机不会持久化，关机后会消失
 启动虚拟机： `virsh start <name>`
@@ -1055,23 +1074,7 @@ virt-xml --build-xml --network type=bridge,source=br0
 virt-xml --remove-device --disk target=sda
 virt-xml --add-device --disk xxx
 virt-xml vs002 --edit target=sda --disk path=''
-virt-xml vs002 --edit target="sda" --disk="boot_order=1" # 实际效果是一个盘是boot_order=1, 其他(disk,network device)按原先顺序递增(virt-install v1.5不允许boot order重复, v2.2会自动递增处理)
-virt-xml vs002 --edit target=sda --disk boot_order=1 # 同上 
-virt-xml vs002 --edit all --disk="boot_order=999" # 实际效果是一个盘是boot_order=999, 其他按原先顺序递增
-virt-xml vs002 --edit mac="00:16:3e:20:b0:11" --network="boot_order=1" 实际效果是一个网卡是boot_order=1, 其他按原先顺序递增 
-virt-xml vs002 --edit all --network="boot_order=999" # 实际效果是一个网卡是boot_order=999 其他按原先顺序递增
-virt-xml --build-xml --disk type=block,target=sda,path=/dev/sda
-virt-xml --build-xml --controller type=usb,model=qemu-xhci
-```
-
-> 需逐个调用virt-xml修改xml, 遇到过并发删除disk, 且命令返回成功但实际disk没有移除的问题.
-
-其他:
-virt-clone -o Demo-kylin-v10 -n kylin-1 -f /home/kvm/kylin-1.qcow2 : # 克隆Demo-kylin-v10, 虚拟机名：kylin-1, 虚拟机路径：/home/kvm/kylin-1.qcow2
-
-## virt-install
-ref:
-- [**Configuring Virtual Machines with virsh**](https://documentation.suse.com/sles/15-SP1/html/SLES-all/cha-libvirt-config-virsh.html)
+virt-xml vs002 --edit target="sda" --disk="bonmap -sP 192.168.0.0/24**](https://documentation.suse.com/sles/15-SP1/html/SLES-all/cha-libvirt-config-virsh.html)
 - [koan/virtinstall.py](https://github.com/cobbler/koan/blob/master/koan/virtinstall.py)
 
 创建vm:
@@ -1098,7 +1101,7 @@ virt-install \
 
 install 常用参数说明展开目录:
 - 一般选项
-
+nmap -sP 192.168.0.0/24
    - name : 指定虚拟机名称
    - memory: 分配内存大小, 单位是MB
    - vcpus : 分配CPU核心数，最大与实体机CPU核心数相同
@@ -1286,3 +1289,27 @@ dhclient br0 / ifconfig br0 192.168.1.2 netmask 255.255.255.0 # 设置br0的IP�
 
    在这个例子中, vm_disk.qcow2 是虚拟机的磁盘镜像，它有一个后端存储（<backingStore>）指向 base_image.qcow2. 这表示 vm_disk.qcow2 是基于 base_image.qcow2 创建的，两者之间存在一种依赖关系.
 
+## virtio
+ref:
+- [Chapter 10. KVM Paravirtualized (virtio) Drivers](https://docs.redhat.com/zh_hans/documentation/red_hat_enterprise_linux/6/html/virtualization_host_configuration_and_guest_installation_guide/chap-virtualization_host_configuration_and_guest_installation_guide-para_virtualized_drivers#chap-Virtualization_Host_Configuration_and_Guest_Installation_Guide-Para_virtualized_drivers)
+- [KVM Paravirtualized (virtio) Drivers](https://access.redhat.com/articles/2488201)
+- [Certified Guest Operating Systems in Red Hat OpenStack Platform, Red Hat Virtualization, Red Hat OpenShift Virtualization and Red Hat Enterprise Linux with KVM](https://access.redhat.com/zh_CN/articles/7065625)
+- [优化 Windows 虚拟机](https://docs.redhat.com/zh_hans/documentation/red_hat_enterprise_linux/9/html/configuring_and_managing_virtualization/optimizing-windows-virtual-machines-on-rhel_installing-and-managing-windows-virtual-machines-on-rhel#installing-kvm-drivers-on-a-host-machine_installing-kvm-paravirtualized-drivers-for-rhel-virtual-machines)
+- [virtio-win](https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/)/[Windows VirtIO Drivers](https://pve.proxmox.com/wiki/Windows_VirtIO_Drivers)/[Windows guests - build ISOs including VirtIO drivers](https://pve.proxmox.com/wiki/Windows_guests_-_build_ISOs_including_VirtIO_drivers)
+
+virtio-win iso 与系统版本的对应关系(from chatgpt, 未找到其他信息来源):
+- virtio-win-0.1.x 到 virtio-win-0.1.171：
+
+   早期版本，主要支持 Windows XP、Windows Server 2003、Windows Vista、Windows 7、Windows Server 2008 和 Windows Server 2008 R2
+- virtio-win-0.1.173 到 virtio-win-0.1.180：
+
+   这些版本开始支持 Windows 8 和 Windows Server 2012
+- virtio-win-0.1.181 到 virtio-win-0.1.209：
+
+   支持 Windows 8.1 和 Windows Server 2012 R2
+- virtio-win-0.1.211 到 virtio-win-0.1.221：
+
+   支持 Windows 10 和 Windows Server 2016
+- virtio-win-0.1.223 及以上版本：
+
+   提供对 Windows 10 的更新支持，并支持 Windows Server 2019 和 Windows Server 2022

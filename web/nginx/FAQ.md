@@ -521,3 +521,23 @@ ref:
 场景:
 1. client(比如browser)在nginx响应前关闭连接
 1. upstream reset连接
+
+### 链式证书顺序
+1. server.pem->...->ca.pem
+
+### pem/crt换转
+```bash
+$ openssl x509 -in cert.pem -out cert.crt -outform DER # pem转crt
+$ openssl x509 -inform DER -in yourdownloaded.crt -out outcert.pem -text  # crt转pem
+```
+
+> crt=cer
+
+### 下载返回200, 实际文件却未下载完整.
+文件大小是5G多.
+
+配置`error_log /var/log/nginx/error.log debug`(配置`info`及以上未显示后面的错误), 显示`client timed out (110: Connection timed out) while sending response to client`.
+
+解决方法:
+1. 调查client timeout原因
+1. 设置`send_timeout 5m;`(默认是1m)

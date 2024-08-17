@@ -18,6 +18,7 @@ Curl is a **command line** tool for transferring data specified with URL syntax.
 - -i : 返回内容带header
 - -I : 仅返回header
 - --header : 添加header
+- --limit-rate: 限速, 比如1024k
 - -L : 如果该url是跳转的,比如301,则返回新url的内容
 - -o : 将输出写到该文件
 - --trace <file>: 将追踪信息写入file,内容比`-v`详细

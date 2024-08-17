@@ -1,6 +1,7 @@
 # truenas scale
 ref:
 - [TrueNAS SCALE Clustering Overview](https://www.truenas.com/blog/truenas-scale-clustering/)
+- [2024最近，14款免费NAS操作系统及引导！黑群、黑威、Unraid开心版、TrueNAS、国产开源等，先码后看！](https://post.smzdm.com/p/azomrxmn/)
 
 version: 24.04
 
@@ -140,7 +141,7 @@ class Resource(object):
 > log位置: /var/log/middlewared.log
 
 ### middlewared 加载plugins
-- version: 23.10.1
+- version: 24.04.1.1
 
 在`src/middlewared/middlewared/main.py#Middleware.__initialize`
 
@@ -150,8 +151,107 @@ class Resource(object):
 
     `load_modules()`原理: 递归遍历文件或目录, 找出匹配的mod, 再用`importlib.import_module`导入即可.
 
-    `mod.setup`=`async def setup(middleware)`用于初始化mod  
+    `mod.setup`=`async def setup(middleware)`用于初始化mod
+
+    > 使用`--debug-level TRACE`可在`/var/log/middlewared.log`中看到`loaded plugin xxx`. `on_modules_loaded()`是`plugin loaded`后调用的.
 1. 迭代处理services变量, 再调用`self.add_service(service)`即可载入plugin生成service.
+1. `self.__plugins_setup(setup_funcs)`
+
+
+```python
+# utils/plugins.py
+class LoadPluginsMixin(SchemasMixin):
+
+    def __init__(self):
+        self._services = {}
+        self._services_aliases = {}
+        super().__init__()
+
+    def _load_plugins(self, on_module_begin=None, on_module_end=None, on_modules_loaded=None):
+        from middlewared.service import Service, CompoundService, ABSTRACT_SERVICES
+
+        services = []
+        plugins_dir = os.path.realpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'plugins')) # /usr/lib/python3/dist-packages/middlewared/plugins
+        if not os.path.exists(plugins_dir):
+            raise ValueError(f'plugins dir not found: {plugins_dir}')
+
+        for mod in load_modules(plugins_dir, depth=1):
+            if on_module_begin:
+                on_module_begin(mod)
+
+            services.extend(load_classes(mod, Service, ABSTRACT_SERVICES)) # [<class 'middlewared.plugins.disk.DiskService'>, ...]
+
+            if on_module_end:
+                on_module_end(mod)
+
+        def key(service):
+            return service._config.namespace # 部分没有Config的service由ServiceBase添加默认Config, 比如`<class 'middlewared.plugins.usage.UsageService'>`
+
+        for name, parts in itertools.groupby(sorted(set(services), key=key), key=key): # sorted(set(services), key=key) = [<class 'middlewared.plugins.acme_protocol_.acme_svc.ACMEService'>, <class 'middlewared.plugins.acme_protocol_.issue_cert.ACMEService'>, <class 'middlewared.plugins.acme_protocol.DNSAuthenticatorService'>, <class 'middlewared.plugins.acme_protocol_.challenge.DNSAuthenticatorService'>, <class 'middlewared.plugins.acme_protocol_.schema.DNSAuthenticatorService'>, <class 'middlewared.plugins.acme_protocol.ACMERegistrationService'>,...]. `itertools.groupby(sorted(set(services), key=key), key=key)`根据key聚合后的结果是: [{key:"acme", values: [<class 'middlewared.plugins.acme_protocol_.acme_svc.ACMEService'>, <class 'middlewared.plugins.acme_protocol_.issue_cert.ACMEService'>]}]
+            parts = list(parts)
+
+            if len(parts) == 1:
+                service = parts[0](self)
+            else:
+                service = CompoundService(self, [part(self) for part in parts]) # 将key(service)相同的聚合为一个CompoundService
+
+            if not service._config.private and not service._config.cli_private and not service._config.cli_namespace:
+                raise RuntimeError(f'Service {service!r} does not have CLI namespace set')
+
+            self.add_service(service)
+
+        if on_modules_loaded:
+            on_modules_loaded()
+
+        # Now that all plugins have been loaded we can resolve all method params
+        # to make sure every schema is patched and references match
+        self._resolve_methods(list(self._services.values()), self.get_events())
+
+    def add_service(self, service):
+        self._services[service._config.namespace] = service
+        if service._config.namespace_alias:
+            self._services_aliases[service._config.namespace_alias] = service
+
+    def get_service(self, name):
+        service = self._services.get(name)
+        if service:
+            return service
+        return self._services_aliases[name]
+
+    def get_services(self):
+        return self._services
+
+# utils/plugins.py
+# depth控制importlib.import_module的层数
+def load_modules(directory, base=None, depth=0): # 首次进入directory=/usr/lib/python3/dist-packages/middlewared/plugins, 其他比如`/usr/lib/python3/dist-packages/middlewared/plugins/service_`
+    directory = os.path.normpath(directory)
+    if base is None:
+        middlewared_root = os.path.dirname(os.path.dirname(__file__)) # /usr/lib/python3/dist-packages/middlewared
+        if os.path.commonprefix((f'{directory}/', f'{middlewared_root}/')) == f'{middlewared_root}/':
+            base = '.'.join(
+                ['middlewared'] +
+                os.path.relpath(directory, middlewared_root).split('/') # os.path.relpath(directory, middlewared_root) = "plugins"
+            ) # middlewared.plugins
+        else:
+            for new_module_path in sys.path:
+                if os.path.commonprefix((f'{directory}/', f'{new_module_path}/')) == f'{new_module_path}/':
+                    break
+            else:
+                new_module_path = os.path.dirname(directory)
+                logger.debug("Registering new module path %r", new_module_path)
+                sys.path.insert(0, new_module_path)
+
+            base = '.'.join(os.path.relpath(directory, new_module_path).split('/'))
+
+    _, dirs, files = next(os.walk(directory)) # dirs = ["service_",...]; files = ["disk.py", ...]
+    for f in filter(lambda x: x[-3:] == '.py' and x.find('_freebsd') == -1, files):
+        yield importlib.import_module(base if f == '__init__.py' else f'{base}.{f[:-3]}') # middlewared.plugins.disk
+
+    for f in filter(lambda x: x.find('_freebsd') == -1, dirs):
+        if depth > 0:
+            path = os.path.join(directory, f) # /usr/lib/python3/dist-packages/middlewared/plugins/service_
+            yield from load_modules(path, f'{base}.{f}', depth - 1)
+```
 
 ### `middleware.call()`
 代码中看到很多`self.middleware.call()`, 那`middleware`来源在哪, 以`src/middlewared/middlewared/alert/source/enclosure_status.py#EnclosureStatusAlertSource`中的`self.middleware.call('enclosure.query')`举例:
@@ -393,6 +493,53 @@ train内容可结合`https://update.freenas.org/scale`获取.
 `systemctl status middlewared`显示的`middlewared (worker)`进程代码在`worker.py#worker_init`
 
 修改`main.py#__init_procpool`里的max_workers=1便于gdb调试
+
+
+```bash
+# python -m pdb /usr/bin/middlewared --debug-level TRACE --log-handler=file
+(Pdb) b /usr/lib/python3/dist-packages/middlewared/main.py:1979 # 进入`self.__plugins_load()`, 因为py是解释型, 因此使用file:lino的形式设置断点
+(Pdb) b /usr/lib/python3/dist-packages/middlewared/utils/plugins:24 # `for new_module_path in sys.path`
+(Pdb) b /usr/lib/python3/dist-packages/middlewared/utils/plugins:103 # `for mod in load_modules(plugins_dir, depth=1)`
+(Pdb) c
+(Pdb) s
+```
+
+推荐**vscode**:
+```bash
+# vim .vscode/launch.json
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "truenas",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/usr/bin/middlewared",
+            "console": "integratedTerminal",
+            "args": [
+                "--debug-level=TRACE",
+                "--log-handler=file"
+            ],
+            "justMyCode": false
+        }
+    ]
+}
+```
+
+justMyCode=false, 不能遗漏, 否则可能会跳过断点(断点icon变空心圆)
+
+> pycharmce不支持远程调试, 在truenas上安装lxqt后启动发现`/etc/systemd/system/default.target`指向的`/lib/systemd/system/truenas.target`不存在.
+
+pycharm支持`OpenSSH config and authentication agent`来使用ssh, 打开远程项目创建`Run/Debug Configurations`->`Python`:
+Name:truenas
+script: /usr/bin/middlewared
+arg: --debug-level=TRACE --log-handler=file
+Environment variables: PYTHONUNBUFFERED=1;PYTHONPATH=/usr/lib/python3.11:/usr/lib/python3/dist-packages # PYTHONPATH缺失会导致启动middlewared失败
+
+> pycharm remote端需pycharm组件, 该步骤由pycharm在创建ssh connections时自动处理.
 
 ### 没找到`self.middleware.call('vm.device.query')}`
 实际走入了`class VMDeviceService(CRUDService)`中CRUDService的query()方法.

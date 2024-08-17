@@ -148,9 +148,10 @@ $ sudo zpool destroy <pool>/data-set # 销毁dataset
 $ sudo zpool upgrade [<pool> | -a] # 更新 zfs 时，就需要更新指定/全部池
 $ sudo zpool add <pool> /dev/sdx # 将驱动器添加到池中
 $ sudo zpool exprot <pool> # 如果要在另一个系统上使用该存储池，则首先需要将其导出. zpool命令将拒绝导入任何尚未导出的存储池
-$ sudo zpool export oldname # 重命名已创建的zpool的过程分为2个步骤, export + import
-$ sudo zpool import oldname newname
-$ sudo zpool import -d /dev/disk/by-uuid
+$ sudo zpool export oldname
+$ sudo zpool import <name> # 导入pool
+$ sudo zpool import oldname newname # 重命名已创建的zpool的过程分为2个步骤, export + import
+$ sudo zpool import -d /dev/disk/by-uuid # scan pool
 $ sudo zpool import -F <poolname> -d /dev/disk/by-uuid # `-F`强制导入, 可解决突然断电导致的pool数据损坏(在truenas scale上碰到多次该损坏而导致系统启动进入Initramfs的问题)
 $ sudo zpool create <pool> mirror <device-id-1> <device-id-m1> mirror <device-id-2> <device-id-m2> # 创建RAID10
 $ sudo zpool add <pool> log mirror <device-id-1> <device-id-2> # 添加 SLOG
@@ -181,6 +182,7 @@ $ blkid /dev/sdg # 检查盘是否被zfs使用过
 $ zpool set cachefile=/etc/zfs/zpool.cache tank # 强制更新pool.cache
 $ zpool set cachefile = / etc / zfs / zpool.cache # 适用于故障转移配置(高可用)的设置, 此时必须由高可用软件显示import pool
 $ zpool events [-v] # 获取zpool事件. `-v`, 更详细.
+$ zpool import -d /dev # 查找未导入的pool
 ```
 
 pool status:
@@ -737,6 +739,8 @@ options zfs zfs_arc_max=<memory_size_in_bytes>
 ```
 
 > `echo $((5*2**30))`=`python3 -c "print(5*2**30)"`=`5368709120`
+
+zfs_arc_max=0在arm64上可能不生效, 导致arc内存使用超过50%, 此时可追加zfs_arc_sys_free(保留空余内存的下限)以限制.
 
 ### arcstat
 ```
