@@ -35,6 +35,8 @@
     - [Linux network statistics reference](https://loicpefferkorn.net/2018/09/linux-network-statistics-reference/)
 
 # ip route
+ref:
+- [Linux的策略路由](https://linuxgeeks.github.io/2017/03/17/170119-Linux%E7%9A%84%E7%AD%96%E7%95%A5%E8%B7%AF%E7%94%B1/)
 
 ## 描述
 
@@ -57,6 +59,7 @@ default via 192.168.0.1 dev bond0
 # ip route delete 192.168.1.0/24 dev eth0 # 删除路由
 # ip route flush 192.168.1.0/24 # 清理所有192.168.1.0/24相关的所有路由
 # ip route flush cache  #   清空路由表项缓存，下次通信时内核会查main表（即命令route输出的表）以确定路由
+# ip route get from <本机ip> <目标ip> # 确认访问接口
 # ip neigh # 查看显示内核的ARP表(即同局域网的ip-mac映射, 本机不会缓存自己ip的arp映射), 与`nmap -sP 192.168.0.0/24 `即可查到某个ip的mac
 # ip neigh add 192.168.1.100 lladdr 00:0c:29:c0:5a:ef dev eth0 # 添加arp映射
 # ip neigh flush dev wlp3s0 # 清除arp缓存

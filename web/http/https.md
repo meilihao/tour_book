@@ -99,3 +99,12 @@ https通信过程:
 
 ## tools
 - [SSL 通配证书](https://www.oschina.net/news/291664/httpsok-1-11-0-released)
+
+## FAQ
+### 添加自签名ca证书
+- chrome
+
+   1. `设置`->`隐私和安全`->`管理证书`->`授权机构`, 点击导入ca.pem, 导入时选择`信任该证书, 以标识网站的身份`, 再重启chrome即可
+
+   报错:
+   - ERR_CERT_COMMON_NAME_INVALID: 浏览器中使用的地址不包含在证书中

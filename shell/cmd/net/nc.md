@@ -12,3 +12,9 @@ $ nc -vz 127.0.0.1 8080 # 测试tcp是否可连接
 $ nc -uz 127.0.0.1 8080 # 测试udp是否可连接. 检测UDP端口的时候不会立即返回测试结果，可能需要等待几秒钟
 $ nc -l -p 8888 -c "nc 192.168.19.153 22" # 8888转发到192.168.19.153:22
 ```
+
+client:
+```bash
+$ dd if=/dev/zero bs=9000 count=1000 > /dev/tcp/$target_host/$port
+$ cat < /dev/urandom > /dev/tcp/$target_host/$port
+```

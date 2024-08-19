@@ -383,14 +383,40 @@ $ sudo systemctl restart libvirtd
 
 env:
 - host: ip,172.16.25.157;gateway,172.16.25.1;os,oracle linux 7.9
+
+   - net.ipv4.ip_forward=1
 - vm: ip,172.16.25.159;gateway,172.16.25.1;os,windows server 2012
+
+xml:
+```xml
+    <interface type='direct'>
+      <mac address='52:54:00:ce:a4:e9'/>
+      <source dev='eth0' mode='bridge'/>
+      <target dev='macvtap1'/>
+      <model type='virtio'/>
+      <boot order='3'/>
+      <alias name='net0'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
+    </interface>
+```
 
 vm无法ping通172.16.25.1, 将驱动换成virtio问题仍旧, 留意到vm 网卡状态上`已发送`挺多, 但`已接收`=0.
 
-将vm换成centos7(macvtap+virtio), 问题依旧.
+在host上, 刚开始发现`tcpdump -i macvtap1 icmp -X -vvv`有来源是172.16.25.159的数据包, 但`tcpdump -i eth0 icmp -X -vvv`上却没有, 后来多次重复该测试后, 发现`tcpdump -i eth0 icmp -X -vvv`是小概率没有来源是172.16.25.159的数据包, 但gateway不响应vm的ICMP echo request. 后来又配置了一台linux vm 172.16.25.160, 发现172.16.25.159与172.16.25.160互ping正常, 因此应是gateway与host间出了问题, 但172.16.25.157 ping gateway又是正常的???
 
-待解决.
+### vm虚拟机网络问题
+1. 宿主机的ip不通，就要确认下虚拟机网卡的类型
 
+   - 对于macvlan网卡，ping不通宿主机网卡是正常的，但可以ping通同网段的别的ip
+   - 对于bridge网卡，使用brctl show命令检查虚拟的网卡（比如vnet0）是否挂到了网桥上，若没有，使用brctl addif br0 vnet0添加
+
+1. . 同网段的ip不通，就要考虑网卡转发
+
+   - 内核ip_forward参数(sysctl net.ipv4.ip_forward): 0表示没有开启，需要设置为1
+   - 网桥报文是否开启iptables过滤(`cat /proc/sys/net/bridge/bridge-nf-call-iptables`): 0表示没有开启，若为1则需要检查iptables配置
+
+1. 不同网段的ip不通，检查路由
+  
 ### `virsh insall`报`unsupported configuration: ACPI requires UEFI on this architecture`
 [aarch64 KVM只支持UEFI BIOS，编译源码时未安装edk2, 无法识别Firmware文件](https://support.huaweicloud.com/trouble-kunpengcpfs/kunpengkvm_09_0006.html)
 
@@ -1149,8 +1175,10 @@ nmap -sP 192.168.0.0/24
             <model type='virtio'/>
          </interface>
          ```
-      - bridge=br0 = `type=bridge,source=br0,model=virtio` : 使用桥接br0
 
+         > 网桥virbr0，相当于VMware的 VMNET8，提供NAT的网卡
+      - bridge=br0 = `type=bridge,source=br0,model=virtio` : 使用桥接br0
+      
          ```xml
          <interface type='bridge'>
             <mac address='52:54:00:eb:d7:7d'/>
