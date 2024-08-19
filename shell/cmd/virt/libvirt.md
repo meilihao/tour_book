@@ -387,6 +387,8 @@ env:
 
 vm无法ping通172.16.25.1, 将驱动换成virtio问题仍旧, 留意到vm 网卡状态上`已发送`挺多, 但`已接收`=0.
 
+将vm换成centos7(macvtap+virtio), 问题依旧.
+
 待解决.
 
 ### `virsh insall`报`unsupported configuration: ACPI requires UEFI on this architecture`
@@ -1139,13 +1141,21 @@ nmap -sP 192.168.0.0/24
       1. 桥接模式,与真实的物理网卡绑定，虚拟出交换机用于通信
 
       - type=direct,source=eth0,source_mode=bridge,model=virtio : macvtap
-      - bridge=br0 = `type=bridge,source=br0` : 接至名为“NAME”的网络指定桥接网卡的名称
+
+         ```xml
+         <interface type='direct'>
+            <mac address='52:54:00:ce:a4:e9'/>
+            <source dev='eth0' mode='bridge'/>
+            <model type='virtio'/>
+         </interface>
+         ```
+      - bridge=br0 = `type=bridge,source=br0,model=virtio` : 使用桥接br0
 
          ```xml
          <interface type='bridge'>
             <mac address='52:54:00:eb:d7:7d'/>
             <source bridge='br0'/>
-            <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
+            <model type='virtio'/>
          </interface>
          ```
       - NETWORK=NAME : 即nat

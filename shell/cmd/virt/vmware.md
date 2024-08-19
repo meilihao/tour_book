@@ -59,14 +59,15 @@ ref:
 
   ESXi 6.0.0 Build 2494585, 有问题.
 
-  `the problem is that with PMU disabled in VMWare config, it's not giving the right info to the guest to know it's disabled.`, 因此推测是vmware bug, 打开vmware `启用虚拟化CPU性能计数器`或嵌套vm使用`-cpu host,pmu=off`可能有用(未验证).
-
+  `the problem is that with PMU disabled in VMWare config, it's not giving the right info to the guest to know it's disabled.`, 因此推测是vmware bug.
 - [nested virt: kvm crash "kvm_put_msrs: Assertion `ret == cpu->kvm_msr_buf->nmsrs' failed."](https://github.com/kubernetes/minikube/issues/2968)
 
 env:
 - cpu: intel
 
 解决:
+1. 打开vmware `启用虚拟化CPU性能计数器`(已验证, 可行)或嵌套vm使用`-cpu host,pmu=off`(未验证) from [**Assertion `ret == cpu->kvm_msr_buf->nmsrs' failed**](https://bugs.launchpad.net/qemu/+bug/1661386)
+1. 忽略error
 ```bash
 # sudo tee /etc/modprobe.d/qemu-system-x86.conf << EOF
 options kvm ignore_msrs=1
@@ -75,4 +76,5 @@ EOF
 ```
 
 ps:
+1. `VMware ESXi, 6.5.0, 4564106`, 报错
 1. `VMware ESXi, 7.0.3, 21930508`, 正常

@@ -39,6 +39,8 @@ nmtui是nmcli的terminal gui. nm-connection-editor是gui. [nmstatectl以yaml/jso
 # nmcli connection modify Example-Connection ipv6.dns "2001:db8:1::ffbb"
 # nmcli connection modify Example-Connection ipv4.dns-search example.com # 设置搜索域
 # nmcli connection modify Example-Connection ipv6.dns-search example.com
+# nmcli connection modify <connection_name_or_UUID> connection.autoconnect no # 避免restart NetworkManager后连接自动生效
+# nmcli connection reload
 # --- 交互式编辑
 # nmcli connection edit type ethernet con-name Example-Connection
 nmcli> set connection.interface-name enp7s0 # 设置网络接口

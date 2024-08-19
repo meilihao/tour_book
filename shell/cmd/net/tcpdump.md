@@ -68,6 +68,7 @@ tcpdump停止捕获数据包时:
     # tcpdump ip proto 89 # 仅抓取特定协议by 编号
     # tcpdump greater 200 # 收集长度大于200字节的报文
     # tcpdump "ip[9] = 6" # 根据报文内容过滤更加复杂, 此时必须理解报文头的结构
+    # tcpdump -i virbr0 icmp
 
 注意:
 1. 主机有多个网卡时(比如192.168.0.166, 192.168.0.168), 发生数据包的ip是不确定的.

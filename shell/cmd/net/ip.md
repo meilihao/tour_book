@@ -448,4 +448,4 @@ env:
 通过nmtui即可, 需要重启
 
 ### centos7 `systemctl restart netowrk`报`TNETLINK answers: File exists`
-network 和 NetworkManager 服务有冲突, 使用其中一个即可.
+network 和 NetworkManager 服务有冲突, 使用其中一个即可, 推荐NetworkManager.
