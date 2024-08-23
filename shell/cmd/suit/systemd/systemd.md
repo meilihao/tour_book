@@ -130,6 +130,7 @@ WantedBy=multi-user.target
 ### `[Service]`
 ref:
 - [systemd.service 中文手册](http://www.jinbuguo.com/systemd/systemd.service.html)
+- [systemd 服务执行环境配置选项](https://github.com/wylbjia/blog/blob/master/linux/systemd-execution-environment-configuration.md)
 
 [Service]区块用来 Service 的配置，只有 Service 类型的 Unit 才有这个区块。它的主要字段如下:
 - Type：定义启动时的进程行为。它有以下几种值。

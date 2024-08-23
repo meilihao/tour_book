@@ -101,6 +101,9 @@ flow:
 
 	开源时间线:
 	- [open-eBackup：共建数据备份新生态](https://we.yesky.com/blog/309938), [开源地址是openeuler/open-eBackup(24.7.22时还是空repo)](https://gitee.com/openeuler/open-eBackup)
+	- [openEuler首场开源备份Meetup成功举办，Backup SIG正式成立！](https://www.openeuler.org/zh/news/openEuler/20240801-backup/20240801-backup.html)
+
+		开源时间改到24.09
 
 底层是普通延迟置零, 首次创建cbt备份后, disk.source(应该就是disk的增量)变为qcow2 compat 1.1, backingStore.source应该是原先的磁盘.
 
@@ -243,6 +246,10 @@ vm使用端口组的VLAN应为0, 表示不使用VLAN标签, 再用nmtui配置ip�
 单纯慢, 多等待
 
 ### vm
+ref:
+- [vmtools下载地址](https://support.huawei.com/enterprise/zh/distributed-storage/fusioncompute-sia-pid-254759905/software/)
+- [FusionCompute制作Linux虚拟机模板](https://blog.51cto.com/u_15894628/6090893)
+
 - 挂载Tools: `资源池`-`<虚拟机>`-`更多`-`Tools`-`挂载Tools`/libvirt vm xml添加cdrom+vmtools-linux.iso相关配置
 
 	ref:

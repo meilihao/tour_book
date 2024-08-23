@@ -380,9 +380,14 @@ $ sudo systemctl restart libvirtd
 解决方法: `virsh undefine xxx --nvram`
 
 ### `type=direct,source=eth0,source_mode=bridge,model=e1000`无法ping通网关
+ref
+- [确保 vSphere 标准交换机的安全](https://docs.vmware.com/cn/VMware-vSphere/7.0/com.vmware.vsphere.security.doc/GUID-3507432E-AFEA-4B6B-B404-17A020575358.html)和[混杂模式运行](https://docs.vmware.com/cn/VMware-vSphere/7.0/com.vmware.vsphere.security.doc/GUID-92F3AB1F-B4C5-4F25-A010-8820D7250350.html)
+- [VMware 嵌套虚拟机网络ping 不通](https://blog.csdn.net/huannanchunli/article/details/78741574)
 
 env:
-- host: ip,172.16.25.157;gateway,172.16.25.1;os,oracle linux 7.9
+- gateway,172.16.25.1, huawei(from wireshark展示)
+- vmware esxi, 6.5.0, 4564106, 172.16.25.20
+- host: ip,172.16.25.157;gateway,172.16.25.1;os,oracle linux 7.9; on vmware esxi
 
    - net.ipv4.ip_forward=1
 - vm: ip,172.16.25.159;gateway,172.16.25.1;os,windows server 2012
@@ -402,7 +407,12 @@ xml:
 
 vm无法ping通172.16.25.1, 将驱动换成virtio问题仍旧, 留意到vm 网卡状态上`已发送`挺多, 但`已接收`=0.
 
-在host上, 刚开始发现`tcpdump -i macvtap1 icmp -X -vvv`有来源是172.16.25.159的数据包, 但`tcpdump -i eth0 icmp -X -vvv`上却没有, 后来多次重复该测试后, 发现`tcpdump -i eth0 icmp -X -vvv`是小概率没有来源是172.16.25.159的数据包, 但gateway不响应vm的ICMP echo request. 后来又配置了一台linux vm 172.16.25.160, 发现172.16.25.159与172.16.25.160互ping正常, 因此应是gateway与host间出了问题, 但172.16.25.157 ping gateway又是正常的???
+在host上, 刚开始发现`tcpdump -i macvtap1 icmp -X -vvv`有来源是172.16.25.159的数据包, 但`tcpdump -i eth0 icmp -X -vvv`上却没有, 后来多次重复该测试后, 发现`tcpdump -i eth0 icmp -X -vvv`是小概率没有来源是172.16.25.159的数据包(该小概率可能是tcpdump处理慢, 需要等待一会), 但gateway不响应vm的ICMP echo request. 后来又配置了一台linux vm 172.16.25.160, 发现172.16.25.159与172.16.25.160互ping正常, 因此应是gateway与host间出了问题, 但172.16.25.157 ping gateway又是正常的.
+
+参考[vmware的抓包位置](/shell/cmd/virt/vmware.md), 在`--switchport <id> --capture PortInput/PortOutput`和`--uplink <vmnicX> --capture PortInput/PortOutput`抓包, 发现gateway有响应25.159的icmp, 但数据包进入`vSwitch0`的`
+VM Network`后被丢弃了. 通过`vSphere client`->vm所在节点->配置->网络->虚拟交换机->编辑->安全, 将"混杂模式"改为"接受", 25.159 ping 25.1变正常.
+
+> vm清空arp cache, 再ping 172.16.25.1, 虽然ping不通但arp cache能生成且正确
 
 ### vm虚拟机网络问题
 1. 宿主机的ip不通，就要确认下虚拟机网卡的类型
@@ -471,13 +481,22 @@ vm无法ping通172.16.25.1, 将驱动换成virtio问题仍旧, 留意到vm 网�
 > 试过两个ps设备+一个usb鼠标, 但还是飘.
 
 ### Guest has not initialized the display (yet) 
-- [qemu machine i440FX 仅支持 BIOS ，需更改成q35, q35 同时支持 BIOS 和 UEFI](https://blog.csdn.net/m0_47541842/article/details/113521732)
+- [虽然qemu machine i440fx/q35都支持 BIOS 和 UEFI, 但**uefi推荐使用q35**](https://blog.csdn.net/m0_47541842/article/details/113521732)
 - iso里os的arch与qemu使用的arch不一致
 - kylinv10 host(aarm64) + `vm(osVariant:ubuntu 19.10 + uefi + vga)` + Ubuntu 20.04-arm64.iso : 启动过程**很慢(超过90s, 同时cpu负载高)**且装机界面是字符型, 上下移动光标会出现花屏. 显卡model.type换成virtio后正常
 
    `host(aarm64) + vm(uefi + vga)`发现很慢或者甚至不出现装机界面, 因此uefi配合virtio或qxl为佳.
 
 或用`virt-manager --debug`调试.
+
+### ide+pc-i440fx-4.2+uefi+rhel 8.8 启动卡在uefi logo界面
+> 有个环境ide+pc-i440fx-4.2+uefi+rhel 8.10正常, 且这个两个环境的img都已包含ata_piix驱动???
+
+推测是ide与uefi的兼容或ide驱动问题. q35(`virsh domcapabilities --machine pc-q35-5.1 | xmllint --xpath '/domainCapabilities/devices/disk' -`的bus)直接不支持ide.
+
+解决方法:
+1. 将ide换成virtio, 再进入resume执行`dracut -f`(dracut添加virtio驱动), 重启后恢复正常.
+2. 给内核启动参数追加`console=ttyS0[,115200]`, 很神奇的方法, 能成功
 
 ### `unsupported configuration: spice graphics are not supported with this QEMU`
 qemu构建时没有选中spice.
@@ -705,7 +724,7 @@ ref:
 ref:
 - [开虚拟机串口控制台](https://docs.redhat.com/zh_hans/documentation/red_hat_enterprise_linux/9/html/configuring_and_managing_virtualization/proc_opening-a-virtual-machine-serial-console_assembly_connecting-to-virtual-machines)
 
-1. 编辑grub启动项, 追加`console=ttyS0,115200`, 按ctrl+x启动即可
+1. 编辑grub启动项, 追加`console=ttyS0[,115200]`, 按ctrl+x启动即可
 1. `virsh console xxx`, 启动信息会输出在terminal里
 
 > 遇到vm centos 7.7 使用ide/sata启动后图形界面卡住(底层大概是进入了dracut), 但其grub追加`console=ttyS0,115200`后能正常进入系统或使用virtio后进入dracut. 这种情况通常是vmware vm接管到kvm, 因initramfs里的驱动差异导致的. 解决方法: 启动时选恢复模式, 再执行`dracut -f`(dracut会自动识别硬件并更新initramfs里的驱动), 最后重启即可.

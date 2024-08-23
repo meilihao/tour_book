@@ -201,6 +201,7 @@ lsinitrd xxx.img
 
 ### dracut添加驱动
 ref:
+- [安装原生的KVM驱动](https://support.huaweicloud.com/usermanual-ims/ims_01_0326.html)
 - [Installing Native KVM Drivers](https://support.huaweicloud.com/intl/en-us/usermanual-ims/ims_01_0326.html)
 
     **推荐使用修改`/etc/dracut.conf`的方法**
@@ -211,7 +212,7 @@ lsinitrd /boot/initramfs-$version.img | grep virtio
 
 # if not found, add them
 cd /boot
-dracut -f initramfs-$version.img --add-drivers "virtio virtio_pci virtio_blk virtio_scsi virtio_net virtio_ring"
+dracut -f initramfs-$version.img --add-drivers "virtio_blk virtio_scsi virtio_net virtio virtio_pci virtio_ring virtio-rng virtio_console virtio_balloon virtio_gpu virtio_input"
 
 # prove it worked
 lsinitrd /boot/initramfs-$version.img | grep virtio
@@ -222,6 +223,8 @@ drivers:
 - sg : scsi
 - mpt3sas: sas
 - ahci: sata
+
+可通过`cat /lib/modules/`uname -r`/modules.dep |grep virtio`或`cat /boot/config-$version | grep -i virtio`查找virtio驱动, 因为部分virtio驱动可能不存在(比如virtio_ring), 还有部分virtio驱动已直接构建在内核中
 
 ### dracut/update-initramfs
 dracut/update-initramfs都是管理initramfs的工具.

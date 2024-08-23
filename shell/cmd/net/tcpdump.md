@@ -105,3 +105,5 @@ tcpdump停止捕获数据包时:
 
 > 也有可能是ip冲突, 解决方法: 关掉相关的电脑, 看还能否收到错误的arp, 如果还能收到则再用linux/windows远程去连接(发送错误mac的ip)一下看看.
 
+### `tcpdume arp`只有req, 没有resp
+所请求的ip也在广播自己的arp req, 其中包含了mac. 因此推测, 既有广播的arp req, 不再需要特意发送arp resp(单播)了.
