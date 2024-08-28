@@ -4,10 +4,15 @@ IPMI（Intelligent Platform Management Interface）即智能平台管理接口�
 Ipmi 最大的优势在于它是独立于BIOS 和 OS 的，由BMC(Baseboard Management Controller)芯片管理, 所以用户无论在开机还是关机的状态下，只要接通电源就可以实现对服务器的监控.
 
 ## ipmitool
+ref:
+- [ipmitool常用命令总结](https://www.cnblogs.com/HByang/p/16127044.html)
+
 ipmitool 是一种可用在 linux 系统下的命令行方式的 ipmi 平台管理工具，它支持 ipmi 1.5 规范（最新的规范为 ipmi 2.0），通过它可以实现获取传感器的信息、显示系统日志内容、网络远程开关机等功能.
 
 ### example
 ```
+# ipmitool sel get <event_id:7640>
+# ipmitool sel list
 # ipmitool fru print # 查看主板信息, 依赖mod: ipmi_devintf, ipmi_si
 # ipmitool sensor list # 查看ipmi sensor, 不带属性名
 # ipmitool sensor get "Chassis_Fan1" # 查看背板风扇1的sensor信息, 带属性名

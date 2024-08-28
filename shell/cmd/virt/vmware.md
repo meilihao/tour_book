@@ -141,17 +141,21 @@ env:
 解决:
 1. 打开vmware `启用虚拟化CPU性能计数器`(已验证, 可行)或嵌套vm使用`-cpu host,pmu=off`(未验证) from [**Assertion `ret == cpu->kvm_msr_buf->nmsrs' failed**](https://bugs.launchpad.net/qemu/+bug/1661386)
 
-  > `启用虚拟化CPU性能计数器`容易吃内存
-1. 忽略error
+  > `启用虚拟化CPU性能计数器`容易吃host内存, 但不影响vm里的内存
+
+  > libguestfs未找到追加`-cpu host,pmu=off`方法, 预计需要修改源码
+
+  [**Only x86_64 supports pmu=off option**](https://github.com/coreos/coreos-assembler/pull/465/files)
+1. 忽略error (已验证, 不可行, 照样报错)
 ```bash
 # sudo tee /etc/modprobe.d/qemu-system-x86.conf << EOF
-options kvm ignore_msrs=1
+options kvm ignore_msrs=1 # echo 1 > /sys/module/kvm/parameters/ignore_msrs
 EOF
 # reboot
 ```
 
 ps:
-1. `VMware ESXi, 6.5.0, 4564106`, 报错
+1. `VMware ESXi, 6.5.0, 4564106`/`VMware ESXi, 6.5.0 Update 3`, 报错
 1. `VMware ESXi, 7.0.3, 21930508`, 正常
 
 ### exsi开启ssh

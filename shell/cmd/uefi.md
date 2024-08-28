@@ -263,3 +263,6 @@ $ qemu-system-x86_64 -pflash ./OVMF.fd
 	启动shimx64.efi就像启动一样grubx64.efi. 在启用了安全启动的计算机上，启动shimx64.efi会间接启动GRUB，而无法直接启动grubx64.efi.
 ### 配置ovmf
 在qemu启动且进入uefi shell前可按esc键进入配置界面, 完成后选择左下角的"Continue"选项退出即可.
+
+### grub配置进uefi shell
+fwsetup

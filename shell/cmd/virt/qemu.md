@@ -209,6 +209,7 @@ $ ln -sf /usr/bin/qemu-system-x86_64 /usr/libexec/qemu-kvm
 ### 选项
 参考:
 - [qemu命令行参数](https://blog.csdn.net/GerryLee93/article/details/106475710)
+- [Effective Virtual CPU Configuration with QEMU and libvirt](https://events19.linuxfoundation.org/wp-content/uploads/2017/12/Kashyap-Chamarthy_Effective-Virtual-CPU-Configuration-OSS-EU2018.pdf)
 
 - boot : 设置guest启动时的各种选项, 比如启动顺序
 
@@ -451,6 +452,11 @@ KVM [1]: Hyp mode initialized successfully
 尝试按Ctrl + a，然后按c，以获得（qemu console）提示, 再一个简单的q即可退出.
 
 推荐使用`qemu-system-x86_64 -kernel arch/x86_64/boot/bzImage -nographic -append "console=ttyS0"`运行, 退出方法同上.
+
+### vm启动报`end Kernel panic – not syncing：System is deadlocked on memory`
+内存不足, 调大内存试试
+
+**接管时内存要求`>=原机`**, 之前有遇到原机128G, 接管使用时了8/16G都报该错, 但64G可以, 推测是原机生成的initramfs包含了其内存大小相关的参数导致的.
 
 ### unsupported configuration: IDE controllers are unsupported for this QEMU binary or machine type
 当前host是飞腾, disk bus不支持ide, 改用virt, sata, scsi即可.

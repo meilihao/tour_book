@@ -798,7 +798,7 @@ ref:
 挂起vm: `virsh suspend <name>`
 恢复被挂起的vm: `virsh resumed <name>`
 开机自启动vm: `virsh autostart <name>`
-连接vm: `virsh console <name>`
+连接vm: `virsh console <name>`, 退出使用`ctrl+]`
 保存虚拟机快照到文件： `virsh save <virtual machine (name | id | uuid)> <filename>`
 从快照恢复虚拟机： `virsh restore <filename>`
 查看虚拟机配置文件： `virsh dumpxml <virtual machine (name | id | uuid)`

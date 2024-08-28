@@ -10,11 +10,20 @@ env:
 产品:
 - 深信服云管平台SCP(Sangfor Cloud Platform): 支持管理HCI+vmware
 
+    SCP是运行在HCI上的vm
+
 ## [无代理备份](https://support.sangfor.com.cn/productDocument/read?product_id=36&version_id=1022&category_id=285299)
 ref:
 - [SCP API接口](https://support.sangfor.com.cn/productDocument/read?product_id=36&version_id=1022&category_id=285689)
 
 无代理备份基于云平台和超融合提供的OpenAPI接口和磁盘数据访问SDK（SFVDDK）, 因此需要SCP的OpenAPI+SFVDDK.
+
+scp 6.10.0和hci 6.10.0及以后版本, 且scp需要纳管hci.
+
+配置:
+1. 在hci开启`无代理备份数据传输服务`(系统管理->端口管理)
+1. 在scp配置`LAN模式备份数据传输网口`(产品与服务->备份与CDP->设置, 需要选择资源池)
+1. 通过scp+admin创建权限策略(包含所需备份权限)+关联账户xxx(比如afb, agent free backup) 
 
 ## FAQ
 ### [开启ssh](https://support.sangfor.com.cn/productDocument/read?product_id=33&version_id=993&category_id=283314&type=1)
@@ -25,3 +34,12 @@ ref:
 
 ### 上传iso
 存储->其他存储->选中某个`<存储>`记录->管理存储空间
+
+### 部署SCP
+1. 导入SCP 虚拟机镜像
+1. [配置SCP vm所在节点的`物理出口`, 并将scp vm的网络连接到该`物理出口`](https://www.bilibili.com/video/BV1WM4m1C7NT)
+1. 开启scp vm, 进入维护模式修改ip, 并测试连通性, 再重启
+1. 通过`https://设置的IP:4430`访问scp即可
+
+### scp添加集群后没有原先创建的HCI vm
+云资源->资源池->HCI->创建, 创建成功后能看到HCI vms(scp vm除外)

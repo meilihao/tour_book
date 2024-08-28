@@ -201,10 +201,11 @@ lsinitrd xxx.img
 
 ### dracut添加驱动
 ref:
+- [Linux 系统检查 Virtio 驱动](https://www.tencentcloud.com/zh/document/product/213/9929)
 - [安装原生的KVM驱动](https://support.huaweicloud.com/usermanual-ims/ims_01_0326.html)
 - [Installing Native KVM Drivers](https://support.huaweicloud.com/intl/en-us/usermanual-ims/ims_01_0326.html)
 
-    **推荐使用修改`/etc/dracut.conf`的方法**
+**推荐使用修改`/etc/dracut.conf`的方法, 否则其他软件更新initramfs后, virtio又会丢失**.
 
 ```bash
 # check for virtio drivers
@@ -212,7 +213,7 @@ lsinitrd /boot/initramfs-$version.img | grep virtio
 
 # if not found, add them
 cd /boot
-dracut -f initramfs-$version.img --add-drivers "virtio_blk virtio_scsi virtio_net virtio virtio_pci virtio_ring virtio-rng virtio_console virtio_balloon virtio_gpu virtio_input"
+dracut [-f initramfs-$version.img] --add-drivers "virtio_blk virtio_scsi virtio_net virtio virtio_pci virtio_ring virtio-rng virtio_console virtio_balloon virtio_gpu virtio_input"
 
 # prove it worked
 lsinitrd /boot/initramfs-$version.img | grep virtio
