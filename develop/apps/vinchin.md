@@ -1,4 +1,8 @@
 # vinchin
+ref
+- [虚拟/物理机备份中深度有效数据提取应用原理](https://blog.csdn.net/qq_42934452/article/details/133942908)
+
+    原理: 识别出文件系统层的有效数据位图
 
 ## FAQ
 ### [db账号](https://github.com/Chocapikk/CVE-2024-22899-to-22903-ExploitChain/blob/main/exploit.py)

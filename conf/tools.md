@@ -286,13 +286,17 @@ $ sudo apt-get install isomaster # isomaster可修改iso, 保存时需要另存�
 
 ### 内存盘
 ```sh
-$ mkdir -p /home/chen/tmpfs
+$ mkdir -p /data/tmpfs
 ```
 ```
 # gedit /etc/fstab,加入以下内容:
 # tmpfs
-tmpfs /home/chen/tmpfs tmpfs rw,nodev,nosuid,size=256m 0 0
+tmpfs /data/tmpfs tmpfs rw,nodev,nosuid,size=256m 0 0
 ```
+
+> 不使用`~/tmpfs`的原因: 避免部分软件因为权限问题而无法访问, 比如virt-manager访问存储报`Permission Denied`
+
+> 如果已经是挂载了, 可以使用remount进行扩容, 保证原有的数据不会丢失: `mount tmpfs -t tmpfs -o size=4G -o remount /data/tmpfs`
 
 ## terminal弹窗
 1. `zenity --info --text "要发送的消息"`

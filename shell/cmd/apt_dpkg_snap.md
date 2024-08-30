@@ -377,3 +377,6 @@ $ sudo apt install linux-headers-6.6.13+bpo-amd64 linux-image-6.6.13+bpo-amd64
 
 ### `apt install`报`unknown system group 'plocate' in statoverride file; the system group got removed`
 plocate组不存在, 打开`/var/lib/dpkg/statoverride`, 删除plocate所在行.
+
+### atp install报`unknown system group 'plocate' in statoverride file; the system group got removed`
+打开`/var/lib/dpkg/statoverride`, 删除错误的记录, 并重现安装plocate即可

@@ -31,6 +31,8 @@ $ nc -vz -w 2 10.0.1.161 9998-9999 # 检查连续的两个端口
 $ nc -l -p 8888 -c "nc 192.168.19.153 22" # 8888转发到192.168.19.153:22
 ```
 
+> ubuntu 24.04的nc没有`-c`, 但其ncat有
+
 client:
 ```bash
 $ dd if=/dev/zero bs=9000 count=1000 > /dev/tcp/$target_host/$port
