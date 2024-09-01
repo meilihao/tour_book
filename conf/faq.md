@@ -345,3 +345,20 @@ $ imsettings-switch fcitx5 # 切换输入法
 env: fedora 40 + kde + fcitx5
 
 使用chrome
+
+### fedora 39/40禁止自动挂起
+服务器用的fedora 40(使用了默认的gnome桌面)，ssh总是隔一段时间就自动挂起了, 并且提示：
+```
+Broadcast message from chen@fedora (Sun 2024-09-01 13:37:31 CST):
+
+The system will suspend now!
+```
+
+解决方案
+1. 推荐
+```bash
+vim /etc/systemd/logind.conf
+IdleAction=ignore
+```
+1. 按电源键恢复
+1. gnome里配置电源策略
