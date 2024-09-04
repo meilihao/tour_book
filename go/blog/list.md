@@ -45,6 +45,7 @@
 - [字节跳动 Go RPC 框架 KiteX开源 : cloudwego/kitex](https://github.com/cloudwego/kitex)
 - [Go 1.19中值得关注的几个变化](https://tonybai.com/2022/08/22/some-changes-in-go-1-19/)
 - [**腾讯 tRPC-Go 框架核心实现源码解读**](https://blog.hackerpie.com/posts/architecture/tencent-trpc-go-framework-source/)
+- [C语言竟可以调用Go语言函数，这是如何实现的？](https://cloud.tencent.com/developer/article/2422108)
 
 ## go src
 - [go-under-the-hood](https://github.com/changkun/go-under-the-hood)

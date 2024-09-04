@@ -11,6 +11,9 @@
 	json比xml更具表现力(比如表示array)
 
 # 调用安全
+ref:
+- [创建已签名的 AWS API 请求](https://docs.aws.amazon.com/zh_cn/IAM/latest/UserGuide/create-signed-request.html)
+
 ## 问题和对策
 1. 内容被嗅探 : 使用https
 1. 防重放 : timestamp + nonce + sign

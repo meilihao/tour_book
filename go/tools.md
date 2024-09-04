@@ -9,6 +9,8 @@
 
 ## http client
 - [github.com/go-resty/resty/v2](https://github.com/go-resty/resty)
+
+	**SetBody()后resty可能修改body内容 by fmtBodyString()**, 实现AWS4-HMAC-SHA256时遇到
 - [github.com/guonaihong/gout](https://github.com/guonaihong/gout)
 
 ## error

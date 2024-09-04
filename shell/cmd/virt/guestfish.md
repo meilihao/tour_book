@@ -204,3 +204,5 @@ losetup -d /dev/loop0
 
 ### guestfish: /usr/lib64/libselinux.so.1: no version information available (required by /usr/lib64/libguestfs.so.0)
 `yum reinstall libselinux/apt install --reinstall libselinux1`
+
+如果报错信息里还有`libguestfs: error: mount: mount exited with status 32: mount: /sysroot: wrong fs type, bad option, bad superblock on ...`(`mount /xxx /`), 那就是在guestfish中mount fs时因为要挂载的fs需要修复而引发的错误, 需要**逐个检查要挂载的fs**, 修复fs后再mount即可.

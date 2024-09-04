@@ -1262,10 +1262,12 @@ nmap -sP 192.168.0.0/24
          例如: `--graphics vnc,password=123456,port=5910`
    - [video](https://wiki.archlinux.org/title/QEMU_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)#%E5%9B%BE%E5%BD%A2)
 
-      - cirrus : 必应使用
+      - std: 标准vga, windows, 使用uiefi, 推荐
+      - vmware: vmware兼容显卡, vmware虚拟机, ubuntu等推荐
+      - cirrus : cirrus兼容显卡, 默认显卡, redhat等推荐使用
       - none : 等于没有vga卡, 无法通过`-vnc`访问它. 与使用`-nographic`不同, `-nographic`会让QEMU模拟VGA卡且只是关闭了SDL输出
       - virtio : 一个基于virgl的3D并行虚拟化图形驱动
-      - qxl : 一个支持2D的并行虚拟化图形驱动 
+      - qxl : 一个支持2D的并行虚拟化图形驱动, 非redhat, 使用uefi, 推荐
 
 - 其他
 

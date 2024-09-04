@@ -132,3 +132,6 @@ AllowTcpForwarding  = yes
 ```
 ### python调试时`Copy Value`的值被截断
 可在`DEBUG CONSOLE`打印一下再复制
+
+### 正则替换
+`^(.*)$`-> `Status$1="$1" //`

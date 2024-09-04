@@ -251,6 +251,8 @@ apt install com.tencent.wechat
 
 **ps**: 需要同时安装[优麒麟的weinxin](https://www.ubuntukylin.com/applications/106-cn.html), 否则com.tencent.wechat能启动, 但手机扫码登入失败.
 
+之前正常, 这周(24.9.2)开始突然无法扫描登入了, 重装com.tencent.wechat无效, 但重装优麒麟的weinxin后, com.tencent.wechat恢复正常.
+
 ### kubuntu 24.04 安装wechat from opencloudos(**还不可用**)
 ref:
 - [OpenCloudOS 支持 Linux 原生版微信，开启生态新篇章](https://www.cnblogs.com/OpenCloudOS/p/18252948)

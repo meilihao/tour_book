@@ -16,6 +16,14 @@ env:
 ref:
 - [SCP API接口](https://support.sangfor.com.cn/productDocument/read?product_id=36&version_id=1022&category_id=285689)
 
+    api注意点:
+    1. region/serviceg分别固定为`cn-south-1/sdk-api`
+    1. 与标准AWS4-HMAC-SHA256的差异:
+        1. CanonicalHeaders只包含了`x-amz-date`, 且SignedHeaders只包含了`x-amz-date`
+        1. CanonicalQueryString传空, 即不参与签名
+
+> Open-API-zh_CN-2024-05-16.pdf : **文档质量很糟糕**
+
 无代理备份基于云平台和超融合提供的OpenAPI接口和磁盘数据访问SDK（SFVDDK）, 因此需要SCP的OpenAPI+SFVDDK.
 
 scp 6.10.0和hci 6.10.0及以后版本, 且scp需要纳管hci.
