@@ -5,6 +5,8 @@ ref:
 
 netcap是字节跳动开源的Linux内核网络抓包工具.
 
+> [官方: 建议kernel 5.15以上](https://github.com/bytedance/netcap/issues/5#issuecomment-2296100614)/[网友: kernel 5.16及以上 + bcc v0.25.0](https://github.com/bytedance/netcap/issues/3)
+
 ## FAQ
 ### netcap执行报`/virtual/main.c:155:21: warning: implicit declaration of function 'bpf_probe_read_kernel' is invalid in C99 [-Wimplicit-function-declaration]`
 ref:

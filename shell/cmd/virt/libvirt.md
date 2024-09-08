@@ -414,6 +414,21 @@ VM Network`后被丢弃了. 通过`vSphere client`->vm所在节点->配置->网�
 
 > vm清空arp cache, 再ping 172.16.25.1, 虽然ping不通但arp cache能生成且正确
 
+### 无法ping通网关2
+ref:
+- [关于KVM虚拟化网桥bridge的一个mac/port映射表故障分析](https://blog.csdn.net/watermelonbig/article/details/125118931)
+
+env:
+- vm(v, 8.103)-> host(h, kvm, mactap0->eth0(8.120))->物理机(p, mactap1 -> br0(8.9, on enp2s0f0))->gw(8.1)
+
+ps:
+1. p, h均已设置`net.ipv4.ip_forward=1`, 并关闭防火墙
+1. p的mactap1, br0, enp2s0f0均设置`promisc on`
+
+在p的br0上抓包发现有v发送到gw且gw响应给v的icmp, 但p的mactap1上抓包仅有v发送给gw的icmp, 应该在br0和mactap1间丢包了, 具体位置无法定位.
+
+> 在p的enp2s0f0上抓包和在br0上结果一致
+
 ### vm虚拟机网络问题
 1. 宿主机的ip不通，就要确认下虚拟机网卡的类型
 
@@ -546,6 +561,12 @@ env:
 
 绑定设备的数据包传输算法是由绑定的模式所决定的，绑定模式共有7种(mode-0 ~ mode-6)，其中mode-1 ~ mode-4支持虚拟机网络(使用网桥)和非虚拟机网络(无网桥)；mode-0、mode-5、mode-6只支持非虚拟机网络(无网桥), ovirt虚拟化平台默认使用的是mode-4.
 
+### 使用e1000接管的windows server 2019 datacenter没有识别到网卡
+`设备管理器->其他设备->以太网控制器`提示叹号
+
+解决: 选择该控制器, 右键选`更新驱动程序`->`自动搜索更新的驱动程序软件`, 完成后就可以看到网卡`Intel(R) PRO/1000 MT Network Connection`了
+
+推荐: 换virtio网卡
 
 ### aarch64上vm开机报`cpu mode 'host-model' for aarch64 kvm domain on aarch64 host is not supported by hypervisor`
 解决方法:
@@ -756,6 +777,8 @@ virDomainGetID可能返回4294967295, 它即[`^uint32(0)=(unsigned int)-1)`](htt
 
 ## uefi shell
 - exit : 进入qemu machine(virt-4.0)的类似bios界面的字符uefi firmware settings界面.
+
+   在grub shell执行fwsetup也可进入字符uefi firmware settings界面
 
 ## virtsh
 virsh 属于 libvirt 的命令行工具, 与virt-manager类似, libvirt 是目前使用最为广泛的对 KVM 虚拟机进行管理的工具和 API, 它还可管理 VMware, VirtualBox, Hyper-V等.
@@ -1372,3 +1395,21 @@ virtio-win iso 与系统版本的对应关系(from chatgpt, 未找到其他信�
 - virtio-win-0.1.223 及以上版本：
 
    提供对 Windows 10 的更新支持，并支持 Windows Server 2019 和 Windows Server 2022
+
+### 获取支持的网卡
+参考virt-manager的[default_model](https://github.com/virt-manager/virt-manager/blob/main/virtinst/devices/interface.py#L328)或[interface_recommended_models](https://github.com/virt-manager/virt-manager/blob/main/virtManager/addhardware.py#L592)
+
+### disk type 'virtio' of 'vdb' does not support ejectable media'
+[cdrom不支持virtio](https://lists.libvirt.org/archives/list/devel@lists.libvirt.org/message/4U6V62GKYPOCBVY5B3KM5JAP4RVLUCTZ/)
+
+### arm64新建kvm uefi boot manager无法识别到光驱(bus=scsi)和网卡
+正常uefi的Boot Manager如果存在光驱和网卡, 那么会识别到`UEFI QEMU QEMU CD-ROM`, `UEFI PXEv4 (MAC:<mac>)`和`UEFI PXEv6 (MAC:<mac>)`
+
+再新建一个vm, 却能正常识别光驱. 用好的vm的nvram覆盖问题vm的, 问题依旧.
+
+后来对比xml, 发现问题xml `controller type=scsi model=lsilogic`, 而正常xml是`controller type=scsi model=virtio-scsi`, 推测应该是当初选错了os(即xml libosinfo), 导致使用了错误的scsi控制器而uefi无法识别该控制器.
+
+### arm64新建kvm+uefi 无法先从光驱(bus=sata)启动, 变成了从PXE启动
+换scsi后正常
+
+> 不知是没sata controller还是根本不支持, 未验证

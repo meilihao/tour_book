@@ -1,5 +1,7 @@
 # ping
 
+> [hping:一个具有可嵌入tcl脚本功能的 TCP/IP包伪造工具](https://dev.to/cylon/linuxwang-luo-ming-ling-ji-jin-3c10)
+
 ## 描述
 
 ping过ICMP（Internet控制消息协议）工作, 可用来测试本机与目标主机是否联通、联通速度如何、稳定性如何.
