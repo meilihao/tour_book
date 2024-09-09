@@ -559,3 +559,12 @@ func main() {
 
 ### pkg
 `// #cgo pkg-config: udev`=`// #cgo LDFLAGS: -ludev`
+
+### 处理union
+c实现set union的函数, go调用该函数
+
+### go buffer给c
+```go
+goBuffer:=make([]byte, 4096)
+cBuffer:=(*C.uint8)(unsafe.Pointer(&goBuffer[0]))
+```

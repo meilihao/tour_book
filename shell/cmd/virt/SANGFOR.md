@@ -24,6 +24,8 @@ ref:
 
 > Open-API-zh_CN-2024-05-16.pdf : **文档质量很糟糕**
 
+> sfvddk封装可参考[vmware/virtual-disks](https://github.com/vmware/virtual-disks)
+
 无代理备份基于云平台和超融合提供的OpenAPI接口和磁盘数据访问SDK（SFVDDK）, 因此需要SCP的OpenAPI+SFVDDK.
 
 scp 6.10.0和hci 6.10.0及以后版本, 且scp需要纳管hci.

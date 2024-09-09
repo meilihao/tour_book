@@ -10,6 +10,8 @@ ref:
 - [KubeSphere 虚拟化 KSV 安装体验](https://blog.csdn.net/networken/article/details/125009058)
 - [kubevirt在360的探索之路（k8s接管虚拟化）](https://zyun.360.cn/blog/?p=691)
 - [虚拟机迁移](https://kiosk007.top/post/%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%80%8E%E4%B9%88%E5%81%9A%E5%88%B0%E7%83%AD%E8%BF%81%E7%A7%BB/)
+
+   - [网络数据传输层](https://mp.weixin.qq.com/s?__biz=MzI3MDM0NjU3MA==&mid=2247486297&idx=1&sn=046c2b4c363668a4d22af38d81bef17e&chksm=ead33b7cdda4b26ac7cd2b62f76de0bcf160f59a37f0f171eacbb21f1c3ea72da11c03ec21d2&cur_album_id=2372160472910839809&scene=189#wechat_redirect)
 - [fedora 40 设置虚拟化环境](https://docs.fedoraproject.org/en-US/quick-docs/virtualization-getting-started/)
 
 目前使用最广泛的对kvm进行管理的工具和应用程序接口, 它也支持xen, vmware, virtualbox, hyper-v等平台虚拟化, 以及openvz, lxc等容器虚拟化.
@@ -419,15 +421,18 @@ ref:
 - [关于KVM虚拟化网桥bridge的一个mac/port映射表故障分析](https://blog.csdn.net/watermelonbig/article/details/125118931)
 
 env:
-- vm(v, 8.103)-> host(h, kvm, mactap0->eth0(8.120))->物理机(p, mactap1 -> br0(8.9, on enp2s0f0))->gw(8.1)
+- vm(v, 8.103)-> host(h, kvm, macvtap0->eth0(8.120))->物理机(p, macvtap1 -> br0(8.9, on enp2s0f0))->gw(8.1)
+
+   8.120 ping 8.1正常
 
 ps:
 1. p, h均已设置`net.ipv4.ip_forward=1`, 并关闭防火墙
-1. p的mactap1, br0, enp2s0f0均设置`promisc on`
+1. p的macvtap1, br0, enp2s0f0/host的macvtap0, eth0均设置`promisc on`
+1. p的`ip -s link show` macvtap1, br0, enp2s0f0 均没有丢包
 
-在p的br0上抓包发现有v发送到gw且gw响应给v的icmp, 但p的mactap1上抓包仅有v发送给gw的icmp, 应该在br0和mactap1间丢包了, 具体位置无法定位.
+在p的br0上抓包发现有v发送到gw且gw响应给v的icmp, 但p的mactap1上抓包仅有v发送给gw的icmp, 应该在br0和mactap1间丢包了, 具体位置无法定位. ???
 
-> 在p的enp2s0f0上抓包和在br0上结果一致
+> 在p的enp2s0f0上抓包和在br0上结果一致, 因为此时enp2s0f0就相当于一根网线而已.
 
 ### vm虚拟机网络问题
 1. 宿主机的ip不通，就要确认下虚拟机网卡的类型
@@ -754,13 +759,15 @@ ref:
 ref:
 - [libvirt之virbr0和virbr0-nic](https://xiaoz.info/2020/01/08/libvirt-virbr0/)
 
-libvirtd会自动创建一个virbr0, 它是一个virtual network switch(bridge device), 所有虚拟机都将连接到virbr0.
+libvirtd会自动创建一个virbr0, 它是一个virtual network switch(bridge device), 所有虚拟机都将连接到virbr0. 网桥virbr0，相当于VMware的 VMNET8，提供NAT的网卡.
 
 默认virbr0使用NAT模式, 可以提供NAT模式上网. 默认情况下, virbr0分配地址192.168.122.1, 它可以为连接到它的其他虚拟接口提供 DHCP 服务.
 
 virbr0包括两个端口：virbr0-nic 为网桥内部端口，vnet0 为虚拟机网关端口(192.168.122.1).
 
 > 增加virbr0-nic接口是为了解决一个内核的bug(或者说是feature)。创建bridge后，当我们添加第一块虚拟NIC到bridge时，这块NIC的MAC地址会复制到bridge，作为bridge的MAC地址。当我们所有NIC从bridge移除之后，这时bridge会丢失原来的MAC地址。而再次加入另外的NIC时，bridge又会获取新的MAC地址，这个MAC地址获取的是新NIC的MAC地址. virbr0-nic其实是一个[dummy device](https://xiaoz.info/2020/01/08/libvirt-virbr0/).
+
+> libvirt net的NAT 模式（默认）将 virbr0 当作一个 Firewall NAT 设备. 底层支撑使用了 iptables nat 的 MASQUERADE（地址伪装）规则类型，而非 SNAT 或 DNAT. IP 地址伪装规则，使得 VMs 可以使用 Host 的 IP 地址访问外部网络，但外部网络无法主动访问到 VMs，因为 VMs 对于外部网络而言是不可见的.
 
 ### vm id
 一旦vm运行中, `virsh list --all`就会输出其id, 包括paused(暂停中).
@@ -1407,7 +1414,7 @@ virtio-win iso 与系统版本的对应关系(from chatgpt, 未找到其他信�
 
 再新建一个vm, 却能正常识别光驱. 用好的vm的nvram覆盖问题vm的, 问题依旧.
 
-后来对比xml, 发现问题xml `controller type=scsi model=lsilogic`, 而正常xml是`controller type=scsi model=virtio-scsi`, 推测应该是当初选错了os(即xml libosinfo), 导致使用了错误的scsi控制器而uefi无法识别该控制器.
+后来对比xml, 发现问题xml `controller type=scsi model=lsilogic`, 而正常xml是`controller type=scsi model=virtio-scsi`, 推测应该是当初选错了os(即xml libosinfo, **后来修正过libosinfo但xml controller model应该是创建时就固定了**), 导致使用了错误的scsi控制器而uefi无法识别该控制器.
 
 ### arm64新建kvm+uefi 无法先从光驱(bus=sata)启动, 变成了从PXE启动
 换scsi后正常
