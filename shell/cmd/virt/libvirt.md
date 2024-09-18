@@ -819,6 +819,7 @@ ref:
 - [centos7上使用virt-install命令创建kvm虚拟机](https://blog.51cto.com/u_11555417/2341874)
 - [Networking](http://wiki.libvirt.org/page/Networking)
 - [MacVTap](https://virt.kernelnewbies.org/MacVTap)
+- [虚拟机 XML 配置示例](https://docs.redhat.com/zh_hans/documentation/red_hat_enterprise_linux/9/html/configuring_and_managing_virtualization/sample-virtual-machine-xml-configuration_viewing-information-about-virtual-machines)
 
 如下命令启动虚拟机： `virsh create <name of virtual machine>` : 通过`virsh create <vmname>.xml`创建的虚拟机不会持久化，关机后会消失
 启动虚拟机： `virsh start <name>`
@@ -1416,7 +1417,25 @@ virtio-win iso 与系统版本的对应关系(from chatgpt, 未找到其他信�
 
 后来对比xml, 发现问题xml `controller type=scsi model=lsilogic`, 而正常xml是`controller type=scsi model=virtio-scsi`, 推测应该是当初选错了os(即xml libosinfo, **后来修正过libosinfo但xml controller model应该是创建时就固定了**), 导致使用了错误的scsi控制器而uefi无法识别该控制器.
 
+### amd64新建kvm uefi boot manager无法识别到磁盘(bus=virtio)
+disk file(raw)是原其他非uefi虚拟机的系统盘, 换bios引导即可
+
 ### arm64新建kvm+uefi 无法先从光驱(bus=sata)启动, 变成了从PXE启动
 换scsi后正常
 
 > 不知是没sata controller还是根本不支持, 未验证
+
+### disk添加backingStore
+```xml
+<disk type='file' device='disk'>
+  <driver name='qemu' type='qcow2'/>
+  <source file='/tmp/pull4.qcow2'/>
+   <backingStore type='file'>
+      <format type='qcow2'/>
+      <source file='/tmp/pull0.qcow2'/>
+      <backingStore/> # 不能丢, 表示backing结束
+   </backingStore>
+  <target dev='vda' bus='virtio'/>
+  <address type='pci' domain='0x0000' bus='0x00' slot='0x0a' function='0x0'/>
+</disk>
+```

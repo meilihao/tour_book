@@ -28,6 +28,8 @@ XXX函数名字和*_test.go里的待测试函数的名称不一致.
 ### go test build
 `go test -c -v  -timeout 30s -run ^TestVersion$ fstack/pkg/plugins/system`
 
+只有当个test case时, 可直接运行; 否则需要指定test case: `./xxx.test -test.run TestYYY`
+
 ### go test 禁用缓存
 每当执行 go test 时, 如果功能代码和测试代码没有变动, 则在下一次执行时, 会直接读取缓存中的测试结果，并通过 (cached) 进行标记.
 

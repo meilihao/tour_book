@@ -8,6 +8,9 @@
 - [如何构建OpenStack镜像](https://www.jingh.top/2016/05/28/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BAOpenStack%E9%95%9C%E5%83%8F/)
 - [DIB(disk image builder)是OpenStack TripleO项目的子项目，专门用于构建OpenStack镜像](https://www.jingh.top/2016/05/28/%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BAOpenStack%E9%95%9C%E5%83%8F/)
 - [images](https://docs.openstack.org/image-guide/obtain-images.html)
+- [qemu 9.1](https://m.ithome.com/html/794375.htm)
+
+    大幅提升了虚拟机实时迁移的效率
 
 Qemu是一个广泛使用的开源计算机仿真器和虚拟机.
 
@@ -546,7 +549,8 @@ ref:
 - [amend: 修改镜像文件的格式](https://blog.csdn.net/u012324798/article/details/109705017#amend_47)
 
 ```
-qemu-img amend -f qcow2 -o ? # 查看支持的选项
+qemu-img create -f qcow2 -o ? # 查看支持的选项, 比如compat支持的版本
+qemu-img amend -f qcow2 -o ? # 同上
 # --- upgrade compat
 qemu-img create -f qcow2 -o compat=0.10 /tmp/test.qcow2 1G
 qemu-img amend -f qcow2 -o compat=1.1 /tmp/test.qcow2
@@ -599,3 +603,20 @@ ref:
 创建的镜像文件仅记录与后端镜像文件的差异部分, 后端镜像文件不会被修改. 除非在QEMU monitor中使用`commit`命令或者`qemu-img commit`命令去手动提交这些改动. 这种情况下, size参数不是必须需的，其值默认为后端镜像文件的大小. 另外, 使用`-b backfile`与`-o backing_file=backfile`是等价的.
 
 `qemu-img create -f qcow2 -b CentOS-Stream-GenericCloud-x86_64-9-20240617.0.x86_64.qcow2 -F qcow2 centos9.img`
+
+### `qemu-nbd -d /dev/nbd<N>`卡住, 系统日志报`block nbd15: Possible stuck request 000000007fcf62ba: control (read@523915264,24576B). Runtime 150 seconds`
+ref:
+- [nbd: requests can become stuck when disconnecting from server with qemu-nbd](https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1896350)
+- [nbd requests become stuck when devices watched by inotify emit udev uevent changes](https://lore.kernel.org/lkml/6efae367-12fa-1a58-7438-1b39dc0d6ef8@huawei.com/T/)
+
+env:
+- kernel: 5.4.17
+
+看task panic: 下刷数据时`qemu-nbd -d`, 引发卡住
+
+ps kill nbd相关进程无效, 需重启
+
+改进(未验证): `qemu-nbd -d`前fsync + sleep一下
+
+### 深信服无代理备份增量还原后vm无法进入系统
+在`virsh console`观察到mount `/sysroot`(xfs)时kernel panic(`Failed to mount /sysroot`), 推测是备份时xfs metadata不完整导致的, 用`xfs_repair -[L] <block-device>`修复后vm进入系统, 且增量数据md5值正确.

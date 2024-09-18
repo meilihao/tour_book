@@ -303,6 +303,10 @@ ref:
 - [使用 VXLAN 为虚拟机创建虚拟第 2 层域](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/9/html/configuring_and_managing_networking/assembly_using-a-vxlan-to-create-a-virtual-layer-2-domain-for-vms_configuring-and-managing-networking)
 
 ## FAQ
+### 丢包
+- [Linux内核常见的网络丢包场景分析](https://mp.weixin.qq.com/s/vdW0L7nEdfrxSJ_9VGviaA)
+- [云网络丢包故障定位，看这一篇就够了](https://mp.weixin.qq.com/s?__biz=MzUyODY4NTA2Mw==&mid=2247551473&idx=1&sn=5d4bec2468585d719c82f53243c58344&source=41#wechat_redirect)
+
 ### [指定broadcast address](https://library.netapp.com/ecmdocs/ECMP1155586/html/GUID-0B34BAE2-D6F2-4E2D-A84F-D417EAA737E2.html)
 通常无需手动设置广播地址, 它是根据ip地址和netmask自动确定. 实际ipv4可以指定广播地址(`ifconfig e3a broadcast 192.0.2.25`), ipv6不支持广播地址.
 

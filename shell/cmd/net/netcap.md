@@ -1,7 +1,7 @@
 # [netcap](https://github.com/bytedance/netcap)
 ref:
 - [Installing BCC](https://github.com/iovisor/bcc/blob/master/INSTALL.md#install-and-compile-bcc-1)
-- [字节跳动开源 Linux 内核网络抓包工具 netcap](https://my.oschina.net/u/6150560/blog/15154212)
+- [字节跳动开源 Linux 内核网络抓包工具 netcap](https://mp.weixin.qq.com/s/GyjpY3QpeaPqN6s-YgeWMA)
 
 netcap是字节跳动开源的Linux内核网络抓包工具.
 

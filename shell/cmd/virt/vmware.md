@@ -15,6 +15,9 @@ ref:
   **vmware workstation 17.5.2 无法在fedora 40 + kernel 6.9.4/ubuntu 24.04 + kernel 6.8 上构建所需的内核模块**, 兼任列表见[Supported host operating systems for Workstation Pro 16.x, 17.x and Workstation Player 16.x, 17.x](https://knowledge.broadcom.com/external/article/315653/supported-host-operating-systems-for-wor.html)
 
   vmware kernel module src位置见[VMware, Debian Kernel Upgrade](https://wiki.debian.org/VMware). patch在[VMware vmmon & vmnet 17.5.1 and Linux kernel 6.8.0 won't compile](https://unix.stackexchange.com/questions/773558/vmware-vmmon-vmnet-17-5-1-and-linux-kernel-6-8-0-wont-compile), 但当前只支持到17.5.1
+- [open-vm-tools](https://docs.vmware.com/cn/VMware-Tools/12.4.0/com.vmware.vsphere.vmwaretools.doc/GUID-8B6EA5B7-453B-48AA-92E5-DB7F061341D1.html)
+
+  Open VM Tools (open-vm-tools) 是适用于 Linux 和 FreeBSD 客户机操作系统的 VMware Tools 的开源实现
 
 vmware为提供了三种网络工作模式：Bridged（桥接模式）、NAT（网络地址转换模式）、Host-Only（仅主机模式）.
 

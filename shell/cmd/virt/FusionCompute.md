@@ -104,6 +104,13 @@ flow:
 	- [openEuler首场开源备份Meetup成功举办，Backup SIG正式成立！](https://www.openeuler.org/zh/news/openEuler/20240801-backup/20240801-backup.html)
 
 		开源时间改到24.09
+	- [华为开源备份软件架构、未来能力及社区发展规划](https://blog.csdn.net/diveintokernel/article/details/141086997)
+
+		2024.9.15：代码到社区，选择2-3家合作伙伴启动社区试运营
+		2024.9.30：正式面向公众开源
+		2024.10  ：协助伙伴快速启动开发，启动备份软件标准专项工作
+		2024.11  ：举办年度Backup SIG论坛。帮助伙伴发布基于开源社区的商用备份一体机
+		2025      ：新能力规划
 - [将VMware平台虚拟机瞬时恢复并在线迁移至深信服Sangfor平台](https://blog.csdn.net/qq_42934452/article/details/127110229)
 
 	快速恢复流程参考

@@ -21,6 +21,7 @@ ref:
     1. 与标准AWS4-HMAC-SHA256的差异:
         1. CanonicalHeaders只包含了`x-amz-date`, 且SignedHeaders只包含了`x-amz-date`
         1. CanonicalQueryString传空, 即不参与签名
+    1. **sfdisklib_connect的第二个参数备份和还原不一样**, 还原时是false, 否则回写磁盘数据会报`Unknown error`
 
 > Open-API-zh_CN-2024-05-16.pdf : **文档质量很糟糕**
 

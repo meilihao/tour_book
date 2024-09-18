@@ -587,3 +587,8 @@ ref:
 
 换成`cmd := exec.Command("sudo", "-u", "newuser", "touch", "/mnt/nas/test/t.log")`
 
+### 写操作报`write /dev/nbd0: bad file descriptor`
+dd写正常, go写报错误.
+
+原因: 打开的文件没有写标志
+解决: `os.Open(xxx)`->`os.OpenFile(xxx, os.WRONLY,0)`

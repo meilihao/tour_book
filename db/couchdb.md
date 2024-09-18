@@ -743,3 +743,6 @@ log查询场景:
     }
 }
 ```
+
+### couchdb服务反复重启, 日志报`{"Kernel pid terminated",application_controller,"{application_terminated,os_mon,shutdown}"}`
+根目录满了
