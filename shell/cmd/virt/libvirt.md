@@ -1439,3 +1439,17 @@ disk file(raw)是原其他非uefi虚拟机的系统盘, 换bios引导即可
   <address type='pci' domain='0x0000' bus='0x00' slot='0x0a' function='0x0'/>
 </disk>
 ```
+
+### virt-manager vm界面黑屏
+排查:
+1. 防火墙
+
+   可用[remote-viewer vnc://testguest2:5900](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-graphic_user_interface_tools_for_guest_virtual_machine_management-remote_viewer#sect-Graphic_User_Interface_tools_for_guest_virtual_machine_management-remote_viewer)测试
+
+### 接管vm进图形界面黑屏
+原机是gnome桌面.
+
+解决:
+1. 在单用户模式中换成字符界面
+
+   `ln -s /usr/lib/systemd/system/graphical.target /etc/systemd/system/default.target`

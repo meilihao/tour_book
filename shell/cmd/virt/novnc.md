@@ -1,4 +1,7 @@
 # novnc
+ref:
+- [send ctrl+alt+f[*] keys in linux #633](https://github.com/novnc/noVNC/issues/633)
+
 noVNC是一个HTML5 VNC客户端，采用HTML5 websockets、Canvas和JavaScript实现，noVNC被普遍应用于各大云计算、虚拟机控制面板中，比如OpenStack Dashboard 和 OpenNebula Sunstone 都用的是 noVNC.
 
 目前大多数 VNC 服务器都不支持 WebSockets, 所以 noVNC 是不能直接连接 VNC 服务器的, 需要一个代理来做 WebSockets 和 TCP sockets 之间的转换. 这个代理在 noVNC 的目录里，叫做 websockify.

@@ -81,13 +81,17 @@ secure.gravatar.com          gravatar.lug.ustc.edu.cn
 ```
 1、首先开机选择"Advanced options for *****"这一行按回车
 2、然后选中最后是"（recovery mode）"这一行按"E"进入编辑页面
-3、将"ro recovery"改为"rw single init=/bin/bash"
+3、将"ro recovery"改为"rw single init=/bin/bash". 有些系统没有bash可改为`init=sh`
 4、按ctrl+X或者F10启动，进入root shell
 5、执行"passwd 用户名"
 6、修改完成后按ctrl + alt + del重启电脑
 ```
 
 单用户默认启用网络: `systemctl start NetworkManager`
+
+单用户环境:
+- lvm:
+    - lvm盘已识别, 见`/dev/mapper`, mount即可
 
 ## android清除密码
 前提: 已root

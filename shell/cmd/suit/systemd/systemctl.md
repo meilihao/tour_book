@@ -240,8 +240,10 @@ systemd-ask-password-conso
 1. 切换系统运行级别
        # systemctl isolate graphical.target
 1. 设置多用户模式或图形模式为默认运行等级
-       # systemctl set-default runlevel3.target
+       # systemctl set-default multi-user.target # runlevel3.target
        # systemctl set-default runlevel5.target
+       Removed symlink /etc/systemd/system/default.target.
+       Created symlink from /etc/systemd/system/default.target to /usr/lib/systemd/system/multi-user.target.
 1. 重启、停止、挂起、休眠系统或使系统进入混合休眠
 ```shell
 # systemctl reboot [--firmware-setup] # `--firmware-setup`与 reboot 一起使用时, 它会指示系统固件启动进入固件设置界面

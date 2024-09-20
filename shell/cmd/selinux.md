@@ -41,3 +41,5 @@ drwxrwxrwx. root root unconfined_u:object_r:home_root_t:s0 /home/wwwroot
 # getsebool -a | grep http # 查询并过滤出所有与 HTTP 协议相关的安全策略
 # setsebool -P httpd_enable_homedirs=on # `-P`让修改后的 SELinux 策略规则永久生效且立即生效
 ```
+
+## FAQ

@@ -130,6 +130,8 @@ default via 192.168.0.1 dev bond0
 # ip route add 192.168.4.0/24  via  192.168.0.254 dev eth0 # 设置192.168.4.0网段的网关为192.168.0.254,数据走eth0接口
 # ip route del 192.168.4.0/24   # 删除192.168.4.0网段的网关
 # ip route del default          # 删除默认路由
+# ip route del default table 30000  # 删除路由表中的路由项
+# ip route del 192.168.8.0/24 table 30000  # 删除路由表中的路由项
 # ip route delete 192.168.1.0/24 dev eth0 # 删除路由
 # ip route add 192.168.1.10/32 dev eth0 table 100 # 主机路由
 # ip route show match 192.168.88.2 [table xxx] # 匹配包含或等于指定网段的路由
@@ -217,7 +219,7 @@ ip [-j -details] link show
 ```
 
 # ip rule
-策略rule主要包含三个信息，即`rule的优先级，条件，路由表`,  其中rule的优先级数字越小表示优先级越高，然后是满足什么条件下由指定的路由表来进行路由. 在linux系统启动时，内核会为路由策略数据库配置三条缺省的规则，即rule 0，rule 32766， rule 32767（数字是rule的优先级）. 当有一个数据包需要路由时，系统会从优先级最高的规则开始检查，如果没有匹配的规则，就会继续检查下一条规则，直到找到一个匹配的规则. 如果没有任何自定义规则匹配，最后会使用优先级为 32767 的默认规则.
+策略rule主要包含三个信息，即`rule的优先级，条件，路由表`,  其中rule的优先级数字越小表示优先级越高，然后是满足什么条件下**由指定的路由表来进行路由**. 在linux系统启动时，内核会为路由策略数据库配置三条缺省的规则，即rule 0，rule 32766， rule 32767（数字是rule的优先级）. 当有一个数据包需要路由时，系统会从优先级最高的规则开始检查，如果没有匹配的规则，就会继续检查下一条规则，直到找到一个匹配的规则. 如果没有任何自定义规则匹配，最后会使用优先级为 32767 的默认规则.
 
 ip rule list的记录又称为路由规则. 只不过路由规则在路由表的基础上增加了优先级的概念. 优先级可以从具体路由表条目前的数字得出.
 
@@ -260,7 +262,7 @@ action:
 # ip rule del from 192.168.182.247 [nat 192.168.182.130] table tab1 prio 320
 # ip rule del from 192.168.10.10  # 根据明细条目删除
 # ip rule del prio 32765          # 根据优先级删除
-# ip rule del table wt            # 根据表名称来删除
+# ip rule del table <wt|30000>            # 根据表名称/id来删除
 # ip rule add fwmark 1 prio 10 tab 10 # 自定义基于标签的规则和对应的路由表. `iptables -t mangle -A PREROUTING -p tcp -m multiport --dports 80 -s 192.168.24.0/24 -j MARK --set-mark 1`可以添加标签
 # ip rule flush # 清空所有规则
 ```

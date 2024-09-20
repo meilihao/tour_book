@@ -53,6 +53,9 @@ thin: zfs支持thin provisioning
 ## 优化
 - [Running PostgreSQL using ZFS and AWS EBS](https://bun.uptrace.dev/postgres/tuning-zfs-aws-ebs.html)
 
+- zfs事务间隔
+- dataset sync属性
+
 ## reg
 - [dataset name](https://openzfs.github.io/openzfs-docs/man/8/zfs.8.html)
 

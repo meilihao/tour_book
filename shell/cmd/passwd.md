@@ -73,3 +73,9 @@ test2:123456
 	touch /.autorelabel
 	```
 1. 连续按两次ctrl+d进行退出重启即可
+
+### 无密码登入
+ref:
+- [Linux 实现开机跳过输入用户名和密码](https://www.cnblogs.com/xingboy/p/16054972.html)
+
+以root举例, 只需把 /etc/passwd 中的 `root:x:0:0:root:/root:/bin/bash`改为`root::0:0:root:/root:/bin/bash`即去掉了里面的`x`即可

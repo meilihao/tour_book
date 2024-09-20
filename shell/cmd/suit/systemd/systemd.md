@@ -575,3 +575,8 @@ env:
 
 ### `Unit pulseaudio.service could not be found`
 `systemctl --user status pulseaudio.service`正常
+
+### `systemd: DmServiceDMSERVER.service start operation timed out. Terminating`
+服务启动时间设置过短可能引发此问题, 延长服务启动时间超时上限(默认90s)即可.
+
+修改`/etc/systemd/system.conf`的`#DefaultTimeoutStartSec=90s`, systemctl daemon-reexec 或者重启操作系统生效.
