@@ -60,6 +60,6 @@
 
 ## example
 ```
-# strace command arg ...
+# strace -cp <pid> # 统计进程系统调用信息
 # strace -e trace=openat pkg-config --cflags systemd # 仅输出syscall=openat的记录
 ```

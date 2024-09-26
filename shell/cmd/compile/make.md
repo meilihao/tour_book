@@ -264,6 +264,16 @@ check-env:
     fi
 ```
 
+### make一直在循环输出
+log:
+```
+...
+config-host.mak is out-of-date running configure
+...
+```
+
+某些源文件比生成的目标文件要新, 设置正确的系统时间即可
+
 ## cmake
 参考:
 - [抛弃 Autotools 向 CMake 迈进吧](https://linux.cn/article-13419-1.html)

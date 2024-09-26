@@ -582,3 +582,9 @@ bareos winbareos-nsi.spec:
 
 ### dnf install xxx 报`package yyy is filtered out by exclude filtering`
 包xxx和yyy应该版本对应
+
+### rpmbuild报`File must begin with "/":\nFile not found: xxx`
+spec中的`%files`编写正确, 且目录xxx存在
+
+原因: spec文件使用了windows换行
+解决: `sed -i -e 's/\r//g' xxx.spec`

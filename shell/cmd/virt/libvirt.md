@@ -573,6 +573,13 @@ env:
 
 推荐: 换virtio网卡
 
+### 接管的windows 2012R2启动卡在转圈
+ref:
+- [How To Enable Boot Log in Windows 10](https://winaero.com/enable-boot-log-windows-10/)
+- [windows server 2019 断电无法启动修复](https://cloud.tencent.com/developer/article/1739700)
+
+推测卡在ntfs scan. 强关再启动即可, 且启动卡住时间段的日志不在`事件查看器->Windows 日志->系统`里. 开启bootlog后, 发现C:\Windows\ntbtlog.txt还是未记录到卡住时的日志.
+
 ### aarch64上vm开机报`cpu mode 'host-model' for aarch64 kvm domain on aarch64 host is not supported by hypervisor`
 解决方法:
 1. 通过`qemu-kvm -machine virt -cpu help`

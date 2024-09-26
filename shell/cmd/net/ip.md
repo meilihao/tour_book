@@ -66,9 +66,11 @@ ref:
 
 Linux 最多可以支持 255 张路由表，其中有 4 张表是内置的:
 - 表 255 本地路由表（Local table） 本地接口地址，广播地址，已及 NAT 地址都放在这个表. 该路由表**由系统自动维护，管理员不能直接修改**
-- 表 254 主路由表（Main table） 如果没有指明路由所属的表，所有的路由都默认都放在这个表里，一般来说，旧的路由工具（如 route）所添加的路由都会加到这个表. 一般是普通的路由
-- 表 253 默认路由表 （Default table） 一般来说默认的路由都放在这张表，但是如果特别指明放的也可以是所有的网关路由
+- 表 254 主路由表（Main table） 如果没有指明所属的路由表的所有路由都默认都放在这个表里，一般来说，旧的路由工具（如 route）所添加的路由都会加到这个表. 一般是普通的路由
+- 表 253 默认路由表 （Default table） 一般来说默认路由都放在这张表，但是如果特别指明放的也可以是所有的网关路由
 - 表 0 保留
+
+> Netfilter 处理网络包的先后顺序：接收网络包，先 DNAT，然后查路由策略，查路由策略指定的路由表做路由，然后 SNAT，再发出网络包
 
 ## 例
 基本语法: ip route add [prefix] via [gateway] dev [device] [additional options]
@@ -116,6 +118,7 @@ Linux 最多可以支持 255 张路由表，其中有 4 张表是内置的:
 # ip route [list/show] [dev xxx] [table yyy] # ip route = ip route show table main, 显示系统路由, 或使用`route -n`
 default via 192.168.0.1 dev bond0 
 192.168.0.0/24 dev bond0  proto kernel  scope link  src 192.168.0.141 metric 100 # 如果进程没有bind一个源地址，将会使用src域里面的源地址作为数据包的源地址进行发送; 但是如果进程提前bind了，命中了这个条目，但仍然会使用进程bind的源地址作为数据包的源地址. 因此这里的src只是一个建议的作用. metric 为路由指定所需跃点数的整数值（范围是 1 ~ 9999），它用来在路由表里的多个路由中选择与转发包中的目标地址最为匹配的路由。所选的路由具有最少的跃点数。跃点数能够反映跃点的数量、路径的速度、路径可靠性、路径吞吐量以及管理属性.
+# ip route add table 3 via 10.0.0.1 dev ethX # 添加路由表, ethx 是 10.0.0.1 所在的网卡, 3是路由表的编号
 # ip route ls/show table local/255 # id/name from /etc/iproute2/rt_tables
 # ip route list 192.168.182.0/24 # 查看指定网段的路由
 # ip route show table all # 显示所有路由表的路由
@@ -244,6 +247,8 @@ action:
 - blackhole/reject: 丢弃匹配的数据包
 - unreachable: 丢弃匹配的数据包，并发送 NET UNREACHABLE 的 ICMP 信息
 - prohibit: 丢弃匹配的数据包，并发送 COMM.ADM.PROHIITED 的 ICMP 信息
+
+>  lookup [xxx] : 表示搜索xxx路由表，1-252之间的数字或名称
 
 ```bash
 # ip rule [list] # 查看系统有哪些策略路由

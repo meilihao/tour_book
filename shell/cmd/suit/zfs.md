@@ -141,6 +141,7 @@ zfs支持分层组织filesystem, 每个filesystem仅有一个父级, 而且支�
 > raid-z配置无法附加其他磁盘; 无法分离磁盘, 但将磁盘替换为备用磁盘或需要分离备用磁盘时除外; 无法移除除log device或cache device外的device
 > 创建pool时, 不能使用其他pool的组件(vdev, 文件系统或卷), 否则会造成死锁.
 > dataset 可以是 ZFS 池、文件系统、快照、卷和克隆. 它是可以存储和检索数据的 ZFS层.
+> 在创建池时, ZFS 会根据**最小磁盘的容量**进行调整，以确保冗余和数据一致性
 
 ```sh
 $ sudo zpool create pool-test /dev/sdb /dev/sdc /dev/sdd # 创建了一个零冗余的RAID-0存储池, zfs 会在`/`中创建一个目录,目录名是pool name 

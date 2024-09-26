@@ -69,6 +69,7 @@
 # ls whateveryouwant | xargs -n 1 basename # 仅获取文件名
 # ls  -ld  * # 输出不带"total ...", 仅罗列当前路径
 # ls  -lL 2>dev/null | awk '{print $9}' # 仅显示文件名
+# ls -F | grep '/$' |head -n 1 | 仅罗列目录
 ```
 
 ## FAQ

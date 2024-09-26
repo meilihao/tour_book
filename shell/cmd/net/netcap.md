@@ -2,6 +2,7 @@
 ref:
 - [Installing BCC](https://github.com/iovisor/bcc/blob/master/INSTALL.md#install-and-compile-bcc-1)
 - [字节跳动开源 Linux 内核网络抓包工具 netcap](https://mp.weixin.qq.com/s/GyjpY3QpeaPqN6s-YgeWMA)
+- [xcap：基于 eBPF 技术的下一代内核网络抓包工具](https://mp.weixin.qq.com/s?__biz=Mzg3Mjg2NjU4NA==&mid=2247484864&idx=1&sn=a212fbf34aa041c245be58fa02ea693b)
 
 netcap是字节跳动开源的Linux内核网络抓包工具.
 
