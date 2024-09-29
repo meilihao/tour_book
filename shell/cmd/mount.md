@@ -55,7 +55,10 @@ mount -t iso9660 ./CentOS-7-x86_64-Minimal-1511.iso /tmp/CentOS7
 卸载文件系统
 
 ## 格式
-`nmount 挂载目录`
+`umount 挂载目录`
+
+## 选项
+- -f : force. 挂载目录被占用时, kill相关进程后, 可能要多重试几次
 
 # mountpoint
 `mountpoint /mnt/smb` : 检查`/mnt/smb`是否为挂载点

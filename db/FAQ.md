@@ -4,6 +4,7 @@
 ## db管理工具
 - [heidisql](https://www.heidisql.com/)
 - [DBeaver](https://dbeaver.io/)
+- [Navicat Premium Lite](https://www.navicat.com.cn/products/navicat-premium-lite)
 
 ## 迁移db
 ### sqlite3 -> mysql

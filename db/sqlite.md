@@ -66,3 +66,6 @@ type Author struct {
 
 ### `REPLACE INTO`
 `INSERT OR REPLACE INTO mtime_cache (path, mtime, mtime_nsec, size, blocks) VALUES (?,?,?,?,?)`
+
+### 只读
+`sqlite3 sqlite3_db.db?mode=ro`

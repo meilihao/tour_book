@@ -442,6 +442,8 @@ SkipList Memtable，相比 HashSkipList Memtable 跨多个前缀查找的性能�
 ### Flush 和 Compaction 相关参数
 ref:
 - [RocksDB 7 终于解决了 Compaction 时性能下降问题](https://zhuanlan.zhihu.com/p/579468143)
+
+    my: 从实际使用来看, rocksdb 9.1没有观察到因Compaction而导致卡住写入的情况, 与之前的版本, 特别是v7之前的版本有显著改善
 - [带你全面了解compaction 的13个问题](https://tidb.net/blog/eedf77ff)
 - [Rocksdb Compaction源码详解（二）：Compaction 完整实现过程 概览](https://blog.csdn.net/Z_Stand/article/details/107592966)
 
