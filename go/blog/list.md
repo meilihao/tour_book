@@ -137,6 +137,7 @@
 - [golang cron 定时任务](https://cloud.tencent.com/developer/article/1422445)
 - [gnet: 一个轻量级且高性能的 Go 网络框架](https://strikefreedom.top/archives/go-event-loop-networking-library-gnet)
 - [awesome-go-storage](https://github.com/gostor/awesome-go-storage)
+- [用 kqueue 实现一个简单的 TCP Server](https://h1z3y3.me/posts/writing-a-tcp-server-using-kqueue/)
 
 ## mirror
 - [go sdk](https://mirrors.ustc.edu.cn/golang/)

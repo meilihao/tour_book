@@ -93,6 +93,11 @@ Decodes standard and some vendor Vital Product Data (VPD) pages.
 sg_turs /dev/sdc # 检查磁盘是否ready
 ```
 
+## sg_logs
+```bash
+sg_logs -p 0xc /dev/sda # 查看可用的LBA映射块
+```
+
 ## 扩展
 ### Control LED
 参考:

@@ -1,4 +1,15 @@
 # tail
+ref:
+- [src](https://github.com/coreutils/coreutils/blob/master/src/tail.c)
+
+    有多种实现:
+    1. 一种是定时去检测文件化，然后输出到控制台 by tail_forever 轮询式跟踪
+
+        检测主要依赖于函数: fstat (fd, &stats) , 通过比较 mtime 进行文件是否变化判定
+
+    1. 第二种则高级些，利用操作系统提供的文件通知功能，进行实时内容输出 by tail_forever_inotify 更新时通知
+
+        它会先进行 inotify_init(); 然后再进行 tail_forever_inotify. 即基于通知的方式实现文件跟踪，首先是注册事件，然后是轮询事件，然后是事件处理.
 
 ## 描述
 

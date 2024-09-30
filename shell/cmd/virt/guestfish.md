@@ -88,6 +88,7 @@ guestfish主要包含以下工具：
 - virt-win-reg : 修改windows硬盘镜像中的注册表
 
 	- [16.10.3. 使用 virt-win-reg](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/6/html/virtualization_administration_guide/sect-virt-win-reg-use)
+	- [获取windows版本: `virt-win-reg Windows7 'HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion' ProductName`](https://libguestfs.org/virt-win-reg.1.html)
 - libguestfs-test-tool :测试libguestfs
 - hivex : 解压windows注册表文件
 - hivexregedit :合并、并导出注册表文件内容

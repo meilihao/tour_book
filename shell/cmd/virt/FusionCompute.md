@@ -101,6 +101,9 @@ flow:
 
 	开源时间线:
 	- [open-eBackup：共建数据备份新生态](https://we.yesky.com/blog/309938), [开源地址是openeuler/open-eBackup(24.7.22时还是空repo)](https://gitee.com/openeuler/open-eBackup)
+
+		**新repo [gitcode.com/eBackup](https://gitcode.com/eBackup), openeuler/open-eBackup已放弃. 会议交流在[sig-Backup](https://www.openeuler.org/zh/sig/sig-detail/?name=sig-Backup)**
+
 	- [openEuler首场开源备份Meetup成功举办，Backup SIG正式成立！](https://www.openeuler.org/zh/news/openEuler/20240801-backup/20240801-backup.html)
 
 		开源时间改到24.09
