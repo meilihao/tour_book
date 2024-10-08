@@ -8,3 +8,6 @@
 
 ### debug
 `zed --foreground`
+
+### update
+菜单栏->Open Command Palette->`auto update: check`

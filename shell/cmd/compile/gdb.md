@@ -233,7 +233,7 @@ ref:
 
 生成core文件：先用`$ ulimit -c ${0|1024|unlimited}`(0表示关闭)开启core，当程序出错会自动生成core文件, 调试core时用`gdb a.out core`
 
-生成规则: `/proc/sys/kernel/core_pattern`
+生成规则: `/proc/sys/kernel/core_pattern`, **目标目录必须已存在, 否则不会生成coredump**
 
 core dump位置:
 - ubuntu 20.04:/var/lib/apport/coredump

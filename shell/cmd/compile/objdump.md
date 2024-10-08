@@ -50,4 +50,25 @@ objdump -r xxx.o # 查看重定位表
     - CONTENTS : 该段在elf文件中真实存在. `.bss`没有CONTENTS表示其实际上在elf文件中不存在内容
 
 
-size xxx命令可查看elf文件的text, data, bss段的长度, dec是这3个段长度和的10进制表示, hex是这3个段长度和的16进制表示. 
+size xxx命令可查看elf文件的text, data, bss段的长度, dec是这3个段长度和的10进制表示, hex是这3个段长度和的16进制表示.
+
+### `traps: cdp[701] trap invalid opcode ip:7fb03d456f82 sp:7fff22b7b1b0 error:0 in librocksdb.so.9.1.2[7fb03d071000+659000]`
+ref:
+- [故障分析 | MongoDB 5.0 报错 Illegal instruction 解决](https://opensource.actionsky.com/20220124-mongodb/)
+- [记录一次线上进程异常崩溃的排查过程](https://blog.csdn.net/u010231230/article/details/118543846)
+- [error number](https://worthsen.blog.csdn.net/article/details/106896795)
+
+    解释`error:0`的含义
+- [[x86][linux]AVX512指令引起的进程crash](https://cloud.tencent.com/developer/article/1356935)
+
+env:
+- Intel(R) Xeon(R) Gold 6133 CPU, 正常运行环境, 且是librocksdb.so的构建环境
+- Intel(R) Xeon(R) E-2224 CPU, cdp崩溃环境
+
+so内存基址: 7fb03d071000, 长度659000; 崩溃ip(指令地址): 7fb03d456f82
+
+相对地址为7fb03d456f82-7fb03d071000=3e5f82, 再结合`objdump -ld xxx.so > xxx.objdump`排查
+
+未找到错误指令, 应该是构建时使用了E-2224不支持的指令集, 而构建时追加`PORTABLE=1`(以兼容更多cpu)则正常.
+
+根据ref `[x86][linux]AVX512指令引起的进程crash`, xxx.objdump存在vmovdqa64指令(AVX512F支持的指令集), 而E-2224不支持AVX512F.

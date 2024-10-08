@@ -959,3 +959,9 @@ env: gcc 12
 
 ### 获取db状态
 [GetProperty](https://bravoboy.github.io/2019/07/06/rocksdb-log/)
+
+### 程序执行报`Illegal instruction`
+ref:
+- [rocksdb.spec 9.3](https://src.fedoraproject.org/rpms/rocksdb/blob/rawhide/f/rocksdb.spec)
+
+见[objdump.md](/shell/cmd/compile/objdump.md), 构建时启用`PORTABLE=1`即可.

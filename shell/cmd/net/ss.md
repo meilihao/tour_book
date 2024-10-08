@@ -68,4 +68,5 @@ dport：表示过滤目标端口、相反的有sport
 # ss -pln |grep 8000 #查询本机打开8000端口的进程信息
 # ss -o state established '( dport = :http or sport = :http )' #ss列出所有http连接中的连接,包含对外提供的80，以及访问外部的80,用于获取http并发连接数，监控中常用到
 # ss  -tan|awk 'NR>1{++S[$1]}END{for (a in S) print a,S[a]}' # 统计tcp各个状态数
+# ss -f netlink # 查看netlink
 ```
