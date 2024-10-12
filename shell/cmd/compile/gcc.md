@@ -256,3 +256,9 @@ C++23   未完全支持（标准还在发展中）  从GCC 11版本开始支持C
 
 ### `pcap.h: No such file or directory`
 `yum install libpcap-devel`, oracle linux 7.9需启用ol7_optional_latest
+
+### autoreconf: not found
+apt install autoconf 
+
+### `error: possibly undefined macro: AC_PROG_LIBTOOL`
+apt install libtool
