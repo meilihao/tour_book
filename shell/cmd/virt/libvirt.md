@@ -573,6 +573,8 @@ env:
 
 推荐: 换virtio网卡
 
+NeoKylin Linux Aadvanced Sever V7Update6 arm64遇到同样问题, 换virtio网卡后正常.
+
 ### 接管的windows 2012R2启动卡在转圈
 ref:
 - [How To Enable Boot Log in Windows 10](https://winaero.com/enable-boot-log-windows-10/)

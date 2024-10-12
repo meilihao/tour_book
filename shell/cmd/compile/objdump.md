@@ -52,8 +52,9 @@ objdump -r xxx.o # 查看重定位表
 
 size xxx命令可查看elf文件的text, data, bss段的长度, dec是这3个段长度和的10进制表示, hex是这3个段长度和的16进制表示.
 
-### `traps: cdp[701] trap invalid opcode ip:7fb03d456f82 sp:7fff22b7b1b0 error:0 in librocksdb.so.9.1.2[7fb03d071000+659000]`
+### 程序执行报`Illegal instruction (core dumped)`, 且系统日志报`traps: cdp[701] trap invalid opcode ip:7fb03d456f82 sp:7fff22b7b1b0 error:0 in librocksdb.so.9.1.2[7fb03d071000+659000]`
 ref:
+- [**排查 "Illegal instruction (core dumped)"**](https://github.com/huataihuang/cloud-atlas/blob/master/source/kernel/tracing/illegal_instruction_core_dumped.rst)
 - [故障分析 | MongoDB 5.0 报错 Illegal instruction 解决](https://opensource.actionsky.com/20220124-mongodb/)
 - [记录一次线上进程异常崩溃的排查过程](https://blog.csdn.net/u010231230/article/details/118543846)
 - [error number](https://worthsen.blog.csdn.net/article/details/106896795)
@@ -65,10 +66,14 @@ env:
 - Intel(R) Xeon(R) Gold 6133 CPU, 正常运行环境, 且是librocksdb.so的构建环境
 - Intel(R) Xeon(R) E-2224 CPU, cdp崩溃环境
 
+`Illegal instruction` (错误指令)，表示处理器(CPU)收到了一条它不支持的指令. 网上资料来看, 大部分是出在avx相关指令集上.
+
 so内存基址: 7fb03d071000, 长度659000; 崩溃ip(指令地址): 7fb03d456f82
 
 相对地址为7fb03d456f82-7fb03d071000=3e5f82, 再结合`objdump -ld xxx.so > xxx.objdump`排查
 
-未找到错误指令, 应该是构建时使用了E-2224不支持的指令集, 而构建时追加`PORTABLE=1`(以兼容更多cpu)则正常.
+未找到错误指令(只有3e5f80,3e5f83的指令, 同时gdb coredump也不支持bt命令. 不知带debug symbols的so是否可以(未验证)???).
 
-根据ref `[x86][linux]AVX512指令引起的进程crash`, xxx.objdump存在vmovdqa64指令(AVX512F支持的指令集), 而E-2224不支持AVX512F.
+根据ref `[x86][linux]AVX512指令引起的进程crash`, xxx.objdump存在vmovdqa64指令(AVX512F支持的指令集), 而E-2224不支持AVX512F. 因此应该是构建时使用了E-2224不支持的指令集.
+
+解决方法: 构建时追加`PORTABLE=1`(以兼容更多cpu)则正常.

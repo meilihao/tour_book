@@ -150,3 +150,6 @@ AllowTcpForwarding  = yes
 
 ### 正则替换
 `^(.*)$`-> `Status$1="$1" //`
+
+### 为c/c++添加heder搜索路径
+按Ctrl+Shift+P 输入configuration, 找到`C/C++: Edit Configuration(JSON)` 在c_cpp_properties.json中includePath字段中添加待添加的SDK或者库的头文件路径

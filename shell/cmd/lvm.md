@@ -5,6 +5,9 @@
 
 > [在 AMD、Intel、ARM 和 IBM Power Systems 服务器中,引导装载程序无法读取 LVM 卷, 必须为 /boot 分区创建一个标准的非 LVM 磁盘分区](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/8/html/configuring_and_managing_logical_volumes/managing-lvm-logical-volumes_configuring-and-managing-logical-volumes)
 
+注意:
+- 修改`/etc/lvm/lvm.conf`后需要重启, 否则无法生效
+
 ## 描述
 一种硬盘设备资源管理技术, 允许用户对硬盘资源进行动态调整.
 
@@ -171,3 +174,9 @@ lvm `/dev/mapper`下这类路径的还原vg/lv的方法:
 1. 将`--`替换为`|`
 1. 将`-`替换为`/`
 1. 将`|`替换为`-`
+
+### pvscan -vvv报`Skipping: Unrecognised LVM device type 230`
+ref:
+- [RH2288H V3 LVM管理ES3000报错](https://support.huawei.com/enterprise/zh/knowledge/EKB1001045278)
+
+通过`cat /proc/devices | grep 230`获取到rd, 在 vim /etc/lvm/lvm.conf添加`types = ["rd", 230]`, 再重启即可

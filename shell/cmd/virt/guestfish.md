@@ -131,7 +131,7 @@ image权限需要`qemu:qemu`, 且qemu用户能访问到该文件
 ><fs> lvs
 /dev/centos/root
 /dev/centos/swap
-><fs> xfs-repair /dev/centos/root [forcelogzero:true] # `forcelogzero:true`=`xfs_repair -L`
+><fs> xfs-repair /dev/centos/root [forcelogzero:true] # `forcelogzero:true`=`xfs_repair -L` // 有遇到: 1. 直接挂载没有问题, 强制修复后反而无法挂载; 2.第一次强制修复lvm+root分区失败(在本次重复多次修复均报错), 但退出再次执行guestfish命令重复修复后却能mount
 ><fs> mount /dev/centos/root /
 ```
 

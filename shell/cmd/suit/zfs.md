@@ -422,6 +422,9 @@ $ sudo zfs set dedup=on mypool/projects # 启用去重
 **dedup**只对开启后的新数据块有效. 根据经验: **不推荐使用, 不如用压缩**
 
 ## [属性](https://openzfs.github.io/openzfs-docs/man/7/zfsprops.7.html)
+ref:
+- [ZFS 属性介绍](https://docs.oracle.com/cd/E24847_01/html/819-7065/gazss.html)
+
 - avail: 文件系统中的可用空间
 
 	- fs : avail = refquota + usedbysnapshots - used
@@ -449,6 +452,9 @@ $ sudo zfs set dedup=on mypool/projects # 启用去重
 - volsize(for volumn)/refquota (for filesystem): 允许dataset的最大大小, 它们应该>=refreservation.
 - logicalreferenced : dataset在逻辑上使用的空间.
 - logicalused : dataset及其后代在逻辑上使用的空间.
+- written
+
+	- snapshot: 卷的当前快照与上一张快照的referenced变化量, 即快照间数据变化量
 
 > Reservation是最小值, quota是最大值.
 
