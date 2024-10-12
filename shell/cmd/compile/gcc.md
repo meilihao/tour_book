@@ -9,7 +9,7 @@ ref:
 gnu编译套件之一.
 
 ## [选项](https://gcc.gnu.org/onlinedocs/gcc/Option-Index.html#Option-Index):
-- -ansi : 只支持ANSI标准的c语言语法
+- -ansi : 只支持ANSI标准的c语言语法, 这一选项将禁止 GNU C 的某些特色， 例如 asm 或 typeof 关键词
 - -c : 只编译不链接, 生成目标文件`.o`
 - -Dmacro : 定义指定的宏, 使它能够通过源码中的`#ifdef`进行处理
 - -E : 仅预编译
