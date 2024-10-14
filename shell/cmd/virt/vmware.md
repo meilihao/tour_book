@@ -101,6 +101,11 @@ pktcap-uw其他参数:
 - --tcpport 443: 指定端口
 - --uplink: 指定uplin(物理)网卡
 
+## 备份vm
+ref:
+- [了解 VMware 虚拟机备份的传输模式](https://www.aishu.cn/cn/blog/31)
+- [虚拟磁盘格式1：VMDK](https://www.cnblogs.com/Qi-Lin/p/16162615.html)
+
 ## FAQ
 ### 支持kvm虚拟化
 选择vm右键选择编辑->cpu->勾选`向客户机操作系统公开硬件辅助的虚拟化`和`I/O MMU(或硬件CPU和MMU)`

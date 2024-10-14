@@ -48,6 +48,9 @@ main在[Agent/src/src/agent/Agent.cpp](https://gitcode.com/eBackup/open-eBackup/
     - DispatchTcpMsg() by DPPMESSAGE_TYPE
 
 ### plugin
+**注意**:
+1. 调用plugin的源头(ProtectManager的实现部分, 其仅开源了部分相关接口和定义)没有开源
+
 构建的插件列表见: `src/ProtectAgent/component/protectagent/protectagent/Agent/CMakeLists.txt`的`lib<xxx>-${AGENT_BUILD_NUM}.so`, 但`libdevice-${AGENT_BUILD_NUM}.so`没有对应代码
 
 其他查找插件的方法:
@@ -57,6 +60,84 @@ main在[Agent/src/src/agent/Agent.cpp](https://gitcode.com/eBackup/open-eBackup/
 根据`class CServicePlugin : public IPlugin`的`DoAction()`, 所有插件均实现了该接口.
 
 `src/ProtectAgent/component/protectagent/protectagent/Agent/src/src/plugins/appprotect/AppProtectPlugin.cpp`的`AppProtectPlugin::InitializeExternalPlugMgr()`又扩展了ExternalPluginManager, 支持`src/AppPlugins_NAS`+`src/AppPlugins_virtualization`
+
+#### vmwarenative
+plugin是`src/ProtectAgent/component/protectagent/protectagent/Agent/src/src/plugins/vmwarenative`, 它会调用其实现`src/ProtectAgent/component/protectagent/protectagent/Agent/src/src/apps/vmwarenative`.
+其实就是`plugins/vmwarenative`-> `src/apps/vmwarenative`, 以VMwareNativeInitVddkLibTask举例:
+1. `VMwareNativeBackupPlugin::InitVMwareNativeVddkLib(CDppMessage &reqMsg, CDppMessage &rspMsg)`
+1. `RunSyncTask<VMwareNativeInitVddkLibTask>(msgBody, taskId, respMsg)`
+
+    1. `T* task = new (std::nothrow) T(taskId)`
+
+        1. CreateTaskStep(): 添加step
+    1. RunSyncSubTask(taskId, taskName, taskInfo, msgBody, task)
+    1. task->InitTaskStep(params[MANAGECMD_KEY_BODY]) = `VMwareNativeInitVddkLibTask::InitTaskStep(const Json::Value &param)`
+
+        1. step->Init(stepParam)
+    1. task->RunTask(respMsg)
+
+        1. Task::RunTask(Json::Value &respMsg): 执行step
+            1. Task::DoTaskStep(TaskStep* taskStep)
+                1. taskStep->Run() = `TaskStepInitVMwareDiskLib::Run()`
+
+VMwareNativeBackupPlugin调用顺序:
+1. MANAGE_CMD_NO_VMWARENATIVE_INIT_VDDKLIB
+1. 业务
+
+    备份:
+    - MANAGE_CMD_NO_VMWARENATIVE_PREPARE_BACKUP
+    - MANAGE_CMD_NO_VMWARENATIVE_OPENDISK_BACKUP
+    - MANAGE_CMD_NO_VMWARENATIVE_RUN_BACKUP
+    - MANAGE_CMD_NO_VMWARENATIVE_QUERY_BACKUP_PROGRESS
+    - MANAGE_CMD_NO_VMWARENATIVE_FINISH_DISK_BACKUP
+    - MANAGE_CMD_NO_VMWARENATIVE_FINISH_BACKUP_TASK
+    - MANAGE_CMD_NO_VMWARENATIVE_CANCEL_BACKUP_TASK
+    - MANAGE_CMD_NO_VMWARENATIVE_CLEANUP_RESOURCES
+
+    还原:
+    - MANAGE_CMD_NO_VMWARENATIVE_PREPARE_RECOVERY
+    - MANAGE_CMD_NO_VMWARENATIVE_RUN_RECOVERY
+    - MANAGE_CMD_NO_VMWARENATIVE_QUERY_RECOVERY_PROGRESS
+    - MANAGE_CMD_NO_VMWARENATIVE_FINISH_DISK_RECOVERY
+    - MANAGE_CMD_NO_VMWARENATIVE_FINISH_RECOVERY_TASK
+    - MANAGE_CMD_NO_VMWARENATIVE_CANCEL_RECOVERY_TASK
+
+1. MANAGE_CMD_NO_VMWARENATIVE_CLEANUP_VDDKLIB
+1. 辅助
+
+    vmfs:
+    1. MANAGE_CMD_NO_VMWARENATIVE_CHECK_VMFS_TOOL
+    1. MANAGE_CMD_NO_VMWARENATIVE_VMFS_MOUNT
+    1. MANAGE_CMD_NO_VMWARENATIVE_VMFS_UMOUNT
+
+    nas:
+    1. MANAGE_CMD_NO_VMWARENATIVE_SLNAS_MOUNT
+    1. MANAGE_CMD_NO_VMWARENATIVE_SLNAS_UMOUNT
+
+    iscsi:
+    1. MANAGE_CMD_NO_HOST_LINK_ISCSI
+
+    dataprocess:
+    1. MANAGE_CMD_NO_VMWARENATIVE_ALLDISK_AFS_BITMAP
+
+        1. PrepareAllDisksAfsBitmap
+            1. TaskStepPrepareAfsBitmap::Run()
+                1. TaskStepVMwareNative::DataProcessLogic
+                    1. ExchangeMsgWithDataProcessService(param, respParam, reqCmd, rspCmd, m_internalTimeout)
+
+                        1. SendDPMessage()
+                        1. VMwareNativeDataPathProcess::HandleDisksAfsBitmap # by CMD_VMWARENATIVE_BACKUP_AFS
+
+dataprocess处理过程:
+1. VMwareNativeDataPathProcess::ExtCmdProcess(CDppMessage &message)
+    1. VMwareNativeDpCmdParse(message, currentTaskID, parentTaskID)
+        1. handerThread->InsertTask()
+        1. VMwareNativeDataPathProcess::HandleDisksAfsBitmap()
+            处理入口: HanderThread::StartThread()->`std::make_unique<std::thread>(&HanderThread::FuncHander, this)` # 处理CDppMessage
+
+            处理函数由VMwareNativeDataPathProcess::GenerateCmdMsgHandlerFunMapBackup()注册
+        1. VMwareNativeDataPathImpl::VMwareNativeBackupAfsBitmap()
+
 
 ## FAQ
 ProtectAgent缺失的`securec.h`, 大概是[platform/huaweisecurec/include/securec.h](https://github.com/huaweicloud/huaweicloud-sdk-c-obs/blob/master/platform/huaweisecurec/include/securec.h)

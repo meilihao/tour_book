@@ -397,6 +397,8 @@ scripts section:
 ||delete files only found in old package  ||
 ||%postun $1=1 from old RPM.  ||
 
+注意: 升级时, 如果新旧版本相同, `$1=1`过程会被忽略, 否则就等于删除了新版本
+
 v1->v2的脚本执行顺序:
 1. 执行 v2 的 %pre
 1. 释放 v2 中的文件

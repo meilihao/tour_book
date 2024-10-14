@@ -153,3 +153,12 @@ AllowTcpForwarding  = yes
 
 ### 为c/c++添加heder搜索路径
 按Ctrl+Shift+P 输入configuration, 找到`C/C++: Edit Configuration(JSON)` 在c_cpp_properties.json中includePath字段中添加待添加的SDK或者库的头文件路径
+
+### 当前窗口页签(标题栏)不明显
+File->Preferences->Settings->Workbench -> Apperance ->`Color Customizations`, 点击`Edit in settings.json`, 添加:
+```json
+"workbench.colorCustomizations": {
+    "tab.activeBackground": "#555555",
+    "tab.hoverBackground": "#464646"
+}
+```

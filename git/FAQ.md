@@ -486,3 +486,17 @@ ref:
 git push之前正常, 2024.3月末出现该问题.
 
 ifconfig tun0 mtu 1400
+
+### gitcode git push报`Deny by project hooks setting 'default': size of the file...`
+ref:
+- [gitcode 上传文件报错文件太大has exceeded the upper limited size](https://blog.csdn.net/downanddusk/article/details/138187765)
+
+    验证修改无效
+- [处理 github 不允许上传超过 100MB 文件的问题](https://www.liuxiao.org/2017/02/git-%E5%A4%84%E7%90%86-github-%E4%B8%8D%E5%85%81%E8%AE%B8%E4%B8%8A%E4%BC%A0%E8%B6%85%E8%BF%87-100mb-%E6%96%87%E4%BB%B6%E7%9A%84%E9%97%AE%E9%A2%98/)
+
+gitcode限制10M, 解决方法:
+```bash
+git rm --cached [-r] path_of_a_giant_file
+git commit --amend
+git push
+```
