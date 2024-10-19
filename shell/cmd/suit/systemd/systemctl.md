@@ -301,3 +301,6 @@ User=root #nobody
 ```
 
 将`User=root #nobody`替换为`User=root`, 建议systemd配置文件的注释占用新行.
+
+### service报`Start request repeated too quickly`后, start/restart无效
+先systemctl daemon-reload/systemctl reset-failed <service_name>, 再start/restart

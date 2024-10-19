@@ -351,7 +351,7 @@ zfs send 将文件系统的快照写入stdout，然后流式传送到文件或�
 ```sh
 # 创建 snapshot 然后 save 到文件
 $ sudo zfs snapshot -r mypool/projects@snap2
-$ sudo zfs send mypool/projects@snap2 > ~/projects-snap.zfs  # `-c`使用压缩(如果mypool/projects是活动的则必须使用), `-n`表示模拟send, 实际不产生数据流, `-P`表示生成流的信息, 比如全量/增量, 数据流大小.`-v`: 向(stderr)发送流的详细信息, 包括每秒传输多少.
+$ sudo zfs send mypool/projects@snap2 > ~/projects-snap.zfs  # `-c`使用压缩(如果mypool/projects是活动的则必须使用), `-n`表示模拟send, 实际不产生数据流, `-P`表示生成流的信息, 比如全量/增量, 数据流大小.`-v`: 向(stderr)发送流的统计信息, 包括每秒传输多少.
 $ sudo zfs receive -F mypool/projects-copy < ~/projects-snap.zfs # 恢复,此时目标dataset必须存在. `-F`表示(此时目标必须没有快照)忽略目标dataset的改动(mypool/projects-copy), 全量的话是直接覆盖原有dataset, 增量的话是回滚到该增量快照的起点后再应用增量. `-d`: (此时目标dataset必须存在)去掉原快照名称中的pool name,使用目标dataset name+剩余名称作为新名称.
 $ sudo zfs send -i @old_snap1  ool/dana@new_snap2 # `-i`增量发送,`-I`将一组增量快照合并为一个快照,`-R`表示复制 zfs 文件系统和其后代.
 $ sudo zfs send pool/dana@snap1 | ssh system2 zfs recv pool/dana
@@ -482,6 +482,23 @@ ref:
 - [zfsbackup-go](https://github.com/someone1/zfsbackup-go)
 
 ## FAQ
+### 加密
+ref:
+- [Encrypting ZFS File Systems](https://docs.oracle.com/cd/E26502_01/html/E29007/gkkih.html)
+
+必须创建dataset时就启用, 否则就无法启用了, 方法:`-o encryption=on -o keyformat=passphrase`.
+
+解锁源dataset后, 其快照视图和子数据集会自动解锁.
+
+> 是否loaded key, 看keystatus属性(available/unavailable)
+
+```bash
+zfs load-key xxx
+zfs mount xxx
+zfs umount xxx
+zfs unload-key xxx
+```
+
 ### quota于refquota区别
 如果对 tank/home 数据集设置了quota，则 tank/home 及其所有后代使用的总磁盘空间量不能超过该配额.
 如果对 tank/home 数据集设置了refquota，则 tank/home 磁盘空间量不能超过该配额, 但不包括后代所占用的空间, 比如其快照/clone.

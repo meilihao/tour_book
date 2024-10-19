@@ -8,6 +8,9 @@ date: 2024.10.9 [文档中的路径](https://gitcode.com/eBackup/open-eBackup/bl
 - [华为HCIE实验-eBackup安装与备份](https://blog.13x.cc/post/ebackup145.html/)
 
     FusionSphere
+- [下载eBackup镜像模板](https://support.huaweicloud.com/intl/zh-cn/hcbkp-fg-cbr/cbr_03_0059.html)
+
+    可注册账户下载eBackup vm, 是v8.0.0, 但[`OceanStor BCManager`](https://support.huawei.com/enterprise/en/flash-storage/oceanstor-bcmanager-pid-21597093/soft)最新是v8.6.x
 
 ## ProtectAgent
 main在[Agent/src/src/agent/Agent.cpp](https://gitcode.com/eBackup/open-eBackup/blob/master/src/ProtectAgent/component/protectagent/protectagent/Agent/src/src/agent/Agent.cpp)

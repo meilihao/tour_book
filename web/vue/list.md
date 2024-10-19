@@ -8,3 +8,4 @@
 ## 进阶
 - [Vue组件开发续篇](https://my.oschina.net/qiangdada/blog/889656)
 - [vue开发看这篇文章就够了](https://segmentfault.com/a/1190000012692321)
+- [你所不知道的sourceMap](https://juejin.cn/post/6844903971648372743)

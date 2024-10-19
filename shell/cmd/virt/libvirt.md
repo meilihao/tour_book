@@ -1462,3 +1462,10 @@ disk file(raw)是原其他非uefi虚拟机的系统盘, 换bios引导即可
 1. 在单用户模式中换成字符界面
 
    `ln -s /usr/lib/systemd/system/graphical.target /etc/systemd/system/default.target`
+
+### 加密磁盘
+ref:
+- [聊聊Kvm Qcow2和Ceph Rbd虚拟机磁盘加密](https://www.51cto.com/article/710126.html)
+- [libvirt-qemu-磁盘加密之一：qcow2](https://blog.csdn.net/isclouder/article/details/79191665)
+
+在libvirt 4.5版本之前，除了luks加密之外，还支持qcow加密的. 在 QEMU 中使用 qcow 加密卷在 QEMU 2.3 中开始逐步淘汰.

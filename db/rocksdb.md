@@ -444,6 +444,7 @@ ref:
 - [RocksDB 7 终于解决了 Compaction 时性能下降问题](https://zhuanlan.zhihu.com/p/579468143)
 
     my: 从实际使用来看, rocksdb 9.1没有观察到因Compaction而导致卡住写入的情况, 与之前的版本, 特别是v7之前的版本有显著改善
+- [深入解析Compaction的13个常见问题](https://cn.pingcap.com/article/post/17441.html)
 - [带你全面了解compaction 的13个问题](https://tidb.net/blog/eedf77ff)
 - [Rocksdb Compaction源码详解（二）：Compaction 完整实现过程 概览](https://blog.csdn.net/Z_Stand/article/details/107592966)
 
@@ -965,3 +966,11 @@ ref:
 - [rocksdb.spec 9.3](https://src.fedoraproject.org/rpms/rocksdb/blob/rawhide/f/rocksdb.spec)
 
 见[objdump.md](/shell/cmd/compile/objdump.md), 构建时启用`PORTABLE=1`即可.
+
+### rocksdb_livefiles()获取的cdp db的liveFileMetadata和sst_dump对不上
+env:
+- rocksdb : v9.1.2
+
+获取006147.sst, 其liveFileMetadata.size>0但entries=0,deletions=0, 同时`sst_dump --file=db/006147.sst --show_properties`却显示entries=11240,deletions=0
+
+这些entries=0的level均为6

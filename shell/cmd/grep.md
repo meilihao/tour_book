@@ -47,4 +47,5 @@ $ grep -a zfs /var/log/syslog # 可解决`Binary file (standard input) matches`�
 $ grep -r --include="*.lua"  "ToSearchString"  Path # 按扩展名搜索
 $ cat id_rsa.pub |grep -c - authorized_keys # 判断是否指定文件. **不推荐**: 某些情况下发现匹配出错(key不存在于authorized_keys, 但输出是1)
 $ cat id_rsa.pub |grep -c -f - authorized_keys # 解决上面的异常情况, **推荐**
+$cat s.sh |grep "A=\$((C / 5))" # `$`需要转义
 ```
