@@ -14,6 +14,7 @@
 - [Resource Management Guide - 资源管理](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/7/html/resource_management_guide/index)
 - [Linux 启动性能分析](https://linux.cn/article-14462-1.html)
 - [systemd攻略 - (3)如何利用systemd控制cgroup,实战](https://muahao.github.io/systemd-03/)
+- [cgroup 的默认层级](https://docs.redhat.com/zh_hans/documentation/red_hat_enterprise_linux/7/html/resource_management_guide/sec-default_cgroup_hierarchies#sec-Default_Cgroup_Hierarchies)
 
 ### systemd 与 System V init 的区别以及作用
 |System V init 运行级别|systemd 目标名称|作用|
@@ -515,6 +516,8 @@ upgrader由该服务启动, 即使使用了setsid来脱离从父进程继承而�
 >  `--remain-after-exit`: 可以将命令执行的stdout存入systemd log. 与`--scope`互斥
 
 > 在oracle linux 7.9 x64上systemd-run执行命令(执行bin文件, 其中通过bash执行了其他脚本, 且脚本逻辑正确. 但直接执行bin正常)时可能会莫名退出, 加`> /tmp/some-logs.log 2>&1`或`--remain-after-exit`可解决问题. 推测可能与`systemd-run`的`--wait`有关: [systemd-run 将会以异步模式在后台启动临时服务并在命令开始执行之后返回](http://www.jinbuguo.com/systemd/systemd-run.html)
+
+**注意**: 如果systemd-run的命令中, 不是以systemd service方式启动服务而是直接通过命令方法启动服务, 且该服务一直不退出, 那么会导致systemd-run指定的slice, scope也一直不退出.
 
 ### systemd 计时器
 ```config

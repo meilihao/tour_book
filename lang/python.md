@@ -1224,6 +1224,7 @@ lambda语法格式：`lambda 变量 : 要执行的语句`, 比如`lambda x : x *
 
 ## 调试
 参考:
+- [python 64式: 第17式、死锁或进程hang住调试方法](https://blog.csdn.net/qingyuanluofeng/article/details/83932917)
 - [Python 代码调试技巧](https://www.ibm.com/developerworks/cn/linux/l-cn-pythondebugger/index.html)
 - [使用gdb调试Python程序](https://ponder.work/2020/12/29/debug-python-with-gdb/)
 

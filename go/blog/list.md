@@ -138,6 +138,7 @@
 - [gnet: 一个轻量级且高性能的 Go 网络框架](https://strikefreedom.top/archives/go-event-loop-networking-library-gnet)
 - [awesome-go-storage](https://github.com/gostor/awesome-go-storage)
 - [用 kqueue 实现一个简单的 TCP Server](https://h1z3y3.me/posts/writing-a-tcp-server-using-kqueue/)
+- [Go开发者的密码学导航：crypto库使用指南](https://tonybai.com/2024/10/19/go-crypto-package-design-deep-dive/)
 
 ## mirror
 - [go sdk](https://mirrors.ustc.edu.cn/golang/)

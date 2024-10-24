@@ -712,7 +712,7 @@ writeOptions.SetSync=true时, writeOptions.DisableWAL必须为false.
 解决方法:
 - 针对1:
 
-    - 对要删除range key使用DeleteFilesInRange， 这个方法会直接删除只包含range keys的文件， 对于大块的range， 这个方法可以直接回收资源，值得注意的是：
+    - 对要删除range key使用DeleteFilesInRange(配合rocksdb_livefiles)， 这个方法会直接删除只包含range keys的文件， 对于大块的range， 这个方法可以直接回收资源，值得注意的是：
 
         - 即使做完这个操作，一些在range keys范围内的数据依然存在于db中， 这个时候还需要一点的其他的opera
         - 这个操作直接忽视了snapshots， 导致可能通过snapshot 读不到本该可以读到的数据

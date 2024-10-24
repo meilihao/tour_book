@@ -1219,8 +1219,8 @@ list jobs jobname=xxx client=xxx jobstatus=x joblevel=x last
 list clients           #列出备份的客户端
 list jobtotals         #列出所有作业任务使用的空间大小
  
-list media pool=dbpool   #查看dbpool属性的media
-list Volume Pool=dbpool  #查看dbpool属性的Volume
+list media [pool=dbpool]   #查看dbpool属性的media
+list Volume [Pool=dbpool]  #查看dbpool属性的Volume
  
 list pool    #查看定义的dbpool属性
 llist pool   #查看定义的dbpool属性(更详细)
@@ -1293,7 +1293,16 @@ prune # 这个命令和 purge 相似，但安全很多，它只会清除过期�
 
 # --- 清理volume
 list volumes pool=xxx # 按pool获取volume, 没法按照job获取volume
-delete volume=xxx yes # tape会变成未标记, 但再次标记会报错, 需要先[`mt -f /dev/st0 rewind && mt -f /dev/st0 weof && mt -f /dev/st0 rewind`](https://blog.ls-al.com/bacula-relabel-tape/)即清空tape再标记. 按照[官方文档 label](https://docs.bareos.org/TasksAndConcepts/BareosConsole.html)先purge再label不可行: 要改变卷名, 但磁带柜使用条码作为卷名, 重命名后, 原tape状态还是未标记. 其他可用方法: 1. `purge volume=xxx`, 2. `truncate volstatus=Purged storage=<storage> volume=<volume> yes`, 3. `update volume=xxx pool=Scratch`即可重用, 经验证这些步骤后再追加delete并label还是会报错即此方法无需delete再label.
+delete volume=xxx yes # tape会变成未标记, 但再次标记会报错, 需要先[`mt -f /dev/st0 rewind && mt -f /dev/st0 weof && mt -f /dev/st0 rewind`](https://blog.ls-al.com/bacula-relabel-tape/)即清空tape再标记. 按照[官方文档 label](https://docs.bareos.org/TasksAndConcepts/BareosConsole.html)先purge再label不可行: 要改变卷名, 但磁带柜使用条码作为卷名, 重命名后, 原tape状态还是未标记. 其他可用方法(快速擦除): 1. `purge volume=xxx`, 2. `truncate volstatus=Purged storage=<storage> volume=<volume> yes`, 3. `update volume=xxx pool=Scratch`即可重用, 经验证这些步骤后再追加delete并label还是会报错即此方法无需delete再label. 擦除tape后可能要更新slot`update slots storage=xxx`否则可能明明有空闲tape, 备份时还是报`Please mount append Volume "<tap_id>" or label a new one`(用purge+truncate没遇到过, 但purge action=truncate方式(见下面)就遇到了, 但其重试后又未复现)
+
+> `purge volume=xxx`+`truncate volstatus=Purged storage=<storage> volume=<volume> yes` = `purge volume=xxx action=truncate storage=<storage> pool=Scratch`(pool=Scratch不能省略, 但实际又没有将volume pool改为Scratch???)
+
+> truncate tape实际是先rewind, 再写入一个新label. 而mt -f /dev/nst0 erase是完整清除内容
+
+> [relabel:通过给磁带赋予新名称来重用磁带](https://docs.bareos.org/TasksAndConcepts/VolumeManagement.html#manualrecycling)
+
+> purge volume=xxx + tape erase后无法使用`truncate volstatus=Purged storage=<storage> volume=<volume> yes`: truncate 筛选目标volume时规定了VolBytes >= 512 * 126, 而tape erase后VolBytes变为了1, 导致无法选中该卷
+
 rm -rf <volume> # 底层执行删除volume
 
 # --- blk
@@ -1573,15 +1582,21 @@ ref:
 
 > 根据官方文档提示, 可用btape的auto命令测试autochanger.
 
+> tape操作日志: touch /var/log/bareos/mtx.log(需要设置为bareos:bareos) + restart bareos-dir/bareos-sd
+
 相关命令:
 ```bash
 # bconsole
 * status slots[=1] storage=Tape # 获取槽位信息. 遇到过某个已加载tape的drive, 在bareos-sd log显示`omode=3 ofloags=0 errno=16: ERR=设备或资源忙`而导致获取磁盘柜状态失败
 * update slots storage=Tape # 更新槽位信息
-* label storage=Tape pool=Scartch barcodes yes # 条码扫描 
+* label storage=Tape pool=Scartch drive=0 barcodes yes # 条码扫描, drive上可以有tape
 * update slots [storage=Tape] [drive=1] scan # 条码扫描, 有时该命令不能成功, 但label命令可以; bareso标记操作mhvtl容易卡住???, 操作飞康vtl正常.
 * release storage=Tape drive=0 # 卸载磁带
-# /usr/lib/bareos/scripts/mtx-changer /dev/sg3 listall # list时不包括driver和邮件槽
+* move storage=TandbergT40 srcslots=32 dstslots=33 # 给磁带更换槽位, srcslots必须有磁带, 而dstslots为空槽
+* mount storage=TandbergT40 slot=2 drive=2 # 将槽位2的磁带放入驱动器, 中间会报`ERR=No medium found`, 但操作会成功. 通过`status storage=TandbergT40`的`is mounted with`查找结果
+* export storage=TandbergT40 srcslots=2 # 将槽位2的磁带导出到邮件槽(磁带在drive中不受影响), 过会后会自动从邮件槽转移出带库
+* import storage=TandbergT40 srcslots=42 # 将邮件槽42的磁带导入到空槽位
+# /usr/lib/bareos/scripts/mtx-changer /dev/sg3 listall # list时不包括driver和邮件槽. D: drive; S:slot; I: Import/Export tray slots
 D:0:F:16:E01016L8 # 16表示该磁带原先是16槽位的
 D:1:E
 S:1:F:AIK282L6 # AIK282L6是磁带条码
@@ -1619,6 +1634,20 @@ I:24:E
 1. 将虚拟磁带加入vtl, bareos需要等待一会才能看到新磁带
 1. 如果未找到相应pool的未满tape, 那么bareos会选择pool=Scratch的新tape进行备份, 此时还是找不到就会一直卡在运行中.
 1. 备份job完成前tape的mr_lastwritten不实时更新, 完成后再更新.
+
+btape:
+```bash
+# btape <tape-device_name in /ect/bareos/bareos.sd/device>
+* test # test bareos tape functions
+```
+
+erased tape(完整擦除)重新标记做法:
+1. delete volume=xxx yes
+1. load tape to drive
+1. mt -f /dev/nst0 rewind && mt -f /dev/nst0 erase
+1. label storage=Tape pool=Scartch barcodes yes
+
+label同id的tape, 必须删除其volume记录, 重新`label barcodes`时可标记成功.
 
 ## 配置
 ref:
@@ -2063,6 +2092,8 @@ ref:
     cap = Maximum Volume Bytes * Maximum Volumes
 
     [`Maximum Volume Bytes`, `Maximum Volume Jobs`, `Volume Use Duration`会影响autoprune](https://docs.bareos.org/TasksAndConcepts/VolumeManagement.html#automatic-volume-recycling): 因为未满的卷(status=append)不触发autoprune.
+
+    tape pool需要[`Recycle Pool = Scratch`](https://docs.bareos.org/TasksAndConcepts/AutochangerSupport.html#id4)
 
     - full : 完整备份
 
@@ -3277,3 +3308,8 @@ Thread 3 (Thread 0x7f803435a700 (LWP 11029)):
 ```
 
 上面是官方[0001328: File Daemon Crash when Using Python bareos-fd-postgres Plugin](https://bugs.bareos.org/view.php?id=1328)的traceback, 而我是在bareos 22.1.0 自实现的fd plugin上遇到, 报错堆栈类似, 并给bareos提了[bug](https://bugs.bareos.org/view.php?id=1579). 官方排查到是与pycurl有关.
+
+## 源码
+- bconsole命令实现入口: [core/src/dird/ua_cmds.cc]()
+
+    HandleUserAgentClientRequest()=>Do_a_command()=>ua->execute()

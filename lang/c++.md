@@ -780,6 +780,37 @@ add(1.0f, 2.0)    // 匹配 ？？？（匹配版本3，原因可以搜索 ”�
 
 1. 不要重载一个带默认参数的函数
 
+```c++
+// from rocksdb
+// db/c.cc
+void rocksdb_delete_file_in_range(rocksdb_t* db, const char* start_key,
+                                  size_t start_key_len, const char* limit_key,
+                                  size_t limit_key_len, char** errptr) {
+  Slice a, b;
+  SaveError(
+      errptr,
+      DeleteFilesInRange(
+          db->rep, db->rep->DefaultColumnFamily(),
+          (start_key ? (a = Slice(start_key, start_key_len), &a) : nullptr),
+          (limit_key ? (b = Slice(limit_key, limit_key_len), &b) : nullptr)));
+}
+
+// db/convenience.cc
+Status DeleteFilesInRange(DB* db, ColumnFamilyHandle* column_family,
+                          const Slice* begin, const Slice* end,
+                          bool include_end) {
+  RangePtr range(begin, end);
+  return DeleteFilesInRanges(db, column_family, &range, 1, include_end);
+}
+
+// include/rocksdb/convenience.h
+Status DeleteFilesInRange(DB* db, ColumnFamilyHandle* column_family,
+                          const Slice* begin, const Slice* end,
+                          bool include_end = true);
+```
+
+在默认参数上, DeleteFilesInRange定义(实现)时的参数形式, 和其声明时可以不同, 参考上面的例子.
+
 ### 回调
 函数名本身就是函数的指针。函数指针在定义时必须指明所指向函数的类型，包括返回类型和参数列表.
 

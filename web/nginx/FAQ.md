@@ -27,6 +27,26 @@ sudo dnf -y install  openssl-devel
 查看`ps aux | grep "nginx: worker process" | awk '{print $1}'`(即nginx.conf的user指令)显示的用户是否对该请求路径(绝对路径)有无访问权限.
 我这里是因将WebRoot放在了主目录下导致用户nginx无权限访问的原因.
 
+### error.log报`connect() to unix:/run/php-fpm/www.sock failed (13: Permission denied) while connecting to upstream...`
+env:
+- php 7.4
+
+```bash
+# vim /etc/php-fpm.d/www.conf
+...
+listen.owner = www-data
+listen.group = www-data
+listen.mode = 0660
+...
+# systemctl restart php-fpm
+```
+
+按上述修复无效, /var/log/php-fpm/error.log日志报`WARNING: [pool www] ACL set, listen.owner = 'www-data' is ignored`, 资料说`如果启用了listen.acl_users, 则忽略listen.owner和listen.group`
+
+解决方法:
+1. 注释listen.acl_users和listen.acl_groups, 只用传统权限就行了
+2. 按上面手动配置/run/php-fpm/www.sock权限有效, 重启后会失效
+
 ### fetch patch method return 400
 
 chrome : 51.0.2704.84 (64-bit)
