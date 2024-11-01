@@ -583,3 +583,13 @@ env:
 服务启动时间设置过短可能引发此问题, 延长服务启动时间超时上限(默认90s)即可.
 
 修改`/etc/systemd/system.conf`的`#DefaultTimeoutStartSec=90s`, systemctl daemon-reexec 或者重启操作系统生效.
+
+### [Enable Autologin in Ubuntu Server from Commandline](https://ostechnix.com/ubuntu-automatic-login/)
+```bash
+# sudo vim /etc/systemd/logind.conf # set NAutoVTs和ReserveVT, 或者直接全部注释
+# sudo vim /etc/systemd/system/getty.target.wants/getty@tty1.service # 指定autologin账户xxx
+...
+ExecStart=-/sbin/agetty --noissue --autologin xxx --noclear %I $TERM
+...
+# reboot
+```

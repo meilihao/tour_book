@@ -80,7 +80,7 @@ scrape_configs:
     - targets: ['0.0.0.0:8889']
 EOF
 # docker volume create data-prometheus
-# docker run -d --restart=unless-stopped --net=host -p 9090:9090 -v /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml -v data-prometheus:/prometheus --name prometheus prom/prometheus
+# docker run -d --restart=unless-stopped -p 9090:9090 -v /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml -v data-prometheus:/prometheus --name prometheus prom/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.retention.time=15d storage.tsdb.retention.size=8GB
 ```
 
 > prometheus.yml可通过不指定`-v /etc/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml`时进入容器来获取 
@@ -110,6 +110,10 @@ EOF
 ```
 
 ## 部署node_exporter
+> 默认已开启pprof
+
+> node_exporter-1.8.2.linux-arm64解析fibrechannel遇到出现极高cpu占用, 卡住`/metrics`, 仅用该collector后正常 by `go tool pprof http://localhost:9100/debug/pprof/profile?seconds=10`
+
 ```
 # ./node_exporter
 ```
@@ -256,6 +260,8 @@ prometheus(`/home/tidb/tidb-deploy/prometheus-9090/scripts/run_prometheus.sh`)�
 > `--storage.tsdb.retention`默认是`15d`
 
 > [prometheus不支持将storage.tsdb.retention加入prometheus.yml的原因: storage属于不能动态刷新的配置](https://github.com/prometheus/prometheus/issues/6188).
+
+> curl -s http://localhost:9090/api/v1/status/runtimeinfo | jq '.data.storageRetention': 查看storage.tsdb.retention 
 
 ### grafana添加"Data Sources / Prometheus"报`HTTP Error Bad Gateway`
 尝试使用`curl http://<prometheus_sever>/metrics`测试, 通常是当前浏览器无法访问到`http://<prometheus_sever>/metrics`导致的, 比如grafana, prometheus部署在aliyun, 此时用`localhost:9090`作为prometheus url就会报该错.

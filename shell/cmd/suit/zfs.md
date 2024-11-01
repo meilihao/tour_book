@@ -752,7 +752,20 @@ import pool时, keystatus可显示加密pool的状态.
 zpool set listsnapshots=on rpool # zfs list时也输出snap信息, 默认是off
 ```
 
+### arc_summary
+arc_summary:
+```
+ARC size (current):
+	Max size: 按配置最多使用的内存量
+```
+
 ### arcstat
+arcstat 1
+arcstat -o /tmp/a.log 2 10
+arcstat -s "," -o /tmp/a.log 2 10
+arcstat -v
+arcstat -f time,hit%,dh%,ph%,mh% 1
+
 最大 ARC 缓存内存（c）、当前 ARC 缓存大小（arcsz）、从 ARC 缓存中读取的数据（read）等信息
 
 字段:
@@ -772,14 +785,10 @@ options zfs zfs_arc_max=<memory_size_in_bytes>
 
 zfs_arc_max=0在arm64上可能不生效, 导致arc内存使用超过50%, 此时可追加zfs_arc_sys_free(保留空余内存的下限)以限制.
 
-### arcstat
-```
-arcstat 1
-arcstat -o /tmp/a.log 2 10
-arcstat -s "," -o /tmp/a.log 2 10
-arcstat -v
-arcstat -f time,hit%,dh%,ph%,mh% 1
-```
+遇到:
+1. arm64 sdb(in zfs)的`Time spent Doing I/Os`(by node_exporter)一直是100%, 导致mem使用突破了zfs_arc_max和zfs_arc_sys_free的限制, 平时sdb io没问题的情况下, 没有出现该问题
+
+	该问题也可能是其他原因引发, 但目前观察到zfs arc异常时间刚好和sdb的io异常时间重合
 
 ### 清理cache
 ```

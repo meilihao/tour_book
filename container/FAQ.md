@@ -346,14 +346,5 @@ grub2-mkconfig -o /boot/grub2/grub.cfg
 
 > 在kernel 4.5中, cgroup v2声称已经可以用于生产环境了, 但它所支持的功能还很有限(v2是v1实现的子集).
 
-### kde的baloo文件提取器总是崩溃
-解决方法: 
-- `sudo balooctl disable`(已测试)
-- 清理文件(未测试)
-
-    ```bash
-    # rm -rf ~/.config/baloo*
-    # rm -rf ~/.local/share/baloo/*
-    ```
-
-> `balooctl status`
+### [WARNING: Published ports are discarded when using host network mode](https://docs.docker.com/engine/network/drivers/host/)
+docker启动时指定--network=host或--net=host，如果还指定了-p或-P，那这个时候就会有此警告，并且通过-p或-P设置的参数将不会起到任何作用，端口号会以主机端口号为主，重复时则递增

@@ -637,6 +637,18 @@ ref:
 
     > vm环境可通过virt-win-reg处理
 
+### [由于其配置信息(注册表中的)不完整或已损坏，Windows 无法启动这个硬件设备。 (代码 19)](https://answers.microsoft.com/zh-hans/windows/forum/all/%E7%94%B1%E4%BA%8E%E5%85%B6%E9%85%8D%E7%BD%AE/a1317a82-6112-4d2d-9387-85043f8a129e)
+ref:
+- [光驱错误:由于其配置信息(注册表中的)不完整或已损坏，Windows 无法启动这个硬件设备](https://www.bilibili.com/read/cv5365692/)
+- [usb由于其配置信息(注册表中的)不完整或已损坏,Windows 无法启动这个硬件设备(代码 19)](https://www.cnblogs.com/sdgf/p/4562283.html)
+
+iscsi重新分配给windows后, 在磁盘管理器里无法发现该盘, 在设备管理器中有该设备但有警告logo, 并提示标题中的错误信息
+
+已尝试部分方法, 但无效:
+1. 更新驱动程序
+1. 卸载并重新扫描设备
+
+重启windows(未验证, 建议先备份注册表再操作)
 
 # tgtadm
 参考:

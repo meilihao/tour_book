@@ -21,7 +21,7 @@
 载入镜像 : docker load [OPTIONS]
 上传镜像 : docker push [OPTIONS] NAME[:TAG]
 用镜像创建容器并启动：sudo docker run
-查看容器列表：docker ps [OPTIONS]
+查看容器列表：docker ps [OPTIONS], `--no-trunc`, 不截断command
 暂停/取消暂停容器：docker pause/unpause CONTAINER [CONTAINER...]
 停止容器：docker stop [OPTIONS] CONTAINER [CONTAINER...] // 向容器进程发送SIGTERM信号
 kill容器：docker kill [OPTIONS] CONTAINER [CONTAINER...] // 向容器进程发送SIGKILL信号

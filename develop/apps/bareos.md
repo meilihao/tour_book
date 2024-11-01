@@ -1301,7 +1301,7 @@ delete volume=xxx yes # tape会变成未标记, 但再次标记会报错, 需要
 
 > [relabel:通过给磁带赋予新名称来重用磁带](https://docs.bareos.org/TasksAndConcepts/VolumeManagement.html#manualrecycling)
 
-> purge volume=xxx + tape erase后无法使用`truncate volstatus=Purged storage=<storage> volume=<volume> yes`: truncate 筛选目标volume时规定了VolBytes >= 512 * 126, 而tape erase后VolBytes变为了1, 导致无法选中该卷
+> purge volume=xxx + tape erase后无法使用`truncate volstatus=Purged storage=<storage> volume=<volume> yes`: truncate 筛选目标volume时规定了VolBytes > 512 * 126, 而tape erase后VolBytes变为了1, 导致无法选中该卷
 
 rm -rf <volume> # 底层执行删除volume
 

@@ -366,3 +366,26 @@ IdleAction=ignore
 ```
 1. 按电源键恢复
 1. gnome里配置电源策略
+
+### kde的baloo文件提取器总是崩溃
+解决方法: 
+- `sudo balooctl disable`(已测试)
+- 清理文件(未测试)
+
+    ```bash
+    # rm -rf ~/.config/baloo*
+    # rm -rf ~/.local/share/baloo/*
+    ```
+
+> `balooctl status`
+
+### 主目录下自动生成乱码名称文件夹，内含/crashpad/helpers.bin
+ref:
+- [中文系统，主文件夹下名字乱码文件夹超来越来，求教如何解决](https://forum.ubuntu.org.cn/viewtopic.php?t=494933)
+
+env:
+- ubuntu 24.04
+
+    google后发现debian 12也有该现象
+
+嫌疑最大的软件: 微信LINUX, 钉钉LINUX
