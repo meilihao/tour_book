@@ -6,6 +6,9 @@ ref:
 - [《OceanBase数据库源码解析》面市|社区月报 2023.7](https://open.oceanbase.com/blog/5071467520)
 - [万字解析：从 OceanBase 源码剖析 paxos 选举原理](https://zhuanlan.zhihu.com/p/630468476)
 - [Oceanbase PaxosStore 源码阅读](https://zhuanlan.zhihu.com/p/395197545)
+- [一文讲透 OceanBase 单机版：架构介绍、部署流程、性能测试、MySQL对比、资源配置等等](https://open.oceanbase.com/blog/11260892737)
+
+    主备
 
 ## FAQ
 ### 版本CE BP HF区别

@@ -4,7 +4,8 @@
 - [FC 和iSCSI的使用差异](https://www.huaweicloud.com/articles/57a2047190a7768914f2a0040d3da26f.html)
 - [NVMe over Fabric - nvmetcli(nvme target)](https://documentation.suse.com/zh-cn/sles/12-SP4/html/SLES-all/cha-nvmeof.html#sec-nvmeof-host-configuration)
 - [Configuring iSCSI Initiator(优化)](https://spdk.io/doc/iscsi.html)
-
+- [Highly Available SCST & LIO iSCSI Clustering How-To Guide Update & Comparison](https://linbit.com/blog/highly-available-scst-lio-iscsi-clustering-how-to-guide-update-comparison/)
+- [Create a Highly Available iSCSI Target Using a LINSTOR Gateway Cluster](https://linbit.com/blog/create-a-highly-available-iscsi-target-using-linstor-gateway/)
 
 ```bash
 # yum -y install targetd targetcli-fb

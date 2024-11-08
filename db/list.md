@@ -4,6 +4,7 @@
 - [神仙打架：PG 和 MySQL 到底哪个更好用？](https://www.tuicool.com/articles/AFJ3YnR)
 - [MongoDB复制集原理: 复制集容忍失效数](https://developer.aliyun.com/article/64)
 - [10 种数据库技术的发展历程与现状](https://my.oschina.net/u/4662964/blog/15956455)
+- [2021年，史上最强的数据库资料集合12种数据库的全方位整理](https://github.com/0voice/newsql_nosql_library)
 
 ## 原则
 参考:

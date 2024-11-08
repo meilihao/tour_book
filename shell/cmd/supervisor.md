@@ -1,4 +1,5 @@
 # supervisor
+不推荐使用, 多次出现其管理的进程出现诡异问题. **建议用systemd service代替**
 
 ## 安装
 ```
