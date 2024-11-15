@@ -3,6 +3,10 @@ defer是Go语言提供的一种用于注册延迟调用的机制：让函数或�
 
 > 在defer函数定义时，对外部变量的引用是有两种方式的，分别是作为函数参数和作为闭包引用.
 
+> defer将相关函数注册到其所在goroutine用于存放deferred函数的栈数据结构中, 这些deferred函数将在执行defer的函数退出前被按后进先出(LIFO)的顺序调度执行
+
+defer关键字后面的表达式是在将deferred函数注册到deferred函数栈的时候进行求值的.
+
 ## defer + return
 ```go
 return xxx
@@ -17,6 +21,9 @@ return xxx
 
 ## defer +　recover
 recover()函数只在defer的上下文中才有效（且只有通过在defer中用匿名函数调用才有效），直接调用的话，只会返回 nil
+
+注意:
+1. cgo中crash就无法恢复
 
 ## defer作用域
 ```go
@@ -60,6 +67,7 @@ defer语句并不会马上执行，而是会进入一个栈，函数return前，
 
 Go 1.13 defer有性能改进:
 Go 1.13之前，所有的defer延迟调用都是记录在堆上的，这严重影响了defer延迟调用的执行效率. 从Go 1.13开始，满足某些条件的defer延迟调用（标准库中93%的延迟调用满足此条件）将被记录在栈上而不是堆上，从而提高了defer延迟调用的执行效率.
+而在Go 1.14版本中,defer性能提升巨大,已经和不用defer的性能相差很小了.
 
 使用了参考里的bench test, 发现go1.13比go12.5快25%左右.
 ```

@@ -693,3 +693,18 @@ func x 转换为 y
 }
 ```
 我们可以看到, 当接口之间可以用类型转换的时候, 其实也是可以用类型断言的.
+
+### receiver参数的基类型本身不能是指针类型或接口类型
+```go
+type MyInt *int
+func (r MyInt) String() string { // 编译器错误:invalid receiver type MyInt
+	//(MyInt is a pointer type)
+	return fmt.Sprintf("%d", *(*int)(r))
+}
+
+type MyReader io.Reader
+func (r MyReader) Read(p []byte) (int, error) { // 编译器错误:invalid
+	//receiver type MyReader (MyReader is an interface type)
+	return r.Read(p)
+}
+```

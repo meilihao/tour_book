@@ -66,6 +66,12 @@ Systemd 统一管理所有 Unit 的启动日志。日志的配置文件是`/etc/
 
 systemd-journald 服务收集到的日志默认保存在 /run/log 目录中，重启系统会丢掉以前的日志信息, 修改配置文件 /etc/systemd/journald.conf，把 Storage=auto 改为 Storage=persistent，并取消注释，然后`systemctl restart systemd-journald.service`即可实现持久化日志(`/var/log/journal`).
 
+Storage选项:
+1. volatile : 日志数据将仅存储在内存中，即在/run/log/journal目录下（根据需要创建）
+1. persistent : 数据将会存储在磁盘上，即/var/log/journal目录下，并且在早期引导阶段磁盘不可写的时候把数据保存到/run/log/journal目录下
+1. auto : 把日志数据存储在/var/log/journal/目录中, 但是该目录必须已经存在并且设置了适当的权限. 如果不存在，则日记数据将存储在易失性/run/log/journal/目录中，并且在系统关闭时会删除据
+1. none: 所有接收到的日志数据将被丢弃
+
 > [systemd loglevel](https://wiki.archlinux.org/title/Systemd/Journal)
 
 ```

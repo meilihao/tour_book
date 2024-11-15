@@ -9,6 +9,8 @@
 - [Postgres 索引类型探索之旅](https://linux.cn/article-9035-1.html)
 - [PostgreSQL数据目录深度揭秘](https://www.tuicool.com/articles/aiYZny6)
 - [PostgreSQL一线生产经验分享：我讨厌PostgreSQL的10件事 | Rick Branson](https://www.jdon.com/54016.html)
+- [技术极简主义：一切皆用Postgres](https://pigsty.io/zh/blog/pg/just-use-pg/)
+- [PostgreSQL正在吞噬数据库世界](https://pigsty.io/zh/blog/pg/pg-eat-db-world/)
 
 ### 相关主页
 

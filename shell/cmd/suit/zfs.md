@@ -840,3 +840,9 @@ vmkwarning.log:
 WARNING: ScsiPath: 4394: The Physical block size "131072" reported by the path vmhba64:C0:T4:L0 is not supported. The only supported physical blocksizes are 512 and 4096
 WARNING: ScsiDeviceIO: 6462: The Physical block size "131072" reported by the device naa.6589cfc0000000572b71f35019e9c31f is not supported. The only supported physical blocksizes are 512 and 4096
 ```
+
+### zfs fs可用空间可能出现负数
+ref:
+- [quota: extend quota for dataset](https://github.com/openzfs/zfs/pull/13839)
+
+直接置为0即可

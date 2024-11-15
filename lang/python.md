@@ -1228,7 +1228,11 @@ lambda语法格式：`lambda 变量 : 要执行的语句`, 比如`lambda x : x *
 - [Python 代码调试技巧](https://www.ibm.com/developerworks/cn/linux/l-cn-pythondebugger/index.html)
 - [使用gdb调试Python程序](https://ponder.work/2020/12/29/debug-python-with-gdb/)
 
-    `gdb python <pid>`
+    ```bash
+    # gdb python <pid>
+    (gdb) source /usr/lib/debug/usr/lib64/libpython3.6dm.so.1.0-3.6.8-18.el7.x86_64.debug-gdb.py # 否则gdb中没有py-<bt|...>等命令
+    ```
+
 
 ## 性能
 对于 Python 来说,充分利用多核性能的阻碍主要在于 Python 的 全局解释器锁 (GIL). GIL 确保 Python 进程一次只能执行一条指令,无论当前有多少个核心. 该问题可以通过一些方法来避免,比如标准库的 multiprocessing,或 numexpr、Cython 等技术,或分布式计算模型等.
@@ -2483,6 +2487,9 @@ paramiko.util.log_to_file("<log_file_path>", level = "WARN") # level in [DEBUG, 
     ```
 
 ### pdb
+ref:
+- [如何使用Pdb调试Python](https://www.cnblogs.com/klb561/p/12057436.html)
+
 `apt install python3-ipdb`
 
 ```
@@ -2554,3 +2561,6 @@ ipdb> help # 查看帮助
 
 ### FAQ
 `celery -A your_celery_app worker --concurrency=128`并发数是128, 发现子进程有115个左右, 但从日志里看实际并发不超过6个.
+
+### `code, message = <task>.delay(...)`崩溃
+`delay()`返回的是AsyncResult, 用`<task>()`
