@@ -1,6 +1,9 @@
 # func
 [在线调试工具](https://c.runoob.com/compile/11)
 
+形参出现在函数定义中，在整个函数体内都可以使用， 离开该函数则不能使用.
+实参出现在主调函数中，进入被调函数后，实参变量也不能使用.
+
 ## fgets
 ```c
 char *fgets(char *str, int n, FILE *stream)

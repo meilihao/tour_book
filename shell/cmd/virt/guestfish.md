@@ -161,6 +161,15 @@ lost+found  test
 
 支持的其他命令 from [guestfish - the guest filesystem shell](https://www.libguestfs.org/guestfish.1.html): ls, ll, cat, more, download, tar-out, ...
 
+## sdk
+sdk在[src/libguestfs.org/guestfs](https://github.com/libguestfs/libguestfs/tree/v1.42.1/golang/src/libguestfs.org/guestfs)(非go mod管理)
+
+修复文件系统:
+- ext: `func (g *Guestfs) E2fsck(device string, optargs *OptargsE2fsck) error`
+- xfs: `func (g *Guestfs) Xfs_repair(device string, optargs *OptargsXfs_repair) (int, error)`
+- ntfs: `func (g *Guestfs) Ntfsfix(device string, optargs *OptargsNtfsfix) error`
+
+执行命令(需要先mount rootfs后进行): `func (g *Guestfs) Command(arguments []string) (string, error)`
 
 ## 场景
 整机保护(保护系统盘+若干数据盘)中修改fstab, grub, ip等.
