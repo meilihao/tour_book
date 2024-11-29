@@ -401,6 +401,68 @@ func s2() {
 }
 ```
 
+#### Go 对 C 结构体的内存管理
+Go 自动管理 Go 对象的内存（例如 Go 的 struct、字符串、数组等）. 但是, C 语言的内存管理由 C 语言的运行时控制，因此在 Go 中使用 cgo 时，必须手动管理 C 语言结构体的内存. 具体来说：
+1. 直接声明的 C 结构体（如 C.struct_passwd）不需要手动释放内存，因为它们通常作为值在 Go 堆栈上分配。
+1. 通过 malloc 分配的 C 内存（如分配 C 字符串或动态数组）需要手动释放。
+
+C 结构体内存管理:
+对于 C 结构体，在 Go 中使用 cgo 时，如果结构体的内存是在 C 端动态分配的（如使用 malloc），则需要确保在使用完毕后调用 free 来释放内存.
+
+示例 1：直接声明 C 结构体
+```go
+/*
+#include <pwd.h>
+*/
+import "C"
+
+func main() {
+    var pw C.struct_passwd
+    // 使用 pw 进行操作，不需要释放内存，因为 pw 是在 Go 栈上分配的
+}
+```
+在这种情况下，pw 变量是一个 Go 结构体类型的 C 结构体，存储在 Go 栈上，不需要手动释放.
+
+示例 2：通过 malloc 分配 C 结构体
+如果通过 malloc 或类似的 C 函数分配内存来存储 C 结构体（或数组），你必须手动释放它。例如：
+
+```go
+/*
+#include <stdlib.h>
+#include <pwd.h>
+
+struct passwd* create_passwd() {
+    return (struct passwd*)malloc(sizeof(struct passwd));
+}
+
+void free_passwd(struct passwd* pw) {
+    free(pw);
+}
+*/
+import "C"
+
+func main() {
+    // 动态分配 C 结构体
+    pw := C.create_passwd()
+    // 使用 pw 进行操作
+
+    // 手动释放内存
+    C.free_passwd(pw)
+}
+```
+在这个示例中，C.create_passwd() 使用 malloc 分配内存来存储 struct passwd，因此需要使用 C.free_passwd(pw) 来释放它。
+
+总结：
+1. Go 中的 C 结构体：如果你在 Go 中直接声明 C 结构体（例如 var pw C.struct_passwd），那么这些结构体的内存是由 Go 管理的，不需要手动释放
+1. 动态分配的 C 结构体：如果你使用 C 函数（例如 malloc）来动态分配 C 结构体的内存，那么你需要在不再使用时手动调用 free 释放内存
+
+注意：
+1. 内存泄漏：忘记释放通过 malloc 或类似函数分配的内存会导致内存泄漏, 确保在不再使用该内存时释放它
+1. cgo 和垃圾回收：Go 的垃圾回收机制不会管理通过 malloc 分配的 C 内存，因此这些内存必须由你显式地释放
+
+#### `*_Ctype_char` 的内存管理
+在 cgo 中，C.CString 返回一个 *C.char 类型的指针（即 *_Ctype_char），该指针指向 C 语言的内存. 因为这个内存是通过 malloc 分配的（内部实现依赖于 C.CString），Go 的垃圾回收器（GC）不会管理它。因此，必须手动释放这个内存，否则会导致内存泄漏.
+
 ### go c换传数组
 go->c:
 ```go
@@ -560,11 +622,44 @@ func main() {
 ### pkg
 `// #cgo pkg-config: udev`=`// #cgo LDFLAGS: -ludev`
 
-### 处理union
+### 处理union & 清理CString
 c实现set union的函数, go调用该函数
+
+```go
+// #include "sf_disk_lib_h"
+/*
+void set_aksk(sfdisklib_connect_params * connect_params, char *ak, char* sk) {
+	connect_params->creds.ak_sk.access_key = ak;
+	connect_params->creds.ak_sk.secret_key = sk;
+}
+*/
+
+func NewParams(ak, sk string) (*C.sfdisklib_connect_params, []*C.char){
+	cAk := C.CString(ak)
+	cSk := C.CString(sk)
+
+	var cParams C.sfdisklib_connect_params
+	var cParams = []*C.char{cAk, cCk}
+	C.set_aksk(&cParams, cAk, cSk)
+
+	return &cParams, cParams
+}
+
+func freeCStrings(ls []*C.char) {
+	for i:=range ls {
+		C.free(unsafe.Pointer(ls[i]))
+	}
+}
+
+func main() {
+	cParams, toFree:=NewParams("ak", "sk")
+	defer freeCStrings(toFree)
+}
+```
 
 ### go buffer给c
 ```go
 goBuffer:=make([]byte, 4096)
 cBuffer:=(*C.uint8)(unsafe.Pointer(&goBuffer[0]))
+C.sfdisklib_write(dh, offset/512, batchRead/512, cBuffer)
 ```

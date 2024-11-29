@@ -1,4 +1,7 @@
 # guestfish
+ref:
+- [guestfs这么强大你知道吗](https://cloud.tencent.com/developer/article/1087085)
+
 guestfish是一套虚拟机镜像管理的利器, 提供一系列对镜像管理的工具, 也提供对外的API. Guestfish 是libguestfs项目中的一个工具软件，提供修改虚机镜像内部配置的功能, 基于libguestfs.
 
 guestfish主要包含以下工具：
@@ -97,7 +100,7 @@ guestfish主要包含以下工具：
 - hivexget得到注册表键值
 - guestfsd:guestfs服务
 
-安装: `yum install libguestfs-tools libguestfs-winsupport`, 默认安装不支持windows.
+安装: `yum install libguestfs-tools libguestfs-winsupport`, 默认安装不支持windows, 建议安装后执行libguestfs-test-tool测试一下.
 
 # libguestfs-tools
 
@@ -132,7 +135,7 @@ image权限需要`qemu:qemu`, 且qemu用户能访问到该文件
 /dev/centos/root
 /dev/centos/swap
 ><fs> xfs-repair /dev/centos/root [forcelogzero:true] # `forcelogzero:true`=`xfs_repair -L` // 有遇到: 1. 直接挂载没有问题, 强制修复后反而无法挂载; 2.第一次强制修复lvm+root分区失败(在本次重复多次修复均报错), 但退出再次执行guestfish命令重复修复后却能mount
-><fs> mount /dev/centos/root /
+><fs> mount /dev/centos/root / # 可执行dmesg查看报错日志
 ```
 
 ext4:
@@ -208,3 +211,22 @@ losetup -d /dev/loop0
 `yum reinstall libselinux/apt install --reinstall libselinux1`
 
 如果报错信息里还有`libguestfs: error: mount: mount exited with status 32: mount: /sysroot: wrong fs type, bad option, bad superblock on ...`(`mount /xxx /`), 那就是在guestfish中mount fs时因为要挂载的fs需要修复而引发的错误, 需要**逐个检查要挂载的fs**, 修复fs后再mount即可.
+
+### guestfish log
+```bash
+guestfish -v ...
+><fs> run
+```
+
+### guestfish使用的kernel
+guestfish使用host kernel:
+1. 通过virsh dumpxml <guestfish vm>
+
+	发现vm使用backingStore
+1. backingStore 在 `/var/tmp/.guestfs-0/appliance.d/root`
+
+	发现其中的kernel来自/boot下当前使用的`vmlinuz-xxx` (by size+md5sum)
+
+通过`guestfish -v --rw --add /dev/zd17`的日志发现`/var/tmp/.guestfs-0/appliance.d`由supermin5命令生成(libguestfs在run_supermin_build里调用了supermin5命令), 具体命令是`supermin5 --build --verbose --if-newer --lock /var/tmp/.guestfs-0/lock --copy-kernel -f ext2 --host-cpu x86_64 /usr/lib64/guestfs/supermin.d -o /var/tmp/.guestfs-0/appliance.d`(`-o`指定的目录至少需要两层, 因为supermin5还会访问其父目录), 最终生成`initrd,kernel,root`三个文件.
+
+supermin5源码是[libguestfs/supermin](https://github.com/libguestfs/supermin).

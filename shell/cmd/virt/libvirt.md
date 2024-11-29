@@ -762,7 +762,9 @@ ref:
 1. 编辑grub启动项, 追加`console=ttyS0[,115200]`, 按ctrl+x启动即可
 1. `virsh console xxx`, 启动信息会输出在terminal里
 
-> 遇到vm centos 7.7 使用ide/sata启动后图形界面卡住(底层大概是进入了dracut), 但其grub追加`console=ttyS0,115200`后能正常进入系统或使用virtio后进入dracut. 这种情况通常是vmware vm接管到kvm, 因initramfs里的驱动差异导致的. 解决方法: 启动时选恢复模式, 再执行`dracut -f`(dracut会自动识别硬件并更新initramfs里的驱动), 最后重启即可.
+> 遇到`vm centos 7.7 使用ide/sata`启动后图形界面卡住(底层大概是进入了dracut), 但其grub追加`console=ttyS0,115200`后能正常进入系统或使用virtio后进入dracut. 这种情况通常是vmware vm接管到kvm, 因initramfs里的驱动差异导致的. 解决方法: 启动时选恢复模式, 再执行`dracut -f`(dracut会自动识别硬件并更新initramfs里的驱动), 最后重启即可.
+
+> 类似的案例: 接管openeuler 22.03 x64 on vmware 使用sata或virtio卡住并进入终端界面(非dracut)/scsi无启动设备
 
 ### virbr0和virbr0-nic
 ref:
@@ -1469,3 +1471,15 @@ ref:
 - [libvirt-qemu-磁盘加密之一：qcow2](https://blog.csdn.net/isclouder/article/details/79191665)
 
 在libvirt 4.5版本之前，除了luks加密之外，还支持qcow加密的. 在 QEMU 中使用 qcow 加密卷在 QEMU 2.3 中开始逐步淘汰.
+
+### `channel type="unix"`
+- host socket在channel.source.path
+
+   每次关闭会导致channel.source.path变化
+- vm 内部则是串口在/dev/virtio-ports/<channel.target.name>
+
+   如果vm app打开了这个serial, 则channel.target.state显示为connected
+
+如果vm内部安装并启用了qemu-guest-agent(vm xml需要指定channel.target.name=org.qemu.guest_agent.0, 因为qemu-guest-agent.service即qemu-ga进程默认使用了它), 在host侧通过`virsh qemu-agent-command centos '<cmd>'`即可操作vm, 比如`{"execute":"guest-info"}`
+
+> 其他工具: `echo '{"execute": "guest-ping"}' | socat - UNIX-CONNECT:/tmp/qemu-serial.sock`

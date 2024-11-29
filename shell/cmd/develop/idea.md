@@ -17,3 +17,9 @@ Flie -> Settings -> Plugins 找到插件, 通过右键菜单禁用
 比如`ocksdb-6.29.5/java`
 
 解决方法: 将其samples和src目录同时`Mark Directory as`为`Sources Root`
+
+### 如何同步maven
+窗口右侧选中`m`标签页, 选择第一个`转圈`图标中的`Reload All Maven Projects`, 如果其运行还是报错, 就点击Sync状态窗口右侧的`Try ...`(即强制同步)
+
+### Cannot resolve symbol 'xxx'
+选择错误, 右键选择`quick fix`, 尝试让idea自行修复

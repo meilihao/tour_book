@@ -512,6 +512,8 @@ ref:
 
 启动过程中可能卡在"probing edd (edd=off to disable)... ok", 继续等待即可
 
+> edd关闭方法: `kernel cmdline: edd=off`
+
 root密码是未知的, 需要自行修改镜像密码:
 ```bash
 # yum install libguestfs-tools

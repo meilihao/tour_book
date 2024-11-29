@@ -4,6 +4,7 @@
 - [LVM的基本概念和部署](http://xintq.net/2014/07/30/LVM%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5%E5%92%8C%E9%83%A8%E7%BD%B2/)
 
 > [在 AMD、Intel、ARM 和 IBM Power Systems 服务器中,引导装载程序无法读取 LVM 卷, 必须为 /boot 分区创建一个标准的非 LVM 磁盘分区](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/8/html/configuring_and_managing_logical_volumes/managing-lvm-logical-volumes_configuring-and-managing-logical-volumes)
+- [限制 LVM 设备可见性和用法](https://docs.redhat.com/zh-cn/documentation/red_hat_enterprise_linux/8/html/system_design_guide/limiting-lvm-device-visibility-and-usage_system-design-guide#limiting-lvm-device-visibility-and-usage_system-design-guide)
 
 注意:
 - 修改`/etc/lvm/lvm.conf`后需要重启, 否则无法生效

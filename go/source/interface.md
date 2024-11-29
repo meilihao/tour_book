@@ -76,6 +76,6 @@ convT2E用于将任意类型转换为一个eface,convT2I用于将任意类型转
 ```go
 // $GOROOT/src/cmd/compile/internal/gc/builtin/runtime.go
 // 实现在 $GOROOT/src/runtime/iface.go中
-func convT16(val any) unsafe.Pointer //  val必须是一个uint-16相关类型的参数
+func convT16(val any) unsafe.Pointer //  val必须是一个uint16相关类型的参数
 ....
 ```

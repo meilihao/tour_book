@@ -5,7 +5,7 @@
 
 - -a : 显示所有设备
 - -b : 以bytes方式显示设备大小
-- -d : 不显示 slaves 或 holders
+- -d : 不显示 分区, slaves, holders
 - -f/--fs : 显示文件系统信息
 - -l : 以表格形式输出
 - -n : 不输出表头(标题)

@@ -158,7 +158,7 @@ rehat开发的包管理软件, 已被dnf取代.
 # yum deplist httpd # 列出依赖
 # yum repolist all # 列出所有仓库
 # yum list all # 列出仓库中所有软件包
-# yum info [--showduplicates]  # 软件包名称 查看软件包信息, `--showduplicates`显示软件多版本
+# yum info [--showduplicates]  # 软件包名称 查看软件包信息, 比如来源repo, `--showduplicates`显示软件多版本
 # yum install # 软件包名称 安装软件包
 # yum reinstall # 软件包名称 重新安装软件包
 # yum update # 软件包名称 升级软件包
@@ -595,3 +595,28 @@ spec中的`%files`编写正确, 且目录xxx存在
 原因:
 1. 升级时被rpm script删除了
 2. 旧安装包有该文件, 新安装包没有, 升级时(卸载旧安装包)导致该文件被删除
+
+### rpmbuild报`Unknown tag: Suggests: xxx`
+需要rpm 4.14 from chatgpt
+
+或尝试注释它, 在构建xfsprogs-5.14.2-1.el9.src.rpm上, 注释`Suggests:	xfsprogs-xfs_scrub`可行, 最终也打出了xfsprogs-xfs_scrub-xxx.rpm
+
+### rpmbuild 在`%ldconfig_scriptlets`输出后报`fg: no job control`
+ref:
+- [%ldconfig_scriptlets 替换](https://fedoraproject.org/wiki/Changes/Removing_ldconfig_scriptlets)
+
+这个错误通常是由于在非交互式的环境（比如脚本或某些限制的 shell）中运行 rpmbuild，而该环境不支持 fg（前台任务控制）命令
+
+将`%ldconfig_scriptlets`替换为
+```bash
+%post -p /sbin/ldconfig
+%postun -p /sbin/ldconfig
+```
+
+### [`%bcond_with / %bcond_without` (new in rpm 4.17.1)](https://rpm-software-management.github.io/rpm/manual/conditionalbuilds.html)
+```
+# 创建一个使用 gnutls 进行构建的选项（“--with gnutls”），因此默认为不使用 gnutls 进行构建
+%bcond_with gnutls
+# 创建一个不使用 openssl 进行构建的选项（“--without openssl”），因此默认为使用它进行构建
+%bcond_without openssl
+```

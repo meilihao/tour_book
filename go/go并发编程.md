@@ -185,6 +185,28 @@ happen before
 	- 没有官方的保证
 	- 建议不要依赖atomic保证内存的顺序
 
+## example
+```go
+ch := make(chan struct{}, 10)
+wg := sync.WaitGroup{}
+
+for i:=range ls {
+	ch <- struct{}{}
+	wg.Add(1)
+
+	go func(i int) {
+		defer func(){
+			wg.Done()
+			<-ch
+		}()
+
+		...
+	}(i)
+}
+
+wg.Wait()
+```
+
 ## FAQ
 ### channel vs Mutex
 Channel:

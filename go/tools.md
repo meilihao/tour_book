@@ -162,3 +162,15 @@ vscode的go插件启用了gopls, 但gopls总是崩溃.
 		-- advance(int):	Scan需要前进几个字节(advance)
 		-- token(字节切片):	 分割出来的数据
 		-- err(error):		错误
+
+### 交互式
+#### 命令
+- [交互式命令](https://typonotes.com/books/golang/cobra-in-action/03-interactive-command/)
+
+	使用 https://github.com/spf13/cobra 实现命令工具
+	使用 https://github.com/go-survey/survey 实现交互式命令
+#### shell
+[ishell:创建交互式cli应用程序库](https://studygolang.com/articles/18019)
+
+	by [abiosoft/ishell](https://github.com/abiosoft/ishell)
+

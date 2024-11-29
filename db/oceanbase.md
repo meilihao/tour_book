@@ -6,6 +6,7 @@ ref:
 - [《OceanBase数据库源码解析》面市|社区月报 2023.7](https://open.oceanbase.com/blog/5071467520)
 - [万字解析：从 OceanBase 源码剖析 paxos 选举原理](https://zhuanlan.zhihu.com/p/630468476)
 - [Oceanbase PaxosStore 源码阅读](https://zhuanlan.zhihu.com/p/395197545)
+- [**一文详解，什么是单机分布式一体化？**](https://www.modb.pro/db/623598)
 - [一文讲透 OceanBase 单机版：架构介绍、部署流程、性能测试、MySQL对比、资源配置等等](https://open.oceanbase.com/blog/11260892737)
 
     主备
@@ -25,3 +26,7 @@ OceanBase 社区版发布节奏为每2年一个大版本 release，每3个月一
 - CE, Community Edition即社区版
 - bp, 纯 bug fix
 - HF, 第X个Bugfix版本的第Y个Hotfix
+
+### 主备
+[`不支持原主租户降备后接入成为新主租户的备租户`](https://www.oceanbase.com/docs/common-oceanbase-database-cn-1000000001574395)
+    要重新做主备???

@@ -38,3 +38,9 @@ client:
 $ dd if=/dev/zero bs=9000 count=1000 > /dev/tcp/$target_host/$port
 $ cat < /dev/urandom > /dev/tcp/$target_host/$port
 ```
+
+测试unix-socket:
+```bash
+nc -lU /tmp/socket_test # server
+nc -U /tmp/socket_test # client
+```

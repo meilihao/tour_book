@@ -36,6 +36,11 @@
 - `SHOW unix_socket_directories` : 显示unix socket路径
 - `SHOW hba_file;`
 
+## schema
+```sql
+CREATE SCHEMA sales [AUTHORIZATION sales_user]; --- 指定所有者
+ALTER TABLE sales.orders SET SCHEMA archive; --- 挪动schema
+```
 
 ## ddl
 ref:
@@ -81,6 +86,8 @@ alter table xxx drop constraint yyy;
 # select pg_walfile_name(pg_current_wal_lsn()); -- 转换wal日志位置为文件名
 # select pg_walfile_name_offset(pg_current_wal_lsn()); -- 转换wal日志位置为文件名和偏移量
 # select pg_wal_switch() : 切换当前wal日志并归档到归档目录
+# SELECT pg_create_checkpoint() : 创建checkpoint, 触发wal归档
+# SELECT * FROM pg_stat_archiver; # 查看wal归档情况
 ```
 
 ## 添加用户

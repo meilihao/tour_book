@@ -63,6 +63,9 @@ jshell是 Java 9 新增的一个交互式的编程环境工具。它允许你无
 CLASSPATH:是由JRE提供的，用于定义Java程序解释时类加载路径，默认设置的是当前所在目录.
 
 ## base
+- [POJO/DTO/DO/EO/VO/BO/PO/AO的含义和使用](https://blog.csdn.net/w8y56f/article/details/103515185)
+- [VO等专有名词解释](https://github.com/alibaba/p3c/blob/master/Java%E5%BC%80%E5%8F%91%E6%89%8B%E5%86%8C(%E9%BB%84%E5%B1%B1%E7%89%88).pdf)
+
 java只有两种类型: 基本类型和class.
 
 和其他编程语言相同, `main()是入口`.

@@ -1,6 +1,10 @@
 # [open-eBackup](https://gitcode.com/eBackup/open-eBackup)
 date: 2024.10.9 [文档中的路径](https://gitcode.com/eBackup/open-eBackup/blob/master/doc/quick_guide/%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8.md)和开源代码的布局以及各组件的路径还是存在差异
 
+## src
+- src/AppPlugins : 生态接入层
+- src/ProtectAgent : 备份客户端插件化框架, 常驻进程
+
 ## env
 - jdk 1.8 by `src/Infrastructure_OM/infrastructure/script/commParam.sh:jdk_version="jre1.8.0_422"`
 

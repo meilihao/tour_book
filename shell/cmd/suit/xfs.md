@@ -40,3 +40,24 @@ xfs fs扩容
 # xfs_repair -n block-device # `-n`仅探测不修复
 # xfs_repair [-L] /dev/sda # `-L`通常是xfs已损坏时强制修复使用, 是修复xfs文件系统的最后手段, 因为它会清空日志, 会丢失用户数据和文件
 ```
+
+## FAQ
+### mount报`Superblock has unknown read-only compatible features (0x8) enabled`
+ref:
+- [Mounting XFS created by RHEL9 fails in RHEL8 even in read-only mode](https://bugzilla.redhat.com/show_bug.cgi?id=2046431)
+
+完整日志:
+```log
+[  170.593306] XFS (dm-4): Superblock has unknown incompatible features (0x8) enabled.
+[  170.593309] XFS (dm-4): Filesystem cannot be safely mounted by this kernel.
+[  170.593315] XFS (dm-4): SB validate failed with error -22.
+```
+
+### 定位features
+在xfsprogs源码:
+1. `grep -ri "features"`
+
+    发现`mp->m_sb.sb_features_ro_compat |= XFS_SB_FEAT_RO_COMPAT_INOBTCNT`
+1. `grep -ri "XFS_SB_FEAT_RO_COMPAT_INOBTCNT"`
+
+    发现`libxfs/xfs_format.h:#define XFS_SB_FEAT_RO_COMPAT_INOBTCNT (1 << 3)`

@@ -220,6 +220,13 @@ serial key其实是由sequence实现的，当手动给serial列赋值的时候�
 ### insert 报`cannot insert multiple commands into a prepared statement`
 一个prepared statement只能有一个sql.
 
+### 修改日志
+```bash
+# vim /etc/postgresql/16/main/postgresql.conf
+log_directory = 'pg_log'
+log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+```
+
 ## 模拟操作
 ### 插入可产生约2G wal日志的数据
 ```psql

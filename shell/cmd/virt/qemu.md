@@ -620,3 +620,25 @@ ps kill nbd相关进程无效, 需重启
 
 ### 深信服无代理备份增量还原后vm无法进入系统
 在`virsh console`观察到mount `/sysroot`(xfs)时kernel panic(`Failed to mount /sysroot`), 推测是备份时xfs metadata不完整导致的, 用`xfs_repair -[L] <block-device>`修复后vm进入系统, 且增量数据md5值正确.
+
+### qemu qcow2 默认密码
+- [openEuler-22.03-LTS-x86_64.qcow2](https://docs.openeuler.org/zh/docs/22.03_LTS_SP2/docs/Releasenotes/%E7%B3%BB%E7%BB%9F%E5%AE%89%E8%A3%85.html)
+
+    密码: `root:openEuler12#$`, grub密码也是这个
+    ssh: 默认启动/支持root+password
+
+### qemu-kvm报`error: failed to set MSR 0x345 to 0x2000`
+ref:
+- [the guest agent will always stay in 'disconnected' status after wakeup a guest which configured 2 cpus from 'pmsuspended' status](https://bugzilla.redhat.com/show_bug.cgi?id=1244064)
+
+    MSR 0x345 is MSR_IA32_PERF_CAPABILITIES. '0x2000' is 'full width counting'. Support for the feature was added in Linux-5.8 (see commit full width counting) and QEMU-5.1 (see commit ea39f9b643959).
+
+env:
+    - host: qemu 4.2
+    - vm: host上的vm, qemu 6.2 + kernel 5.10
+
+在vm上执行libguestfs-test-tool时报该错.
+
+结合ref, 是host将cpu feature: pdcm给了vm, 因host qemu本身不支持pdcm, 但vm(cpu=host-passthrough)使用了它导致
+
+修复方法: 在xml的<cpu>中加`<feature policy='disable' name='pdcm'/>`
