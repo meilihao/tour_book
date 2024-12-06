@@ -454,6 +454,7 @@ RocksDB 的后台进程中，有持续不断的 Flush 和 Compaction 操作。�
 
 RocksDB 的 compaction 策略，并且提到了读放大、写放大和空间放大的概念，对 RocksDB 的调优本质上就是在这三个因子之间取得平衡。而在 Flink 作业这种注重实时性的场合，则要重点考虑读放大和写放大。
 
+- target_file_size_base: SST 文件的大小
 - target_file_size
 
     ColumnFamilyOptions 的 setTargetFileSizeBase 方法可设置上一级的 SST 文件达到多大时触发 Compaction 操作，默认值是 2MB（每增加一级，阈值会自动乘以 target_file_size_multiplier）. 为了减少 Compaction 的频率，可以适当调大此参数，例如调整为 32MB 等，此参数对性能的影响也比较大.
@@ -974,3 +975,6 @@ env:
 获取006147.sst, 其liveFileMetadata.size>0但entries=0,deletions=0, 同时`sst_dump --file=db/006147.sst --show_properties`却显示entries=11240,deletions=0
 
 这些entries=0的level均为6
+
+### `No space left on device`
+需要清理或追加空间, 然后重启db. 这个是rocksdb的设计[facebook/rocksdb#919](https://github.com/facebook/rocksdb/issues/919), 因为代码reset db需要大量重构rocksdb, 因此未采用.

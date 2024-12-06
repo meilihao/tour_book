@@ -2790,6 +2790,12 @@ pool覆盖逻辑在`core/src/dird/job.cc#ApplyPoolOverrides`, 可以让其直接
 
 ### job一直运行中
 1. storage=tape, joblog有No medium found: 没有磁带可用了
+    1. 没有空闲磁盘, 即磁带都已被使用
+    1. 在job pool下没有空闲磁带
+
+    storage=tape查找空闲磁带的逻辑:
+    1. 在job pool下是否有空闲磁带
+    2. 在步骤1中找不到, 则在全局pool(Scratch)下找空闲磁带, 加入job pool, 再重复步骤1
 
 ### 备份到tape失败: `Please mount append Volume or label a new one`
 在其他bareos环境比较过的tape无法在新bareos环境使用.

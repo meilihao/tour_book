@@ -1223,9 +1223,11 @@ nmap -sP 192.168.0.0/24
    - network OPTIONS: 网络配置, 参考[Understanding virtual networking](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/configuring_and_managing_virtualization/configuring-virtual-machine-network-connections_configuring-and-managing-virtualization#understanding-virtual-networking-overview_configuring-virtual-machine-network-connections)
 
 
-      网络模式, 主要分为两种模式:
+      [网络模式, 主要分为4种模式](https://www.cnblogs.com/good-study/p/15742351.html):
+      1. host-only：又称隔离模式，可以理解为vmware的仅主机模式，意思就是将所有的虚拟机组成一个局域网，不能和外界通信，不能访问Internet，其他主机也不能访问虚拟主机，安全性高
       1. nat模式，虚拟出一个有nat转换的网络设备，虚拟机内部自动获取ip地址, 然后通过nat转换访问互联网. 这种模式内（虚拟机）访问外（虚拟机外）可以, 外不可以访问内.
-      1. 桥接模式,与真实的物理网卡绑定，虚拟出交换机用于通信
+      1. 桥接模式,与真实的物理网卡绑定，虚拟出交换机用于通信. 这网络模式下客户机与宿主机处于同一个网络环境，类似于一台真实的宿主机，直接访问网络资源，设置好后客户机与互联网，客户机与主机之间的通信都很容易
+      1. Router模式：路由模式，当使用路由模式时，虚拟交换机连接到主机物理机器的物理LAN，在不适用NAT的情况下来回传输流量. 虚拟交换机可以检查所有流量，并使用网络数据包中包含的信息来作出路由决策
 
       - type=direct,source=eth0,source_mode=bridge,model=virtio : macvtap
 

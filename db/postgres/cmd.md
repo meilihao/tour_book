@@ -36,6 +36,22 @@
 - `SHOW unix_socket_directories` : 显示unix socket路径
 - `SHOW hba_file;`
 
+script:
+```bash
+psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "$QUERY" # 在script中使用pg
+
+QUERIES=("SELECT * FROM product;" "SELECT * FROM orders;")
+for QUERY in "${QUERIES[@]}"
+do
+    psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "$QUERY"
+done
+
+if ! psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "$QUERY"; then
+    echo "Failed to execute query."
+    exit 1
+fi
+```
+
 ## schema
 ```sql
 CREATE SCHEMA sales [AUTHORIZATION sales_user]; --- 指定所有者
@@ -61,6 +77,16 @@ alter table xxx drop constraint yyy;
 
 ## 其他命令
 - `select version()`
+- `show autovacuum` : 查看auto vacuum状态
+
+    `SELECT name, setting FROM pg_settings WHERE name LIKE 'autovacuum%';`查看auto vacuum参数:
+    - `autovacuum_analyze_scale_factor = 0.05` : 当表的 5% 被修改时触发autovacuum分析
+
+    可通过使用系统视图来监控清理活动并评估表的健康状况(比如autovacuum来不及, 需要手动vacuum): `SELECT relname, last_vacuum, last_autovacuum, n_dead_tup FROM pg_stat_user_tables WHERE n_dead_tup > 1000;`
+
+    查看autovacuum状态: `SELECT pid, datname, relname, query, state FROM pg_stat_activity WHERE query LIKE '%autovacuum%';`(输出结果会包含本身)
+
+    对于非常大的表，考虑进行分区以提高清理效率. 这将表分成更小、可管理的部分. 比如`CREATE TABLE sales.orders_part ( order_id INT, order_date DATE, total_due NUMERIC ) PARTITION BY RANGE (order_date);`
 - `show config_file` : 查看配置文件
 - `show hba_file`
 - `show ident_file`
@@ -68,6 +94,9 @@ alter table xxx drop constraint yyy;
 - `show archive_command` : 查看指定参数
 - `show transaction_isolation;` : 查看隔离基本
 - `vacuum test` : vacuum test表
+- `vacuum full test` : vacuum test表, 是通过独占锁表, 并重写整个表来回收额外的空间
+- `VACUUM (PARALLEL 2) test;` : vacuum test表, 并发2
+- `VACUUM ANALYZE test;` : vacuum test表并分析表(ANALYZE会更新查询规划器的表统计信息, 应该能体现vacuum前后的查询性能)
 - `select * from pg_stat_activity;`: 查看会话
 - `select * from pg_locks where granted is not true;` : 查看锁等待信息
 - `select name,setting from pg_settings where name in('synchronous_commit','synchronous_standby_names');` : 查看配置

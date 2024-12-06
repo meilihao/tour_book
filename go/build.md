@@ -105,3 +105,8 @@ Go语言的优势在于它是一个静态类型语言，语法很简单，与动
 使用三个点号go install会遍历目录下的所有包, 检查代码如果有更新则重新编译
 
 带版本构建: `scripts/release_creator.py`->`package.sh`, 简要构建可参考`.circleci/config.yml`.
+
+### 查看panic的`栈跟踪信息中的栈帧数据`
+> 在Go 1.11及以后版本中,Go编译器得到更深入的优化,很多简单的函数或方法会被自动内联(inline)。函数一旦内联化, 就无法在栈跟踪信息中看到栈帧信息
+
+`go run -gcflags="-l" go-panic-stacktrace.go`即取消内联优化

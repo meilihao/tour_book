@@ -236,6 +236,8 @@ guestfish使用host kernel:
 
 	发现其中的kernel来自/boot下当前使用的`vmlinuz-xxx` (by size+md5sum)
 
+	> `.guestfs-0`=`.guestfs-<euid>`
+
 通过`guestfish -v --rw --add /dev/zd17`的日志发现`/var/tmp/.guestfs-0/appliance.d`由supermin5命令生成(libguestfs在run_supermin_build里调用了supermin5命令), 具体命令是`supermin5 --build --verbose --if-newer --lock /var/tmp/.guestfs-0/lock --copy-kernel -f ext2 --host-cpu x86_64 /usr/lib64/guestfs/supermin.d -o /var/tmp/.guestfs-0/appliance.d`(`-o`指定的目录至少需要两层, 因为supermin5还会访问其父目录), 最终生成`initrd,kernel,root`三个文件.
 
 supermin5源码是[libguestfs/supermin](https://github.com/libguestfs/supermin).

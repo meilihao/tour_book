@@ -234,3 +234,19 @@ Environment=LS_KEEP_RES=linstor
 After=drbdd.service
 # systemctl restart linstor-satellite # all node
 ```
+
+## LINBIT® CloudStack® HCI
+### 部署
+ref:
+- [Ready-made CloudStack Deployment on Hyperconverged Infrastructure with SDS, HA, and DR Capabilities](https://linbit.com/blog/ready-made-cloudstack-deployment-on-hyperconverged-infrastructure-with-sds-ha-and-dr-capabilities/)
+
+要求:
+1. 抹除除系统盘(安装系统时处理)外所有磁盘上的分区和文件系统, 特别是lvm信息, 因为HCI要求是空盘, lvm分区被识别后就无法抹除了, 会报busy
+
+其他:
+1. 部署过程是由linstor-applian实现的
+
+配置步骤遇到的错误:
+1. `#step3 : Enter a Name for Your Cluster`
+
+    - `failed to list nodes from LINSTOR: failed to connect: could not connect to any controller`: `tail -f /var/log/message`发现是linstor-controller服务没有运行, 手动启动即可

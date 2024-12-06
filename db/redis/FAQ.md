@@ -95,12 +95,6 @@ Redis被配置为保存数据库快照，但它目前不能持久化到硬盘, �
     > CONFIG SET dir /tmp/some/directory/other/than/var # 更换redis dir
     > CONFIG SET dbfilename temp.rdb
 
-### 复制进度
-参考:
-- [Redis主从同步与故障切换，有哪些坑？](https://new.qq.com/omn/20201125/20201125A0GFNT00.html)
-
-通过redis 的`INFO replication`命令查看主库接收写命令的进度信息（master_repl_offset）和从库复制写命令的进度信息（slave_repl_offset）, 即`diff=master_repl_offset-slave_repl_offset`, diff=0为复制完成.
-
 ### redis cmd监控
 `redis-cli monitor`
 
@@ -150,3 +144,8 @@ ExecStartPre=/usr/bin/bash -c "echo 'y'|redis-check-aof --fix /var/lib/redis/app
 Redis 4.0前, aof是全量的日志; 4.0开始支持混合持久化, 此时aof是自持久化开始到持久化结束的这段时间发生的增量 AOF 日志，通常这部分 AOF 日志很小. 开启后aof rewrite的时候就直接把 rdb 的内容写到 aof 文件开头.
 
 开启混合持久化: `aof-use-rdb-preamble yes`
+
+### 主从同步停止
+在slave端执行`info replication`, 看`master_link_status`状态, `down`为已停止.
+
+看slave日志发现slave连接master成功, 但之后会报`MASTER aborted replication with an error: NOAUTH Authentication required`, 在slave配置`masterauth 主库的密码`即可.
