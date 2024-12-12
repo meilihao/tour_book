@@ -164,6 +164,8 @@ lost+found  test
 
 支持的其他命令 from [guestfish - the guest filesystem shell](https://www.libguestfs.org/guestfish.1.html): ls, ll, cat, more, download, tar-out, ...
 
+windows磁盘本身没有lvm磁盘布局, 可直接用`blkid /dev/disks*`获取分区信息, 再用ntfsfix命令修复, 而无需使用guestfish
+
 ## sdk
 sdk在[src/libguestfs.org/guestfs](https://github.com/libguestfs/libguestfs/tree/v1.42.1/golang/src/libguestfs.org/guestfs)(非go mod管理)
 

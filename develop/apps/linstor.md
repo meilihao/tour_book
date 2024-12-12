@@ -241,12 +241,70 @@ ref:
 - [Ready-made CloudStack Deployment on Hyperconverged Infrastructure with SDS, HA, and DR Capabilities](https://linbit.com/blog/ready-made-cloudstack-deployment-on-hyperconverged-infrastructure-with-sds-ha-and-dr-capabilities/)
 
 要求:
-1. 抹除除系统盘(安装系统时处理)外所有磁盘上的分区和文件系统, 特别是lvm信息, 因为HCI要求是空盘, lvm分区被识别后就无法抹除了, 会报busy
+1. 抹除除系统盘(系统盘是安装系统时处理)外所有磁盘上的分区和文件系统, 特别是lvm信息, 因为HCI要求是空盘, lvm分区被识别后就无法抹除了, 会报`Device or resource busy`
 
 其他:
 1. 部署过程是由linstor-applian实现的
+1. 各安装步骤中的ip range不能重合
+1. 安装完成iso后, 建议打快照, 方便部署失败后重来
 
-配置步骤遇到的错误:
+配置步骤:
 1. `#step3 : Enter a Name for Your Cluster`
 
-    - `failed to list nodes from LINSTOR: failed to connect: could not connect to any controller`: `tail -f /var/log/message`发现是linstor-controller服务没有运行, 手动启动即可
+    会将`<ClusterName><序号>`作为hostname
+
+    - `failed to list nodes from LINSTOR: failed to connect: could not connect to any controller`: `tail -f /var/log/message`发现是linstor-controller服务没有运行, 但首次安装好iso后, 第一次启动vm时, linstor-controller本身未自动启动 (linstor-controller将由负责ha的drbd-reactor管理)
+
+        未知, 建议重新安装iso
+    - `failed to list nodes from LINSTOR: failed to list resources of resource definition "linstor_db": 404 Not Found`
+
+        未知, 建议重新安装iso
+1. `CloudStack Node Setup`
+
+    1. system ip range: 10~49
+    2. Instance ip range: 100~249
+1. `Making the LINSTOR controller service highly available`
+
+    ip: 2 # cloudstack portal ip
+1. `CloudStack Setup`
+
+    1. service ip: 3
+    2. secondary storage ip: 4
+1. `#step10: Setting up CloudStack # Wait for CloudStack API to come online`: 耗时很长, 因为cloudstack-management启动很慢
+
+ps:
+1. 当Replica count配置为3时, 至少两个节点online, 否则drbd不会mount drbd设备
+1. ha环境/usr/share/linstor-server/bin/linstor-database export-db会报错, 因为停止linstor-controller后, /var/lib/linstor会被卸载, 而db刚好在这上面. 解决方法: 直接拷贝db即可
+
+### 架构
+每个节点都有linstor-satellite, 在设置高可用性LINSTOR集群时, 但只能有一个linstor-controller处于活动状态.
+linstor-gui/linstor均使用linstor-controller提供的LINSTOR REST API
+
+### cmds
+```bash
+# linstor [--machine-readable] node list # 节点状态 `--machine-readable`:json输出
+# linstor volume list # 卷列表, 包含所有节点
+# linstor volume-definition list # 当前节点volume-definition列表
+# linstor node info # 列出集群中卫星节点上支持的存储提供程序和存储层, 将显示两个表. 第一个表将显示可用的LINSTOR存储提供程序后端, 第二个表将显示可用的LINSTOR存储层
+# linstor storage-pool list # 支持的存储池
+# linstor resource list # 显示资源, resource是[(volumes, node),...]的集合, volume间用VolNr区分. resource在各节点上使用相关的port和ResourceName
+# linstor node list-properties test1 # 查看node属性
+# linstor resource-definition  list # 查看创建的资源
+# linstor resource-definition list-properties linstor_db # 查看resource-definition属性
+# drbd-reactorctl status linstor_db # 查看resource-definition状态
+# linstor node interface list test # 查看node上的interfaces
+# linstor controller set-log-level --global TRACE # 修改所有节点log level为TRACE
+```
+
+Resource, Resource Definition, and Resource Group关系:
+1. Resource Definition是创建的资源
+1. Resource是Resource Definition涉及的子资源, 是(volumes, node)的集合, 这里的volumes包含多个卷时即可理解为传统意义上的卷组
+1. Resource Group是创建资源时依赖的属性
+
+DRBD Consistency Groups: 一个资源中的多个卷就是一个一致性组
+
+### res
+- `/etc/drbd.d/linstor-resources.res` -> `/var/lib/linstor.d`
+- mysql账号: cloud/cloud
+- linstor配置: /etc/linstor/linstor.toml
+- metrics: http://192.168.122.2:3370/metrics

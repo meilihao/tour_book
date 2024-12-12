@@ -181,3 +181,31 @@ ref:
 - [RH2288H V3 LVM管理ES3000报错](https://support.huawei.com/enterprise/zh/knowledge/EKB1001045278)
 
 通过`cat /proc/devices | grep 230`获取到rd, 在 vim /etc/lvm/lvm.conf添加`types = ["rd", 230]`, 再重启即可
+
+### [disable lvm, 未验证](https://documentation.commvault.com/11.20/best_practices_intellisnap_for_unix_file_system.html)
+1. Red Hat Enterprise Linux 7.x, CentOS 7.x, SuSE Linux 15 SP1 Enterprise Server and Previous Versions
+
+    1. Disable and stop the lvm2-lvmetad service using the following commands:
+
+        systemctl disable lvm2-lvmetad
+        systemctl stop lvm2-lvmetad
+        systemctl mask lvm2-lvmetad
+
+    2. Disable and stop the lvm2-lvmetad.socket service, run the following commands:
+
+        systemctl disable lvm2-lvmetad.socket 
+        systemctl stop lvm2-lvmetad.socket
+        systemctl mask lvm2-lvmetad.socket
+
+    3. To disable lvmetad, edit the LVM config file (/etc/lvm/lvm.conf) and change "use_lvmetad = 1" to "use_lvmetad = 0".
+1. Red Hat Enterprise Linux 8.x and CentOS 8.x
+
+    1. Upgrade the LVM module to lvm2-2.03.12-1.el8 or a more recent version.
+    2. In the lvm.config file, set event_activation=0.
+1. SuSE Linux 15 (SP2, SP3) Enterprise Server
+    1. In the lvm.config file, set event_activation=0.
+    2. Apply a patch from SuSE for the corresponding service pack.
+
+        For example, for SUSE Linux 15 SP2 Enterprise Sever, apply the following patch:
+        SUSE-SLE-Module-Basesystem-15-SP2-2021-1582
+        SUSE-SLE-Product-HA-15-SP2-2021-1582

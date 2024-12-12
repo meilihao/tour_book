@@ -26,4 +26,6 @@ ref:
 - [postgres : postgresql-42.2.20.jar](https://mvnrepository.com/artifact/org.postgresql/postgresql)
 - [oracle]()
 
-有时所需jar命令存在, 但dbeaver还是报找不到driver: 清空`库`标签页, 重新添加jar即可
+可能情况:
+1. 有时所需jar已存在, 但dbeaver还是报找不到driver: 清空`库`标签页, 重新添加jar即可
+2. 有时在线下载驱动完成后, dbeaver还是报找不到driver, 重启dbeaver

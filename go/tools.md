@@ -115,6 +115,15 @@ dot -Tpng -o a.png a.dot
 ### pdf
 - [github.com/johnfercher/maroto](https://github.com/johnfercher/maroto)
 
+## cgo
+### 调用so
+- https://kgithub.com/ebitengine/purego
+
+	推荐: 使用RTLD_LAZY, 否则明明符号存在还会报"undefined symbol"
+
+	input:
+	- char sParam[2000] = {0}; FV_GetDevParam(sParam) => var FV_GetDevParam func([]byte) int64
+
 ## IDE
 ### FAQ
 #### vscode 智能提示突然消失

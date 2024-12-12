@@ -27,6 +27,7 @@ DRBD在远程传输上支持三种模式：
 
 ## cmd
 ```bash
+# drbdadm status # 所有res
 # drbdadm status my_res : 查看资源状态, 包含role
 # --- 创建drbd
 # drbdadm -c /etc/drbd.conf create-md r0 --force # 创建drbd metadata
