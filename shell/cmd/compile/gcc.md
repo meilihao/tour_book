@@ -262,3 +262,23 @@ apt install autoconf
 
 ### `error: possibly undefined macro: AC_PROG_LIBTOOL`
 apt install libtool
+
+### 查看glibc版本
+命令:
+```bash
+/lib64/libc.so.6
+ls -l /lib64/libc.so.6
+ldd --version
+getconf GNU_LIBC_VERSION
+```
+
+代码:
+```c
+#include <gnu/libc-version.h>
+
+int main(void) 
+{ 
+    printf("glibc version:%s\n", gnu_get_libc_version());
+    return 0; 
+}
+```

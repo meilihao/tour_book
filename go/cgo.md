@@ -663,3 +663,13 @@ goBuffer:=make([]byte, 4096)
 cBuffer:=(*C.uint8)(unsafe.Pointer(&goBuffer[0]))
 C.sfdisklib_write(dh, offset/512, batchRead/512, cBuffer)
 ```
+
+### error: unknown type name 'xxx'
+比如报error: unknown type name 'mode_t'
+
+原因:
+1. 没有导入头文件
+2. 没有按正确的顺序导入头文件(需先依赖)
+
+### use of cgo in test tdb_test.go not supported
+只能在非`_test.go`中使用cgo

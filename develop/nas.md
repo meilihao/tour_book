@@ -289,6 +289,7 @@ NFS服务虽然不具备用户身份验证的功能，但是NFS提供了一种�
 - [The Official Samba 3.5.x HOWTO and Reference Guide](https://www.samba.org/samba/docs/old/Samba3-HOWTO/index.html)
 - [将Samba设置为Active Directory域控制器](https://www.cnblogs.com/zyxnhr/p/10981108.html)
 - [内核级 SMB 服务器 Ksmbd 进入稳定状态](https://linux.cn/article-16200-1.html)
+- [详解Samba下的Trivial Database文件](https://blog.csdn.net/KKSamoyed/article/details/6527506)
 
 > samba有include指令, 能实现类似于nginx的conf.d.
 > 在rhel上，内核的cifs.ko文件系统模块提供了对SMB协议的支持. samba支持windows, mac, linux, 但linux推荐使用nfs.
@@ -328,6 +329,7 @@ SMB 协议版本:
 - smbclient : 查看其他计算机所分享出来的目录或打印机
 - smbtree : 列出网络内其他计算机正在分享的内容, 类似于windows 网络邻居的显示效果.
 - samba-ad-dc.service : 从4.0开始，samba可以作为Active Directory（AD）域控制器（DC）
+- tdbtool: 查看tdb
 
 > 在samba服务器端,权限由共享的目录的普通权限和smb.conf配置文件共同决定.
 > SAMBA 使用的 NetBIOS 通讯协议

@@ -56,6 +56,7 @@ $ sudo reboot
 
 ## releases
 - [ubuntu](https://wiki.ubuntu.com/Releases)
+- [EL系操作系统发行版哪家强？](https://pigsty.io/zh/blog/db/rhel-compatibility/)
 
 ## 大版本升级
 - ubuntukylin

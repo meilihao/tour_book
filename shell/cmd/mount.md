@@ -78,4 +78,9 @@ TARGET    SOURCE         FSTYPE OPTIONS
 原因: $LFS未定义.
 
 ### 使用`/etc/rc.local`挂载本地盘
-`echo "mount /dev/sdb /zstack_ps" >> /etc/rc.local`, 不放在fstab, 是为了避免磁盘故障后无法引导系统. 
+`echo "mount /dev/sdb /zstack_ps" >> /etc/rc.local`, 不放在fstab, 是为了避免磁盘故障后无法引导系统.
+
+### mount bind
+通过mount --bind命令来将两个目录连接起来, mount --bind命令是将前一个目录挂载到后一个目录上，所有对后一个目录的访问其实都是对前一个目录的访问
+
+比如`mount --bind /tmp/hosts /etc/hosts`
