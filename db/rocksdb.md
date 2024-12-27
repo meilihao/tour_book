@@ -439,6 +439,7 @@ SkipList Memtable，相比 HashSkipList Memtable 跨多个前缀查找的性能�
     决定了每层级的大小阈值的倍数关系. 如果不考虑其他因子的影响，如果 max_bytes_for_level_base = 1GB，max_bytes_for_level_multiplier = 5，那么 L1 的大小阈值是 1GB，L2 的大小阈值是 5GB，L3 的大小阈值是 25GB... 以此类推，所以 RocksDB 的默认分层存储叫做 Leveled 结构，有点类似于阶梯（如果启用 state.backend.rocksdb.compaction.level.use-dynamic-size 参数，则更加复杂）.
 
     这个 max_bytes_for_level_multiplier 参数对写入性能影响也是非常大的，请根据实际情况进行调整，没有一个统一的规则。
+
 ### Flush 和 Compaction 相关参数
 ref:
 - [RocksDB 7 终于解决了 Compaction 时性能下降问题](https://zhuanlan.zhihu.com/p/579468143)
@@ -447,6 +448,12 @@ ref:
 - [深入解析Compaction的13个常见问题](https://cn.pingcap.com/article/post/17441.html)
 - [带你全面了解compaction 的13个问题](https://tidb.net/blog/eedf77ff)
 - [Rocksdb Compaction源码详解（二）：Compaction 完整实现过程 概览](https://blog.csdn.net/Z_Stand/article/details/107592966)
+- [Dynamic Level Size for Level-Based Compaction](https://rocksdb.org/blog/2015/07/23/dynamic-level.html)
+- [Rocksdb dynamic-level-bytes测试简单记录](https://tidb.net/blog/7f8aeedb)
+
+    动态计算方式需开启level_compaction_dynamic_level_bytes参数，以最后一层实际大小为base，逐层向上计算每层target size，数据主要写入最后一层和最后-1层，前面会有部分层没有数据，大约有90%数据在最后一层.
+
+    因为delete后的数据要到最后一层后才能被真正清理，因此动态模式下能更快的完成delete数据清理，减少空间放大，理想状态下动态计算方式空间放大可达到1.11倍
 
 RocksDB 的后台进程中，有持续不断的 Flush 和 Compaction 操作。前者将 MemTable 的内容刷写到磁盘的 SST 文件中；后者则会对多个 SST 文件做归并和重整，删除重复值，并向更高的层级（Level）移动。例如 L0 -> L1 等。
 

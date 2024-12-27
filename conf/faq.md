@@ -223,7 +223,7 @@ root:x:0:0:root:/root:fish # root的shell的路径不对
 
 ### chrome使用代理
 ```bash
-google-chrome-stable --proxy-server="socks5://127.0.0.1:1080" // 需梯子
+google-chrome-stable --proxy-server="socks5://127.0.0.1:20170" // 需梯子
 ```
 
 ### chrome无法同步, 登录账号后提示：`无法同步到“xxx@gmail.com” Request canceled`, 然后chrome账号退出

@@ -376,10 +376,7 @@ $ sudo apt install linux-headers-6.6.13+bpo-amd64 linux-image-6.6.13+bpo-amd64
 `/var/lib/dpkg/info/*.{postinst,postrm,preinst,prerm}`
 
 ### `apt install`报`unknown system group 'plocate' in statoverride file; the system group got removed`
-plocate组不存在, 打开`/var/lib/dpkg/statoverride`, 删除plocate所在行.
-
-### atp install报`unknown system group 'plocate' in statoverride file; the system group got removed`
-打开`/var/lib/dpkg/statoverride`, 删除错误的记录, 并重现安装plocate即可
+plocate组不存在, 打开`/var/lib/dpkg/statoverride`, 删除plocate所在行, 再重现安装plocate即可
 
 ### apt dist-upgrade/upgrade区别
 upgrade:系统将现有的Package升级,如果有相依性的问题, 而此相依性需要安装其它新的Package或影响到其它Package的相依性时,此Package就不会被升级,会保留下来. 

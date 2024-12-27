@@ -37,6 +37,8 @@ awk 'BEGIN{ commands } pattern{ commands } END{ commands }'
 
 ## 例
 ```
-$ls -lrt | awk '{print $1}' # 打印第一列
-$awk ' END {print NR}' file # 统计文件的行数
+$ ls -lrt | awk '{print $1}' # 打印第一列
+$ awk ' END {print NR}' file # 统计文件的行数
+$ awk '{print $(NF-1)}' file # 打印倒数第二列
+$ awk '{sum += $1} END {print sum}' file # 汇总第一列
 ```

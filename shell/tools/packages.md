@@ -75,6 +75,7 @@ $ sudo reboot
 
 ## disk & kernel
 - [Rocky Linux Release and Version Guide](https://wiki.rockylinux.org/rocky/version/)
+- [How Do I Change the Default Boot Kernel in Ubuntu?](https://support.huaweicloud.com/intl/en-us/trouble-ecs/ecs_trouble_0327.html)
 
 ## FAQ
 ### do-release-upgrade 离线升级
