@@ -150,6 +150,8 @@ Unity Tweak Tool 是一个专为Ubuntu Unity 桌面环境的配置工具，允�
 - [如何在ubuntu上安装使用SSR](https://cgsss.net/help/?/article/14), 测试方法`curl --socks5-hostname 127.0.0.1:1080 https://www.google.com.hk`.
 - [SwitchyOmega, 已支持直接使用socks5](github.com/FelisCatus/SwitchyOmega)
 
+使用[Proxy SwitchyOmega (V3)](https://chromewebstore.google.com/detail/proxy-switchyomega-v3/hihblcmlaaademjlakdpicchbjnnnkbo?hl=zh-CN&utm_source=ext_sidebar), 原`Proxy SwitchyOmega`因为chrome v131.0.6778.204禁用非Manifest v3接口而被禁用
+
 SwitchyOmega chrome安装:
 1. chrome扩展打开`开发者模式`
 1. 将SwitchyOmega_Chromium.rcx重命名为SwitchyOmega_Chromium.zip

@@ -8,8 +8,10 @@
 1. 浏览器配置
 
     1. 书签
-    1. SwitchyOmega
-    1. better-onetab/OneTab+数据
+    1. Proxy SwitchyOmega (V3)
+    1. OneTab Pro+数据
+
+        [better-onetab](https://github.com/cnwangjie/better-onetab)因chrome v131.0.6778.204不支持Manifest v3而被禁用
     1. Bookmarks clean up
 1. postman
 1. wechat

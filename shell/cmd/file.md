@@ -17,3 +17,14 @@
     # file -i xxx # 查看文件编码
     # file zsha2 # 查看开发语言, 这里是golang
     zsha2: ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, Go BuildID=9h4qNkFzYZaEW35kATVl/JI23wkfKIQqWQnWPQmI_/A2rlxTCOrY5CK4DB9Ypw/3t5KM7fcCCtzwU2Btlpl, stripped # 目标文件是`LSB relocatable`, 因为目标文件是可重定位文件, 即其中的符号尚未定位, 可用nm验证
+
+## FAQ
+### 创建稀疏文件
+```bash
+# dd if=/dev/zero of=sparse_file bs=1M seek=100 count=0
+# truncate -s 100M sparse_file
+# fallocate -o 500M -l 1G testfile # 从500MB的位置开始预留1GB的空间, 大小是1.5G
+```
+
+fallocate: 为文件预分配物理空间, 但不初始化它们, 不是生成空洞文件
+truncate: 生成的是空洞文件, 并不占用实际的磁盘空间

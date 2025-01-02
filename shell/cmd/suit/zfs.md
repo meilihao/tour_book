@@ -478,6 +478,10 @@ ref:
 
 	json output
 
+- [JSON output support for zfs and zpool commands #16217](https://github.com/openzfs/zfs/pull/16217)
+
+	zfs 2.3.0
+
 ## 周边
 - [zfsbackup-go](https://github.com/someone1/zfsbackup-go)
 
