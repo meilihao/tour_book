@@ -389,3 +389,9 @@ env:
     google后发现debian 12也有该现象
 
 嫌疑最大的软件: 微信LINUX, 钉钉LINUX
+
+### kde的fcitx5-configtool 中显示`无法通过 DBus 连接到 Fcitx，Fcitx 是否正在运行？`
+ref:
+- [设置 Fcitx 5](https://fcitx-im.org/wiki/Setup_Fcitx_5/zh-cn#.2Fetc.2Fprofile)
+
+调试输出见fcitx5-diagnose
