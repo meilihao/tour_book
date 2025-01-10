@@ -13,3 +13,4 @@ ref:
 - 铭凡Minisforum [MS-01](https://www.minisforum.com/new/support?lang=cn#/support/page/spec/108)/[MS-A1](https://www.ithome.com/0/783/345.htm)/[atomman](https://store.minisforum.com/products/atomman-g7-pt)
 
     [atomman是高端子品牌, 有intel+amd cpu](https://news.mydrivers.com/1/980/980846_all.htm).
+- [Project DIGITS:NVIDIA发布全球最小AI超级计算机](https://news.mydrivers.com/1/1024/1024032.htm)

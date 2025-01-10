@@ -18,3 +18,4 @@
        ADDRESS  CPU的物理地址
     CONFIGURED  显示管理程序是否分配了CPU
         ONLINE  显示Linux是否正在使用CPU
+Virtualization  虚拟化支持情况

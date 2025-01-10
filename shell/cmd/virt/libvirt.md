@@ -1485,3 +1485,34 @@ ref:
 如果vm内部安装并启用了qemu-guest-agent(vm xml需要指定channel.target.name=org.qemu.guest_agent.0, 因为qemu-guest-agent.service即qemu-ga进程默认使用了它), 在host侧通过`virsh qemu-agent-command centos '<cmd>'`即可操作vm, 比如`{"execute":"guest-info"}`
 
 > 其他工具: `echo '{"execute": "guest-ping"}' | socat - UNIX-CONNECT:/tmp/qemu-serial.sock`
+
+### 添加virtio 磁盘报"No more available PCI slots"
+ref:
+- [PCI topology and hotplug](https://libvirt.org/pci-hotplug.html)
+- PCI 地址计算方法见 [Device Addresses](https://libvirt.org/formatdomain.html#device-addresses) 和 [PCI addresses in domain XML and guest OS](https://libvirt.org/pci-addresses.html)
+
+PCI 插槽不够了，没法挂载新设备, 所以需要新增 PCI 插槽
+
+解决方法(未验证):
+1. 添加`<controller type='pci' index='10' model='pcie-root-port' />`, 注意index不能重复
+2. 添加`<controller type='pci' model='pci-bridge'/>`
+
+### 兆芯KH-40000/KX-U6780A + oracle linux 7.9没有/dev/kvm
+ref:
+- [开胜® KH-40000系列处理器](https://www.zhaoxin.com/prod_view.aspx?nid=3&typeid=582&id=2411)
+
+   cpu本身支持虚拟化
+
+现象:
+1. `egrep '(vmx|svm)' /proc/cpuinfo`找到vmx
+2. `dmesg |grep -i vmx`提示`kvm: VMX is disabled on CPU 0`, 但百敖uefi已确认开启了虚拟化(即现象1)
+3. `lsmod |grep kvm`有发现kvm模块, 但没有kvm_xxx
+
+`modprobe -v kvm_intel`报`could not inert 'kvm_intel': Input/output error`, 系统日志报`kvm: VMX is disabled on CPU 0`
+
+### vm启动报"value format, found hv_relaxed"
+ref:
+- [Hyper-V Enlightenments](https://www.qemu.org/docs/master/system/i386/hyperv.html)
+
+vm(host是arm64)从光驱启动时使用了windows x64 iso
+
