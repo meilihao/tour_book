@@ -11,6 +11,8 @@
 - [PostgreSQL一线生产经验分享：我讨厌PostgreSQL的10件事 | Rick Branson](https://www.jdon.com/54016.html)
 - [技术极简主义：一切皆用Postgres](https://pigsty.io/zh/blog/pg/just-use-pg/)
 - [PostgreSQL正在吞噬数据库世界](https://pigsty.io/zh/blog/pg/pg-eat-db-world/)
+- [postgres-howtos in chinese](https://postgres-howto.cn/)
+- [PostgreSQL 内参：深入解析运行原理](https://postgres-internals.cn/)
 
 ### 相关主页
 
