@@ -1588,7 +1588,7 @@ ref:
 ```bash
 # bconsole
 * status slots[=1] storage=Tape # 获取槽位信息. 遇到过某个已加载tape的drive, 在bareos-sd log显示`omode=3 ofloags=0 errno=16: ERR=设备或资源忙`而导致获取磁盘柜状态失败
-* update slots storage=Tape # 更新槽位信息
+* update slots storage=Tape # 更新槽位信息, 并检查是否已在catalog中
 * label storage=Tape pool=Scartch drive=0 barcodes yes # 条码扫描, drive上可以有tape
 * update slots [storage=Tape] [drive=1] scan # 条码扫描, 有时该命令不能成功, 但label命令可以; bareso标记操作mhvtl容易卡住???, 操作飞康vtl正常.
 * release storage=Tape drive=0 # 卸载磁带
@@ -3314,6 +3314,29 @@ Thread 3 (Thread 0x7f803435a700 (LWP 11029)):
 ```
 
 上面是官方[0001328: File Daemon Crash when Using Python bareos-fd-postgres Plugin](https://bugs.bareos.org/view.php?id=1328)的traceback, 而我是在bareos 22.1.0 自实现的fd plugin上遇到, 报错堆栈类似, 并给bareos提了[bug](https://bugs.bareos.org/view.php?id=1579). 官方排查到是与pycurl有关.
+
+### 物理带库Dell PowerVault TL1000标记磁带总是失败且带库状态会变为错误
+查看bareos-sd日志, 发现带库在执行load tape操作时总是超时, 导致bareos kill该操作, 从而引发带库不可用
+
+解决方法: 调大`Maximum Changer Wait (Sd->Device)`(默认是5m)为30m
+
+### 磁带标记报`Cannot label volume because it is already labeled: "xxx"`
+重新标记:
+```bash
+# bconsole
+list volume=xxx
+delete volume=xxx yes
+exit
+# tapeinfo -f <autochanger_path_byid> # sure autochanger online
+/usr/lib/bareos/scripts/mtx-changer <autochanger_path_byid> load <sort> <drive_path_byid> <drive_index>
+mt -f <drive_path_byid> status # sure has tape: "File number=-1" is no tape
+mt -f <drive_path_byid> rewind # 回到磁带起点
+mt -f <drive_path_byid> erase/weof // 长擦除/快速擦除
+mt -f <drive_path_byid> rewind
+# bconsole
+release storage=<storage_name> drive <drive_index>
+label storage=<storage_name> pool=Scratch drive <drive_index> barcodes yes
+```
 
 ## 源码
 - bconsole命令实现入口: [core/src/dird/ua_cmds.cc]()

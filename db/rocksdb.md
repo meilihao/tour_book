@@ -16,6 +16,7 @@
 - [rocksdb/USERS.md](https://github.com/facebook/rocksdb/blob/main/USERS.md)
 - [RocksDB 笔记](https://blog.csdn.net/qq_32907195/article/details/117933955)
 - [rocksdb-doc-cn](https://github.com/johnzeng/rocksdb-doc-cn)
+- [TiKV 内存参数性能调优](https://docs.pingcap.com/zh/tidb/stable/tune-tikv-memory-performance)
 
 其他软件使用的rocksdb版本:
 - [apache/kvrocks](https://github.com/apache/kvrocks/blob/unstable/cmake/rocksdb.cmake)

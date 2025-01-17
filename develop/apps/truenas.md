@@ -460,6 +460,8 @@ $ cat /test/truenas/deb/middlewared/.vscode/settings.json
 ### db
 truenas使用sqlite3, db file在`/data/freenas-v1.db`
 
+> factory-v1.db是初始db, freenas-v1.db 当前使用db,是factory-v1.db复制而来 by `plugins/config.py#reset()`.
+
 ### scale-build执行`make checkout`报`module 'functools' has no attribute 'cache'`
 根据[functools文档](https://docs.python.org/3/library/functools.html), 需要python 3.9
 

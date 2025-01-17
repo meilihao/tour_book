@@ -103,5 +103,10 @@ flat  flat%   sum%        cum   cum%
 - col5 : 累计运行时间占总时间的百分比(col4/总时间)
 - col6 : 函数名
 
+
+### mem
+`go tool pprof -alloc_space/-inuse_space http://ip:8899/debug/pprof/heap`
+优先使用-inuse_space来分析，因为直接分析导致问题的现场比分析历史数据肯定要直观的多，一个函数alloc_space多不一定就代表它会导致进程的RSS高.
+
 ## GC
 - [如何监控 golang 程序的垃圾回收](https://holys.im/2016/07/01/monitor-golang-gc/)
