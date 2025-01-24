@@ -172,3 +172,8 @@ ref:
 - [x/crypto/ssh: failed to connect using keyboard interactive auth method](https://github.com/golang/go/issues/32108)
 
 通过`ssh -T -vvv root@xxx`, 查看esxi ssh server支持的ssh method是keyboard-interactive, 而不是password.
+
+### ssh连上几秒后突然断开
+现象: ssh连上几秒后突然断开, 同时登入观察到ssh服务的Main PID总在两个pid中随机切换
+
+原因: ip冲突

@@ -298,6 +298,8 @@ middleware.call('system.advanced.config'))['kdump_enabled']:
 
     - columns.extend(list(alias.c)): 执行datastore_exten
 
+datastore_extend和datastore_extend_context的作用见`plugins/datastore/read.py#_queryset_serialize`, 简单来说就是查询时扩展信息.
+
 ### table定义
 `class xxxModel(sa.Model)`
 

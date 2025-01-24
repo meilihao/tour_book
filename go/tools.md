@@ -8,6 +8,21 @@
 - [csv解析](https://github.com/gocarina/gocsv)
 - [skip utf8 bom](https://github.com/dimchansky/utfbom)
 - [test](https://github.com/stretchr/testify)
+- pdf
+
+	- [github.com/johnfercher/maroto](https://github.com/johnfercher/maroto)
+
+		问题:
+		1. 中文自动换行位置显示出现"-"
+
+			中文换行: `BreakLineStrategy: breakline.DashStrategy`
+			内容与边线重合: 用内边距
+		2. 表格线粗细不一致, 比如全局rowStyles=`BorderType:      border.Full`时
+
+		> reportlab(python)支持内容是html, 长文本可用其他组件包裹来实现自动换行; 支持生成图表
+	- [github.com/unidoc/unipdf](https://github.com/unidoc/unipdf)
+
+		需要license
 
 ## http client
 - [github.com/go-resty/resty/v2](https://github.com/go-resty/resty)
