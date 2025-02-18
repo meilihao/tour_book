@@ -193,6 +193,8 @@ cbt大小预估: `(volGB * 2<<30)/(sectorOfBlock*512) * 4B`
 > 7G盘全备getCbtDiffBitmap返回的bitNum=3584和bit1Num=2991, bitNum!=bit1Num, 推测qcow也有bitmap, 可以辅助判断哪些数据块有数据. 
 
 ### `BCManager和FusionCompute Scoket接口`使用
+1. **如果CBT快照成功, 备份失败(比如获取数据, 打快照), 下一次增备时该盘需要全备, 原因: 下一次cbt快照获取到的数据已经与该盘的状态不一致了, 即上一次备份失败导致无法在该盘上应用这些数据了, 缺了备份失败那次cbt快照的数据变化量**
+1. **如果备份出现部分成功, 部分失败, 不能回滚成功盘的数据, 因为回滚后下一次cbt快照获取到的数据已经与该盘的状态不一致了, 即回滚导致无法在该盘上应用这些数据了, 缺了回滚那次cbt快照的数据变化量**
 1. 打CBT快照前, 不能存在prepareBackupResource
 1. 第一次cbt备份, getCbtDiffBitmap返回的bitNum和bit1Num均为0
 
@@ -303,7 +305,7 @@ ref:
 	# mkdir cdrom
 	# mount /dev/sr0 cdrom
 	# cp cdrom/vmtools-3.0.0.024.tar.bz2 .
-	# tar -xf vmtools-3.0.0.024.tar.bz2 # 需要lbzip2, centos 8.1 官方qcow2没有该lib, `yum install bzip2`
+	# tar -xf vmtools-3.0.0.024.tar.bz2 # 需要lbzip2, centos 7.9 minimal iso/centos 8.1 官方qcow2没有该lib, `yum install bzip2`
 	# cd vmtools
 	# ./install
 	# reboot

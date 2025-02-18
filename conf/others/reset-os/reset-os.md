@@ -18,6 +18,7 @@
 1. git
 
 ## other
+- [github.com/coolcode/tomato-clock-rs](https://github.com/coolcode/tomato-clock-rs)
 - [Ubuntu上安装番茄时钟](https://zhuanlan.zhihu.com/p/350023097)
 
     `pip3 install tomato-clock`

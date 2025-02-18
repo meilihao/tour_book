@@ -296,9 +296,13 @@ middleware.call('system.advanced.config'))['kdump_enabled']:
 1. Config.config()
 1. `self.query(name, [], options)`
 
-    - columns.extend(list(alias.c)): 执行datastore_exten
+    - columns.extend(list(alias.c)): 执行datastore_extend
 
-datastore_extend和datastore_extend_context的作用见`plugins/datastore/read.py#_queryset_serialize`, 简单来说就是查询时扩展信息.
+datastore_extend和datastore_extend_context的作用见`plugins/datastore/read.py#_queryset_serialize`, 简单来说就是查询时, 查出记录后, 准备扩展上下文, 再对查到的每条记录应用扩展上下文以达到扩展信息的目的
+
+ps:
+- xxx_compress(): 去掉属性, 不如插入db前使用
+- 如果查询是xxx字段没有定义在`class YYYModel(sa.Model)`中, 则会使用xxx_id见`_get_col_by_django_name`, 比如`plugins/account.py`中获取`primary_users`的查询
 
 ### table定义
 `class xxxModel(sa.Model)`
@@ -564,3 +568,6 @@ env: Ubuntu 20.04
 
 ### sshd_config被还原
 truenas scale 24.04具有还原机制, 手动修改后, 过段时间后会被根据db里的配置还原.
+
+### alembic/initial.sql
+初始化sql

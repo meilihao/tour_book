@@ -673,3 +673,41 @@ C.sfdisklib_write(dh, offset/512, batchRead/512, cBuffer)
 
 ### use of cgo in test tdb_test.go not supported
 只能在非`_test.go`中使用cgo
+
+### cgo 宏
+Go 无法直接调用 C 宏, 因此需要通过 C 函数封装宏的逻辑或用go代码实现相同逻辑
+
+举例:
+```go
+package main
+
+/*
+#cgo CFLAGS: -I/path/to/your/c/include
+#include <wbc.h> // 假设 WBC_ERROR_IS_OK 和 WBC_ERR_SUCCESS 定义在 wbc.h 中
+
+// 封装 C 的宏定义
+int isErrorOk(int x) {
+    return WBC_ERROR_IS_OK(x);
+}
+*/
+import "C"
+import "fmt"
+
+func main() {
+    // 假设有一个错误码
+    errCode := C.WBC_ERR_SUCCESS
+
+    // 调用 C 函数检查错误码
+    result := C.isErrorOk(errCode)
+
+    // 输出结果
+    if result == 1 {
+        fmt.Println("Error is OK (WBC_ERR_SUCCESS)")
+    } else {
+        fmt.Println("Error is NOT OK")
+    }
+}
+```
+
+### [获取errno](https://chai2010.cn/advanced-go-programming-book/ch2-cgo/ch2-04-func.html)
+from `Go语言高级编程#2.4 函数调用`

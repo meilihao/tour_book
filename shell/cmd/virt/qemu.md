@@ -621,11 +621,29 @@ ps kill nbd相关进程无效, 需重启
 ### 深信服无代理备份增量还原后vm无法进入系统
 在`virsh console`观察到mount `/sysroot`(xfs)时kernel panic(`Failed to mount /sysroot`), 推测是备份时xfs metadata不完整导致的, 用`xfs_repair -[L] <block-device>`修复后vm进入系统, 且增量数据md5值正确.
 
-### qemu qcow2 默认密码
+### qemu qcow2
+#### 默认密码
 - [openEuler-22.03-LTS-x86_64.qcow2](https://docs.openeuler.org/zh/docs/22.03_LTS_SP2/docs/Releasenotes/%E7%B3%BB%E7%BB%9F%E5%AE%89%E8%A3%85.html)
 
     密码: `root:openEuler12#$`, grub密码也是这个
     ssh: 默认启动/支持root+password
+
+#### 网络
+ref:
+- [systemd-networkd](https://wiki.archlinuxcn.org/wiki/Systemd-networkd)
+
+- debian-12-genericcloud-amd64-xxx-yyy.qcow2
+    只有systemd-networkd和netplan
+
+    ```bash
+    # /etc/systemd/network/10-dhcp.network
+    [Match]
+    Name=enp1s0
+
+    [Network]
+    DHCP=yes
+    # systemctl restart systemd-networkd
+    ```
 
 ### qemu-kvm报`error: failed to set MSR 0x345 to 0x2000`
 ref:

@@ -304,3 +304,5 @@ User=root #nobody
 
 ### service报`Start request repeated too quickly`后, start/restart无效
 先systemctl daemon-reload/systemctl reset-failed <service_name>, 再start/restart
+
+### start service报`Start request repeated too quickly`

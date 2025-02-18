@@ -993,7 +993,7 @@ help: `virt-install <参数> ?`
         domcontrol                     域控制接口状态
         domif-getlink                  获取虚拟接口链接状态
         domifaddr <name>               Get network interfaces' addresses for a running domain. 获取虚拟机的IP地址(NAT DHCP分配的)
-        domiflist <name>               列出所有域虚拟接口
+        domiflist <name>               列出所有域虚拟接口, 比如mac
         domifstat                      获得域网络接口状态
         dominfo                        域信息
         dommemstat                     获取域的内存统计

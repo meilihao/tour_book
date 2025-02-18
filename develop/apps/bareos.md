@@ -1068,6 +1068,11 @@ oracle linux 7.9 x86 bareos-fd启用ovirt插件(仅支持全备):
 
 
 ## [部署](https://docs.bareos.org/IntroductionAndTutorial/InstallingBareos.html#install-the-bareos-software-packages)
+bareos端口:
+1. dir: 9101
+1. fd: 9102
+1. sd: 9103
+
 ```bash
 # -- pg
 sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
@@ -2623,7 +2628,7 @@ FileSet {
             signature = MD5
         }
         Plugin = "mssqlvdi"
-                 ":instance=default" # 默认实例用`default`, 否则用`SQL Server 配置管理器 -> SQL Server 服务 -> SQL Server(<instance_name>)`获取的实例名
+                 ":instance=default" # 默认实例用`default`, 否则用`SQL Server 配置管理器 -> SQL Server 服务 -> SQL Server(<instance_name>)`获取的实例名, 原因见`mssqlvdi全备报错`
                  ":database=test" # mssqlvdi是只备份指定dbname
                  ":username=sa"
                  ":password=password@123"
@@ -2665,6 +2670,10 @@ FileSet {
 ## FAQ
 
 ### mssqlvdi全备报错
+ref:
+- [0000384：mssqldvi连接mssql时出现问题（不是默认实例）](https://bugs.bareos.org/view.php?id=384)
+- [IClientVirtualDeviceSet2::CreateEx (VDI)](https://learn.microsoft.com/zh-cn/sql/relational-databases/backup-restore/vdi-reference/iclientvirtualdeviceset2-createex?view=sql-server-ver16)
+
 fileset: `Plugin = "mssqlvdi:instance=SQLSERVER:database=test:username=sa:password=password@123"`
 
 1. windows 日志-应用程序
@@ -2689,7 +2698,9 @@ fileset: `Plugin = "mssqlvdi:instance=SQLSERVER:database=test:username=sa:passwo
 
 解决方法: 将fileset中的`instance=SQLSERVER`改为`instance=default`.
 
-> 按照`服务(services.msc) -> `SQL Server(<实例名>)`, 默认实例为(MSSQLSERVER)`, 但使用`instance=MSSQLSERVER`也会报错.
+> 按照`服务(services.msc) -> `SQL Server(<实例名>)`, 默认实例为(MSSQLSERVER)`, 但使用`instance=MSSQLSERVER`也会报错, 比如报`Cannot open "/@MSSQL/SQLSERVER/test/db-20221228-045438-full.bak": ERR=操作成功完成`
+
+建议: mssql只有一个实例时用default, 否则使用具体实例名
 
 ### job执行过程中报`BnetHost2IpAddrs() for host "ubuntu-18" failed: ERR=`
 ubuntu-18是storage daemon的参数在`/etc/bareos/bareos-dir.d/storage/File.conf`的`Address`.
@@ -2717,6 +2728,9 @@ fileset中备份文件路径错误.
 client在win10上.
 
 已尝试重装client, 或重新配置client的director-dir.conf, 均无效. 这个错误的原因是openssl 在对收到的包做完整性校验时发现收到的报数据不对. 其实就是client端上director/bareos-dir.conf`中的Password与bareos-dir的不一致导致.
+
+### oracle备份报`Network error during CRAM MD5 with 192.168.16.39\nDirector unable to authenticate with Storage daemon at "192.168.16.39:9103". Possible causes:\nPasswords or names not the same or TLS negotiation problem or Maximum Concurrent Jobs exceeded on th SD or SD networking messed up (restart daemon)`
+检查过password, 没有问题. 看到sd有报`ERROR: Number of Jobs exhausted, please increate MaximumConcurrentJobs`, 但当前只有一个备份job, 报错原因未知, 重启bareos-sd后再次备份成功
 
 ### bconsole执行`status client=bareos-fd`报`Probing client protocol... (result will be saved until config reload)`
 看`/var/log/bareos/bareos.log`提示`Unable to authenticate with File daemon at "localhost:9102"`, 是dir中client的配置的Password字段错误, 用`/etc/bareos/bareos-fd.d/director/bareos-dir.conf`中Password替换即可.
@@ -3232,6 +3246,9 @@ lstat demo在[docs/manuals/source/DeveloperGuide/api.rst](https://github.com/bar
 ### bareos备份windows vss报错是乱码
 用Pluma打开查看或`iconv -f gbk -t utf8 win.log |less`
 
+### bareos备份mssql插件报错是乱码
+用vscode+`GB2312`打开
+
 ### 并发备份
 - [Concurrent Disk Jobs](https://docs.bareos.org/TasksAndConcepts/VolumeManagement.html#concurrent-disk-jobs)
 - [Concurrent Jobs in Bareos with disk storage](https://svennd.be/concurrent-jobs-in-bareos-with-disk-storage/)
@@ -3337,6 +3354,9 @@ mt -f <drive_path_byid> rewind
 release storage=<storage_name> drive <drive_index>
 label storage=<storage_name> pool=Scratch drive <drive_index> barcodes yes
 ```
+
+### 备份mssql报`Plugin Directory not defined`
+见mssql "配置bareos-fd", 需要启用`Plugin Directory`配置项
 
 ## 源码
 - bconsole命令实现入口: [core/src/dird/ua_cmds.cc]()

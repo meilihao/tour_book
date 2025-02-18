@@ -252,5 +252,17 @@ AuthenticationMethods publickey,password
 
 openssh 9.2没有AuthenticationMethods, 保证其他如`当前配置`, 即可使用root+password登入.
 
+其实root登入关键是配置PermitRootLogin, PasswordAuthentication.
+
 ### 无法使用密码登入
 开启`PasswordAuthentication yes`并重启sshd
+
+### sshd日志
+添加`-d`
+
+注意: 仅用于调试. 因为实际使用中发现, ssh成功登入后会导致sshd退出.
+
+### sshd启动报`sshd: no hostkeys availabled -- exiting`
+是ssh.service的`ExecStartPre=sshd -t`抛出的
+
+解决方案: `ssh-keygen -A`
