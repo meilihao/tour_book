@@ -383,3 +383,6 @@ upgrade:系统将现有的Package升级,如果有相依性的问题, 而此相�
 dist-upgrade:可以聪明的解决相依性的问题, 如果有相依性问题, 需要安装/移除新的Package,就会试着去安装/移除它. (所以通常这个会被认为是有点风险的升级) 
 
 apt upgrade 和 apt dist-upgrade 本质上是没有什么不同的, 仅在处理依赖上有差异: dist-upgrade会识别出当依赖关系改变的情形并作出处理，而upgrade对此情形不处理
+
+### apt更新包含phased upgrades
+`apt -o APT::Get::Always-Include-Phased-Updates=true upgrade`, 也可将该配置写入apt配置文件(不推荐)

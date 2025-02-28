@@ -500,6 +500,8 @@ ps:
 
 > 试过两个ps设备+一个usb鼠标, 但还是飘.
 
+aarch64 host下的kvm vm(`mouse+keyboard(usb)`)安装centos 7 iso时也存在鼠标飘, 存在概率性点击按钮失败的问题: 鼠标只有usb的, 键盘换成virtio后根本无法输入; 经测试mouse+keyboard(usb) + tablet(virtio)可用改善该情况.
+
 ### Guest has not initialized the display (yet) 
 - [虽然qemu machine i440fx/q35都支持 BIOS 和 UEFI, 但**uefi推荐使用q35**](https://blog.csdn.net/m0_47541842/article/details/113521732)
 - iso里os的arch与qemu使用的arch不一致
@@ -630,6 +632,9 @@ ref:
 
 ### 启动vm报`Unable to add bridge eth0 port vnet0: Operation not supported`
 eth0不是brigde device.
+
+### windows vm进入ntfs修复后, novnc断联
+接管windows server 2008 R2后, novnc正常, 但系统进入ntfs修复后novnc中断(virt-manager正常), 等修复结束后自动重启了, 此时novnc还是无法访问, 重启novnc也无效, 但virt-manager和realvnc viewer正常. 过几分钟后, novnc突然又恢复正常.
 
 ### 启动vm报`error creating macvtap interface macvtap@eth0 (52:54:00:56:84:7a): Device or resource busy`
 eth0被用于创建bond0, 此时应使用bond0
@@ -1198,6 +1203,8 @@ nmap -sP 192.168.0.0/24
    - virt-type : hypervisor类型, 可使用`virsh capabilities`获取
    - os-variant=rhel6, 可用`osinfo-query os`获取, 信息来源于`/usr/share/osinfo`, 较新的os xml(比如`/usr/share/osinfo/os/centos.org/centos-stream-9.xml`)包含了支持的设备列表`<devices>`标签
       osinfo-query支持family, eol-date等
+
+      > virt-manager 获取os-variant基于[libosinfo](https://libosinfo.org/), osinfo-query也是使用它.
    - machine : machine类型, 可用`qemu-system-x86_64 -machine help`获取
    - soundhw: 声卡类型, 可用`qemu-system-x86_64 -soundhw help`获取
 - 安装方式
@@ -1306,7 +1313,7 @@ nmap -sP 192.168.0.0/24
          例如: `--graphics vnc,password=123456,port=5910`
    - [video](https://wiki.archlinux.org/title/QEMU_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)#%E5%9B%BE%E5%BD%A2)
 
-      - std: 标准vga, windows, 使用uiefi, 推荐
+      - vga: windows, 使用uiefi, 推荐
       - vmware: vmware兼容显卡, vmware虚拟机, ubuntu等推荐
       - cirrus : cirrus兼容显卡, 默认显卡, redhat等推荐使用
       - none : 等于没有vga卡, 无法通过`-vnc`访问它. 与使用`-nographic`不同, `-nographic`会让QEMU模拟VGA卡且只是关闭了SDL输出

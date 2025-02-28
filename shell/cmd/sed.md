@@ -41,6 +41,7 @@ sed内置命令N的作用: 不会清空模式空间(pattern space)内容, 并且
 
 参考:
 - [sed命令详解](http://www.cnblogs.com/edwardlost/archive/2010/09/17/1829145.html)
+- [sed中的正则匹配](https://cloud.tencent.com/developer/article/1652461)
 
 ## 例
 sed `s<x>`匹配时需要转义的字符串`$*`.
@@ -96,6 +97,7 @@ $ nmcli --mode multiline dev | cut -d" " -f 2- | sed "s/^[ \t]*//"
 $ cat /sys/class/fc_host/host*/port_name | sed -e s/0x// -e 's/../&:/g' -e s/:$// # 1. 去掉开头的"0x"; 2. 每两个字符用":"分割; 3. 取消末尾多余的":"
 $ sed -i '$a Trailor xxx' t.txt # 在t.txt追加`Trailor xxx`
 $ sed -e 's|^mirrorlist=|#mirrorlist=|g' -i.bak /etc/yum.repos.d/Centos-*.repo # 修改 Centos-*.repo的同时生成Centos-*.repo.bak的备份
+$ sed -i 's/bind to =.*$/bind to = */' conf # 整行匹配
 ```
 
 ps:

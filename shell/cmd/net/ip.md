@@ -641,3 +641,6 @@ env:
 现象: ping 192.168.8.2成功, 添加route `192.168.8.0/24 dev eth0 proto static metric 100`后ping不成功
 
 原因: 参考route输出的Gateway说明. 没有该route时, 匹配到默认路由, 走了gateway, 因此能ping通; 有该规则时, 匹配到该规则, 因为`Gateway=0.0.0.0`, 表示当前记录对应的 Destination 跟本机在同一个网段，通信时不需要经过网关, 因此ping不通.
+
+### nmtui配置ip后, 过段时间后会消失
+手动配置ipv4后, `IPv4 CONFIGURATION`仍是Automatic导致与dhcp冲突, 改为Manual即可

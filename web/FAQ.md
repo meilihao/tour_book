@@ -32,3 +32,13 @@ resp返回的header name变成小写导致.
 - `curl https://news-at.zhihu.com/api/4/news/latest | jq .` # 基于[jq](https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64), **推荐**
 - `curl https://news-at.zhihu.com/api/4/news/latest | python -m json.tool`
 - `curl https://news-at.zhihu.com/api/4/news/latest -s | json` # 基于`npm install -g json`
+
+### chrome对同一个接口请求了两次, 最后一个请求返回的数据是以前的缓存
+ref:
+- [Chrome浏览器会重复发送两次请求,第2次还是空请求的原因与解决方法](https://blog.csdn.net/u011474608/article/details/115178691)
+
+chrome: 111.0.5564.111
+
+网页操作发现chrome对同一个接口请求了两次, 最后一个请求返回的数据是以前的缓存. 同时DevTools Network上, 第二个请求只有"Name"有内容, 其他都为空, 点击第一个请求看到的resp是正确数据, 点击第二个请求, 自动跳转到第一关请求上, 且其resp变为以前的缓存.
+
+解决方法: 重启chrome
