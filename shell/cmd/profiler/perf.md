@@ -12,6 +12,11 @@
 ## perf report
 Children/Self: 如果在record时收集了调用链, 则Overhead可以在Children、Self两个列中显示. Children显示子代函数的样本计数、Self显示函数自己的样本计数.
 
+## pref stat
+`perf stat -e kmem:kmalloc,kmem:kfree`: 统计内核内存分配和释放的次数
+`perf stat -e cycles,instructions,L1-dcache-loads,L1-dcache-load-misses,LLC-loads,LLC-load-misses,dTLB-loads,dTLB-load-misses -p 316 sleep 10` # 统计指定pid的指定项
+`perf stat ls`: 计算命令执行过程中出现的硬件和软件事件，并生成这些计数的统计信息
+
 ## FAQ
 ### 软中断ksoftirqd/n 占用CPU 过高排查
 ref:

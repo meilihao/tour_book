@@ -3,6 +3,9 @@
 - [ip命令以及与net-tools的映射](https://linux.cn/article-3144-1.html)
 - [放弃 ifconfig，拥抱 ip 命令](https://linux.cn/article-13089-1.html)
 - [iproute2](https://github.com/mozhuli/SDN-Learning-notes/blob/master/linux/iproute2.md)
+- [Red Hat Enterprise Linux 7 网络指南](https://docs.redhat.com/zh-cn/documentation/red_hat_enterprise_linux/7/html/networking_guide/)
+- [iproute and Routing Tables](https://datahacker.blog/industry/technology-menu/networking/routes-and-rules/iproute-and-routing-tables)
+- [**Linux 路由实现原理**](https://blog.csdn.net/CoderTnT/article/details/124856179)
 
 ## 网卡工作模式 
 网卡有以下几种工作模式，通常网卡会配置广播和多播模式：
@@ -11,6 +14,29 @@
 - 直接模式（Direct Model）:工作在直接模式下的网卡只接收目地址是自己 Mac 地址的帧。只有当数据包的目的地址为网卡自己的地址时，网卡才接收它。
 - 混杂模式（Promiscuous Model）:工作在混杂模式下的网卡**接收所有的流过网卡的帧，抓包程序就是在这种模式下运行的**。网卡的缺省工作模式包含广播模式和直接模式，即它只接收广播帧和发给自己的帧。如果采用混杂模式，网卡将接受同一网络内所有所发送的数据包，这样就可以到达对于网络信息监视捕获的目的。它将接收所有经过的数据包，这个特性是编写网络监听程序的关键
 
+## 路由流程
+路由表用于决定数据包从哪个网口发出，其判断依据则主要是IP地址.
+
+Linux可以配置很多很多策略，数据包将依次通过各个策略，一旦匹配某个策略则进一步应用策略对应的路由表，如果当前路由表无法匹配到路由则继续执行后续策略匹配.
+
+路由的基本流程为: 收到数据包之后，解析出目的IP，判断是否是本机IP。如果是本机IP，则交由上层传输层处理。如果不是本机IP，则通过查找路由表找到合适的网络接口将IP数据包转发出去.
+
+Linux上通过路由规则和路由表配合来实现路由流程, 处理逻辑如下:
+1. 按路由规则优先级, 根据规则匹配条件找到需要匹配的路由表
+2. 根据路由表中条目进行匹配的结果进行转发
+3. 若路由表中没有匹配到满足的路由条目，则处理下一路由规则
+
+ps: linux路由表的id仅标识唯一, 不表示优先级; 策略路由有优先级, 数值小优先.
+
+在默认情况下，Linux 上的转发功能是关闭的，如果发现收到的网络包不属于自己就会将其丢弃.
+
+但在某些场景下，例如对于容器网络来说，Linux 需要转发本机上其它网络命名空间中过来的数据包，需要手工开启转发:
+```bash
+# sysctl -w net.ipv4.ip_forward=1
+# sysctl net.ipv4.conf.all.forwarding=1
+```
+
+开启后，Linux 就能像路由器一样对不属于本机（严格地说是本网络命名空间）的 IP 数据包进行路由转发了.
 
 ## 组件
 - ip : 用于管理路由表和网络接口
@@ -53,6 +79,10 @@
     - [Linux network metrics: why you should use nstat instead of netstat](https://loicpefferkorn.net/2016/03/linux-network-metrics-why-you-should-use-nstat-instead-of-netstat/)
     - [Linux network statistics reference](https://loicpefferkorn.net/2018/09/linux-network-statistics-reference/)
 
+man文档:
+- ip
+- ip-route
+
 # ip route
 ref:
 - [iproute2路由配置（ip rule、ip route、traceroute）](https://www.cnblogs.com/liugp/p/16395089.html)
@@ -65,9 +95,9 @@ ref:
 管理路由表的工具
 
 Linux 最多可以支持 255 张路由表，其中有 4 张表是内置的:
-- 表 255 本地路由表（Local table） 本地接口地址，广播地址，已及 NAT 地址都放在这个表. 该路由表**由系统自动维护，管理员不能直接修改**
-- 表 254 主路由表（Main table） 如果没有指明所属的路由表的所有路由都默认都放在这个表里，一般来说，旧的路由工具（如 route）所添加的路由都会加到这个表. 一般是普通的路由
-- 表 253 默认路由表 （Default table） 一般来说默认路由都放在这张表，但是如果特别指明放的也可以是所有的网关路由
+- 表 255 本地路由表(local): 本地接口地址，广播地址，已及 NAT 地址都放在这个表. 该路由表**由kernel自动维护，管理员不能直接修改**
+- 表 254 主路由表(main): 如果没有指明所属的路由表的所有路由都默认都放在这个表里，一般来说，旧的路由工具（如 route）所添加的路由都会加到这个表. 一般是普通的路由即所有非策略路由
+- 表 253 默认路由表(default): 所有其他路由表都没有匹配到的情况下，根据该表中的条目进行处理
 - 表 0 保留
 
 > Netfilter 处理网络包的先后顺序：接收网络包，先 DNAT，然后查路由策略，查路由策略指定的路由表做路由，然后 SNAT，再发出网络包
@@ -224,7 +254,7 @@ ip [-j -details] link show
 ```
 
 # ip rule
-策略rule主要包含三个信息，即`rule的优先级，条件，路由表`,  其中rule的优先级数字越小表示优先级越高，然后是满足什么条件下**由指定的路由表来进行路由**. 在linux系统启动时，内核会为路由策略数据库配置三条缺省的规则，即rule 0，rule 32766， rule 32767（数字是rule的优先级）. 当有一个数据包需要路由时，系统会从优先级最高的规则开始检查，如果没有匹配的规则，就会继续检查下一条规则，直到找到一个匹配的规则. 如果没有任何自定义规则匹配，最后会使用优先级为 32767 的默认规则.
+策略rule主要包含三个信息，即`rule的优先级(Priority)，条件(Selector)，路由表(Action)`,  其中rule的优先级数字越小表示优先级越高，然后是满足什么条件下**由指定的路由表来进行路由**. 在linux系统启动时，内核会为路由策略数据库配置三条缺省的规则，即rule 0，rule 32766， rule 32767（数字是rule的优先级）. 当有一个数据包需要路由时，系统会从优先级最高的规则开始检查，如果没有匹配的规则，就会继续检查下一条规则，直到找到一个匹配的规则. 如果没有任何自定义规则匹配，最后会使用优先级为 32767 的默认规则.
 
 ip rule list的记录又称为路由规则. 只不过路由规则在路由表的基础上增加了优先级的概念. 优先级可以从具体路由表条目前的数字得出.
 
@@ -644,3 +674,71 @@ env:
 
 ### nmtui配置ip后, 过段时间后会消失
 手动配置ipv4后, `IPv4 CONFIGURATION`仍是Automatic导致与dhcp冲突, 改为Manual即可
+
+### 配置静态路由
+ref:
+- [在 ifcfg 文件中配置静态路由](https://docs.redhat.com/zh-cn/documentation/red_hat_enterprise_linux/7/html/networking_guide/sec-configuring_static_routes_in_ifcfg_files#sec-Configuring_Static_Routes_in_ifcfg_files)
+
+静态路由用于定义目标网络的路由路径. 如果尝试到达的任何网络没有被一个静态路由定义覆盖，则只能通过默认网关访问.
+
+`route-<interface>` 文件的格式有两种:
+- 传统格式([Network/Netmask Directives Format, 使用网络/网络掩码指令格式的静态路由](https://docs.redhat.com/zh-cn/documentation/red_hat_enterprise_linux/7/html/networking_guide/sec-configuring_static_routes_in_ifcfg_files#sec-Configuring_Static_Routes_in_ifcfg_files))：每行定义一个路由规则
+- IP命令格式：使用 ip route 命令的语法
+
+    ```bash
+    <目标网络> via <网关> dev <接口>
+    default via 192.168.1.1 dev eth0 # 默认路由通过网关 192.168.1.1，使用 eth0 接口. default=0.0.0.0/0
+    192.168.2.0/24 via 192.168.1.1 dev eth0 # 发送到 192.168.2.0/24 网络的流量通过网关 192.168.1.1，使用 eth0 接口
+    ```
+
+路由的优先级：多个路由配置可以通过目标网络的匹配度来优先选择. 例如，192.168.1.0/24 会优先匹配比 0.0.0.0/0 更具体的路由
+
+配置完成后，需要重启网络服务或接口以使配置生效
+
+### /etc/sysconfig/network和/etc/sysconfig/network-scripts配置的关系
+ref:
+- [4.6. 配置默认网关](https://docs.redhat.com/zh-cn/documentation/red_hat_enterprise_linux/7/html/networking_guide/sec-configuring_the_default_gateway#sec-Configuring_the_Default_Gateway)
+- [`man 5 nm-settings-ifcfg-rh`]()
+
+对于新部署的系统（尤其是 RHEL 8 和 CentOS 8 及以后版本），建议使用 NetworkManager 或 systemd-networkd 来进行网络配置. 且在 CentOS Stream 9 和 RHEL 9 中，/etc/sysconfig/network-scripts/ 目录已经不再默认存在，网络配置被完全转移到 NetworkManager 或 systemd-networkd. 同时ifup和ifdown命令在现代的Linux发行版中已经逐渐被废弃或替换, 可使用`ip link`代替
+
+ps:
+1. ifup/ifdown 是 Debian/Ubuntu 等用来管理网络接口的启动和停止的命令. 它不仅仅是操作接口，还会根据 /etc/network/interfaces 或 /etc/netplan（在 Ubuntu 20.04 及以后的版本中）中的网络配置来管理接口, 比如触发一系列与网络配置相关的操作（如关闭 DHCP 客户端，清除路由等）.
+1. ifconfig 是旧版的网络配置工具，已经被 ip 命令所取代. ifconfig down 只是 简单地禁用网络接口，它不会触发任何配置文件的读取，也不会执行复杂的网络配置操作, 主要是将网络接口从操作系统层面上禁用
+
+在Linux系统中，/etc/sysconfig/network 和 /etc/sysconfig/network-scripts 是用于网络配置的两个重要目录，通常用于基于Red Hat的发行版（如CentOS、RHEL、Fedora等）。它们之间的关系如下：
+
+1. /etc/sysconfig/network
+作用：这个文件用于设置全局网络配置，适用于整个系统
+
+常见配置项：
+- NETWORKING=yes|no：是否启用网络功能
+- HOSTNAME=<hostname>：设置系统的主机名
+- GATEWAY=<gateway-ip>：设置默认网关（通常也可以在接口配置文件中设置）
+- NISDOMAIN=<nis-domain>：设置NIS域名（如果使用NIS服务）
+
+2. /etc/sysconfig/network-scripts
+作用：这个目录包含每个网络接口的独立配置文件，用于配置具体的网络接口（如eth0、eth1等）
+
+文件命名规则：ifcfg-<interface-name>，例如 ifcfg-eth0 是eth0接口的配置文件
+
+常见配置项：
+- DEVICE=<interface-name>：指定网络接口的名称（如eth0）。
+- BOOTPROTO=dhcp|static|none：设置IP地址的获取方式（DHCP或静态IP）。
+- IPADDR=<ip-address>：设置静态IP地址。
+- NETMASK=<subnet-mask>：设置子网掩码。
+- GATEWAY=<gateway-ip>：设置默认网关（如果未在全局配置中设置）。
+- ONBOOT=yes|no：是否在系统启动时启用该接口。
+- DNS1=<dns-server-ip> 和 DNS2=<dns-server-ip>：设置DNS服务器。
+
+3. 两者的关系
+全局与局部配置：
+- /etc/sysconfig/network 是全局配置文件，适用于整个系统的网络设置
+- /etc/sysconfig/network-scripts 是局部配置文件，针对每个网络接口进行独立配置
+
+优先级：
+- **如果某个配置项（如网关）同时在全局配置文件和接口配置文件中设置，接口配置文件中的值通常会覆盖全局配置**
+
+依赖关系：
+- 如果 /etc/sysconfig/network 中的 NETWORKING=no，则无论接口配置文件如何设置，网络功能都不会启用
+- 接口配置文件中的 ONBOOT=yes 必须设置为 yes，才能在系统启动时启用该接口

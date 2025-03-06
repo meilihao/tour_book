@@ -54,6 +54,14 @@ ps:
 ### openssl x509
 - -x509toreq             基于当前证书创建一个CSR文件
 
+### dgst
+生成Message Digest(信息摘要)
+
+openssl dgst -sha256 freenas-v1.db
+
+#### hmac
+openssl dgst -sha256 -hmac "secretkey2" -out hmac_result.txt freenas-v1.db 
+
 ### crt
 ```bash
 openssl x509 -noout -text -in ca.crt
