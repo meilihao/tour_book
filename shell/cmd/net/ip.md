@@ -147,7 +147,7 @@ Linux 最多可以支持 255 张路由表，其中有 4 张表是内置的:
 #1      inr.ruhep
 # ip route [list/show] [dev xxx] [table yyy] # ip route = ip route show table main, 显示系统路由, 或使用`route -n`
 default via 192.168.0.1 dev bond0 
-192.168.0.0/24 dev bond0  proto kernel  scope link  src 192.168.0.141 metric 100 # 如果进程没有bind一个源地址，将会使用src域里面的源地址作为数据包的源地址进行发送; 但是如果进程提前bind了，命中了这个条目，但仍然会使用进程bind的源地址作为数据包的源地址. 因此这里的src只是一个建议的作用. metric 为路由指定所需跃点数的整数值（范围是 1 ~ 9999），它用来在路由表里的多个路由中选择与转发包中的目标地址最为匹配的路由。所选的路由具有最少的跃点数。跃点数能够反映跃点的数量、路径的速度、路径可靠性、路径吞吐量以及管理属性.
+192.168.0.0/24 dev bond0  proto kernel  scope link  src 192.168.0.141 metric 100 # 如果进程没有bind一个源地址，将会使用src域里面的源地址作为数据包的源地址进行发送; 但是如果进程提前bind了，命中了这个条目，但仍然会使用进程bind的源地址作为数据包的源地址. 因此这里的src只是一个建议的作用. metric 为路由指定所需跃点数的整数值（范围是 1 ~ 9999），它用来在路由表里的多个路由中选择与转发包中的目标地址最为匹配的路由。所选的路由具有最少的跃点数。跃点数能够反映跃点的数量、路径的速度、路径可靠性、路径吞吐量以及管理属性. metric最小，优先级最高.
 # ip route add table 3 via 10.0.0.1 dev ethX # 添加路由表, ethx 是 10.0.0.1 所在的网卡, 3是路由表的编号
 # ip route ls/show table local/255 # id/name from /etc/iproute2/rt_tables
 # ip route list 192.168.182.0/24 # 查看指定网段的路由
@@ -193,29 +193,6 @@ default         gateway         0.0.0.0         UG    0      0        0 eth0
 10.139.128.0    0.0.0.0         255.255.224.0   U     0      0        0 eth0
 # arp -an # 查看数据走向
 ```
-
-route说明:
-- Destination	目标网络或目标主机. Destination 为 default（0.0.0.0）时，表示这个是默认网关，所有数据都发到这个网关
-- Gateway	网关地址，**0.0.0.0 表示当前记录对应的 Destination 跟本机在同一个网段，通信时不需要经过网关**
-
-    **Destination的0.0.0.0和Gateway的0.0.0.0不是同一个意思, 不要将Gateway的0.0.0.0理解为下一跳是gateway的意思**
-- Genmask	Destination 字段的网络掩码，Destination 是主机时需要设置为 255.255.255.255，是默认路由时会设置为 0.0.0.0
-- Flags	标记
-
-    含义:
-    - U 路由是活动的
-    - H 目标是个主机
-    - G 需要经过网关
-    - R 恢复动态路由产生的表项
-    - D 由路由的后台程序动态地安装
-    - M 由路由的后台程序修改
-    - ! 拒绝路由
-- Metric	路由距离，到达指定网络所需的中转数，是大型局域网和广域网设置所必需的 （不在Linux内核中使用）
-- Ref	路由项引用次数 （不在Linux内核中使用）
-- Use	此路由项被路由软件查找的次数
-- Iface	网卡名字，例如 eth0
-
-ps: **route仅显示主路由表**
 
 网关是路由出口的位置, 不一定和本机网段相同.
 
@@ -342,6 +319,58 @@ ref:
 - [使用 VXLAN 为虚拟机创建虚拟第 2 层域](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/9/html/configuring_and_managing_networking/assembly_using-a-vxlan-to-create-a-virtual-layer-2-domain-for-vms_configuring-and-managing-networking)
 
 ## FAQ
+### 静态路由与`ip和网卡`的关系
+静态路由 是手动配置的路由规则，用于指定数据包从源地址到目标地址的路径.
+
+每条静态路由通常包括以下信息：
+1. 目标网络：数据包要到达的目标网络地址（如 192.168.2.0/24）
+1. 网关：数据包需要经过的下一个路由器的 IP 地址（如 192.168.1.1）
+1. 网络接口：数据包从哪个网络接口发送出去（如 eth0）
+
+静态路由是针对 IP 地址 的，而不是直接针对网卡（网络接口）。静态路由的作用是告诉操作系统如何将数据包发送到特定的目标网络或 IP 地址.
+
+静态路由的工作原理:
+1. 当操作系统收到一个数据包时，会检查数据包的目标 IP 地址。
+1. 根据路由表（包括静态路由）决定数据包的下一跳（网关）和出口接口。
+1. 如果目标 IP 地址匹配静态路由规则，数据包将通过指定的接口发送到指定的网关
+
+三者关系:
+1. 静态路由本质上是为数据包指明如何到达目标地址，它依赖于 **IP 地址**，而不是直接与网卡绑定
+1. 网卡是数据包的出口: 静态路由需要指定一个网络接口来发送数据包
+
+    在大多数情况下，静态路由需要指定网卡，因为网卡是数据包的出口。
+
+    在以下情况下，可以不显式指定网卡：
+    1. 点对点链路
+    1. 默认路由
+    
+        如果主机只有一个网卡，操作系统会自动通过该网卡发送数据包，而不需要显式指定网卡
+    1. 多网卡环境中的隐式选择
+
+        如果主机有多个网卡，但**网关的 IP 地址只与其中一个网卡在同一子网中**，操作系统会自动选择该网卡作为出口
+    1. VPN 或隧道接口
+
+    操作系统会根据网关的 IP 地址和路由表自动选择合适的网卡作为出口
+1. 网卡的 IP 地址和网关：**静态路由的网关必须与网卡的 IP 地址在同一子网中**
+
+    原因:
+    1. ARP 协议只能在同一子网内工作，用于解析网关的 MAC 地址
+    2. 操作系统需要知道如何将数据包发送到网关，而网关必须在本地网络中
+
+    ps: 在点对点链路等特殊情况下，网关可以与网卡的 IP 地址可以不在同一子网中. 因为点对点链路不需要 ARP 协议，数据包直接通过链路发送到对端设备
+
+### 直接路由
+直接路由是指目标网络与主机或路由器**直接相连**的情况. 操作系统会自动生成直接路由，无需手动配置.
+
+静态路由与直接路由的区别:
+特性	静态路由	直接路由
+配置方式	手动配置	自动生成
+适用网络	跨网络通信（目标网络不在本地子网）	直连网络（目标网络在本地子网）
+是否需要网关	需要指定网关	无需网关
+路由表生成	手动添加到路由表	自动添加到路由表
+适用场景	小型网络或网络拓扑稳定的环境	目标网络与主机或路由器直接相连
+动态调整	不支持动态调整	随网络接口状态自动调整
+
 ### 丢包
 - [Linux内核常见的网络丢包场景分析](https://mp.weixin.qq.com/s/vdW0L7nEdfrxSJ_9VGviaA)
 - [云网络丢包故障定位，看这一篇就够了](https://mp.weixin.qq.com/s?__biz=MzUyODY4NTA2Mw==&mid=2247551473&idx=1&sn=5d4bec2468585d719c82f53243c58344&source=41#wechat_redirect)
@@ -361,6 +390,13 @@ ref:
 
 #### 多网卡同IP技术
 参考:
+- [**NIC team 在 Red Hat Enterprise Linux 9 中已弃用**](https://docs.redhat.com/zh-cn/documentation/red_hat_enterprise_linux/9/html/configuring_and_managing_networking/configuring-network-teaming_configuring-and-managing-networking#proc_migrating-a-network-team-configuration-to-network-bond_configuring-network-teaming)
+
+    - [If You Like Bonding, You Will Love Teaming](https://www.redhat.com/en/blog/if-you-bonding-you-will-love-teaming)
+
+        原因: **行业普遍接受bond, 同时redhat希望专注于一个解决方案**
+
+        NIC team将在rhel 10移除
 - [team与bonding的比较](https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/7/html/networking_guide/sec-comparison_of_network_teaming_to_bonding)
 - [Bonding vs Team](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/configuring_and_managing_networking/configuring-network-teaming_configuring-and-managing-networking)
 - [linux bond设备删除,删除修改bond](https://blog.csdn.net/weixin_33976326/article/details/116748742)
@@ -485,11 +521,23 @@ ifup <interface> # 部分网卡不支持, 因为该interface未在/etc/network/i
 ```
 
 ## 双网卡同网段IP实现
-双网卡同网段IP, 默认仅能使用一个.
+ref:
+- [多网卡配置同一网段IP情况解析](https://blog.csdn.net/whenloce/article/details/88095474)
 
-> linux网关也是默认只能使用一个.
+多网卡分别配置同网段的不同ip, 为什么配置的部分ip会不通? 这通常是由于 路由冲突 或 ARP 问题 引起的:
+1. 路由冲突
 
-解决方法, 用工具 iproute2 把两个网卡分到两个不同路由表:
+    当多个网卡配置了相同网段的 IP 地址时，操作系统会为每个网卡生成一条直接路由（direct route）.
+    这些直接路由的目标网络相同，但出口接口不同，导致路由表出现冲突
+    操作系统无法确定数据包应该从哪个网卡发送出去，从而导致部分 IP 地址无法通信
+2. ARP 问题
+
+    ARP（地址解析协议）用于将 IP 地址解析为 MAC 地址
+    当多个网卡配置了相同网段的 IP 地址时，ARP 请求和响应可能会混淆. 因为其他主机ping 本机ip返回的是相同mac, 通过systemtap跟踪到问题在fib_validate_source(), 导致处于相同网段的几个IP之间，在进行arp reply的时候，因为直连路由指向同网段, 此时会使用优先级高(metric最小)的那条直连路由对应的mac来响应.
+
+    例如，如果 eth0 和 eth1 都连接到同一交换机，交换机会将 ARP 请求广播到所有端口，导致 ARP 表项冲突.
+
+解决方法, 用工具 iproute2 把两个网卡分到两个不同路由表(其实也可是是新建table+main, 本质还是分到两个不同路由表):
 ```conf
 echo "210    local100" >> /etc/iproute2/rt_tables
 echo "220    local200" >> /etc/iproute2/rt_tables
@@ -546,6 +594,11 @@ $ ip route add default via 60.30.128.1 dev eth1 src 60.30.128.15 table cnc
 $ ip rule add from 60.30.128.15 table cnc
 # --- 以上就基本配置好了电信和联通的多线原路返回路由
 ```
+
+### ip route add default dev wlo0和ip route add default  gw 10.0.0.1 dev wlo0区别?
+|命令	|含义	|使用场景|
+|ip route add default dev wlo0	|设置默认路由，不指定网关，数据包将通过 wlo0 接口转发到本地网络或直接相连的设备|	适用于可以直接通过 wlo0 访问目标网络的情况（如直接连接的局域网）|
+|ip route add default gw 10.0.0.1 dev wlo0	|设置默认路由，通过网关 10.0.0.1 转发数据包，数据包通过 wlo0 接口|	适用于需要通过网关（如路由器）转发数据包到其他网络或互联网的情况|
 
 ### `ip route`配置gateway时报`Nexthop has invalid gateway`
 解决方法: 先将网卡**up**并给其配上ip再配置gateway即可.
@@ -742,3 +795,10 @@ ps:
 依赖关系：
 - 如果 /etc/sysconfig/network 中的 NETWORKING=no，则无论接口配置文件如何设置，网络功能都不会启用
 - 接口配置文件中的 ONBOOT=yes 必须设置为 yes，才能在系统启动时启用该接口
+
+### NetworkManager / systemd-networkd / netplan
+NetworkManager 是一个功能强大的网络管理工具, 支持动态管理和复杂的网络配置, 旨在为桌面和移动环境提供易用的图形界面和功能强大的网络管理能力.
+
+systemd-networkd 是 systemd 组件的一部分，主要用于管理系统的网络配置. 它适合于服务器、嵌入式设备和其他不需要图形界面的环境, 主要提供基础的网络配置功能，较为轻量级和稳定.
+
+Netplan是Canonical(Ubuntu)开发的做为ubuntu Linux发行版上默认的网络配置命令行工具. Netplan 使用 YAML 描述文件来配置网络，然后通过这些描述为任何给定的底层呈现工具(主要就是systemd-networkd和networkmanager二种工具)生成必要的配置选项.

@@ -282,3 +282,6 @@ int main(void)
     return 0; 
 }
 ```
+
+### `ld: cannot find -lasan`
+`yum install libasan/apt install libasan8`

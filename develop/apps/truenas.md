@@ -14,6 +14,9 @@ ref:
 - [TrueNAS安装及使用教程](https://www.ethanzhang.xyz/2023/05/14/TrueNAS%E5%AE%89%E8%A3%85%E5%8F%8A%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/)
 - [设置TrueNAS-SCALE为中文](https://mi-d.cn/9431)
 
+## 命令
+`midclt call app.gpu_choices | jq`
+
 ## zfs
 zfs pool挂载在`/mnt`下.
 
@@ -34,7 +37,7 @@ middlewared设置的主要参数:
 
 > 设置ip和gateway并重启后即可使用webui
 
-> 使用ssh前需要在`webui->System Setting->Services`中打开ssh服务, truenas ssh默认禁止root登录, 修改勾选其配置`Log in as Root with Password`即可.
+> 使用ssh前需要在`webui->System Setting->Services`中打开ssh服务, truenas ssh默认禁止root登录, 修改勾选其配置`Log in as Root with Password`即可. 从25.04开始, truenas管理员账号名改为truenas_admin, 可将root和truenas_admin账户组加入ssh 服务的`Password Login Groups`, 再通过truenas_admin+密码登入并使用su root切换到root, 最后创建`/root/.ssh/authorized_keys`并添加pub key后即可使用root进行ssh登入.
 
 > 访问`localhost/api/docs`即可获取api docs(有cdn资源依赖); 访问`localhost/api/v2.0`即可获取openapi json文档, 访问`localhost/api/docs/restful`即可获取已加载openapi json的swagger ui.
 
@@ -323,6 +326,8 @@ async def subscribe(self, subscriber, ident, name, arg):
 
 ### 开发者模式
 truenas 24.04 rootfs只读, 解除需开启该模式[`install-dev-tools`](https://www.truenas.com/docs/scale/scaletutorials/systemsettings/advanced/developermode/)
+
+ps: 25.04开始, ssh登入后未发现zpool/zfs命令, 执行install-dev-tools后可见.
 
 [也可使用`sudo /usr/local/libexec/disable-rootfs-protection`, 但没有enable-rootfs-protection, 且未验证](https://forums.truenas.com/t/truenas-scale-24-04-0-root-fs-read-only/4235/4)
 

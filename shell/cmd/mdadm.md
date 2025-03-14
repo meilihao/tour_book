@@ -40,3 +40,28 @@ linux下用于构建、管理和监控RAID阵列(也被称为md设备)的工具.
 方法:
 1. `cat /proc/mdstat`
 1. `mdadm -D /dev/md<N>`的`Resync Status`
+
+# [dmsetup](https://docs.redhat.com/zh-cn/documentation/red_hat_enterprise_linux/7/html/logical_volume_manager_administration/device_mapper#dm-mappings)
+在 Linux 系统中，使用 Device Mapper (DM) 可以创建虚拟块设备，并将其用于分区或其他目的.
+
+## 选项
+ref:
+- [TABLE FORMAT](https://man7.org/linux/man-pages/man8/dmsetup.8.html)
+
+- --table : `<start_sector> <num_sectors> <target_type> <target_args>/start length mapping [mapping_parameters...]`
+
+    - start_sector：起始扇区号: 在设备映射器表的第一行中，start 参数必须等于 0. 一行中的 start + length 参数必须与下一行中的 start 相同
+
+        ps: target_type=linear时, 如果start一直为0, 则是通过target_args.offeset + num_sectors自动推算的
+    - num_sectors：扇区数量 : 设备映射器中的大小总是以扇区（512 字节）指定
+    - target_type：目标类型（如 linear、striped、error 等）
+    - target_args：目标参数（如物理设备路径和偏移量）, 即在映射表的行中指定哪个映射参数取决于行中指定 mapping 类型
+
+## example
+```bash
+# dmsetup create my_device --size 10G --table "0 20971520 linear /dev/sda 0" # my_device, 将创建的设备的名字; --size 10G 指定创建的设备大小; --table 定义了设备的映射表. `0 20971520 linear /dev/sda 0`表示将 /dev/sda 的前 10GB（20971520 块，每块 512 字节）映射到 my_device
+# dmsetup deps : 显示设备的依赖关系
+# dmsetup table  : 显示当前设备的table信息
+# dmsetup remove my_device # 删除 Device Mapper 设备
+# dmsetup ls # 列出所有当前活动的 Device Mapper 设备
+```

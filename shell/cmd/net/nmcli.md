@@ -14,15 +14,25 @@ nmtui是nmcli的terminal gui. nm-connection-editor是gui. [nmstatectl以yaml/jso
 
 > [cockpit](https://www.kclouder.cn/howtocockpit/)：redhat自带的基于web图形界面的"驾驶舱"工具，具有dashborad和基础管理功能, 系统管理员可以执行诸如存储管理、网络配置、检查日志、管理容器等任务.
 
+> 默认情况下NetworkManager 调用 DHCP 客户端是dhclient.
+
 ## 配置文件
 根据连接配置文件的目的，将其保存在以下目录中：
 - `/etc/NetworkManager/system-connections` ：用户创建的持久配置文件的通用位置，也可以对其进行编辑. NetworkManager 将它们自动复制到 `/etc/NetworkManager/system-connections/`
 - `/run/NetworkManager/system-connections` ：用于在重启系统时自动删除的临时配置文件
 - `/usr/lib/NetworkManager/system-connections` ：用于预先部署的不可变的配置文件. 当使用 NetworkManager API 编辑此类配置文件时，NetworkManager 会将此配置文件复制到持久性存储或临时存储中
 
+NetworkManager主要管理2个对象： Connection（网卡连接配置） 和 Device（网卡设备），他们之间是多对一的关系，但是同一时刻只能有一个Connection对于Device才生效.
+
+## 选项
+- -f: 指定输出字段
+- -p : 人类可读输出
+- -t, terse : 机器可读输出
+
 ## example
 ```bash
-# nmcli connection show # 查看网络信息或网络状态
+# nmcli general status # 查看 NetworkManager 的整体状态
+# nmcli connection show [--active] # 查看网络信息或网络状态. `--active`仅查看当前活跃的连接
 # ### nmcli 支持网络会话功能, 便于切换网络, 比如公司和家里
 # --- 设置静态地址
 # nmcli connection add con-name company ifname eno16777736 autoconnect no type ethernet ip4 192.168.10.10/24 gw4 192.168.10.1 # autoconnect no 参数设置该网络会话默认不被自动激活，以及用 ip4 及 gw4 参数手动指定网络的 IP 地址
@@ -159,8 +169,6 @@ IP6.GATEWAY:             2001:db8:1::1
 ```
 
 ## bonding
-**推荐使用team**
-
 可在不同类型的设备中创建绑定，例如：
 - 物理和虚拟以太网设备
 - 网络桥接
@@ -299,7 +307,9 @@ VLAN 是物理网络中的一个逻辑网络。当 VLAN 接口通过接口时，
 # bridge link show # 显示作为任意网桥设备端口的以太网设备状态
 ```
 
-## team
+## ~~team~~
+**rhel 10将移除team, 见ip.md**
+
 可以在不同类型的设备中创建team, 例如：
 - 物理和虚拟以太网设备
 - 网络绑定
@@ -389,6 +399,10 @@ unmanaged-devices=interface-name:interface_1;interface-name:interface_2;...
 # nmcli connection up enp1s0
 # nmcli connection show enp1s0 # 802-3-ethernet.accept-all-mac-addresses: true 表示该模式已启用
 ```
+
+## nmstatectl
+nmstatectl 是基于 NetworkManager 的另一个工具，它更侧重于通过声明式方式管理网络配置.
+nmstatectl 使用简单的 YAML 或 JSON 配置文件来描述网络的期望状态，工具会根据这些文件自动配置网络.
 
 ## lib
 - [ushiboy/nmcli](https://github.com/ushiboy/nmcli)

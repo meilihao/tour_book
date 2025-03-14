@@ -16,6 +16,7 @@
 - [ZFS IOPS limit](https://dokuwiki.fl8.jp/01_linux/13_storage/31_zfs_iops_limit)
 
 	cgcreate + cgset
+- [zfs空间估算 : ZFS / RAIDZ Capacity Calculator (beta)](https://wintelguy.com/zfs-calc.pl)
 
 ```sh
 # ubuntu 18.04
@@ -49,6 +50,22 @@ resilvering ：在恢复设备时将数据从一个磁盘复制到另一个磁�
 snapshot : 快照, 是文件系统或卷的只读副本. 在zfs中，快照几乎可以即时创建，而且最初不会额外占用池中的磁盘空间
 scrub : 用于一致性检验. 其他文件系统会使用fsck.
 thin: zfs支持thin provisioning
+
+### version
+ref:
+- [ZFS RAIDz expansion 抢先体验](https://ntzyz.space/zh-cn/post/testing-zfs-raidz-expansion/)
+- [ZFS新特性：引入RAID-Z Expansion功能](https://www.163.com/dy/article/GVSNHHR00511CUMI.html)
+
+	目前适用于 RAIDZ-1/2/3
+
+- [2.3](https://github.com/openzfs/zfs/releases/tag/zfs-2.3.0)
+
+	- [RAIDZ Expansion](https://github.com/openzfs/zfs/pull/15022): 向raidz添加新盘以扩容空间, 但不改变raid level
+
+		`zpool attach p raidz1-0 /dev/vdf`, 一次仅能attach一个新盘
+
+		扩展过程是动态的，即使在扩展时，数据访问也不会受到干扰，但整个扩展过程需要一些时间，无法即刻获得新空间. 同时[它比正常扩展raid组来说会损失部分空间](https://louwrentius.com/zfs-raidz-expansion-is-awesome-but-has-a-small-caveat.html).
+	- Fast Dedup: 更快的dedup
 
 ## 优化
 - [Running PostgreSQL using ZFS and AWS EBS](https://bun.uptrace.dev/postgres/tuning-zfs-aws-ebs.html)
@@ -115,6 +132,8 @@ thin: zfs支持thin provisioning
 	ARC内存占用可用[`arc_summary.py`](https://github.com/openzfs/zfs/tree/master/cmd/arc_summary)获取, 或使用arcstat命令
 - Log : zfs Intent Log(zfs意图日志), 是记录两次完整事务语义提交之间的日志，用来加速实现 fsync 之类的文件事务语义, 是一种对于 data 和 metadata 的日志机制，先写入然后再刷新为写事务), 持久性写缓存, 用于崩溃恢复, 最好配置并使用快速的 SSD来存储ZIL, 以获得更佳性能. ZIL支持mirror. ZIL也可认为是zfs的**写缓存**.
 
+	在zfs中, ZIL是一种机制，而SLOG则是一种设备，也就是说SLOG是可选的并不是必须的，但是ZIL则是默认的。在存储池中如果没有单独设置SLOG设备时，ZIL机制也是存在的, 会在存储池中划分一部分空间出来进行处理.
+
 	SLOG 之于 ZIL 有点像 L2ARC 之余 ARC ， L2ARC 是把内存中的 ARC 放入额外的高速存储设备，而 **SLOG 是把原本和别的数据块存储在一起的 ZIL 放到额外的高速存储设备**.
 
 	**默认情况下，ZFS 会分配一小部分池用于存储写入缓存**。它被称为ZIL或ZFS 意图日志。在将数据写入物理硬盘之前，它会存储在 ZIL 中。为了最大限度地减少写入操作的数量并减少数据碎片，数据在 ZIL 中进行分组，并在达到某个阈值时刷新到物理硬盘驱动器。它更像是一个写缓冲区而不是缓存
@@ -128,6 +147,9 @@ thin: zfs支持thin provisioning
 	请注意，通常情况下，ZFS 不会从 SLOG 中读取。ZFS 仅在断电或写入失败的情况下从 SLOG读取数据. 确认的写入仅暂时存储在那里，直到它们被刷新到较慢的硬盘驱动器。它只是为了确保在断电或写入失败的情况下，确认的写入不会丢失，并且它们会尽快刷新到永久存储设备.
 
 	另请注意，在没有 SLOG 设备的情况下，ZIL 将用于相同目的
+- Special: from zfs 0.8
+
+	用于存储文件系统的元数据和小块数据。通过将元数据和小块数据存储在**高速设备（如 SSD, nvme）**上，可以显著提高 ZFS 文件系统的性能
 
 VDEV始终是动态条带化的. 一个 device 可以被加到 VDEV, 但是不能移除.
 
@@ -144,7 +166,7 @@ zfs支持分层组织filesystem, 每个filesystem仅有一个父级, 而且支�
 > 在创建池时, ZFS 会根据**最小磁盘的容量**进行调整，以确保冗余和数据一致性
 
 ```sh
-$ sudo zpool create pool-test /dev/sdb /dev/sdc /dev/sdd # 创建了一个零冗余的RAID-0存储池, zfs 会在`/`中创建一个目录,目录名是pool name 
+$ sudo zpool create [-m /mnt/p] pool-test /dev/sdb /dev/sdc /dev/sdd # 创建了一个零冗余的RAID-0存储池, zfs 会在`/`中创建一个目录,目录名是pool name. 如果mountpoint不可用(比如挂载点的父目录只读)也能创建成功, 仅是不挂载了而已
 $ sudo zpool [option] list # 显示系统上pools的列表, `-o`只显示指定列,`-H`隐藏列头. size是所有磁盘的大小, free是剩余未被使用的磁盘大小. 看pool实际可用大小用`zfs get all <pool>`的availabled, 已用used.
 $ sudo zpool status [-D] [-L] <pool> # 查看pool的状态,read/write列显示读写io时的错误次数, cksum列显示设备对读取请求返回损坏数据(校验和错误)的次数. `-v`输出详细信息, `-D`, dedup信息;`-x`仅显示有错误或因其他原因不可用的pool; `-L`显示vdev的真实设备名
 $ sudo zpool destroy <pool> # 销毁pool
@@ -207,7 +229,7 @@ pool的status是由其所有顶层vdev的status决定的. 如果pool处于UNAVAI
 mirror/raidz设备不能从pool中删除, 但可增删不活动的hot spares(热备), cache, log device.
 
 ### zpool create
-创建pool: `zpool create -f -m <mount> <pool> [raidz（2 | 3）| mirror] <ids>`
+创建pool: `zpool create -f -m <mount> <pool> [raidz | raidz2 | raidz3 | mirror] <ids>`
 
 参数:
 - f : 强制创建pool, 用于解决"EFI标签"错误
@@ -466,7 +488,7 @@ ref:
 - -G, --dump-debug-msg: zdb结束前dump出zfs_dbgmsg内容
 
 - `zdb -l /dev/sdj` : 查看磁盘上的zpool信息
-- `zdb -dddddddd testpool` : 查看写入的range
+- `zdb -dddddddd testpool` : 查看写入的range, 去重表（DDT）等
 - `zdb -c -eFX -G <pool>`:  检查无法import的pool, 很慢
 - `zdb -dep <disk_dir/disk> -G <pool>`: 检查无法import的pool, 慢
 - `zdb -V -ep <disk_dir/disk> -G <pool>`: 检查无法import的pool, 快
@@ -535,6 +557,29 @@ nfs配置见[develop/nas.md](/develop/nas.md)
 1. samba
 ```
 # zfs set sharesmb=on rpool/fs1
+```
+
+### zfs 2.3.0编译
+ref:
+- [ZFS RAIDz expansion 抢先体验](https://ntzyz.space/zh-cn/post/testing-zfs-raidz-expansion/)
+- [ZFS RAID-Z Expansion，RAID-Z 单盘扩展前瞻测试使用](https://www.truenasscale.com/2022/02/12/562.html)
+
+ps: v2.3.1已在2025.3.11发布
+
+```bash
+# apt install linux-image-6.9.7+bpo-amd64 linux-headers-6.9.7+bpo-amd64
+# apt install alien autoconf automake build-essential debhelper-compat dh-autoreconf dh-dkms dh-python dkms fakeroot gawk git libaio-dev libattr1-dev libblkid-dev libcurl4-openssl-dev libelf-dev libffi-dev libpam0g-dev libssl-dev libtirpc-dev libtool libudev-dev parallel po-debconf python3 python3-all-dev python3-cffi python3-dev python3-packaging python3-setuptools python3-sphinx uuid-dev zliblg-dev
+# git clone https://github.com/openzfs/zfs
+# cd ./zfs
+# git checkout zfs-2.3.0-rc3
+# sh autogen.sh
+# ./configure
+# make -s -j$(nproc) native-deb-utils / make -s -j$(nproc) && make deb
+# cd ..
+# rm openzfs-zfs-dracut_*.deb openzfs-zfs-initramfs_2.3.0-1_all.deb
+# dpkg -i ./openzfs-zfs-zed_2.3.0-1_amd64.deb ./openzfs-zfs-dkms_2.3.0-1_all.deb ./openzfs-libuutil3_2.3.0-1_amd64.deb ./openzfs-libzfs6_2.3.0-1_amd64.deb ./openzfs-libnvpair3_2.3.0-1_amd64.deb ./openzfs-zfsutils_2.3.0-1_amd64.deb
+# zpool import -a
+# zpool upgrade <pool>
 ```
 
 ### zfs 2.0.0编译
@@ -773,9 +818,9 @@ arcstat -f time,hit%,dh%,ph%,mh% 1
 最大 ARC 缓存内存（c）、当前 ARC 缓存大小（arcsz）、从 ARC 缓存中读取的数据（read）等信息
 
 字段:
-- c : the target size of the ARC in bytes
+- c : the target size of the ARC in bytes, 当前arc大小
 - c_max : the maximum size of the ARC in bytes
-- size : the current size of the ARC in bytes
+- size : the current size of the ARC in bytes:  arc总大小
 
 > arcstat from `/proc/spl/kstat/zfs/arcstats`
 
@@ -850,3 +895,22 @@ ref:
 - [quota: extend quota for dataset](https://github.com/openzfs/zfs/pull/13839)
 
 直接置为0即可
+
+### arc_prune导致cpu stuck
+env:
+- kernel: 4.19.90
+- cpu: FT-2000+/64
+
+在arm环境容易遇到, 问题环境内存为63G, 遇到时的状态:
+1. free 3G, buffer/cache 25G, available 28G, swap(1G) used 1G
+1. free 11G, buffer/cache 19G, available 30G, swap(1G) used 1G
+1. free 21G, buffer/cache 11G, available 31G, swap(1G) used 1G
+
+观察发现, 在内存不足的情况下更容易遇到.
+
+### zpool create报"/dev/vdc is part of active pool 'p'"
+blkid查看vdc提示`LABEL="p" UUID="801774493520823192" UUID_SUB="16736042990918707269" BLOCK_SIZE="512" TYPE="zfs_member"`
+
+解决(未验证):
+1. `zpool labelclear /dev/vdc`
+1. `wipefs -a /dev/vdc`

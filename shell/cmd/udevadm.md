@@ -11,6 +11,7 @@ udev 管理工具
 # udevadm info /sys/class/net/enp2s0 | grep ID_PATH= # 获取设备路径. PCI ID 是连接到系统的设备的唯一标识符.
 # udevadm info -a -p /sys/class/net/enp2s0 # 返回属性. `-a`逐级递归父设备直到sysfs的根节点
 # udevadm test /sys/class/net/eth0 # 测试应用到eth0上的rule是否能生效
+#  udevadm info --query=property --property=ID_NET_NAMING_SCHEME /sys/class/net/eno1np0' # 查看网络接口的 ID_NET_NAMING_SCHEME 属性，来识别os当前使用的命名方案
 ```
 
 `udevadm info`获取mediumx(磁带柜)其`/dev/sgX`设备比`/dev/schY`设备输出信息更多, 但tape和disk却恰好相反, 是`/dev/stZ`或`/dev/sdZ`输出更多信息.

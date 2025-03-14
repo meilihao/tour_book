@@ -4,6 +4,8 @@ wipefs可以擦除指定设备上的文件系统，raid或分区表签名（魔�
 wipefs不会擦除文件系统本身或设备中的任何其他数据; 
 当不带任何选项使用时，wipefs会列出所有可见的文件系统及其基本签名的偏移量.
 
+ps: 在某些情况下，使用wipefs查询不到磁盘的签名，可以使用dd命令来清空分区表和签名: `dd if=/dev/zero of=/dev/sda1 bs=1M count=1`
+
 当擦除分区表签名以将更改通知内核时，wipefs调用BLKRRPART ioctl.
 
 ## example

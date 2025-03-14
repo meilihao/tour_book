@@ -90,6 +90,7 @@ go test -bench=. -cpuprofile=cpu.prof
 `-cpuprofile`为指定CPU概要文件的文件名,此时go test同时生成xxx.test和cpu.prof文件.
 
 ## 分析
+web访问http://ip:6060/debug/pprof/即可
 
 ### cpu分析
 ```
@@ -105,8 +106,33 @@ flat  flat%   sum%        cum   cum%
 
 
 ### mem
+ref:
+- [golang 内存泄漏分析案例](https://www.cnblogs.com/zhanchenjin/p/17101573.html)
+
 `go tool pprof -alloc_space/-inuse_space http://ip:8899/debug/pprof/heap`
 优先使用-inuse_space来分析，因为直接分析导致问题的现场比分析历史数据肯定要直观的多，一个函数alloc_space多不一定就代表它会导致进程的RSS高.
+
+1. 直接heap分析当前的内存:
+```bash
+# go tool pprof http://ip:8899/debug/pprof/heap
+(pprof) top
+(pprof) list <func> # 泄漏函数, 可以看到哪行泄漏了
+```
+
+2. 使用base能够对比两个profile文件的差别
+```bash
+# go tool pprof http://ip:8899/debug/pprof/heap # get base
+# go tool pprof http://ip:8899/debug/pprof/heap # get latest
+# go tool pprof -base pprof.alloc_objects.alloc_space.inuse_objects.inuse_space.001.pb.gz pprof.alloc_objects.alloc_space.inuse_objects.inuse_space.002.pb.gz
+```
+
+3. 查看heap图片: `go tool pprof -png http://localhost:6060/debug/pprof/heap > heap.png`
+
+### goroutine泄露
+ref:
+- [golang 内存泄漏分析案例](https://www.cnblogs.com/zhanchenjin/p/17101573.html)
+
+方法与上节mem类似
 
 ## GC
 - [如何监控 golang 程序的垃圾回收](https://holys.im/2016/07/01/monitor-golang-gc/)

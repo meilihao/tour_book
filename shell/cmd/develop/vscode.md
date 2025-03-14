@@ -162,3 +162,13 @@ File->Preferences->Settings->Workbench -> Apperance ->`Color Customizations`, �
     "tab.hoverBackground": "#464646"
 }
 ```
+
+### 顶部菜单栏不明显
+```json
+"workbench.colorCustomizations": {
+    "titleBar.activeBackground": "#555555", // 活动窗口的顶部菜单栏背景色
+    "titleBar.inactiveBackground": "#464646", // 非活动窗口的顶部菜单栏背景色
+    //"titleBar.activeForeground": "#ffffff", // 活动窗口的顶部菜单栏文字颜色
+    //"titleBar.inactiveForeground": "#cccccc" // 非活动窗口的顶部菜单栏文字颜色
+},
+```
