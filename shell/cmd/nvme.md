@@ -15,7 +15,7 @@ nvme存储的命令行工具.
 ```bash
 # nvme list # 列出你机器上所有的 NVMe 设备和命名空间
 # nvme id-ctrl /dev/nvme0n1 [-H] # 获取更多关于该硬盘和它所支持的特性的信息
-# nvme id-ns /dev/nvme0n1 -H # 查看nvme ns信息, 比如lba大小. `smartctl -c /dev/nvme0n1`也可查看lba大小
+# nvme id-ns /dev/nvme0n1 -H # id-ns=Identify Namespace, 查看nvme ns信息, 比如lba大小. `smartctl -c /dev/nvme0n1`也可查看lba大小. flbas(Formatted LBA Size)是一个 8 位字段，低 4 位表示当前使用的 LBA Format 编号（从 0 开始）, 即lbafs的索引
 # nvme smart-log /dev/nvme0n1 # 了解硬盘的整体健康状况
 # nvme error-log /dev/nvme0 # 查看nvme error log page
 # nvme format [--lbaf=1] /dev/nvme0nX # 格式化一个 NVMe 驱动器. lbaf, 指定lba size, 通常使用4k可获得更高性能.

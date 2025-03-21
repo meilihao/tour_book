@@ -1523,3 +1523,10 @@ ref:
 
 vm(host是arm64)从光驱启动时使用了windows x64 iso
 
+### virt-manager安装[Fedora-COSMIC-Live-42_Beta-1.4.x86_64.iso](https://ftp.riken.jp/Linux/fedora/releases/test/42_Beta/Spins/x86_64/iso/)报"Error::NoDevices(DrNode { dev: 57984, ty: Render })"
+ref:
+- [Fail to start cosmic desktop](https://github.com/pop-os/cosmic-epoch/issues/456)
+
+COSMIC需要显卡支持hardware acceleration
+
+virtio显卡开启"3D 加速"报"opengl is not available", 换QXL即可

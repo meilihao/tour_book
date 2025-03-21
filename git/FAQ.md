@@ -465,8 +465,9 @@ git diff branch1 branch2 [--stat] # 显示差异. `--stat`: 仅显示差异的�
 git diff branch1 branch2 <file_path> # 比较指定文件差异
 ```
 
-### 将修改文件发送到remote
+### 将修改文件发送到remote+删除旧文件
 `git diff --name-only [--relative=xxx] [--cached] [--diff-filter=AM] | xargs -I '{}' scp -i ~/.ssh/xxx '{}' root@192.168.16.100:/opt/xxx/{}`
+`git diff --name-only [--relative=xxx] [--cached] [--diff-filter=AM] | xargs -I {} echo {}|sed 's/\.py/\.so' | xargs -I {} ssh -i ~/.ssh/xxx root@192.168.16.100 "rm /opt/{}"`
 
 选项:
 - relative : 调整相对路径

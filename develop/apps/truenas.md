@@ -576,3 +576,6 @@ truenas scale 24.04具有还原机制, 手动修改后, 过段时间后会被根
 
 ### alembic/initial.sql
 初始化sql
+
+### 修改会话时间
+System->Advanced Settings->Session Timeout

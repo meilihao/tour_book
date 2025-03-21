@@ -42,6 +42,7 @@ zfs有两个工具: zpool和zfs. zpool用于维护zfs pools, zfs负责维护zfs 
 ## 概念
 参考:
 - [ZFS 术语](https://docs.oracle.com/cd/E26926_01/html/E25826/ftyue.html)
+- [zpoolconcepts.7](https://openzfs.github.io/openzfs-docs/man/master/7/zpoolconcepts.7.html)
 
 pool : 存储设备的逻辑分组, 它是ZFS的基本构建块，可将其存储空间分配给数据集.
 dataset : zfs文件系统的组件即文件系统、克隆、快照和卷被统称为数据集
@@ -102,6 +103,7 @@ ref:
 ### zfs虚拟设备(zfs vdevs)
 参考:
 - [ZFS高速缓存介绍：ZIL和L2ARC](https://www.xiangzhiren.com/archives/288)
+- [OpenZFS – Understanding ZFS vdev Types](https://klarasystems.com/articles/openzfs-understanding-zfs-vdev-types/)
 
 一个 VDEV 是一个meta-device，代表着一个或多个物理设备. zfs 支持 7 中不同类型的 VDEV：
 - disk, 默认, 比如HDD, SDD, PCIe NVME等等
@@ -150,6 +152,9 @@ ref:
 - Special: from zfs 0.8
 
 	用于存储文件系统的元数据和小块数据。通过将元数据和小块数据存储在**高速设备（如 SSD, nvme）**上，可以显著提高 ZFS 文件系统的性能
+
+	查看specila使用情况: `zdb -bb mypool`
+	移除special时zfs会迁移数据, 见zpool status的remove
 
 VDEV始终是动态条带化的. 一个 device 可以被加到 VDEV, 但是不能移除.
 
@@ -914,3 +919,7 @@ blkid查看vdc提示`LABEL="p" UUID="801774493520823192" UUID_SUB="1673604299091
 解决(未验证):
 1. `zpool labelclear /dev/vdc`
 1. `wipefs -a /dev/vdc`
+
+### zpool status解析
+1. v2.3: 支持json输出
+2. v2.3之前: 每行以`\t`开头未换行内容, 否则为field(比如pool, state, scan, remove, config, errors等).

@@ -15,7 +15,7 @@ grep [OPTIONS] 关键词 [FILE...]
 
 ## 选项
 
-- -a, --text equivalent to --binary-files=text : 让二进制文件等价于文本
+- -a, --text equivalent to --binary-files=text : 让二进制文件等价于文本, 用于`Binary file (standard input) matches`报错时
 - -A : 除了列出符合条件的行外, 同时列出每个符合条件行的**后NUM行**
 - -b : 将可执行文件（binary）当作文本文件（text）来搜索
 - -B : 与`-A`类似, 除了列出符合条件的行外, 同时列出每个符合条件行的**前NUM行**
