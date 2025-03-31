@@ -57,3 +57,15 @@ tr只能通过stdin，无法通过其他命令行进行接收参数.
 echo 1 2 3 4 5 6 7 8 9 | xargs -n1 | echo $[ $(tr '\n' '+') 0 ]
 ```
 `$(tr '\n' '+')`将stdin中的`\n`替换成`+`,得到`1+2+3+4+5+6+7+8+9+`,再追加`0`来忽略最后的`+`,`$[operation]执行算术计算`
+
+## FAQ
+### /bin/sh的脚本`echo ${xxx} |tr -d [:xdigit:]`输出不符合预期(原样输出xxx)
+xxx=`dd if=/dev/sdc bs=1 count=35 skip=474 2>/dev/null`, xxx是不含"-"且字母小写的uuid
+
+原因: [:xdigit:]被shell解析的内容不是期望删除的内容, 具体指定要删除的内容. [:xdigit:]会被视为普通字符` :, x, d, i, g, t` 的集合
+
+奇怪: 直接执行脚本时`tr -d [:xdigit:]`行为正常, 由udev rule调用该脚本时, 其没有效果???
+
+解决:
+1. 使用`tr -d 'a-zA-Z0-9'`
+2. 使用`tr -d [[:xdigit:]]`

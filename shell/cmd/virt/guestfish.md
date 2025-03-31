@@ -166,6 +166,9 @@ lost+found  test
 
 windows磁盘本身没有lvm磁盘布局, 可直接用`blkid /dev/disks*`获取分区信息, 再用ntfsfix命令修复, 而无需使用guestfish
 
+注意:
+1. guestfish + cpoy-in + xfs 正常, 但vm启动会报`Interanl error XFS_WANT_CORRUPTED_RETURN`,  `xfs-repair xxx [forcelogzero:true]`处理后正常, 小概率遇到
+
 ## sdk
 sdk在[src/libguestfs.org/guestfs](https://github.com/libguestfs/libguestfs/tree/v1.42.1/golang/src/libguestfs.org/guestfs)(非go mod管理)
 

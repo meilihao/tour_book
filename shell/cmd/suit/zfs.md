@@ -63,7 +63,7 @@ ref:
 
 	- [RAIDZ Expansion](https://github.com/openzfs/zfs/pull/15022): 向raidz添加新盘以扩容空间, 但不改变raid level
 
-		`zpool attach p raidz1-0 /dev/vdf`, 一次仅能attach一个新盘
+		`zpool attach p raidz1-0 /dev/vdf`, 一次仅能attach一个新盘, 且不能移除该盘, 除非destroy整个pool. 不同raidz间可以并发attach
 
 		扩展过程是动态的，即使在扩展时，数据访问也不会受到干扰，但整个扩展过程需要一些时间，无法即刻获得新空间. 同时[它比正常扩展raid组来说会损失部分空间](https://louwrentius.com/zfs-raidz-expansion-is-awesome-but-has-a-small-caveat.html).
 	- Fast Dedup: 更快的dedup
@@ -154,7 +154,9 @@ ref:
 	用于存储文件系统的元数据和小块数据。通过将元数据和小块数据存储在**高速设备（如 SSD, nvme）**上，可以显著提高 ZFS 文件系统的性能
 
 	查看specila使用情况: `zdb -bb mypool`
-	移除special时zfs会迁移数据, 见zpool status的remove
+	移除special是异步过程(zpool remove返回1且stderr有内容), zfs会迁移数据, 见zpool status的remove; 移除过程不能对相关盘执行zpool labelclear否则会导致pool I/O suspend
+	zpool remove可能需要多次(即使使用了`-w`), 一次remove多个special mirror时, zpool status显示completed, 实际可能只移除了一个mirror, 因此需要重复执行以删除剩余mirror. 从zpool remove执行效果来看, 一次只能移除一个vdev
+	zpool存在special情况下移除cache vdev报"cannot determine indirect size of xxx: no such device in pool", 此时试试将vdev改为绝对路径
 
 VDEV始终是动态条带化的. 一个 device 可以被加到 VDEV, 但是不能移除.
 
@@ -923,3 +925,6 @@ blkid查看vdc提示`LABEL="p" UUID="801774493520823192" UUID_SUB="1673604299091
 ### zpool status解析
 1. v2.3: 支持json输出
 2. v2.3之前: 每行以`\t`开头未换行内容, 否则为field(比如pool, state, scan, remove, config, errors等).
+
+### 获取dataset iostat
+`/proc/spl/kstat/zfs/<pool>/objset-xxx`, 里面包含dataset_name

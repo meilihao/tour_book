@@ -16,6 +16,15 @@ udev 管理工具
 
 `udevadm info`获取mediumx(磁带柜)其`/dev/sgX`设备比`/dev/schY`设备输出信息更多, 但tape和disk却恰好相反, 是`/dev/stZ`或`/dev/sdZ`输出更多信息.
 
+## trigger
+```bash
+# udevadm control --reload
+# udevadm trigger # 针对全部devices
+# udevadm trigger --name-match=/dev/sdc # 仅针对sdc
+```
+
+> 执行udevadm trigger, log在`/var/log/message`或journalctl中查看, 如果是在rule中使用自定义shell script处理event, 那么在script中打印时要使用logger而不是echo, 且不能混用它们, 否则信息全在一行且格式不易读
+
 ## FAQ
 ### udev rules优先级
 /etc/udev/rules.d中的任何规则都将优先于/lib/udev/rules.d中的规则
