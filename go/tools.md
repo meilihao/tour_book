@@ -3,6 +3,9 @@
 
 ## 性能
 - [pyroscope](https://colobu.com/2022/01/27/pyroscope-a-continuous-profiling-platform/)
+- [benchstat]()
+
+	go官方性能基准比较工具, 取代原有的benchcmp 
 
 ## others
 - [csv解析](https://github.com/gocarina/gocsv)
