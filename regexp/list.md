@@ -17,3 +17,13 @@
 - [debuggex](https://www.debuggex.com/)
 - [*Regex Tester - Golang](https://regex-golang.appspot.com/assets/html/index.html)
 - [*常见正则](http://wangwl.net/static/projects/visualRegex/#flags=&source=&match=&method=exec)
+
+## 教程
+- [正则表达式30分钟入门教程](http://deerchao.net/tutorials/regex/regex.htm)
+- [常用正则表达式](http://deerchao.net/tutorials/regex/common.htm)
+
+## tools
+- [正则图解](http://www.bonashen.com/post/develop/zheng-ze-tu-jie)
+
+## 进阶
+- [进阶正则表达式](http://www.barretlee.com/blog/2014/01/18/cb-how-regular-expressions-work/)

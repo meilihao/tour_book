@@ -26,6 +26,9 @@
 	- [github.com/unidoc/unipdf](https://github.com/unidoc/unipdf)
 
 		需要license
+- template
+
+	- [fasttemplate](https://github.com/valyala/fasttemplate)
 
 ## http client
 - [github.com/go-resty/resty/v2](https://github.com/go-resty/resty)

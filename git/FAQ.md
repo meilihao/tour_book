@@ -501,3 +501,16 @@ git rm --cached [-r] path_of_a_giant_file
 git commit --amend
 git push
 ```
+
+### tag version
+```bash
+GitTag=$(git describe --tags --dirty --always)
+GitBranch=$(git rev-parse --abbrev-ref HEAD)
+GitHash=$(git rev-parse HEAD)
+BuildTS=$(data -u --rfc-3339=seconds)
+
+LDFLAGS="-X .../version.gitTag=${GitTag}
+         -X '.../version.gitTag=${BuildTS}'"
+
+go build -ldflags "$LDFLAGS"
+```

@@ -5,6 +5,8 @@ os: Linux chen-pc 4.15.0-30deepin-generic #31 SMP Fri Nov 30 04:29:02 UTC 2018 x
 - [Docker背后的内核知识：命名空间资源隔离](https://linux.cn/article-5057-1.html)
 - [容器核心技术详解](https://blog.fliaping.com/container-core-technical-details/)
 
+容器是一个**应用层抽象**，用于将代码和依赖资源打包在一起. 多个容器可以在同一台机器上运行，共享操作系统内核，但各自作为独立的进程在用户空间中运行 . 虚拟机 (VM) 是一个**物理硬件层抽象**，用于将一台服务器变成多台服务器。每个 VM 都包含一整套操作系统、一个或多个应用、必要的二进制文件和库资源，因此 占用大量空间.
+
 Docker 容器实际上是在创建容器进程时，指定了这个进程所需要启用的一组 Namespace和Cgroups 参数. 所以说，容器其实是一种追加了特定参数的进程而已.
 
 对 Docker 来说，它最核心的原理就是为待创建的用户进程：

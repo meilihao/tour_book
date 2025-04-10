@@ -17,6 +17,21 @@ MySQL可以分为Server层和存储引擎层两部分:
 ## 安装
 - [mariadb 离线包下载](https://mariadb.com/downloads/)
 
+## 数据类型
+[](https://oss.javaguide.cn/github/javaguide/mysql/summary-of-mysql-field-types.png)
+
+DECIMAL 和 FLOAT 的区别是：DECIMAL 是定点数，FLOAT/DOUBLE 是浮点数。DECIMAL 可以存储精确的小数值，FLOAT/DOUBLE 只能存储近似的小数值.
+
+如果预期长度范围可以通过 VARCHAR 来满足，建议避免使用 TEXT. 数据库规范通常不推荐使用 BLOB 和 TEXT 类型，这两种类型具有一些缺点和限制, 比如没有默认值, 检索效率较低. 必须使用时建议把 BLOB 或是 TEXT 列分离到单独的扩展表中.
+
+DATETIME 类型没有时区信息，TIMESTAMP 和时区有关.
+
+MySQL 中没有专门的布尔类型，而是用 TINYINT(1) 类型来表示布尔值.
+
+除非有特别的原因使用 NULL 值，否则应该总是让字段保持 NOT NULL:
+- 索引 NULL 列需要额外的空间来保存，所以要占用更多的空间
+- 进行比较和计算时要对 NULL 值做特别的处理
+
 ## 查询
 
 > 由执行器检查是否有查询权限.
@@ -74,6 +89,8 @@ InnoDB 里面每个事务有一个唯一的事务 ID,叫作 transaction id. 它�
 每行数据的版本并不是物理上真实存在的,而是每次需要的时候根据当前版本和 undo log 计算出来的.
 
 ### 事务隔离的实现
+MySQL 的隔离级别基于锁和 MVCC 机制共同实现的.
+
 事务隔离的机制是通过视图（read-view即consistent read view, 一致性读视图）来实现的并发版本控制（MVCC），不同的事务隔离级别创建读视图的时间点不同:
 - 可重复读是每个事务重建读视图，整个事务存在期间都用这个视图
 - 读已提交是每条 SQL (开始执行时)创建read-view，隔离作用域仅限该条 SQL 语句.
@@ -84,6 +101,7 @@ InnoDB 里面每个事务有一个唯一的事务 ID,叫作 transaction id. 它�
 > read-view用于支持RC ( Read Committed ,读提交)和 RR ( Repeatable Read ,可重复读)隔离级别的实现
 > 每一次的修改操作，并不是直接对行数据进行操作,而是新加一行
 > 在MySQL中，实际上每条记录在更新的时候都会同时记录一条回滚操作(undo 日志). 通过回滚操作可以得到前一个状态的值.
+> MVCC 在 MySQL 中实现所依赖的手段主要是: 隐藏字段、read view、undo log
 
 大多数对数据的变更操作包括INSERT/DELETE/UPDATE，其中INSERT操作在事务提交前只对当前事务可见，因此产生的Undo日志可以在事务提交后直接删除，而对于UPDATE/DELETE则需要维护多版本信息，在InnoDB里，UPDATE和DELETE操作产生的Undo日志被归成一类，即update_undo(from [MySQL · 引擎特性 · InnoDB undo log 漫游](http://mysql.taobao.org/monthly/2015/04/01/)).
 
@@ -103,6 +121,12 @@ InnoDB 里面每个事务有一个唯一的事务 ID,叫作 transaction id. 它�
 1. 树/跳表等.
 
 > 在MySQL中，索引是在存储引擎层实现的，并没有统一的索引标准，即不同存储引擎的索引的工作方式并不一样.
+
+常见索引列建议:
+1. 出现在 SELECT、UPDATE、DELETE 语句的 WHERE 从句中的列
+1. 包含在 ORDER BY、GROUP BY、DISTINCT 中的字段
+1. 不要将符合 1 和 2 中的字段的列都建立一个索引，通常将 1、2 中的字段建立联合索引效果更好
+1. 多表 join 的关联列
 
 ### innodb索引
 InnoDB使用了B+树索引模型.
@@ -238,3 +262,6 @@ key 太长会导致一个页当中能够存放的 key 的数目变少,间接导�
 
 ### MySQL 的数据如何恢复到任意时间点
 **恢复到任意时间点以定时的做全量备份,以及备份增量的 binlog 日志为前提**. 恢复到任意时间点首先将全量备份恢复之后,再此基础上回放增加的 binlog 直至指定的时间点.
+
+### 不推荐外键
+外键与级联更新适用于单机低并发，不适合分布式、高并发集群；级联更新是强阻塞，存在数据库更新风暴的风险；外键影响数据库的插入速度.

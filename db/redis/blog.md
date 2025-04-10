@@ -20,3 +20,6 @@
 
 ## other
 - [深入解析 Redis 的 LRU 与 LFU 算法实现](https://my.oschina.net/vivotech/blog/10086708)
+
+## book
+- [Redis 设计与实现]()

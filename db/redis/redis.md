@@ -1,5 +1,13 @@
 # redis
 
+现在基本没有看过还有项目使用 Memcached 来做缓存，都是直接用 Redis.
+
+## 竞品
+- [Dragonfly是一种针对现代应用程序负荷需求而构建的内存数据库](https://github.com/dragonflydb/dragonfly/blob/main/README.zh-CN.md)
+
+### 重写redis
+- [rudis](https://github.com/sleeprite/rudis)
+
 ## 通讯协议
 Redis 服务器与客户端通过 RESP（Redis Serialization Protocol）协议通信, 该协议是文本协议. 它是会浪费流量，不过它的优点在于直观，非常的简单，解析性能极其的好.
 

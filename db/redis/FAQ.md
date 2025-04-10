@@ -81,6 +81,10 @@ release(){
 
 因此不建议使用Redis集群,而是使用业务分片的单机版redis, 因为目前而言, redis已经足够稳定.
 
+Redlock 算法的思想是让客户端向 Redis 集群中的多个独立的 Redis 实例依次请求申请加锁，如果客户端能够和半数以上的实例成功地完成加锁操作，那么我们就认为，客户端成功地获得分布式锁，否则加锁失败.
+
+实际项目中不建议使用 Redlock 算法，成本和收益不成正比，可以考虑基于 Redis 主从复制+哨兵模式实现分布式锁.
+
 ### MISCONF Redis is configured to save RDB snapshots, but is currently not able to persist on disk. Commands that may modify the data set are disabled. Please check Redis logs for details about the error
 Redis被配置为保存数据库快照，但它目前不能持久化到硬盘, 通常是权限问题.
 

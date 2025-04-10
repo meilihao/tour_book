@@ -7,6 +7,8 @@ ref:
 
 etcd 应用场景包括但不限于分布式数据库、服务注册与发现 、 分布式锁 、 分布式消息队列 、 分布式系统选主等.
 
+ps: ETCD 相比ZooKeeper来说更优秀一些，提供了更稳定的高负载读写能力，对 ZooKeeper 暴露的许多问题进行了改进优化, 并且ETCD 基本能够覆盖 ZooKeeper 的所有应用场景，实现对其的替代.
+
 etcd server 默认使用 2380 端口监听集群中其他 server 的请求.
 
 > [搭建本地etcd集群](https://doczhcn.gitbook.io/etcd/index/index/local_cluster)

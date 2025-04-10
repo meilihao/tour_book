@@ -3,9 +3,10 @@
 - table是一个二维数组的集合,是存储数据和操作数据的逻辑结构.
 - SQL(Structured Query Language) 是用于访问和处理数据库的标准的计算机语言.
 - SQL的四部分:
-  - 数据定义语言 (DDL - create,drop,alter)
-  - 数据操作语言 (DML - - select,update,delete,insert)
-  - 数据控制语言 (DCL - grant,revoke,commit,rollback)
+  - 数据定义语言 (Data Definition Language, DDL : create,drop,alter)
+  - 数据操作语言 (Data Manipulation Language, DML : select,update,delete,insert)
+  - 事务控制语言 (Transaction Control Language, TCL: commit,rollback) 
+  - 数据控制语言 (Data Control Language, DCL : grant,revoke)
 
 SQL 数据库非常适合需要强数据一致性、定义良好的模式和复杂关系的应用程序. 其典型用例包括电子商务平台、金融系统和内容管理系统。例如，MySQL 提供ACID（原子性、一致性、隔离性与持久性）合规性，使其适合需要事务完整性的应用程序.
 
@@ -135,8 +136,10 @@ force 策略是说事务提交的时候，需要将所有操作进行刷盘，�
 
 ### [隔离级别](https://juejin.im/post/5b90cbf4e51d450e84776d27)
 - 脏读(dirty read/Read uncommitted)：一个事务读取了另一个事务尚未提交的修改
-- 不可重复读(non-repeatable read/Read committed)：一个事务对同一行数据读取两次，得到不同结果, 即读到其他事务已提交的数据
-- 幻读(phantom read/Repeatable read)：事务在操作过程中进行了两次查询，第二次的结果包含了第一次未出现的新行或部分行消失
+- 不可重复读(non-repeatable read/Read committed)：一个事务对**同一行**数据读取两次，得到不同结果, 即读到其他事务已提交的数据
+- 幻读(phantom read/Repeatable read)：事务在操作过程中进行了两次查询，第二次的结果**包含了第一次未出现的新行或部分行消失**, 即被其他事务增删
+
+    - 在 MySQL 中，InnoDB 通过 MVCC（多版本并发控制） + 间隙锁（Gap Lock） 防止幻读
 - 串行化(Serializable)：一个事务在执行过程中完全看不到其他事务对数据库所做的更新．`写`会加`写锁`，`读`会加`读锁`,当出现读写锁冲突的时候，后访问的事务必须等前一个事务执行完成，才能继续执行.
 
 > 现在为止:所有的数据库都避免脏读
@@ -170,6 +173,8 @@ force 策略是说事务提交的时候，需要将所有操作进行刷盘，�
 - 标量子查询(scalar subquery)指有且仅有一行一列的结果,其可以用在`SELECT`,`GROUP BY`,`HAVING`,`ORDER BY`子句等地方.
 - 关联子查询就是指子查询与主查询之间有条件关联,不能独自执行.子查询的执行的次数依赖于外部查询，外部查询每执行一行，子查询执行一次,性能不佳.
 - 在细分的组内进行比较时,需要使用关联子查询.
+
+子查询性能差的原因：子查询的结果集无法使用索引.
 
 ### 函数
 参考 : SQL基础教程.MICK 的第6章.
