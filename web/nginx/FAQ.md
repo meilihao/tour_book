@@ -537,6 +537,7 @@ ref:
 ### nginx return 499
 - [nginx 499错误原因及解决](https://blog.csdn.net/github_30641423/article/details/119787706)
 - [Nginx yielding 499 status due to upstream connection reset](https://serverfault.com/questions/1132879/nginx-yielding-499-status-due-to-upstream-connection-reset)
+- [Nginx神奇的499竟然不在HTTP响应码标准内？快来了解一下！](https://cloud.tencent.com/developer/article/2329300)
 
 场景:
 1. client(比如browser)在nginx响应前关闭连接

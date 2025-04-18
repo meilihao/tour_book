@@ -1016,6 +1016,11 @@ help: `virt-install <参数> ?`
         domcapabilities                domain capabilities
 
          virsh domcapabilities --machine q35
+
+            - virttype : virsh capabilities的`<guest>.<arch>.<domain type="xxx">`
+            - emulatorbin: virsh capabilities的`<guest>.<arch>.<emulator>`
+            - arch: virsh capabilities的`<guest>.<arch name="xxx">`
+            - machine: virsh capabilities的`<guest>.<arch>.<machine>`
          virsh domcapabilities --machine q35 | xmllint --xpath '/domainCapabilities/os' -
         freecell                       NUMA可用内存
         freepages                      NUMA free pages
@@ -1530,3 +1535,15 @@ ref:
 COSMIC需要显卡支持hardware acceleration
 
 virtio显卡开启"3D 加速"报"opengl is not available", 换QXL即可
+
+### [通过virt-install 创建虚拟机时qemu+arm对vcpu限制上限为8](https://blog.csdn.net/tiantao2012/article/details/78134069)
+ref:
+- [‘virt’ generic virtual platform (virt)](https://qemu-project.gitlab.io/qemu/system/arm/virt.html)
+
+QEMU 的纯软件虚拟化模式（TCG）为了兼容性，沿用 GICv2 的默认配置，导致 vCPU 数量受限. 同时vm xml显示gic-version=2.
+
+同时`virsh domcapabilities --arch aarch64 --virttype qemu --machine virt`显示gic支持`2,3`, 创建的vm默认使用了2导致
+
+验证: `qemu-system-aarch64 -machine,gic.version=3 virt -smp 16 ..`/`virt-install --features gic.version=3 ..`, vm能创建但启动vm报`MSI-X is not supported by interrupt controller`, 见[Unable to create aarch64 TCG guests: "MSIX is not supported by interrupt controller"](https://bugzilla.redhat.com/show_bug.cgi?id=1450433).
+
+> 如果调用virtinst lib去使用的话, 需用`options.features="gic_version=3"`, 因为参数`--features gic.version=3`是被其ParserFeatures的`aliases`帮忙转换处理过的

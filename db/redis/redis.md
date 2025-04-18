@@ -13,10 +13,17 @@ Redis 服务器与客户端通过 RESP（Redis Serialization Protocol）协议�
 
 > redis v6应该会采用RESP v3.
 
+## pipeline
+pipeline 不适用于执行顺序有依赖关系的一批命令, 可用lua脚本代替.
+
 ## 事务
 > 事务提供了一种“将多个命令打包， 然后一次性、按顺序地执行”的机制， 并且事务在执行的期间不会主动中断.
 
 Redis 通过 MULTI 、 DISCARD 、 EXEC 和 WATCH,UNWATCH 五个命令来实现事务功能.
+
+通过WATCH 命令监听指定的 Key，当调用 EXEC 命令执行事务时，如果一个被 WATCH 命令监视的 Key 被 其他`客户端/Session` 修改的话，整个事务都不会被执行, 同一个session的话该事务还是会被执行.
+
+> MULTI 后可输入若干命令，并将它们放到队列中，直到调用了 EXEC 命令后，再按FIFO执行所有的命令; 也可通过 DISCARD 取消一个事务，它会清空事务队列中保存的所有命令.
 
 > 如果在执行 WATCH 命令之后， EXEC 命令或 DISCARD 命令先被执行了的话，那么就不需要再执行 UNWATCH 了.
 
@@ -25,6 +32,21 @@ Redis 通过 MULTI 、 DISCARD 、 EXEC 和 WATCH,UNWATCH 五个命令来实现�
 - Redis 不具备 ACID 中一致性的概念
 - Redis 具备隔离性
 - Redis 通过一定策略可以保证持久性
+
+替代方法:
+1. lua : from v2.6
+
+    一段 Lua 脚本可以视作一条命令执行，一段 Lua 脚本执行过程中不会有其他脚本或 Redis 命令同时执行，保证了操作不会被其他指令插入或打扰.
+
+    不过，如果 Lua 脚本运行时出错并中途结束，出错之后的命令是不会被执行的。并且，出错之前执行的命令是无法被撤销的，无法实现类似关系型数据库执行失败可以回滚的那种原子性效果。因此，严格来说的话，通过 Lua 脚本来批量执行 Redis 命令实际也是不完全满足原子性的.
+
+1. Redis functions : from v7.0
+
+    比 Lua 更强大的脚本
+
+pipeline 和 Redis 事务的对比：
+1. 事务是原子操作，pipeline 是非原子操作. 两个不同的事务不会同时运行，而 pipeline 可以同时以交错方式执行
+1. Redis 事务中每个命令都需要发送到服务端，而 Pipeline 只需要发送一次，请求次数更少
 
 ### 原子性
 Redis 开始事务 multi 命令后，Redis 会为这个事务生成一个**队列**，每次操作的命令都会按照顺序插入到这个队列中. 这个队列里面的命令不会被马上执行，直到 exec 命令提交事务，所有队列里面的命令会被一次性，并且排他的进行执行.
@@ -40,8 +62,28 @@ Redis 因为是单线程操作，所以在隔离性上有天生的隔离机制.
 ### 持久性
 Redis 是否具备持久化，这个取决于 Redis 的持久化模式：
 - 纯内存运行，不具备持久化，服务一旦停机，所有数据将丢失；
-- RDB 模式，取决于 RDB 策略，只有在满足策略才会执行 Bgsave，异步执行并不能保证 Redis 具备持久化
-- AOF 模式，只有将 appendfsync 设置为 always，程序才会在执行命令同步保存到磁盘，这个模式下，Redis 具备持久化.（将 appendfsync 设置为 always，只是在理论上持久化可行，但一般不会这么操作）
+- RDB(snapshotting) 模式，取决于 RDB 策略，只有在满足策略才会执行 Bgsave，异步执行并不能保证 Redis 具备持久化
+
+    创建rdb的方法:
+    1. save : 同步保存操作，会阻塞 Redis 主线程；
+    1. bgsave : fork 出一个子进程，子进程执行，不会阻塞 Redis 主线程，默认选项
+- AOF(append-only file) 模式，只有将 appendfsync 设置为 always，程序才会在执行命令同步保存到磁盘，这个模式下，Redis 具备持久化.（将 appendfsync 设置为 always，只是在理论上持久化可行，但一般不会这么操作）
+
+    > Redis 6.0 之后已经默认是开启了
+
+    与快照持久化相比，AOF 持久化的实时性更好.
+
+    Redis AOF 持久化机制是在执行完命令之后再记录日志，这和关系型数据库（如 MySQL）通常都是执行命令之前记录日志（方便故障恢复）不同
+
+    BGREWRITEAOF的AOF 重写阻塞: 缓冲区中新数据写到新文件的过程中会产生阻塞
+- RDB 和 AOF 的混合持久化（Redis 4.0 新增）
+
+与 RDB 持久化相比，AOF 持久化的实时性更好. AOF 持久化的 appendfsync 策略为 no、everysec 时都会存在数据丢失的情况。always 下可以基本是可以满足持久性要求的，但性能太差，实际开发过程中不会使用.
+
+总结:
+1. Redis 保存的数据丢失一些也没什么影响的话，可以选择使用 RDB
+1. 不建议单独使用 AOF，因为时不时地创建一个 RDB 快照可以进行数据库备份、更快的重启以及解决 AOF 引擎错误
+1. 如果保存的数据要求安全性比较高的话，建议同时开启 RDB 和 AOF 持久化或者开启 RDB 和 AOF 混合持久化
 
 ## 持久化
 在对 Redis 进行恢复时，RDB 快照直接读取磁盘即可恢复，而 AOF 需要对所有的操作指令进行重放进行恢复，这个过程有可能非常漫长.
@@ -144,6 +186,8 @@ Redis处理key过期有惰性删除和定期删除两种机制，而在配置主
 参考:
 - [Redis Cluster数据分片实现原理、及请求路由实现](https://www.huaweicloud.com/articles/38e2316d01880fdbdd63d62aa26b31b4.html)
 - [Redis Cluster 会丢数据吗？](https://segmentfault.com/a/1190000021147037)
+
+Redis Cluster 并没有使用一致性哈希，采用的是 哈希槽分区，每一个键值对都属于一个 hash slot（哈希槽）。当客户端发送命令请求的时候，需要先根据 key 通过上面的计算公式找到的对应的哈希槽，然后再查询哈希槽和节点的映射关系，即可找到目标 Redis 节点.
 
 Redis Cluster是一种服务器Sharding技术(分片和路由都是在服务端实现)，采用多主多从，每一个分区都是由一个Redis主机和多个从机组成，片区和片区之间是相互平行的. Redis Cluster集群采用了P2P的模式，完全去中心化.
 

@@ -928,3 +928,39 @@ blkid查看vdc提示`LABEL="p" UUID="801774493520823192" UUID_SUB="1673604299091
 
 ### 获取dataset iostat
 `/proc/spl/kstat/zfs/<pool>/objset-xxx`, 里面包含dataset_name
+
+### special规划
+ZFS 并没有硬性要求 special vdev 的容量，它的容量需求主要取决于以下数据：
+1. 元数据（文件系统元数据、ZIL 指针等）
+1. 小文件（small_blocks，通常 ≤ recordsize，默认 ≤ 128KB）
+1. Deduplication 表（如果启用去重）
+1. 其他特殊数据（如 resilver 状态）但以下是建议和实战经验总结
+
+ps: 如果 special 空间不足，ZFS 会回退到普通存储，导致性能下降
+
+建议和实战经验总结:
+目标	建议容量比例
+基本使用	至少为主池容量的 0.5%~2%
+小文件为主的工作负载	2%~5% 或更多（甚至到 10%）
+所有元数据和小数据块都放入 special vdev（完全 offload）	足够容纳所有元数据 + 小块数据的总和
+
+实际容量大小依据：
+1. 元数据量
+
+	- 多数 ZFS 文件系统元数据体积大概在主池使用量的 1~2%，但具体看数据类型和文件数。
+
+- Small block threshold
+
+	默认情况下，小于 128 KiB 的块可以被写入 special vdev。
+
+	这个阈值可以通过 special_small_blocks 属性调整，比如设为 64K
+
+- 使用估算
+
+	可以使用如下命令查看已有的元数据和小块使用量估算`zdb -Lbbbs <poolname>`, 输出中的 metadata 和 small blocks 使用量可以作为 special vdev 规划依据
+
+### zpool移除mirror special报`all top-level vdevs must have the same sector size and not be raidz`
+ref:
+- [zpool cannot remove vdev #14312](https://github.com/openzfs/zfs/issues/14312#issuecomment-2296222799)
+
+已检查`zdb -C <pool>`的ashift和`lsblk -o NAME,PHY-SEC,LOG-SEC`, 没有问题. 应该是top-level vdevs存在raidz导致的

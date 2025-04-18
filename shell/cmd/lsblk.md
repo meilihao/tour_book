@@ -9,9 +9,10 @@
 - -f/--fs : 显示文件系统信息
 - -l : 以表格形式输出
 - -n : 不输出表头(标题)
-- -o : 输出指定的属性, 比如: name,maj:min,tran
+- -o : 输出指定的属性, 比如: name,maj:min,tran,PHY-SEC, LOG-SEC,...
 
 	- ROTA : ROTA=1, HDD; ROTA=0, SSD
+- O : 输出所有`-o`选项
 - -P : 使用key="value"格式显示
 - -r : 使用原始格式显示
 - -S/--scsi : 仅输出scsi设备
