@@ -421,3 +421,18 @@ mariabackup --copy-back --target-dir=/var/mariadb/backup/ --incremental-dir=/var
 chown -R mysql:mysql /var/lib/mysql/
 systemctl start mariadb
 ```
+
+### varchar 和 char 的区别
+- char 表示变长，char 表示长度固定，未满填充空格，超出国定长度则拒绝插入并提示错误信息
+- 存储容量不同: 对char来说，最多能存放的字符个数为255. 对于varchar,最多能存放的字符个数是65532
+- 存储速度不同: char长度固定，存储速度会比varchar快一些，但在空间上会占用额外的空间，属于一种空间换时间的策略. varchar空间利用率会更高些
+
+## in和exists一般用于子查询
+使用exists时会先进行外表查询，将查询到的每一行数据都带入内表查询中看是否满足条件；使用in一般会先进行内表查询获取结果集，然后对外表查询匹配结果集，返回数据.
+
+in在内表查询或者外表查询过程中都会用到索引
+exsits仅在内表查询时会用到索引
+
+一般来说，当子查询的结果集比较大，外表较小时用exist效率更高；当子查询的结果较小，外表较大时，使用in效率更高.
+
+对于not in 和 not exists, not exists效率比not in 效率高，与子查询的结果集无关，因为not in 对于内外表都进行了全表扫描，没有使用到索引. not exists的子查询中可以用到表上的索引.

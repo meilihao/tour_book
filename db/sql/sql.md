@@ -257,18 +257,20 @@ function (expression) OVER (
 - `WHERE`字句不能使用聚合函数,只有`SELECT`,`ORDER BY`和`HAVING`子句可以.
 - `WHERE`用来筛选数据行,`HAVING`用来指定分组的条件.
 - [SQL解析顺序](http://www.jellythink.com/archives/924):
-```
-(7)     SELECT
-(8)     DISTINCT <select_list>
-(1)     FROM <left_table>
-(3)     <join_type> JOIN <right_table>
-(2)     ON <join_condition>
-(4)     WHERE <where_condition>
-(5)     GROUP BY <group_by_list>
-(6)     HAVING <having_condition>
-(9)     ORDER BY <order_by_condition>
-(10)    LIMIT <limit_number>
-```
+    ```
+    (7)     SELECT
+    (8)     DISTINCT <select_list>
+    (1)     FROM <left_table>
+    (3)     <join_type> JOIN <right_table>
+    (2)     ON <join_condition>
+    (4)     WHERE <where_condition>
+    (5)     GROUP BY <group_by_list>
+    (6)     HAVING <having_condition>
+    (9)     ORDER BY <order_by_condition>
+    (10)    LIMIT <limit_number>
+    ```
+
+    即`from -> on -> join -> where -> group -> having ->select -> distinct -> order by`
 
 ### 查询优化器
 在一条单表查询语句真正执行之前，MySQL的查询优化器会找出执行该语句所有可能使用的方案，对比之后找出成本最低的方案. 这个成本最低的方案就是所谓的执行计划. 优化过程大致如下：
@@ -395,6 +397,13 @@ IS NULL、IS NOT NULL、!=这些条件都可能使用到索引, InnoDB如何判�
     结合B+Tree的特点，自增主键是连续的，在插入过程中尽量减少页分裂，即使要进行页分裂，也只会分裂很少一部分. 它还能减少数据的移动，每次插入都是插入到最后.
 
     总之就是减少分裂和移动的频率.
+
+索引在什么情况下会失效:
+- 条件中有or
+- 使用like模糊查询以%开头的
+- 在索引列上进行计算，使用函数，隐式转化
+- 对于组合索引，不遵循最左匹配原则
+- 在索引字段上使用is null / is not null判断时会导致索引失败
 
 #### 数据库优化的思路
 思路来源通常是监控, 比如慢查询日志.

@@ -172,3 +172,9 @@ ref:
 
 ## lock
 - [图解ReentrantLock底层公平锁和非公平锁实现原理](https://www.cnblogs.com/zhujiqian/p/16898222.html)
+
+## resume
+- [在 GitHub 上写简历](https://codegym.cc/zh/groups/posts/zh.589.zai-github-shang-xie-jian-li-jian-duan-zhi-nan)
+
+    创建一个与 GitHub 上的用户名同名的repo, 放置README.md
+- [程序员简历就该这样写](https://github.com/Snailclimb/JavaGuide-Interview/blob/master/docs/a-2%E7%A8%8B%E5%BA%8F%E5%91%98%E7%AE%80%E5%8E%86%E5%88%B6%E4%BD%9C%E6%8C%87%E5%8D%97.md)

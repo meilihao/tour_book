@@ -4,6 +4,7 @@ ref:
 - [2024最近，14款免费NAS操作系统及引导！黑群、黑威、Unraid开心版、TrueNAS、国产开源等，先码后看！](https://post.smzdm.com/p/azomrxmn/)
 - [fnOS](https://news.mydrivers.com/1/999/999891.htm)
 - [truenas scale 下载地址(**全部版本**)](https://download.sys.truenas.net/)
+- [TrueNAS 25.04.0 "Fangtooth" 正式发布，统一 CORE 和 SCALE 分支](https://www.oschina.net/news/345966/truenas-fangtooth-25-04-released)
 
 version: 24.04
 

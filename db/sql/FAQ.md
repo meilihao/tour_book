@@ -223,3 +223,22 @@ SET department_name = departments.name
 FROM departments
 WHERE employees.department_id = departments.id
 ```
+
+### 字段为什么要设置成not null
+NULL和空值是不一样的，空值是不占用空间的，而NULL是占用空间的，所以字段设为not null后仍然可以插入空值.
+
+- NULL会影响一些函数的统计，比如count,遇到NULL值，这条记录不会统计在内
+- B树不存储NULL，索引用不到NULL，会造成第一点中说的统计不到的问题
+- Not In子查询在有NULL值的情况下不返回任何记录???
+- MySQL在进行比较的时候，NULL会参与字段的比较，因为NUll是一种比较特殊的数据类型，数据库在处理时需要进行特殊处理，增加了数据库处理记录的复杂性
+
+    > NOT EXISTS 和 LEFT JOIN 方法在遇到 NULL 值时表现更符合预期，是更推荐的做法.
+
+### 如何优化Where子句
+- 不要在where子句中使用!=和<>进行不等于判断，这样会导致放弃索引进行全表扫描
+- 不要在where子句中使用null或者空值判断，尽量设置字段为Not NULL
+- 尽量使用union all 代替 or
+- 尽量少使用以“%”开头的模糊查询
+- 在where 和 order by 涉及的列建立索引
+- 尽量少使用in 或者 not in , 可能会进行全表扫描
+- 避免在where子句中对字段进行表达式, 类型转换或者函数操作，会导致存储引擎放弃索引进而全表扫描

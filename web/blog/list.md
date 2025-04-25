@@ -171,3 +171,9 @@
 
 ## demo
 - [用 Vue 全家桶纯手工搓了一个开源版「抖音」，高仿度接近 100%](https://www.oschina.net/news/286027)
+
+## tools
+- web ppt
+
+    - [Slidev](https://sli.dev/)
+    - [nodePPT](https://github.com/ksky521/nodePPT)
