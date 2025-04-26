@@ -3,9 +3,10 @@
 - table是一个二维数组的集合,是存储数据和操作数据的逻辑结构.
 - SQL(Structured Query Language) 是用于访问和处理数据库的标准的计算机语言.
 - SQL的四部分:
-  - 数据定义语言 (DDL - create,drop,alter)
-  - 数据操作语言 (DML - - select,update,delete,insert)
-  - 数据控制语言 (DCL - grant,revoke,commit,rollback)
+  - 数据定义语言 (Data Definition Language, DDL : create,drop,alter)
+  - 数据操作语言 (Data Manipulation Language, DML : select,update,delete,insert)
+  - 事务控制语言 (Transaction Control Language, TCL: commit,rollback) 
+  - 数据控制语言 (Data Control Language, DCL : grant,revoke)
 
 SQL 数据库非常适合需要强数据一致性、定义良好的模式和复杂关系的应用程序. 其典型用例包括电子商务平台、金融系统和内容管理系统。例如，MySQL 提供ACID（原子性、一致性、隔离性与持久性）合规性，使其适合需要事务完整性的应用程序.
 
@@ -135,9 +136,16 @@ force 策略是说事务提交的时候，需要将所有操作进行刷盘，�
 
 ### [隔离级别](https://juejin.im/post/5b90cbf4e51d450e84776d27)
 - 脏读(dirty read/Read uncommitted)：一个事务读取了另一个事务尚未提交的修改
-- 不可重复读(non-repeatable read/Read committed)：一个事务对同一行数据读取两次，得到不同结果, 即读到其他事务已提交的数据
-- 幻读(phantom read/Repeatable read)：事务在操作过程中进行了两次查询，第二次的结果包含了第一次未出现的新行或部分行消失
+- 不可重复读(non-repeatable read/Read committed)：一个事务对**同一行**数据读取两次，得到不同结果, 即读到其他事务已提交的数据
+- 幻读(phantom read/Repeatable read)：事务在操作过程中进行了两次查询，第二次的结果**包含了第一次未出现的新行或部分行消失**, 即被其他事务增删
+
+    - 在 MySQL的REPEATABLE-READ中，InnoDB 通过 MVCC（多版本并发控制） +  Next-Key Lock(行锁（Record Lock）和间隙锁（Gap Lock）的结合) 防止幻读
+    - pg REPEATABLE-READ也解决了幻读
 - 串行化(Serializable)：一个事务在执行过程中完全看不到其他事务对数据库所做的更新．`写`会加`写锁`，`读`会加`读锁`,当出现读写锁冲突的时候，后访问的事务必须等前一个事务执行完成，才能继续执行.
+
+    InnoDB 存储引擎在分布式事务的情况下一般会用到 SERIALIZABLE 隔离级别
+
+标准的REPEATABLE-READ(可重复读) ：对同一字段的多次读取结果都是一致的，除非数据是被本身事务自己所修改，可以阻止脏读和不可重复读，但幻读仍有可能发生.
 
 > 现在为止:所有的数据库都避免脏读
 >
@@ -170,6 +178,8 @@ force 策略是说事务提交的时候，需要将所有操作进行刷盘，�
 - 标量子查询(scalar subquery)指有且仅有一行一列的结果,其可以用在`SELECT`,`GROUP BY`,`HAVING`,`ORDER BY`子句等地方.
 - 关联子查询就是指子查询与主查询之间有条件关联,不能独自执行.子查询的执行的次数依赖于外部查询，外部查询每执行一行，子查询执行一次,性能不佳.
 - 在细分的组内进行比较时,需要使用关联子查询.
+
+子查询性能差的原因：子查询的结果集无法使用索引. 建议将子查询优化为 join 操作.
 
 ### 函数
 参考 : SQL基础教程.MICK 的第6章.
@@ -247,18 +257,20 @@ function (expression) OVER (
 - `WHERE`字句不能使用聚合函数,只有`SELECT`,`ORDER BY`和`HAVING`子句可以.
 - `WHERE`用来筛选数据行,`HAVING`用来指定分组的条件.
 - [SQL解析顺序](http://www.jellythink.com/archives/924):
-```
-(7)     SELECT
-(8)     DISTINCT <select_list>
-(1)     FROM <left_table>
-(3)     <join_type> JOIN <right_table>
-(2)     ON <join_condition>
-(4)     WHERE <where_condition>
-(5)     GROUP BY <group_by_list>
-(6)     HAVING <having_condition>
-(9)     ORDER BY <order_by_condition>
-(10)    LIMIT <limit_number>
-```
+    ```
+    (7)     SELECT
+    (8)     DISTINCT <select_list>
+    (1)     FROM <left_table>
+    (3)     <join_type> JOIN <right_table>
+    (2)     ON <join_condition>
+    (4)     WHERE <where_condition>
+    (5)     GROUP BY <group_by_list>
+    (6)     HAVING <having_condition>
+    (9)     ORDER BY <order_by_condition>
+    (10)    LIMIT <limit_number>
+    ```
+
+    即`from -> on -> join -> where -> group -> having ->select -> distinct -> order by`
 
 ### 查询优化器
 在一条单表查询语句真正执行之前，MySQL的查询优化器会找出执行该语句所有可能使用的方案，对比之后找出成本最低的方案. 这个成本最低的方案就是所谓的执行计划. 优化过程大致如下：
@@ -280,7 +292,9 @@ IS NULL、IS NOT NULL、!=这些条件都可能使用到索引, InnoDB如何判�
 ### index
 **数据库索引**，是数据库管理系统中一个排序的数据结构(以某种方式引用/指向数据)，以实现高效查询. 索引的实现通常使用B树及其变种B+树.
 
-为表设置索引要付出代价的：一是增加了数据库的存储空间，二是在插入, 修改和删除数据时要花费更多的时间, 因为索引也要随之变动.
+为表设置索引要付出代价的：
+1. 在插入, 修改和删除数据时要花费更多的时间, 因为索引也要随之变动
+1. 增加了数据库的存储空间
 
 优点:
 1. 通过创建唯一性索引，可以保证数据库表中每一行数据的唯一性
@@ -304,18 +318,26 @@ IS NULL、IS NOT NULL、!=这些条件都可能使用到索引, InnoDB如何判�
   1. 查询中使用了函数或表达式
 
 索引分类:
-- 按存储结构:
+- 按数据结构维度:
   - BTree索引（B-Tree或B+Tree索引）// O(LogN),相当于二分查找
 
     B+Tree索引是B-Tree的改进版本: 数据都在叶子节点上，并且增加了顺序访问指针，每个叶子节点都指向相邻的叶子节点的地址.
 
     **聚簇索引的叶子节点是整行数据, 非聚簇索引的叶子节点是主键的值**.
+
+    > InnoDB 使用 B+Tree 作为索引结构
   - Hash索引
+
+    Hash 索引不支持顺序和范围查询
 
     基于哈希表实现，哈希索引适合等值查询，但是不无法进行范围查询, 没办法利用索引完成排序, 不支持多列联合索引的最左匹配规则; 如果有大量重复键值得情况下，哈希索引的效率会很低(哈希碰撞)
   - full-index全文索引
+
+    一般不会使用，效率较低，通常使用搜索引擎如 ElasticSearch 代替
   - 空间索引: R-Tree
-- 按应用层使用:
+
+    一般不会使用，仅支持 geometry 数据类型，优势在于范围查找，效率较低，通常使用搜索引擎如 ElasticSearch 代替
+- 按应用维度:
     - 唯一索引
 
         索引列(允许多列)的值必须唯一，但允许有NULL值, 其不允许其中任何两行具有相同索引值的索引
@@ -327,15 +349,34 @@ IS NULL、IS NOT NULL、!=这些条件都可能使用到索引, InnoDB如何判�
     - 复合索引
 
         一个索引包含多个列
-- 根据中数据的物理顺序与键值的逻辑（索引）顺序关系
+    - 全文索引：对文本的内容进行分词，进行搜索
+    - 前缀索引：对文本的前几个字符创建索引
+- 根据底层存储方式(数据的物理顺序与键值的逻辑（索引）顺序关系)/
     - 聚集索引
         **并不是一种单独的索引类型，而是一种数据存储方式**. 具体细节取决于不同的实现，**InnoDB的聚簇索引其实就是在同一个结构中保存了B+Tree索引和数据行**
 
         一个聚集索引定义了**表中数据的物理存储顺序**, 因为行记录只能按照一个维度进行排序，所以**一张表只能有一个聚集索引**. 与非聚集索引相比，聚集索引通常提供更快的数据访问速度.
 
         聚集索引一般是表中的主键索引，如果表中没有显示指定主键，则会选择表中的第一个不允许为NULL的唯一索引，如果还是没有的话，就采用Innodb存储引擎为每行数据内置的6字节ROWID作为聚集索引.
+
+        - 优点：
+            1. 查询速度非常快：聚簇索引的查询速度非常的快，因为整个 B+ 树本身就是一颗多叉平衡树，叶子节点也都是有序的，定位到索引的节点，就相当于定位到了数据。相比于非聚簇索引， 聚簇索引少了一次读取数据的 IO 操作
+            1. 对排序查找和范围查找优化：聚簇索引对于主键的排序查找和范围查找速度非常快
+            
+        - 缺点:
+            1. 依赖于有序的数据：因为 B+ 树是多路平衡树，如果索引的数据不是有序的，那么就需要在插入时排序，如果数据是整型还好，否则类似于字符串或 UUID 这种又长又难比较的数据，插入或查找的速度肯定比较慢
+            1. 更新代价大：如果对索引列的数据被修改时，那么对应的索引也将会被修改，而且聚簇索引的叶子节点还存放着数据，修改代价肯定是较大的，所以对于主键索引来说，主键一般都是不可被修改的
+
+        > 在 MySQL 中，InnoDB 引擎的表的 `.ibd`文件就包含了该表的索引和数据
     - 非聚集索引
-        不是聚簇索引的索引
+        不是聚簇索引的索引, 即索引结构和数据分开存放的索引，二级索引（辅助索引）就属于非聚簇索引
+
+        二级索引（Secondary Index）的叶子节点存储的数据是主键的值. 唯一索引、普通索引、前缀索引等索引都属于二级索引.
+
+        - 优点：更新代价比聚簇索引要小, 因为其叶子节点是不存放数据.
+        - 缺点：
+            - 依赖于有序的数据：跟聚簇索引一样，非聚簇索引也依赖于有序的数据
+            - 可能会二次查询（回表）：这应该是非聚簇索引最大的缺点了
 
 > 覆盖索引: 一个查询语句的执行只用从索引中就能够取得，不必回表.
 
@@ -358,10 +399,52 @@ IS NULL、IS NOT NULL、!=这些条件都可能使用到索引, InnoDB如何判�
 
     总之就是减少分裂和移动的频率.
 
+索引在什么情况下会失效:
+- 条件中有or
+- 使用like模糊查询以%开头的
+- 在索引列上进行计算，使用函数，隐式转化
+- 对于组合索引，不遵循最左匹配原则
+- 在索引字段上使用is null / is not null判断时会导致索引失败
+
 #### 数据库优化的思路
 思路来源通常是监控, 比如慢查询日志.
 
 1. EXPLAIN查看SQL执行计划
+
+    执行计划结果中共有 12 列，各列代表的含义总结如下表(列名+含义)：
+    - id: SELECT 查询的序列标识符
+
+        用于标识每个 SELECT 语句的执行顺序
+    - select_type: SELECT 关键字对应的查询类型
+
+        - SIMPLE：简单查询，不包含 UNION 或者子查询
+        - PRIMARY：查询中如果包含子查询或其他部分，外层的 SELECT 将被标记为 PRIMARY
+        - SUBQUERY：子查询中的第一个 SELECT
+        - UNION：在 UNION 语句中，UNION 之后出现的 SELECT
+        - DERIVED：在 FROM 中出现的子查询将被标记为 DERIVED
+        - UNION RESULT：UNION 查询的结果
+
+    - table : 用到的表名
+    - partitions: 匹配的分区，对于未分区的表，值为 NULL
+    - type: 表的访问方法
+    - possible_keys: 可能用到的索引
+    - key: 实际用到的索引
+    - key_len: 所选索引的长度
+    - ref: 当使用索引等值查询时，与索引作比较的列或常量
+    - rows: 预计要读取的行数
+    - filtered: 按表条件过滤后，留存的记录数的百分比
+    - Extra: 附加信息
+
+        常见的值如下：
+        - Using filesort：在排序时使用了外部的索引排序，没有用到表内索引进行排序
+        - Using temporary：MySQL 需要创建临时表来存储查询的结果，常见于 ORDER BY 和 GROUP BY
+        - Using index：表明查询使用了覆盖索引，不用回表，查询效率非常高
+        - Using index condition：表示查询优化器选择使用了索引条件下推这个特性
+        - Using where：表明查询使用了 WHERE 子句进行条件过滤。一般在没有使用到索引的时候会出现
+        - Using join buffer (Block Nested Loop)：连表查询的方式，表示当被驱动表的没有使用索引的时候，MySQL 会先将驱动表读出来放到 join buffer 中，再遍历被驱动表与驱动表进行查询
+        
+        当 Extra 列包含 Using filesort 或 Using temporary 时，MySQL 的性能可能会存在问题，需要尽可能避免
+
 1. SQL语句优化
     1. 应尽量避免在 where 子句中使用!=或<>操作符，否则将引擎放弃使用索引而进行全表扫描
     1. 应尽量避免在 where 子句中对字段进行 null 值判断，否则将导致引擎放弃使用索引而进行全表扫描.

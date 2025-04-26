@@ -76,6 +76,21 @@ RocksDB是一个嵌入式的K-V（任意字节流）存储. 所有的数据在�
 
 > 编译rocksdb源码下的examples: `g++ simple_example.cc -o test -std=c++11 -lpthread -lrocksdb -ldl -lrt -lsnappy -lgflags -lz -lbz2 -lzstd`
 
+### 编译参数
+- USE_RTTI
+
+    RTTI（Run-Time Type Information） 是 C++ 的一项特性，允许在运行时获取对象的类型信息（如 typeid 和 dynamic_cast）.
+    启用 USE_RTTI 后，RocksDB 会在编译时包含 RTTI 支持
+    默认情况下，RocksDB 禁用 RTTI（USE_RTTI=0），以减少二进制文件的大小和运行时开销
+
+- PORTABLE
+
+    PORTABLE 参数用于控制生成的二进制文件是否针对特定 CPU 架构优化
+    启用 PORTABLE 后，RocksDB 会生成**兼容性**更强的二进制文件，适用于多种 CPU 架构
+    禁用 PORTABLE 后，RocksDB 会针对当前 CPU 架构进行优化（如使用 SSE4.2、AVX2 等指令集）
+
+    如果目标环境是固定的，并且希望充分利用当前 CPU 架构的性能优势，可以禁用 PORTABLE
+
 ## 文件介绍
 - *.log: 事务日志用于保存数据操作日志，可用于数据恢复
 - LOG/LOG.old.* : 当前log/历史log

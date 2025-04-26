@@ -9,4 +9,3 @@
 - [简单一招竟把 nginx 服务器性能提升 50 倍](https://my.oschina.net/u/4090830/blog/10979685)
 
 	ngx_http_gzip_static_module
-

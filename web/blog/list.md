@@ -146,6 +146,8 @@
 - [standardized-audio-context](https://github.com/chrisguttandin/standardized-audio-context)
 
 ## [http3](https://github.com/quicwg)
+- [quicwg](https://quicwg.org/)
+- [httpwg](https://httpwg.org/specs/)
 - [HTTP/3 explained](https://daniel.haxx.se/http3-explained/)
 - [quic status](https://datatracker.ietf.org/wg/quic/about/)
 - [HTTP/3 status](https://datatracker.ietf.org/doc/draft-ietf-quic-http/)
@@ -169,3 +171,9 @@
 
 ## demo
 - [用 Vue 全家桶纯手工搓了一个开源版「抖音」，高仿度接近 100%](https://www.oschina.net/news/286027)
+
+## tools
+- web ppt
+
+    - [Slidev](https://sli.dev/)
+    - [nodePPT](https://github.com/ksky521/nodePPT)

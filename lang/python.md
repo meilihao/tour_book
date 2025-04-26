@@ -2564,3 +2564,17 @@ ipdb> help # 查看帮助
 
 ### `code, message = <task>.delay(...)`崩溃
 `delay()`返回的是AsyncResult, 用`<task>()`
+
+## uwsgi
+
+### uwsgitop
+```bash
+# pip3 install uwsgitop
+# vim uwsgi.ini # 修改后需重启uwsgi
+...
+stats = 127.0.0.1:3167
+---
+# uwsgitop 127.0.0.1:3167
+```
+uwsgitop输出解析:
+- lq : 当前有多少个请求正在等待 uWSGI worker 来处理，但还没被接收

@@ -465,8 +465,9 @@ git diff branch1 branch2 [--stat] # 显示差异. `--stat`: 仅显示差异的�
 git diff branch1 branch2 <file_path> # 比较指定文件差异
 ```
 
-### 将修改文件发送到remote
+### 将修改文件发送到remote+删除旧文件
 `git diff --name-only [--relative=xxx] [--cached] [--diff-filter=AM] | xargs -I '{}' scp -i ~/.ssh/xxx '{}' root@192.168.16.100:/opt/xxx/{}`
+`git diff --name-only [--relative=xxx] [--cached] [--diff-filter=AM] | xargs -I {} echo {}|sed 's/\.py/\.so' | xargs -I {} ssh -i ~/.ssh/xxx root@192.168.16.100 "rm /opt/{}"`
 
 选项:
 - relative : 调整相对路径
@@ -499,4 +500,17 @@ gitcode限制10M, 解决方法:
 git rm --cached [-r] path_of_a_giant_file
 git commit --amend
 git push
+```
+
+### tag version
+```bash
+GitTag=$(git describe --tags --dirty --always)
+GitBranch=$(git rev-parse --abbrev-ref HEAD)
+GitHash=$(git rev-parse HEAD)
+BuildTS=$(data -u --rfc-3339=seconds)
+
+LDFLAGS="-X .../version.gitTag=${GitTag}
+         -X '.../version.gitTag=${BuildTS}'"
+
+go build -ldflags "$LDFLAGS"
 ```

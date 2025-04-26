@@ -18,6 +18,10 @@ depmod会遍历文件/lib/modules/`uname -r`/modules.dep解析模块依赖关系
 - Size  : 模块大小
 - Used by : 依赖其他模块的个数 + 被其他模块依赖的列表
 
+注意:
+1. 检查mod是否存在: 到`/sys/module/`下检查
+1. lsmod未找到模块可检查`/boot/config-xxx`是否直接编译进了kernel
+
 # modinfo
 显示内核模块的信息, 比如配置参数
 

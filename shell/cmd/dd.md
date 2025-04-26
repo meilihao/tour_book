@@ -37,3 +37,21 @@ $ dd if=/dev/urandom of=xxx bs=512 count=1 skip=2 conv=notrunc # 在1024B后替�
 # dd if=/dev/sda of=mbr.hex bs=512 count=1
 # hexdump -C mbr.hex
 ```
+
+## FAQ
+### dd大文件导致内核cache占用很大
+dd 60G的zvol到zfs fs, 发现/proc/meminfo的Buffers变得很高(16G, 内存共63G, kernel cache占28G), kill dd进程后Buffers立马变为200M
+
+解决(未验证):
+1. dd bs=4M iflag=nocache oflag=sync
+1. dd iflag=direct oflag=direct
+1. 调整虚拟内存管理参数
+
+    - vm.dirty_ratio：表示系统内存中可以占用多少比例的数据在同步到磁盘之前保持在内存中。如果内存占用过高，dd 可能会导致写入数据堆积在内存中，增加缓存压力
+    - vm.dirty_background_ratio：表示当内存中有多少比例的脏数据时，后台的写入进程会开始把脏数据写回磁盘
+
+    比如:
+    ```bash
+    sysctl vm.dirty_ratio=10
+    sysctl vm.dirty_background_ratio=5
+    ```

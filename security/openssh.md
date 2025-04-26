@@ -11,7 +11,8 @@
 - [Linux下使用ssh动态验证码登陆机器](https://blog.51cto.com/noodle/1831697)
 
 ## 最新
-[OpenSSH 8.2](http://www.openssh.com/txt/release-8.2)增加了[对 FIDO/U2F 硬件身份验证器的支持](https://www.debian.cn/archives/3683).
+- [OpenSSH 8.2](http://www.openssh.com/txt/release-8.2)增加了[对 FIDO/U2F 硬件身份验证器的支持](https://www.debian.cn/archives/3683)
+- [Cloudflare 开源 OpenPubkey SSH（OPKSSH），将单点登录集成到 SSH](https://www.oschina.net/news/341113/cloudflare-open-sourcing-openpubkey)
 
 ## 前言
 

@@ -65,3 +65,10 @@ systemctl status plymouth-poweroff.service
 
 ### 安装boot loader
 grup2-install
+
+### GRUB_CMDLINE_LINUX支持的参数
+[The kernel’s command-line parameters](https://www.kernel.org/doc/html/latest/admin-guide/kernel-parameters.html)
+
+### GRUB_CMDLINE_LINUX和GRUB_CMDLINE_LINUX_DEFAULT的区别
+GRUB_CMDLINE_LINUX: 定义所有内核启动项（包括默认启动、恢复模式、手动编辑的选项）的内核命令行参数
+GRUB_CMDLINE_LINUX_DEFAULT: 定义默认的内核命令行参数，仅影响普通启动菜单项（即非恢复模式或高级选项）

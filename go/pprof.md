@@ -1,13 +1,46 @@
 # go tool pprof
+ref:
+- [go tool pprof](https://github.com/hyper-carrot/go_command_tutorial/blob/master/0.12.md)
+- [google-perftools](http://google-perftools.googlecode.com/svn/trunk/doc/)
+
+Go内置了对代码进行性能剖析的工具:pprof, 其源自Google Perf Tools工具套件.
+
+注意: **采样不是免费的,因此一次采样尽量仅采集一种类型的数据,不要同时采样多种类型的数据,避免相互干扰采样结果**
 
 在Go语言中，我们可以通过标准库的代码包runtime和runtime/pprof中的程序来生成三种包含实时性数据的概要文件，分别是
 1. CPU概要文件
-1. 内存概要文件
-1. 程序阻塞概要文件
 
-参考:
-- [go tool pprof](https://github.com/hyper-carrot/go_command_tutorial/blob/master/0.12.md)
-- [google-perftools](http://google-perftools.googlecode.com/svn/trunk/doc/)
+	Go运行时会每隔一段短暂的时间(10ms)就中断一次(由SIGPROF信号引发)并记录当前所有goroutine的函数栈信息(存入cpu.prof)
+
+1. 内存概要文件
+
+	堆内存分配的采样频率可配置,默认每1000次堆内存分配会做一次采样(存入mem.prof)
+1. 锁竞争(mutex.prof)
+
+	锁竞争采样数据记录了当前Go程序中互斥锁争用导致延迟的操作
+1. 程序阻塞概要文件(block.prof)
+
+	该类型采样数据记录的是goroutine在某共享资源(一般是由同步原语保护)上的阻塞时间,包括从无缓冲channel收发数据、阻塞在一个已经被其他goroutine锁住的互斥锁、向一个满了的channel发送数据或从一个空的channel接收数据等
+
+ps: 锁竞争和程序阻塞在默认情况下是不启用的
+
+使用pprof对程序进行性能剖析的工作一般分为两个阶段:数据采集和数据剖析.
+
+Go目前主要支持两种性能数据采集方式:
+1. 通过性能基准测试进行数据采集
+
+	比如
+	```go
+	go test -bench . xxx_test.go -cpuprofile=cpu.prof
+	go test -bench . xxx_test.go -memprofile=mem.prof
+	go test -bench . xxx_test.go -blockprofile=block.prof
+	go test -bench . xxx_test.go -mutexprofile=mutex.prof
+	```
+
+	> 一旦开启性能数据采集(比如传入-cpuprofile),go test的`-c`选项便会自动开启
+1. 独立程序的性能数据采集
+
+	通过标准库runtime/pprof和runtime包提供的低级API对独立程序进行性能数据采集
 
 ## 采集
 
@@ -58,6 +91,15 @@ func main() {
 	...
 }
 
+// --- mutex ---
+func main() {
+	f, _ := os.Create("profile_file")
+
+	defer func() {
+		pprof.Lookup("mutex").WriteTo(f, 0)
+	}()
+}
+
 // --- block ---
 // 程序阻塞概要文件用于保存用户程序中的Goroutine阻塞事件的记录
 import (
@@ -90,6 +132,7 @@ go test -bench=. -cpuprofile=cpu.prof
 `-cpuprofile`为指定CPU概要文件的文件名,此时go test同时生成xxx.test和cpu.prof文件.
 
 ## 分析
+web访问http://ip:6060/debug/pprof/即可
 
 ### cpu分析
 ```
@@ -105,8 +148,33 @@ flat  flat%   sum%        cum   cum%
 
 
 ### mem
+ref:
+- [golang 内存泄漏分析案例](https://www.cnblogs.com/zhanchenjin/p/17101573.html)
+
 `go tool pprof -alloc_space/-inuse_space http://ip:8899/debug/pprof/heap`
 优先使用-inuse_space来分析，因为直接分析导致问题的现场比分析历史数据肯定要直观的多，一个函数alloc_space多不一定就代表它会导致进程的RSS高.
+
+1. 直接heap分析当前的内存:
+```bash
+# go tool pprof http://ip:8899/debug/pprof/heap
+(pprof) top
+(pprof) list <func> # 泄漏函数, 可以看到哪行泄漏了
+```
+
+2. 使用base能够对比两个profile文件的差别
+```bash
+# go tool pprof http://ip:8899/debug/pprof/heap # get base
+# go tool pprof http://ip:8899/debug/pprof/heap # get latest
+# go tool pprof -base pprof.alloc_objects.alloc_space.inuse_objects.inuse_space.001.pb.gz pprof.alloc_objects.alloc_space.inuse_objects.inuse_space.002.pb.gz
+```
+
+3. 查看heap图片: `go tool pprof -png http://localhost:6060/debug/pprof/heap > heap.png`
+
+### goroutine泄露
+ref:
+- [golang 内存泄漏分析案例](https://www.cnblogs.com/zhanchenjin/p/17101573.html)
+
+方法与上节mem类似
 
 ## GC
 - [如何监控 golang 程序的垃圾回收](https://holys.im/2016/07/01/monitor-golang-gc/)

@@ -3,6 +3,9 @@
 
 ## 性能
 - [pyroscope](https://colobu.com/2022/01/27/pyroscope-a-continuous-profiling-platform/)
+- [benchstat]()
+
+	go官方性能基准比较工具, 取代原有的benchcmp 
 
 ## others
 - [csv解析](https://github.com/gocarina/gocsv)
@@ -23,6 +26,9 @@
 	- [github.com/unidoc/unipdf](https://github.com/unidoc/unipdf)
 
 		需要license
+- template
+
+	- [fasttemplate](https://github.com/valyala/fasttemplate)
 
 ## http client
 - [github.com/go-resty/resty/v2](https://github.com/go-resty/resty)

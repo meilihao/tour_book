@@ -1,10 +1,31 @@
+# ncat
+ref:
+- [ncat 取代了rhel 7的 netcat](https://docs.redhat.com/zh-cn/documentation/red_hat_enterprise_linux/7/html/networking_guide/sec-managing_data_using_the_ncat_utility)
+
+ncat是Nmap项目中netcat的版本, 是nc的一个增强版本，提供了更多的功能，特别是在安全和加密方面, **推荐使用**.
+
+## 选项
+- -z : 指定要扫描的端口范围
+
+## example
+```bash
+# ncat [-u] -l 8080 # 监听8080, `-u`是使用udp
+# ncat 10.0.11.60 8080 # 连接10.0.11.60:8080
+# ncat -l 8080 > outputfile
+# ncat -l 10.0.11.60 8080 < inputfile
+# ncat -l 8080 < inputfile # 同上, 传输方向相反
+# ncat -l 10.0.11.60 8080 > outputfile
+# ncat -l --proxy-type http localhost 8080 # 在 localhost 端口 8080 中创建 HTTP 代理服务器
+# ncat -z 10.0.11.60 80-90 # 端口扫描
+# ncat -e /bin/bash -k -l 8080 --ssl # 基于ssl的通信
+# ncat --ssl 10.0.11.60 8080 
+```
+
 # nc
 
 ## 描述
 
-nc是netcat的简写，有着网络界的瑞士军刀美誉。因为它短小精悍、功能实用，被设计为一个简单、可靠的网络工具.
-
-ncat是Nmap项目中netcat的版本, 是nc的一个增强版本，提供了更多的功能，特别是在安全和加密方面, **推荐使用**.
+nc是netcat的简写，有着网络界的瑞士军刀美誉。因为它短小精悍、功能实用，被设计为一个简单、可靠的网络工具. **推荐使用ncat**.
 
 参考:
 - [nc命令用法举例](https://www.cnblogs.com/nmap/p/6148306.html)

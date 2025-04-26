@@ -11,11 +11,29 @@ mysql的查询流程:
 ![](/misc/img/mysql/mysql.png)
 
 MySQL可以分为Server层和存储引擎层两部分:
-1. Server层包括连接器、查询缓存、分析器、优化器、执行器等，涵盖MySQL的大多数核心服务功能，以及所有的内置函数（如日期、时间、数学和加密函数等），所有跨存储引擎的功能都在这一层实现，比如存储过程、触发器、视图等.
+1. Server层包括连接器、~~查询缓存(MySQL 8.0 版本后移除)~~、分析器、优化器、执行器等，涵盖MySQL的大多数核心服务功能，以及所有的内置函数（如日期、时间、数学和加密函数等），所有跨存储引擎的功能都在这一层实现，比如存储过程、触发器、视图等.
 1. 存储引擎层负责数据的存储和提取. 其架构模式是插件式的，支持InnoDB(**推荐**)、~~MyISAM(不推荐)~~、Memory等多个存储引擎. 现在最常用的存储引擎是InnoDB，它从MySQL 5.5.5版本开始成为了默认存储引擎
+
+查询语句的执行流程如下：`权限校验（如果命中缓存）--->查询缓存--->分析器--->优化器--->权限校验--->执行器--->引擎`
+更新语句执行流程如下：`分析器---->权限校验---->执行器--->引擎---redo log(prepare 状态)--->binlog--->redo log(commit 状态)`
 
 ## 安装
 - [mariadb 离线包下载](https://mariadb.com/downloads/)
+
+## 数据类型
+[](https://oss.javaguide.cn/github/javaguide/mysql/summary-of-mysql-field-types.png)
+
+DECIMAL 和 FLOAT 的区别是：DECIMAL 是定点数，FLOAT/DOUBLE 是浮点数。DECIMAL 可以存储精确的小数值，FLOAT/DOUBLE 只能存储近似的小数值.
+
+如果预期长度范围可以通过 VARCHAR 来满足，建议避免使用 TEXT. 数据库规范通常不推荐使用 BLOB 和 TEXT 类型，这两种类型具有一些缺点和限制, 比如没有默认值, 检索效率较低. 必须使用时建议把 BLOB 或是 TEXT 列分离到单独的扩展表中.
+
+DATETIME 类型没有时区信息，TIMESTAMP 和时区有关.
+
+MySQL 中没有专门的布尔类型，而是用 TINYINT(1) 类型来表示布尔值.
+
+除非有特别的原因使用 NULL 值，否则应该总是让字段保持 NOT NULL:
+- 索引 NULL 列需要额外的空间来保存，所以要占用更多的空间
+- 进行比较和计算时要对 NULL 值做特别的处理
 
 ## 查询
 
@@ -26,16 +44,35 @@ MySQL可以分为Server层和存储引擎层两部分:
 ### 查询缓存
 大多数情况下建议**不要使用查询缓存**: **查询缓存的失效非常频繁，只要有对一个表的更新，这个表上所有的查询缓存都会被清空; 同时MySQL 8.0版本已砍掉查询缓存功能**.
 
+## 日志
+MySQL 日志 主要包括错误日志、查询日志、慢查询日志、事务日志、二进制日志几大类, 其中比较重要的还要属二进制日志 binlog（归档日志）和事务日志 redo log（重做日志）和 undo log（回滚日志）
+
+MySQL InnoDB 引擎使用 redo log(重做日志) 保证事务的持久性，使用 undo log(回滚日志) 来保证事务的原子性.
+
 ## 更新
 update语句执行流程(浅色框表示是在InnoDB内部执行的，深色框表示是在执行器中执行):
 ![](/misc/img/mysql/2e5bff4910ec189fe1ee6e2ecc7b4bbe.png)
 
 更新涉及两个重要的日志模块：redo log（重做日志）和 binlog（归档日志）.将redo log的写入拆成了两个步骤：prepare和commit，这就是"两阶段提交", 这是让这两个log状态保持逻辑上的一致.
 
+数据写入流程: 开始事务-> undo log->redo log-> 修改buffer pool -> [bin log] -> 提交事务
+
 ### redo log
-WAL的全称是Write-Ahead Logging，它的关键点就是先写日志，再写磁盘. 它工作在存储引擎层.
+WAL的全称是Write-Ahead Logging，它的关键点就是先写日志，再写磁盘. 它工作在**存储引擎层**, 是物理日志, 记录内容是`在某个数据页上做了什么修改`. 它让 MySQL 拥有了**崩溃恢复**能力.
 
 具体来说，当有一条记录需要更新的时候，InnoDB引擎就会先把记录写到redo log 里面，并更新内存，这样更新就算完成了. 同时，InnoDB引擎会在适当(空闲)的时候，将这个操作记录更新到磁盘里面, 并清理redo log.
+
+InnoDB 将 redo log 刷到磁盘上有几种情况：
+1. 事务提交：当事务提交时，log buffer 里的 redo log 会被刷新到磁盘（可以通过innodb_flush_log_at_trx_commit参数控制）
+1. log buffer 空间不足时：log buffer 中缓存的 redo log 已经占满了 log buffer 总容量的大约一半左右，就需要把这些日志刷新到磁盘上
+1. 事务日志缓冲区满：InnoDB 使用一个事务日志缓冲区（transaction log buffer）来暂时存储事务的重做日志条目。当缓冲区满时，会触发日志的刷新，将日志写入磁盘
+1. Checkpoint（检查点）：InnoDB 定期会执行检查点操作，将内存中的脏数据（已修改但尚未写入磁盘的数据）刷新到磁盘，并且会将相应的重做日志一同刷新，以确保数据的一致性
+1. 后台刷新线程：InnoDB 启动了一个后台线程，负责周期性（每隔 1 秒）地将脏页（已修改但尚未写入磁盘的数据页）刷新到磁盘，并将相关的重做日志一同刷新
+1. 正常关闭服务器：MySQL 关闭的时候，redo log 都会刷入到磁盘里去
+
+总之，InnoDB 在多种情况下会刷新重做日志，以保证数据的持久性和一致性.
+
+硬盘上存储的 redo log 日志文件不只一个，而是以一个日志文件组的形式出现的，每个的redo日志文件大小都是一样的. 它采用的是环形数组形式，从头开始写，写到末尾又回到头循环写.
 
 InnoDB的redo log是固定大小的, 从头开始写，写到末尾就又回到开头的循环写, 对此它使用了两个游标:
 - write pos是当前记录的位置，一边写一边后移并再循环
@@ -43,20 +80,70 @@ InnoDB的redo log是固定大小的, 从头开始写，写到末尾就又回到�
 
 `write pos -> checkpoint`之间即为空闲可用部分. 如果write pos追上checkpoint，表示WAL已满，这时候不能再执行新的更新，得停下来先清理一些记录，把checkpoint推进一下.
 
+> 在 MySQL 8.0.30 之前可以通过 innodb_log_files_in_group 和 innodb_log_file_size 配置日志文件组的文件数和文件大小，但在 MySQL 8.0.30 及之后的版本中，这两个变量已被废弃，即使被指定也是用来计算 innodb_redo_log_capacity 的值。而日志文件组的文件数则固定为 32，文件大小则为 innodb_redo_log_capacity / 32
+
 有了redo log，InnoDB就可以保证即使数据库发生异常重启，之前提交的记录都不会丢失，这个能力称为crash-safe.
 
-参数`innodb_flush_log_at_trx_commit`可控制N次事务后redo log持久化到磁盘, 通常是`1`以保证MySQL异常重启之后数据不丢失.
+参数`innodb_flush_log_at_trx_commit`可控制N次事务后redo log持久化到磁盘:
+- 0 : 每次事务提交时不进行刷盘操作. 这种方式性能最高，但是也最不安全. 如果 MySQL 挂了或宕机了，可能会丢失最近 **1 秒**内的事务
+- 1 : 每次事务提交时都将进行刷盘操作, **默认**. 这种方式性能最低，但是也最安全，因为只要事务提交成功，redo log 记录就一定在磁盘里，不会有任何数据丢失 
+- 2 : 每次事务**提交**时都只把 log buffer 里的 redo log 内容写入 page cache（文件系统缓存）. 这种方式的性能和安全性都介于前两者中间
+
+  如果仅仅只是 MySQL 挂了不会有任何数据丢失，但是宕机可能会有1秒数据的丢失
+
+InnoDB 存储引擎有一个后台线程，每隔1 秒，就会把 redo log buffer 中的内容写到文件系统缓存（page cache），然后调用 fsync 刷盘. 因此一个没有提交事务的 redo log 记录，也可能会刷盘. 这也是mysql故障可能会仅丢失最近 **1 秒**内的数据的原因.
+
+除了后台线程每秒1次的轮询操作，还有一种情况，当 redo log buffer 占用的空间即将达到 innodb_log_buffer_size 一半的时候，后台线程会主动刷盘.
 
 ### binlog
-它工作在Server层.
+binlog（归档日志）保证了 MySQL 集群架构的数据一致性.
+
+它工作在Server层, 是逻辑日志, 记录内容是语句的原始逻辑, 是记录所有涉及更新数据的逻辑操作，并且是顺序写.
+
+不管用什么存储引擎，只要发生了表数据更新，都会产生 binlog 日志.
+
+MySQL 数据库的数据备份、主备、主主、主从都离不开 binlog，需要依靠 binlog 来同步数据，保证数据一致性.
 
 参数`sync_binlog`表示N次事务后binlog持久化到磁盘, 通常是`1`以保证MySQL异常重启之后binlog不丢失.
+
+binlog 日志有三种格式，可以通过binlog_format参数指定:
+- statement : 记录的内容是SQL语句原文
+
+  `update T set update_time=now() where id=1`会导致与原库的数据不一致
+- row : 记录的内容不再是简单的SQL语句了，还包含操作的具体数据
+
+  通常情况下都是指定为row，这样可以为数据库的恢复与同步带来更好的可靠性. 但是这种格式，需要更大的容量来记录，比较占用空间，恢复与同步时会更消耗 IO 资源，影响执行速度
+
+  row格式记录的内容看不到详细信息，要通过mysqlbinlog工具解析出来
+- mixed
+
+  MySQL 会判断这条SQL语句是否可能引起数据不一致，如果是，就用row格式，否则就用statement格式
+
+binlog 的写入时机: 事务执行过程中，先把日志写到binlog cache，事务提交的时候，再把binlog cache写到 binlog 文件中.
+
+一个事务的 binlog 不能被拆开，无论这个事务多大，也要确保一次性写入，所以系统会给每个线程分配一个块内存作为binlog cache. 通过binlog_cache_size参数控制单个线程 binlog cache 大小，如果存储内容超过了这个参数就要暂存到Swap.
 
 ### redo log 与 binlog
 不同点:
 - redo log是InnoDB引擎特有的；binlog是MySQL的Server层实现的，所有引擎都可以使用
 - redo log是物理日志，记录的是`在某个数据页上做了什么修改`；binlog是逻辑日志，记录的是这个语句的原始逻辑，比如`给ID=2这一行的c字段加1`.
 - redo log是循环写的，空间固定；binlog是可以追加写入的. `追加写`是指binlog文件写到一定大小后会切换到下一个，并不会覆盖以前的日志.
+- redo log 与 binlog 的写入时机: 在执行更新语句过程，会记录 redo log 与 binlog 两块日志，以基本的事务为单位，redo log 在事务执行过程中可以不断写入，而 binlog 只有在提交事务时才写入
+
+如果执行过程中写完 redo log 日志后，binlog 日志写期间发生了异常, 为了解决两份日志之间的逻辑一致问题，InnoDB 存储引擎使用两阶段提交方案. 即将 redo log 的写入拆成了两个步骤prepare和commit.
+
+使用两阶段提交后，写入 binlog 时发生异常也不会有影响，因为 MySQL 根据 redo log 日志恢复数据时，发现 redo log 还处于prepare阶段，并且没有对应 binlog 日志，就会回滚该事务. 如果redo log 设置commit阶段发生异常, 并不会回滚事务, 因为redo log 是处于prepare阶段，但是能通过事务id找到对应的 binlog 日志，所以 MySQL 认为是完整的，就会提交事务恢复数据.
+
+### undo log
+每一个事务对数据的修改都会被记录到 undo log ，当执行事务过程中出现错误或者需要执行回滚操作的话，MySQL 可以利用 undo log 将数据恢复到事务开始之前的状态。undo log 属于逻辑日志，记录的是 SQL 语句
+
+每一个事务对数据的修改都会被记录到 undo log ，当执行事务过程中出现错误或者需要执行回滚操作的话，MySQL 可以利用 undo log 将数据恢复到事务开始之前的状态.
+
+undo log 属于逻辑日志，记录的是 SQL 语句，比如说事务执行一条 DELETE 语句，那 undo log 就会记录一条相对应的 INSERT 语句。同时，**undo log 的信息也会被记录到 redo log 中，因为 undo log 也要实现持久性保护**。并且，undo-log 本身是会被删除清理的，例如 INSERT 操作，在事务提交之后就可以清除掉了；UPDATE/DELETE 操作在事务提交不会立即删除，会加入 history list，由后台线程 purge 进行清理.
+
+undo log 是采用 segment（段）的方式来记录的，每个 undo 操作在记录的时候占用一个 undo log segment（undo 日志段），undo log segment 包含在 rollback segment（回滚段）中。事务开始时，需要为其分配一个 rollback segment。每个 rollback segment 有 1024 个 undo log segment，这有助于管理多个并发事务的回滚需求.
+
+通常情况下， rollback segment header（通常在回滚段的第一个页）负责管理 rollback segment。rollback segment header 是 rollback segment 的一部分，通常在回滚段的第一个页。history list 是 rollback segment header 的一部分，它的主要作用是记录所有已经提交但还没有被清理（purge）的事务的 undo log。这个列表使得 purge 线程能够找到并清理那些不再需要的 undo log 记录.
 
 ## 事务
 MySQL的事务启动方式：
@@ -74,6 +161,12 @@ InnoDB 里面每个事务有一个唯一的事务 ID,叫作 transaction id. 它�
 每行数据的版本并不是物理上真实存在的,而是每次需要的时候根据当前版本和 undo log 计算出来的.
 
 ### 事务隔离的实现
+MySQL 的隔离级别基于锁和 MVCC 机制共同实现的.
+
+MVCC 是一种并发控制机制，用于在多个并发事务同时读写数据库时保持数据的一致性和隔离性。它是通过在每个数据行上维护多个版本的数据来实现的.
+
+> 查看隔离级别: `SELECT @@tx_isolation/SELECT @@transaction_isolation (from v8.0)`
+
 事务隔离的机制是通过视图（read-view即consistent read view, 一致性读视图）来实现的并发版本控制（MVCC），不同的事务隔离级别创建读视图的时间点不同:
 - 可重复读是每个事务重建读视图，整个事务存在期间都用这个视图
 - 读已提交是每条 SQL (开始执行时)创建read-view，隔离作用域仅限该条 SQL 语句.
@@ -94,6 +187,23 @@ InnoDB 里面每个事务有一个唯一的事务 ID,叫作 transaction id. 它�
 > 通过SET MAX_EXECUTION_TIME命令，来控制每个语句执行的最长时间，避免单个语句意外执行太长时间.
 > 使用的是MySQL 5.6或者更新版本，把innodb_undo_tablespaces设置成2（或更大的值）. 这样如果真的出现大事务导致回滚段过大，设置后清理起来更方便
 
+MVCC 在 MySQL 中实现所依赖的手段主要是: 隐藏字段、read view、undo log. 在内部实现中，InnoDB 通过数据行的 DB_TRX_ID 和 Read View 来判断数据的可见性，如不可见，则通过数据行的 DB_ROLL_PTR 找到 undo log 中的历史版本. 每个事务读到的数据版本可能是不一样的，在同一个事务中，用户只能看到该事务创建 Read View 之前已经提交的修改和该事务本身做的修改.
+
+InnoDB 存储引擎为每行数据添加了三个 隐藏字段：
+- DB_TRX_ID（6字节）：表示最后一次插入或更新该行的事务 id. 此外，delete 操作在内部被视为更新，只不过会在记录头 Record header 中的 deleted_flag 字段将其标记为已删除
+- DB_ROLL_PTR（7字节） 回滚指针，指向该行的 undo log 。如果该行未被更新，则为空
+- DB_ROW_ID（6字节）：如果没有设置主键且该表没有唯一非空索引时，InnoDB 会使用该 id 来生成聚簇索引
+
+Read View 主要是用来做可见性判断，里面保存了`当前对本事务不可见的其他活跃事务`主要有以下字段:
+- m_low_limit_id：目前出现过的最大的事务 ID+1，即下一个将被分配的事务 ID。大于等于这个 ID 的数据版本均不可见
+- m_up_limit_id：活跃事务列表 m_ids 中最小的事务 ID，如果 m_ids 为空，则 m_up_limit_id 为 m_low_limit_id。小于这个 ID 的数据版本均可见
+- m_ids：Read View 创建时其他未提交的活跃事务 ID 列表。创建 Read View时，将当前未提交事务 ID 记录下来，后续即使它们修改了记录行的值，对于当前事务也是不可见的。m_ids 不包括当前事务自己和已提交的事务（正在内存中）
+- m_creator_trx_id：创建该 Read View 的事务 ID
+
+undo log 主要有两个作用：
+1. 当事务回滚时用于将数据恢复到修改前的样子
+1. 另一个作用是 MVCC ，当读取记录时，若该记录被其他事务占用或当前版本对该事务不可见，则可以通过 undo log 读取之前的版本数据，以此实现非锁定读
+
 ## index(索引)
 索引是为了提高数据查询的效率，起到书的目录一样的作用.
 
@@ -103,6 +213,12 @@ InnoDB 里面每个事务有一个唯一的事务 ID,叫作 transaction id. 它�
 1. 树/跳表等.
 
 > 在MySQL中，索引是在存储引擎层实现的，并没有统一的索引标准，即不同存储引擎的索引的工作方式并不一样.
+
+常见索引列建议:
+1. 出现在 SELECT、UPDATE、DELETE 语句的 WHERE 从句中的列
+1. 包含在 ORDER BY、GROUP BY、DISTINCT 中的字段
+1. 不要将符合 1 和 2 中的字段的列都建立一个索引，通常将 1、2 中的字段建立联合索引效果更好
+1. 多表 join 的关联列
 
 ### innodb索引
 InnoDB使用了B+树索引模型.
@@ -125,6 +241,10 @@ InnoDB使用了B+树索引模型.
 优化回表:
 - 使用覆盖索引
   只查询索引上的叶子节点(主键值,即自增主键或联合主键)内容, 比如`select ID from T where k between 3 and 5 -- k上有普通索引`, 此时不需要回表. 也就是说，在这个查询里面，索引k已经“覆盖了”我们的查询需求，其称为覆盖索引
+
+  > 覆盖索引：就是包含了所有查询字段 (where、select、order by、group by 包含的字段) 的索引
+
+  对于频繁的查询，优先考虑使用覆盖索引
 - 联合索引时利用 B+索引的“最左前缀”，来定位记录
   最左前缀可以是联合索引的最左N个字段，也可以是字符串索引的最左M个字符.
   本质是**B+索引项是按照索引定义里面出现的字段顺序排序的, 即索引对顺序是敏感的**, 而且**MySQL的查询优化器会自动调整where子句的条件顺序以使用适合的索引**.
@@ -132,6 +252,8 @@ InnoDB使用了B+树索引模型.
   > 创建一个联合索引(key1,key2,key3)时，相当于创建了（key1）、(key1,key2)和(key1,key2,key3)三个索引
 
 - [MySQL 5.6 引入的索引下推优化（index condition pushdown)](https://www.cnblogs.com/hollischuang/p/11155447.html)， 可以在索引遍历过程中，**对索引中包含的字段先做判断，直接过滤掉不满足条件的记录**，减少回表次数.
+
+  索引下推的 下推 其实就是指将部分上层（Server 层）负责的事情，交给了下层（存储引擎层）去处理
 
   在建立联合索引的时候，安排索引内的字段顺序的方法:
   1. 如果通过调整顺序，可以少维护一个索引，那么这个顺序往往就是需要优先考虑采用的
@@ -147,6 +269,8 @@ InnoDB使用了B+树索引模型.
       KEY `ca` (`c`,`a`), // key `ca`与key `c`的存储内容一致都是(`c`,`a`,`b`,),因此可删除`ca`来节省空间
     )
     ```
+
+MySQL 5.7 可以通过查询 sys 库的 schema_unused_indexes 视图来查询哪些索引从未被使用=
 
 ## 锁
 根据加锁的范围，MySQL里面的锁大致可以分成全局锁、表级锁和行锁三类.
@@ -238,3 +362,6 @@ key 太长会导致一个页当中能够存放的 key 的数目变少,间接导�
 
 ### MySQL 的数据如何恢复到任意时间点
 **恢复到任意时间点以定时的做全量备份,以及备份增量的 binlog 日志为前提**. 恢复到任意时间点首先将全量备份恢复之后,再此基础上回放增加的 binlog 直至指定的时间点.
+
+### 不推荐外键
+外键与级联更新适用于单机低并发，不适合分布式、高并发集群；级联更新是强阻塞，存在数据库更新风暴的风险；外键影响数据库的插入速度.

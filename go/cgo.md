@@ -711,3 +711,8 @@ func main() {
 
 ### [获取errno](https://chai2010.cn/advanced-go-programming-book/ch2-cgo/ch2-04-func.html)
 from `Go语言高级编程#2.4 函数调用`
+
+### 内存泄漏
+方法:
+- `GO_CFLAGS="-O0 -g" go build -gcflags="all=-N -l" -ldflags '-extldflags="-fsanitize=address -fsanitize=leak"' -o xxx`
+- `valgrind --leak-check=full --track-origins=yes ./your_go_program`

@@ -10,3 +10,6 @@
 ## 进阶
 - [Git工作流中常见的三种分支策略：GitFlow、GitHubFlow和GitLabFlow](https://my.oschina.net/u/4526289/blog/5131618)
 - [解读那些令人困惑 Git 术语](https://linux.cn/article-16451-1.html)
+
+## misc
+- [蚂蚁开源基于云的下一代版本控制系统 - HugeSCM](https://www.oschina.net/news/324205)
