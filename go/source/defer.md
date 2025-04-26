@@ -65,23 +65,24 @@ defer语句并不会马上执行，而是会进入一个栈，函数return前，
 参考:
 - [深入理解 Go 语言 defer](https://zhuanlan.zhihu.com/p/63354092)
 
-Go 1.13 defer有性能改进:
-Go 1.13之前，所有的defer延迟调用都是记录在堆上的，这严重影响了defer延迟调用的执行效率. 从Go 1.13开始，满足某些条件的defer延迟调用（标准库中93%的延迟调用满足此条件）将被记录在栈上而不是堆上，从而提高了defer延迟调用的执行效率.
-而在Go 1.14版本中,defer性能提升巨大,已经和不用defer的性能相差很小了.
+defer 的实现主要依靠编译器和运行时的协作, 相关的三种机制：
 
-使用了参考里的bench test, 发现go1.13比go12.5快25%左右.
-```
-$ ./main.test -test.bench=. // go12.5, use deferproc
-goos: linux
-goarch: amd64
-BenchmarkCall-12         	100000000	        12.5 ns/op
-BenchmarkDeferCall-12    	50000000	        38.3 ns/op
-PASS
-$ ./main.test13 -test.bench=. // go1.13beta1, use deferprocStack
-goos: linux
-goarch: amd64
-BenchmarkCall-12         	120874596	         9.96 ns/op
-BenchmarkDeferCall-12    	42044380	        28.7 ns/op
-PASS
-```
+- 堆上分配 · 1.1 ~ 1.12
 
+    - 编译期将 defer 关键字转换成 runtime.deferproc 并在调用 defer 关键字的函数返回之前插入 runtime.deferreturn
+    - 运行时调用 runtime.deferproc 会将一个新的 runtime._defer 结构体追加到当前 Goroutine 的链表头
+    - 运行时调用 runtime.deferreturn 会从 Goroutine 的链表中取出 runtime._defer 结构并依次执行
+
+    堆上分配严重影响defer延迟调用的执行效率
+- 栈上分配 · 1.13
+    - 当该关键字在函数体中最多执行一次时，编译期间的 cmd/compile/internal/gc.state.call 会将结构体分配到栈上并调用 runtime.deferprocStack
+
+        满足该条件的defer延迟调用（标准库中93%的延迟调用满足此条件）在栈上分配, 从而提高了defer延迟调用的执行效率
+
+    在Go 1.14版本中,defer性能提升巨大,已经和不用defer的性能相差很小了.
+- 开放编码 · 1.14 ~ 现在
+    - 编译期间判断 defer 关键字、return 语句的个数确定是否开启开放编码优化
+    - 通过 deferBits 和 cmd/compile/internal/gc.openDeferInfo 存储 defer 关键字的相关信息
+    - 如果 defer 关键字的执行可以在编译期间确定，会在函数返回前直接插入相应的代码，否则会由运行时的 runtime.deferreturn 处理
+
+相关源码在`/src/runtime/panic.go`

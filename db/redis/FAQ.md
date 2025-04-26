@@ -149,3 +149,16 @@ Redis 4.0前, aof是全量的日志; 4.0开始支持混合持久化, 此时aof�
 在slave端执行`info replication`, 看`master_link_status`状态, `down`为已停止.
 
 看slave日志发现slave连接master成功, 但之后会报`MASTER aborted replication with an error: NOAUTH Authentication required`, 在slave配置`masterauth 主库的密码`即可.
+
+### SETNX和SET NX区别
+ref:
+- [Redis分布式锁的进化之路](https://mbd.baidu.com/newspage/data/dtlandingsuper?nid=dt_4488365490908995111)
+
+SETNX‌：
+- ‌优点‌：实现简单，适用于需要确保键不存在时才设置值的场景，如分布式锁
+‌- 缺点‌：没有设置过期时间，可能导致死锁问题。需要结合EXPIRE命令来设置过期时间，但这会破坏原子性
+‌SET NX‌：
+‌- 优点‌：作为SET命令的一部分，具有更好的灵活性和原子性，可以同时设置值和过期时间
+‌- 缺点‌：需要结合其他命令（如EXPIRE）来实现过期时间管理，增加了实现的复杂性
+
+如果仅需要简单的分布式锁功能，SETNX 可能已经足够；如果需要更多的功能，如设置键值对的同时设置有效时间等，SET 命令结合 NX 选项会更加合适.
