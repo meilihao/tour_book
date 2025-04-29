@@ -3,6 +3,23 @@
 参考: [go_command_tutorial](github.com/hyper0x/go_command_tutorial/blob/master/SUMMARY.md)
 
 ## go build
+选项:
+- -a : 强制重新构建所有包
+- -x -v:让构建过程一目了然
+- -race:让并发bug无处遁形
+- -gcflags:传给编译器的标志选项集合
+
+
+    -l:关闭内联
+    -N:关闭代码优化
+    -m:输出逃逸分析(决定哪些对象在栈上分配,哪些对象在堆上分配)的分析决策过程
+    -S:输出汇编代码
+- -ldflags:传给链接器的标志选项集合
+
+    -X:设定包中string类型变量的值(仅支持string类型变量)
+    -s:不生成符号表(symbol table)
+    -w:不生成DWARF(Debugging With Attributed Record Formats)调试信息
+- -tags:指定构建约束条件
 
 主要用于编译代码.在包的编译过程中，若有必要，会同时编译与之相关联的包.go build编译链接后的可执行程序放在源程序目录.
 

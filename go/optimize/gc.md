@@ -71,3 +71,5 @@ gc解读:
 GODEBUG 变量可以控制运行时内的调试变量，参数以逗号分隔，格式为`name=val`, 比如：
 - schedtrace：设置 schedtrace=X 参数可以使运行时在每 X 毫秒发出一行调度器的摘要信息到标准 err 输出中
 - scheddetail：设置 schedtrace=X 和 scheddetail=1 可以使运行时在每 X 毫秒发出一次详细的多行信息，信息内容主要包括调度程序、处理器、OS 线程 和 Goroutine 的状态
+
+### GOGC
