@@ -216,6 +216,7 @@ openssl rsautl -sign -in file -inkey mykey -out sig # Sign some data using a pri
 hexdump -C sig
 openssl rsautl -verify -in sig -inkey mykey.pub -pubin # Recover the signed data. 实际就是解密sig. `-inkey`是公钥时需用`-pubin`指明
 openssl rsautl -verify -in sig -inkey mykey.pub -pubin -raw -hexdump # Examine the raw signed data. 输出是PKCS#1格式
+openssl verify -CAfile ca.crt server-signed-by-ca.crt # 验证server证书
 ```
 
 ### rsa+aes加密文件

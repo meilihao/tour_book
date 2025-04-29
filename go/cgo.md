@@ -8,6 +8,205 @@
 - [全面总结： Golang 调用 C/C++，例子式教程 - 方法2有问题：无法找到so](https://juejin.im/post/5a62f7cff265da3e4c07e0ab)
 - [官方wiki/cgo](https://github.com/golang/go/wiki/cgo)
 
+go build调用了名为cgo的工具, 它会识别和读取Go源文件中的C代码,并将其提取后交给外部的C编译器(clang或gcc)编译, 最后与Go源码编译后的目标文件链接成一个可执行程序.
+
+内存管理:
+1. 在C内部分配的内存,Go中的GC是无法感知到的,因此要记着在使用后手动释放
+
+注意点:
+1. import "C"不支持放在xx_test.go文件中
+
+## 使用cgo的开销
+1. cgo比调用Go函数多出一个甚至多个数量级
+1. 增加线程数量暴涨的可能性
+
+	C空间的函数导致执行这段代码的线程(M)挂起,这之后Go运行时调度代码只能创建新的线程以供其他没有绑定M的P上的goroutine使用. 典型场景是go代码通过cgo调用c中的sleep().
+1. 失去跨平台交叉构建能力
+
+	跨平台编译能力仅限于纯Go代码. 当Go编译器执行跨平台编译时,它会将CGO_ENABLED置为0,即关闭cgo
+1. 其他开销
+
+## cgo缺点
+1. go使用gc, c手动管理内存, 两边切换容易产生bug, 以及带来很大心智负担
+1. go的工具链在c前失效
+
+	1. Go的竞态检测工具、性能剖析工具、测试覆盖率工具、模糊测试以及源码竞态分析工具等失效
+	2. cgo难调试
+
+## 在Go中使用C语言的类型
+1. 原生类型
+
+	1. 数值
+
+		```go
+		C.char
+		C.schar (signed char)
+		C.uchar (unsigned char)
+		C.short
+		C.ushort (unsigned short)
+		C.int, C.uint (unsigned int)
+		C.long
+		C.ulong (unsigned long)
+		C.longlong (long long)
+		C.ulonglong (unsigned long long)
+		C.float
+		C.double
+		```
+
+		Go的数值类型与C中的数值类型不是一一对应的,因此在使用对方类型变量时少不了显式类型转换操作
+	2. 指针
+
+		原生数值类型的指针类型可按Go语法在类型前面加上星号`*`即可, 但`void*`比较特殊,在Go中用unsafe.Pointer表示它,这是因为任何类型的指针值都可以转换为unsafe.Pointer类型,而unsafe.Pointer类型也可以转换回任意类型的指针类型
+	3. 字符串
+
+		C语言中并不存在原生的字符串类型,在C中用带结尾'\0'的字符数组来表示字符串;而在Go中,string类型是语言的原生类型,因此这两种语言的互操作势必要进行字符串类型的转换
+
+		`C.GoString()`相当于在Go世界重新分配一块内存对象,并复制了C的字符串的信息
+	4. 数组
+
+		C语言中的数组与Go语言中的数组差异较大,后者是原生的值类型,而前者与C中的指针在大部分场合可以随意转换。Go仅提供了C.GoBytes来将C中的char类型数组转换为Go中的[]byte切片类型
+
+		其他类型的数组处理:
+		```go
+		func CArrayToGoArray(cArray unsafe.Pointer, elemSize uintptr, len int) (goArray []int32) {
+			for i := 0; i < len; i++ {
+				j := *(*int32)((unsafe.Pointer)(uintptr(cArray) + uintptr(i)*elemSize))
+				goArray = append(goArray, j)
+			}
+
+			return
+		}
+
+		func main() {
+			goArray := CArrayToGoArray(unsafe.Pointer(&C.cArray[0]), unsafe.Sizeof(C.cArray[0]), 7)
+			fmt.Println(goArray)
+		}
+		```
+2. 自定义类型
+
+	1. 枚举
+		```go
+		// enum color {
+		//    RED,
+		//    BLUE,
+		//    YELLOW
+		// };
+		import "C"
+		import "fmt"
+
+		func main() {
+			var e, f, g C.enum_color = C.RED, C.BLUE, C.YELLOW
+			fmt.Println(e, f, g) // 0 1 2
+		}
+		```
+	2. struct
+
+		以通过C.struct_xx来访问C中定义的结构体类型xx
+
+		```go
+		// #include <stdlib.h>
+		//
+		// struct employee {
+		//     char *id;
+		//     int  age;
+		// };
+		import "C"
+
+		import (
+			"fmt"
+			"unsafe"
+		)
+
+		func main() {
+			id := C.CString("1247")
+			defer C.free(unsafe.Pointer(id))
+
+			var p = C.struct_employee{
+				id:  id,
+				age: 21,
+			}
+			fmt.Printf("%#v\n", p)
+		}
+		```
+	3. union
+
+		```go
+		// #include <stdio.h>
+		// union bar {
+		//        char   c;
+		//        int    i;
+		//        double d;
+		// };
+		import "C"
+		import "fmt"
+
+		func main() {
+			var b *C.union_bar = new(C.union_bar)
+			b[0] = 4
+			fmt.Println(b)
+		}
+		```
+
+		Go对待C的union类型与其他类型不同,Go将union类型看成[N]byte,其中N为union类型中最长字段的大小(圆整后的)
+
+	4. 别名(typedef)
+
+		在Go中访问C中使用typedef定义的别名类型时,其访问方式与原类型的访问方式相同
+
+为了方便获得C世界中的类型的大小,Go提供了C.sizeof_T来获取C.T类型的大小。如果是结构体、枚举及联合体类型,我们需要在T前面
+分别加上struct_、enum_和union_的前缀.
+
+```go
+// struct employee {
+//     char *id;
+//     int  age;
+// };
+import "C"
+
+import (
+	"fmt"
+)
+
+func main() {
+	fmt.Printf("%#v\n", C.sizeof_int)             // 4
+	fmt.Printf("%#v\n", C.sizeof_char)            // 1
+	fmt.Printf("%#v\n", C.sizeof_struct_employee) // 16
+}
+```
+
+## 在Go中链接外部C库
+```go
+package main
+// #cgo CFLAGS: -I${SRCDIR}
+// #cgo LDFLAGS: -L${SRCDIR} -lfoo
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include "foo.h"
+import "C"
+import "fmt"
+func main() {
+	fmt.Println(C.count)
+	C.foo()
+}
+```
+
+通过#cgo指示符告诉Go编译器在当前源码目录(${SRCDIR}会在编译过程中自动转换为当前源码所在目录的绝对路径)下查找头文件foo.h, 并链接当前源码目录下的libfoo共享库. C.count变量和C.foo函数的定义都在libfoo共享库中
+
+Go支持多返回值,而C并不支持,因此当将C函数用在多返回值的Go调用中时,C的errno将作为函数返回值列表中最后那个error返回值返回.
+
+### 使用cgo代码的静态构建
+静态构建就是指构建后的应用运行所需的所有符号、指令和数据都包含在自身的二进制文件当中,没有任何对外部动态共享库的依赖。静态构建出的二进制文件由于包含所有符号、指令和数据,因而通
+常要比非静态构建的应用大许多。**默认情况下,Go没有采用静态构建**.
+
+根据Go官方文档($GOROOT/cmd/cgo/doc.go),Go链接器支持两种工作模式:内部链接(internal linking)和外部链接(external linking).
+
+如果用户代码中仅仅使用了net、os/user等几个标准库中的依赖cgo的包,Go链接器默认使用内部链接,而无须启动外部链接器(如gcc、clang等)。不过Go链接器功能有限,仅仅将.o和预编译好的标准库的.a
+写到最终二进制文件中。因此如果标准库中是在CGO_ENABLED=1的情况下编译的,那么编译出来的最终二进制文件依旧是动态链接的,即便在go build时传入-ldflags 'extldflags "-static"'也是如此,因为根本没有
+用到外部链接器.
+
+而外部链接机制则是Go链接器将所有生成的.o都写到一个.o文件中,再将其交给外部链接器(比如gcc或clang)去做最终的链接处理。如果此时在go build的命令行参数中传入-ldflags ‘extldflags “-static”’,那
+么gcc/clang将会做静态链接,将.o中未定义(undefined)的符号都替换为真正的代码指令。可以通过-linkmode=external来强制Go链接器采用外部链接, go build可加`-x -v`验证.
+
 ## 直接嵌入go
 ```
 .

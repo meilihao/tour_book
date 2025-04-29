@@ -4,6 +4,10 @@
 
 为了安全考虑, Golang 的指针是类型安全的, 相比 C 的指针有很多限制, 好处就是可以享受指针带来的便利，又避免了指针的危险性; 坏处就是缺少C指针的灵活.
 
+unsafe包的主要使用场景:
+1. 与操作系统以及非Go编写的代码的通信
+1. 高效类型转换
+
 限制:
 1. 不能对指针做算术运算
     ```go
@@ -62,6 +66,27 @@ unsafe.Pointer 不能直接进行数学运算，但可以把它转换成 uintptr
 
 > uintptr 并没有指针的语义, 意味着 uintptr 所指向的对象会被 gc 回收; 而 unsafe.Pointer 有指针语义，可以保护它所指向的对象在"有用"的时候不会被gc回收.
 > 在 /usr/local/go/src/cmd/compile/internal/gc/unsafe.go 中可以看到编译期间 Go 对 unsafe 包中函数的处理
+
+### [unsafe.Pointer的安全使用模式](https://pkg.go.dev/unsafe)
+go1.24在unsafe的文档中定义了6条安全使用模式
+1. `*T1 -> unsafe.Pointer -> *T2`
+
+    本质就是内存块的重解释:将原本解释为T1类型的内存重新解释为T2类型, **它不等价于go的类型转换**
+
+    转换后类型T2的对齐系数不能比转换前类型T1的对齐系数更严格,即Alignof(T1) >= Alignof(T2). 在x86平台(属于复杂指令集)上, 对这种未对齐的地址进行指针解引用并不会造成严重后果(可能会对性能有少许影响),但是在一些对内存地址对齐比较严格的平台(如SPARC、ARM等)上,对未对齐内存地址进行指针解引用可能会出现“总线错误”等无法恢复的异常情况并导致程序崩溃
+2. `unsafe.Poiner -> uintptr`且不再转回Poiner
+3. 模拟指针运算
+
+    注意事项:
+    1. 不要越界
+    2. unsafe.Pointer -> uintptr -> unsafe.Pointer的转换**要在一个表达式中**, go编译器会保证两次转换期间对象的有效性, 否则对象可能被gc
+
+    uintptr仅是一个整型值,它无法起到对象引用的效果, 无法阻止GC回收内存对象
+4. 调用syscall.Syscall系列函数时指针类型到uintptr类型参数的转换, 同3转换操作需在一个表达式中
+5. 将reflect.Value.Pointer或reflect.Value.UnsafeAddr转换为指针, 同3转换操作需在一个表达式中
+6. reflect.SliceHeader和reflect.StringHeader必须通过模式1构建
+
+Go 1.14编译器在-race和-msan命令行选型开启的情况下,会执行-d=checkptr检查, 即对unsafe.Pointer进行模式1,2两项合规性检查
 
 ## unsafe 使用
 ### 获取slice header的信息

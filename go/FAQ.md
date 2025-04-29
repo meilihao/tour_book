@@ -592,3 +592,7 @@ dd写正常, go写报错误.
 
 原因: 打开的文件没有写标志
 解决: `os.Open(xxx)`->`os.OpenFile(xxx, os.WRONLY,0)`
+
+### 编码转换
+by `golang.org/x/text`:
+- UTF-8/UTF-16/UTF-32<->GB18030
