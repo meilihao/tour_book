@@ -74,3 +74,17 @@ go1.9之前, runtime维护一个由互斥锁保护的全局最小堆(minheap),�
 Go官方文档建议只对如下两种定时器调用Reset方法:
 1. 已经停止了的定时器(Stopped)
 1. 已经触发过且Timer.C中的数据已经被读空
+
+推荐写法:
+```go
+if !timer.Stop() {
+	select {
+		case <-timer.C: // 避免数据已被取走引发的阻塞
+		default:
+	}
+}
+timer.Reset(5 * time.Second)
+```
+
+## Format
+go采用参考时间(reference time)方案

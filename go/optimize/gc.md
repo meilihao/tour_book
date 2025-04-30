@@ -39,7 +39,7 @@ gc优缺点:
 参考:
 - [GODEBUG之gctrace解析](http://cbsheng.github.io/posts/godebug%E4%B9%8Bgctrace%E8%A7%A3%E6%9E%90/)
 
-调试GC打开: `GODEBUG=gctrace=1`, log:
+调试GC打开`GODEBUG=gctrace=1`, 相关log:
 ```
 scvg: 0 MB released
 scvg: inuse: 3, idle: 59, sys: 63, released: 58, consumed: 4 (MB)
@@ -56,9 +56,9 @@ scvg解读:
 gc解读:
 - gc 252 ： 这是第252次gc
 - @4316.062s ： 这次gc的markTermination阶段完成后距离runtime启动到现在的时间, 即程序启动以来的秒数
-- 0% ：到目前为止，gc的标记工作（包括两次mark阶段的STW和并发标记）所用的CPU时间占总CPU的百分比
-- 0.013+2.9+0.050 ms clock ：按顺序分成三部分，0.013表示mark阶段的STW时间（单P的）; 2.9表示并发标记用的时间（所有P的）; 0.050表示markTermination阶段的STW时间（单P的）
-- 0.10+0.23⁄5.4⁄12+0.40 ms cpu ：gc占用cpu时间,按顺序分成三部分，0.10表示整个进程在mark阶段STW停顿时间(0.013*8)；0.23⁄5.4/12有三块信息，0.23是mutator assists占用的时间，5.4是dedicated mark workers+fractional mark worker占用的时间，12是idle mark workers占用的时间. 这三块时间加起来会接近2.9*8；0.40 ms表示整个进程在markTermination阶段STW停顿时间(0.050 * 8), 8是P的个数.
+- 0% ：到目前为止，gc运行所用的CPU时间占总CPU的百分比
+- 0.013+2.9+0.050 ms clock ：按顺序分成三部分，0.013表示mark阶段(设置GC清除停止及GC标记开始(需停止程序))的STW时间（单P的）; 2.9表示并发标记用的时间（所有P的）; 0.050表示markTermination阶段(设置GC标记结束(需停止程序))的STW时间（单P的）
+- 0.10+0.23⁄5.4⁄12+0.40 ms cpu ：gc占用cpu时间,按顺序分成三部分，0.10表示整个进程在mark阶段STW停顿时间(`0.013*8`)；0.23⁄5.4/12有三块信息，0.23是mutator assists占用的时间，5.4是dedicated mark workers+fractional mark worker占用的时间，12是idle mark workers占用的时间. 这三块时间加起来会接近`2.9*8`；0.40 ms表示整个进程在markTermination阶段STW停顿时间(`0.050 * 8`), 8是P的个数.
 - 16->17->8 MB ：按顺序分成三部分，16表示开始mark阶段前的heap_live大小；17表示开始markTermination阶段前的heap_live大小；8表示live heap的大小
 - 17 MB goal：表示下一次触发GC的内存占用阀值是17MB，等于8MB * 2，向上取整
 - 8 P ：本次gc共有多少个P
@@ -69,7 +69,33 @@ gc解读:
 - [用 GODEBUG 看调度跟踪](https://github.com/EDDYCJY/blog/blob/master/tools/godebug-sched.md)
 
 GODEBUG 变量可以控制运行时内的调试变量，参数以逗号分隔，格式为`name=val`, 比如：
-- schedtrace：设置 schedtrace=X 参数可以使运行时在每 X 毫秒发出一行调度器的摘要信息到标准 err 输出中
-- scheddetail：设置 schedtrace=X 和 scheddetail=1 可以使运行时在每 X 毫秒发出一次详细的多行信息，信息内容主要包括调度程序、处理器、OS 线程 和 Goroutine 的状态
+- gctrace=1: 让位于Go程序中的运行时在每次GC执行时输出此次GC相关的跟踪信息
+- schedtrace：设置 schedtrace=X 参数可以使运行时在每 X 毫秒发出一行goroutine调度器的摘要信息到标准 err 输出中
+- scheddetail：设置 schedtrace=X 和 scheddetail=1 可以使运行时在每 X 毫秒发出一次详细的调度器的多行信息，信息内容主要包括调度程序、处理器、OS 线程 和 Goroutine 的状态
 
 ### GOGC
+除了显式调用runtime.GC强制运行GC外, Go还提供了一个可以调节GC触发时机的环境变量:GOGC.
+
+GOGC是一个整数值 ,默认为100。这个值代表一个比例值,100表示100%. 这个比例值的分子是上一次GC结束后到当前时刻**新分配**的堆内
+存大小(设为M),分母则是上一次GC结束后堆内存上的**活动对象**内存数据(live data,可达内存)的大小(设为N).
+
+> 在两次GC之间新分配的堆内存在第二次GC启动的时候不一定都是活动对象占用的内存,也可能是刚分配后不久就处于非活动状态了(没有指针指向这个内存对象)
+
+Go运行时实时监控当前堆内存状态,如果当前堆内存的M/N的值等于GOGC/100,则会再次触发运行GC.
+
+如果程序在性能和响应延迟方面遇到瓶颈,可以大胆地通过调整GOGC的值进行调优,直到找到并验证最适合该Go程序的GOGC值. 
+
+### gc历史
+ref:
+- [go-GC演化史](https://haoxuebing.github.io/go%E8%BF%9B%E9%98%B6/go-GC%E6%BC%94%E5%8C%96%E5%8F%B2.html)
+
+1. go1.5前: STW垃圾回收器
+
+    在GC期间停止程序带来的延迟过大让很多对实时有严格要求的程序无法接受,并且在多核时代这会带来计算资源的严重浪费
+1. go1.5: 基于三色标记清除的并发垃圾回收器+屏障机制
+
+    将GC延迟降到10ms以下, 但因在并发标记过程中,只要没有停止程序,用户程序就可以继续分配内存, 这导致了Go运行时无法精确控制堆内存大小
+1. go1.8: 三色标记法+混合写屏障机制
+
+### 抢占
+Go1.13及以前版本的抢占是协作式的,只在有函数调用的地方才能插入抢占代码(埋点). Go1.14版本增加了基于系统信号的异步抢占调度, 解决deadloop`for{}`无法被抢占.

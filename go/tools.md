@@ -1,6 +1,21 @@
 # tools
 - [查看pkg, 比如badger被谁使用了](https://pkg.go.dev/github.com/dgraph-io/badger?tab=importedby)
 
+## 规范代码
+- gofmt
+- goimports
+- go vet
+
+	go vet(Go 1.14)默认已经不再支持变量遮蔽检查了, 可安装`go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow`配合`go vet`重新启用它.
+- golangci-lint
+
+## 重构
+- gofmt
+
+	- `gofmt -r '"log" -> "github.com/rs/zerolog/log"' -l .`: 基于纯字符串替换的替换package, 建议用gorename
+- gorename: 安全的标识符替换, 会保证替换前后Go语法的正确性
+- gomvpkg:移动包并更新包导入路径
+
 ## 性能
 - [pyroscope](https://colobu.com/2022/01/27/pyroscope-a-continuous-profiling-platform/)
 - [benchstat]()

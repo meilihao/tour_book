@@ -181,3 +181,8 @@ ref:
 ## book
 - [rust-course](https://github.com/sunface/rust-course)
 - [Rust 秘典](https://nomicon.purewhite.io/intro.html)
+
+## ai
+- [Dora-rs：下一代机器人开发框架](https://www.oschina.net/news/347272)
+	
+	- [Dora中文社区](https://doracc.com/)

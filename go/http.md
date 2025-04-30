@@ -86,7 +86,7 @@ client:
 
 	resp, _ := http.DefaultClient.Do(req)
 	data, _ := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
+	resp.Body.Close() // 仅在作为客户端时,http包才需要手动关闭Response.Body;如果是作为服务端,http包会自动处理Request.Body. 目前http包的实现逻辑是只有当应答的Body中的内容被全部读取完毕且调用了Body.Close(),默认的HTTP客户端才会重用带有keep-alive标志的HTTP连接,否则每次HTTP客户端发起请求都会单独向服务端建立一条新的TCP连接,这样做的消耗要比重用连接大得多
 	fmt.Println(resp.StatusCode)
 	fmt.Println(string(data))
 ```
@@ -168,3 +168,34 @@ func main() {
 - http://colobu.com/2016/06/07/simple-golang-tls-examples/
 - http://tonybai.com/2015/04/30/go-and-https/
 - https://github.com/nareix/blog/blob/master/posts/golang-tls-guide.md
+
+## FAQ
+### HTTP客户端默认不会及时关闭已经用完的HTTP连接
+Go标准库HTTP客户端的默认实现并不会及时关闭已经用完的HTTP连接(仅当服务端主动关闭或要求关闭时才会关闭).
+
+解决方法:
+1. 将http.Request中的字段Close设置为true
+1. 通过创建一个http.Client新实例来实现的(不使用DefaultClient)
+
+	```go
+	tr := &http.Transport{ // http.Transport 默认启用连接复用（Keep-Alive）
+		DisableKeepAlives: true,
+	}
+	cli := &http.Client{
+		Transport: tr,
+	}
+	```
+### 常用client
+```go
+bClient:=&http.Client{
+	Timeout: 15*time.Minute, // 全局超时为 15 分钟, 涵盖从发起到完成的总时间（包括连接、传输、重定向等）
+	Transport: &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout: 5*time.Second
+		}).Dial,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		}
+	}
+}
+```

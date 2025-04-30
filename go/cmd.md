@@ -55,6 +55,18 @@ go install只会检查"参数指定的包所在的GOPATH"内的源码是否有�
 
 编译并运行Go程序.
 
+## godoc
+从Go 1.13开始, godoc就不再和go doc、gofmt一起内置在Go安装包中了, godoc被挪到Go扩展工具链中, 安装方法是`go get golang.org/x/tools/cmd/godoc`
+
+命令行go doc工具不同的是, godoc实质上是一个Web服务.
+
+## go generate
+go generate并不会按Go语法格式规范去解析Go源码文件,它只是将Go源码文件当成普通文本读取并识别其中可以与下面字符串模式匹配的内容(go generate指示符).
+
+go generate命令会按其出现的顺序逐个识别和执行.
+
+go generate还可以通过-run使用正则式去匹配各源文件中go generate指示符中的命令,并仅执行匹配成功的命令
+
 ### FAQ
 
 #### 修改源码后,运行和预期不符
