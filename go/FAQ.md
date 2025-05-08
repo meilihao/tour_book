@@ -610,3 +610,7 @@ dd写正常, go写报错误.
 
 	- time.sleep()
 	- runtime.Gosched()
+
+### 编码转换
+by `golang.org/x/text`:
+- UTF-8/UTF-16/UTF-32<->GB18030

@@ -16,6 +16,7 @@ $ go get -u github.com/satori/go.uuid@master
 ```
 或
 ```
+$ go mod -require='bitbucket.org/bigwhite/c@>=v1.1.0' // go mod支持query表达式
 $ go mod edit -require="github.com/objcoding/testmod@v1.0.1" // 主动修改 go.md 文件中依赖的版本号
 $ go mod tidy // 对版本进行更新，这是一条神一样的命令，它会自动清理掉不需要的依赖项，同时可以将依赖项更新到当前版本
 ```
@@ -211,7 +212,8 @@ go mod项目嵌套时, go get需要指定具体的路径比如`go get -u golang.
 直接在启用go mod的项目中`import xxx`, 然后`go build`正常.
 
 ### 获取go mod支持的package versions
-`GO111MODULE=on go list -m -json -versions go.etcd.io/etcd`
+- `GO111MODULE=on go list -m -json -versions go.etcd.io/etcd`
+- `go list -m all`
 
 ### /home/chen/git/go/pkg/mod/go.uber.org/zap@v1.16.0/level.go:24:2: missing go.sum entry for module providing package go.uber.org/atomic; try 'go mod tidy' to add it
 需到go.mod所在目录执行`go mod tidy`

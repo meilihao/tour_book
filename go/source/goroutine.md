@@ -63,3 +63,7 @@ Go提供了调度器当前状态的查看方法:使用Go运行时环境变量GOD
 - [3 4 0 10]:分别为4个P的本地运行队列中的G的数量
 
 输出每个goroutine、M和P的详细调度信息可用`GODEBUG=schedtrace=1000,scheddetail=1`.
+
+## FAQ
+### 获取该进程中当前存在的线程数量
+`cat /proc/<pid>/status|grep -i thread`

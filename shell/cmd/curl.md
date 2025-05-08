@@ -41,6 +41,7 @@ $ curl --cookie "user=root;pass=123456" example.com
 $ curl -c cookies http://example.com
 $ curl -b cookies http://example.com
 $ curl --header "Content-Type:application/json" http://example.com
+$ curl -v -k https://127.0.0.1:8081 # 查看https交互过程
 ```
 
 ## FAQ
