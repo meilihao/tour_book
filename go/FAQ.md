@@ -592,3 +592,21 @@ dd写正常, go写报错误.
 
 原因: 打开的文件没有写标志
 解决: `os.Open(xxx)`->`os.OpenFile(xxx, os.WRONLY,0)`
+
+### 出现死锁
+- 使用了sync包
+- 使用了channel
+
+### 线程安全类型
+- channel
+- atomic包里的类型
+- sync包里的类型
+
+### go上下文切换时机
+- 系统调用导致协程阻塞
+- 锁竞争
+- Channel收发阻塞
+- cpu主动让出
+
+	- time.sleep()
+	- runtime.Gosched()
