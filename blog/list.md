@@ -148,6 +148,8 @@
 
 ## do
 - [如何从零构建个人博客系统](https://gocn.io/article/532)
+- [one-person-businesses-methodology-v2.0 : 《一人企业方法论》](https://github.com/easychen/one-person-businesses-methodology-v2.0)
+- [Developer Roadmaps](https://roadmap.sh/)
 
 ## ai
 - [让机器说话不难，怎么让机器“会说话”？](https://36kr.com/p/5130990.html)

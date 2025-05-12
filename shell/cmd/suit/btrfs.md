@@ -81,3 +81,6 @@ UUID=2af5d19c-6376-47c6-b81d-9a4826f0069b /boot           ext4    defaults      
 # /boot/efi was on /dev/nvme0n1p1 during installation
 UUID=3CA2-D74B  /boot/efi       vfat    umask=0077      0       1
 ```
+
+### 优化
+autodefrag+定期平衡=性能不滑坡

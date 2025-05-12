@@ -177,12 +177,17 @@ ref:
 - 刷题[codewars](https://www.codewars.com/)，刷题网站，类似 LeetCode
 - [talent-plan](https://github.com/pingcap/talent-plan)
 - [Writing an OS in Rust](https://os.phil-opp.com/)
+- [Learn Rust With Entirely Too Many Linked Lists](https://rust-unofficial.github.io/too-many-lists/index.html)
 
 ## book
 - [rust-course](https://github.com/sunface/rust-course)
 - [Rust 秘典](https://nomicon.purewhite.io/intro.html)
+- [zero-to-production](https://github.com/LukeMathWalker/zero-to-production)
+
+	<<从零构建Rust生产级服务>>
 
 ## ai
 - [Dora-rs：下一代机器人开发框架](https://www.oschina.net/news/347272)
 	
 	- [Dora中文社区](https://doracc.com/)
+- [llms-from-scratch-cn](https://github.com/datawhalechina/llms-from-scratch-cn)

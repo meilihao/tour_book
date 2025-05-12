@@ -139,6 +139,7 @@
 - [awesome-go-storage](https://github.com/gostor/awesome-go-storage)
 - [用 kqueue 实现一个简单的 TCP Server](https://h1z3y3.me/posts/writing-a-tcp-server-using-kqueue/)
 - [Go开发者的密码学导航：crypto库使用指南](https://tonybai.com/2024/10/19/go-crypto-package-design-deep-dive/)
+- [onex](https://github.com/onexstack/onex)
 
 ## mirror
 - [go sdk](https://mirrors.ustc.edu.cn/golang/)

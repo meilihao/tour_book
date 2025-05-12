@@ -44,12 +44,24 @@ redis.Pool参数：
 ## FAQ
 ### redis 的数据淘汰策略
 redis 内存数据集大小上升到一定大小的时候，就会施行数据淘汰策略。redis 提供 6种数据淘汰策略：
-- voltile-lru：从已设置过期时间的数据集（server.db[i].expires）中挑选最近最少使用的数据淘汰
-- volatile-ttl：从已设置过期时间的数据集（server.db[i].expires）中挑选将要过期的数据淘汰
-- volatile-random：从已设置过期时间的数据集（server.db[i].expires）中任意选择数据淘汰
-- allkeys-lru：从数据集（server.db[i].dict）中挑选最近最少使用的数据淘汰
-- allkeys-random：从数据集（server.db[i].dict）中任意选择数据淘汰
-- no-enviction（驱逐）：禁止驱逐数据
+- 设置了过期时间的key即从已设置过期时间的数据集（server.db[i].expires）中挑选
+
+    - voltile-lru(v3.0前的默认策略)：淘汰最久未使用的键值
+    - voltile-lfu(from v4.0)：淘汰最少使用的键值
+    - volatile-ttl：优先淘汰更早过期的键值
+    - volatile-random：随机淘汰任意键值
+- 所有key即从数据集（server.db[i].dict）中挑选
+
+    - allkeys-lru：淘汰最久未使用的键值
+    - allkeys-lfu(from v4.0)：淘汰最少使用的键值
+    - allkeys-random：随机淘汰任意键值
+- 不淘汰
+
+    - no-enviction（驱逐, v3.0及以后默认策略）：禁止驱逐数据
+
+建议:
+1. keys访问频率相近: allkeys-random
+1. keys访问类似正态分布: allkeys-lru
 
 ### 大量 key 集中过期问题
 1. 给 key 设置随机过期时间

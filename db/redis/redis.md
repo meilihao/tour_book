@@ -14,6 +14,8 @@ Redis 服务器与客户端通过 RESP（Redis Serialization Protocol）协议�
 > redis v6应该会采用RESP v3.
 
 ## pipeline
+目的: 将多次io往返时间压缩为一次
+
 pipeline 不适用于执行顺序有依赖关系的一批命令, 可用lua脚本代替.
 
 ## 事务
@@ -78,7 +80,7 @@ Redis 是否具备持久化，这个取决于 Redis 的持久化模式：
     BGREWRITEAOF的AOF 重写阻塞: 缓冲区中新数据写到新文件的过程中会产生阻塞
 - RDB 和 AOF 的混合持久化（Redis 4.0 新增）
 
-与 RDB 持久化相比，AOF 持久化的实时性更好. AOF 持久化的 appendfsync 策略为 no、everysec 时都会存在数据丢失的情况。always 下可以基本是可以满足持久性要求的，但性能太差，实际开发过程中不会使用.
+与 RDB 持久化相比，AOF 持久化的实时性更好, 但aof文件比rdb大且恢复速度慢. AOF 持久化的 appendfsync 策略为 no、everysec 时都会存在数据丢失的情况。always 下可以基本是可以满足持久性要求的，但性能太差，实际开发过程中不会使用.
 
 总结:
 1. Redis 保存的数据丢失一些也没什么影响的话，可以选择使用 RDB
@@ -202,6 +204,7 @@ Redis处理key过期有惰性删除和定期删除两种机制，而在配置主
 - Redis主机宕机后，投票选举结束之前，Redis会开启保护机制，禁止写操作，直到选举出了新的Redis主机
 - 只有一个master库执行写请求，写操作会单机性能瓶颈影响
 
+redis sentinal致力于高可用
 
 ## cluster
 参考:
@@ -232,6 +235,8 @@ Redis Cluster 不保证强一致性，在一些特殊场景，客户端即使收
 
 优点:
 - 更加方便地添加和移除节点，增加节点时，只需要把其他节点的某些哈希槽挪到新节点就可以了，当移除节点时，只需要把移除节点上的哈希槽挪到其他节点就行了，不需要停掉Redis任何一个节点的服务，采用一致性哈希算法时增加和移除节点需要rehash
+
+redis sentinal致力于扩展性
 
 ## FAQ
 ### redis做mq
