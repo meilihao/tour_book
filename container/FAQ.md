@@ -348,3 +348,21 @@ grub2-mkconfig -o /boot/grub2/grub.cfg
 
 ### [WARNING: Published ports are discarded when using host network mode](https://docs.docker.com/engine/network/drivers/host/)
 docker启动时指定--network=host或--net=host，如果还指定了-p或-P，那这个时候就会有此警告，并且通过-p或-P设置的参数将不会起到任何作用，端口号会以主机端口号为主，重复时则递增
+
+### 配置aliyun镜像加速器失败
+ref:
+- [Docker Hub 镜像加速器](https://gist.github.com/y0ngb1n/7e8f16af3242c7815e7ca2f0833d3ea6)
+
+    自 2024-06-06 开始，国内的 Docker Hub 镜像加速器相继停止服务
+- [docker-registry-cn-mirror-test](https://github.com/docker-practice/docker-registry-cn-mirror-test)
+- [目前国内可用Docker镜像源汇总（截至2025年3月）](https://www.coderjia.cn/archives/dba3f94c-a021-468a-8ac6-e840f85867ea)
+- [Docker/DockerHub 国内镜像源/加速列表（5月26日更新-长期维护）](https://zhuanlan.zhihu.com/p/24461370776)
+
+```bash
+# cat /etc/docker/daemon.json
+{
+  "registry-mirrors": ["https://4zehi1iv.mirror.aliyuncs.com"]
+}
+```
+
+docker info查看`Registry Mirrors`已生效, 通过系统日志看到`"Attempting next endpoint for pull after error: denied: This request is forbidden. Please proceed to https://help.aliyun.com/zh/acr/product-overview/product-change-acr-mirror-accelerator-function-adjustment-announcement to view the announcement."`

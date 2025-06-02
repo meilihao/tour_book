@@ -32,3 +32,8 @@ type waitq struct { // 是双向链表
 	last  *sudog
 }
 ```
+
+channel是异步的, 有3种状态:
+1. nil
+2. active, 正常的channel
+3. closed

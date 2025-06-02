@@ -63,6 +63,10 @@ redis 内存数据集大小上升到一定大小的时候，就会施行数据�
 1. keys访问频率相近: allkeys-random
 1. keys访问类似正态分布: allkeys-lru
 
+LRU和LFU都是内存管理的页面置换算法:
+- LRU：最近最少使用(最长时间)淘汰算法（Least Recently Used）. LRU是淘汰最长时间没有被使用的页面
+- LFU：最不经常使用(最少次)淘汰算法（Least Frequently Used）. LFU是淘汰一段时间内，使用次数最少的页面
+
 ### 大量 key 集中过期问题
 1. 给 key 设置随机过期时间
 2. 开启 lazy-free（惰性删除/延迟释放）

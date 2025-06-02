@@ -792,7 +792,7 @@ Horizontal Pod Autoscaler的操作对象是ReplicaSet或Deployment对应的Pod�
 Kubernetes数据卷是对Docker数据卷的扩展，Kubernetes数据卷是Pod级别的，可以用来实现Pod中容器的文件共享, 且volume的生命周期与pod相同.
 
 目前，[Kubernetes支持的数据卷类型](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes)如下：
-- EmptyDir
+- EmptyDir: 临时存储
 - HostPath
 - GCE Persistent Disk
 - AWS Elastic Block Store
@@ -1671,6 +1671,7 @@ kube-proxy 有三种实现 service 的方案, userspace, iptables 和 ipvs:
 
 > Kubernetes 原生的 Service 负载均衡基于 Iptables 实现，其规则链会随 Service 的数量呈线性增长，在大规模场景下对 Service 性能影响严重.
 > IPVS 在 CPU/内存两个维度的指标都要远远低于 Iptables.
+> 它们都是基于netfilter内核转发. iptables是为防火墙设计的, ipvs是专门用于高性能lb. ipvs拥有的优势: 1. 为大型集群提供更好的扩展性和性能; 2. 支持比iptables更复杂的lb算法
 
 Kubernetes还通过Service实现了负载均衡、服务发现和DNS等功能.
 

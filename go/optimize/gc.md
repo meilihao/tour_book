@@ -1,6 +1,7 @@
 # gc
 参考:
 - [GC 的认识](https://github.com/qcrao/Go-Questions/blob/master/GC/GC.md)
+- [Go 语言设计与实现 | 7.2 垃圾收集器](https://draven.co/golang/docs/part3-runtime/ch07-memory/golang-garbage-collector/)
 
 GC(Garbage Collection，即垃圾回收)，是一种自动管理内存的机制.
 
@@ -88,6 +89,7 @@ Go运行时实时监控当前堆内存状态,如果当前堆内存的M/N的值�
 ### gc历史
 ref:
 - [go-GC演化史](https://haoxuebing.github.io/go%E8%BF%9B%E9%98%B6/go-GC%E6%BC%94%E5%8C%96%E5%8F%B2.html)
+- [Golang垃圾回收(GC)介绍](https://study.disign.me/article/202502/35.Golang%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6(GC)%E4%BB%8B%E7%BB%8D.md)
 
 1. go1.5前: STW垃圾回收器
 

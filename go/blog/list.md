@@ -109,6 +109,10 @@
 - [阿里开发者手册-Golang专题](https://developer.aliyun.com/ebook/7728)
 - [Go正则表达式示例](https://colobu.com/2020/11/11/golang-regex-replace-example/)
 
+## 面试
+- [Go 程序员面试笔试宝典](https://golang.design/go-questions/)
+- [Go 进阶面试题汇总](https://golangguide.top/golang/%E9%9D%A2%E8%AF%95%E9%A2%98/2.Go%E8%BF%9B%E9%98%B6.html)
+
 ## 其他
 - [Unknwon's go-study-index](https://github.com/Unknwon/go-study-index)
 - [使用 VS Code 快速搭建你的 Golang 开发 IDE](http://toozhao.com/2017/08/23/vscode-golang/)
@@ -139,7 +143,8 @@
 - [awesome-go-storage](https://github.com/gostor/awesome-go-storage)
 - [用 kqueue 实现一个简单的 TCP Server](https://h1z3y3.me/posts/writing-a-tcp-server-using-kqueue/)
 - [Go开发者的密码学导航：crypto库使用指南](https://tonybai.com/2024/10/19/go-crypto-package-design-deep-dive/)
-- [onex](https://github.com/onexstack/onex)
+- [云原生AI实战营](https://konglingfei.com/)
+    - [onex](https://github.com/onexstack/onex)
 
 ## mirror
 - [go sdk](https://mirrors.ustc.edu.cn/golang/)

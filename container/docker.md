@@ -1,7 +1,7 @@
 # docker
 ## 概念
 ### 容器
-轻量级的应用打包分发技术,是为了解决应用运行环境的一致性而开发, 组成部分:
+轻量级的应用打包分发技术,是为了解决**应用运行环境的一致性**而开发, 组成部分:
 - 应用本身
 - 应用依赖的运行环境rootfs(即容器镜像)
 
@@ -222,3 +222,13 @@ docker的 logging driver(从运行的容器中提取日志)默认是`json-file`,
 ## FAQ
 ### 基于hypervisor的容器
 Kata 项目是由 Intel （Clear Container）和 Hyper.sh （Hyper/RunV）共建，并且在 2017 年进行开源.
+
+### docker与vm区别
+||docker|vm|
+|隔离性|与host共享kernel|独立的os|
+|性能|好|差|
+
+### Kubernetes 和 Docker 之间有什么区别？
+Docker 是一种容器运行时技术，相比于传统方法，可更快地构建、测试和部署应用程序. 该技术将软件打包成名为容器的标准化单元.
+
+Kubernetes 是一种容器编排工具，让您可以扩展您的容器系统，以便大规模地管理、协调与调度容器.
