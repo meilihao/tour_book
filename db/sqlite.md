@@ -5,6 +5,7 @@
 .mode column # 按row显示数据
 .mode line # 每个属性一行, 推荐
 .header ON|OFF # 是否显示表头
+SELECT * FROM sqlite_master WHERE type='table'; # 查找table是否存在
 ```
 
 export:
@@ -14,7 +15,6 @@ $ sqlite3 xxx.db3
 >.dump [table_name...] # 默认导出全库
 > .q
 ```
-　　
 
 import:
 ```sh

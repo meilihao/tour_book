@@ -4,3 +4,18 @@
 
 	排查上下文, 可能是:
 	1. 使用了已free的memory
+
+## 程序闪退
+1. coredump/panic
+
+	go的panic和c的coredump不同, 会输出堆栈信息, c的在coredump里
+1. 当前cpu不支持程序使用的指令集
+1. 程序panic
+1. 程序和环境的arch不匹配
+1. OOM
+1. 程序依赖库缺失或版本不对
+
+排查顺序:
+1. 终端日志
+2. 系统日志
+3. 应用日志
