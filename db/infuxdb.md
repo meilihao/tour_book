@@ -1,4 +1,7 @@
 # infuxdb
+ref:
+- [InfluxData 文档](https://docs.influxdb.org.cn/)
+
 InfluxDB 企业版由 META 节点和 DATA 节点 2 个逻辑单元组成的，而且这两个节点是 2 个单独的程序, 因为它们的场景不同:
 1. META 节点存放的是系统运行的关键元信息，比如数据库（Database）、表（Measurement）、保留策略（Retention policy）等。它的特点是一致性敏感，但读写访问量不高，需要一定的容错能力
 
@@ -10,6 +13,53 @@ InfluxDB 企业版由 META 节点和 DATA 节点 2 个逻辑单元组成的，�
 	对 DATA 节点而言，节点数的多少则代表了读写性能，一般而言，在一定数量以内（比如 10 个节点）越多越好，因为节点数越多，读写性能也越高，但节点数量太多也不行，因为查询时就会出现访问节点数过多而延迟大的问题.
 
 	DATA 节点存放的是具体的时序数据，对一致性要求不高，实现最终一致性就可以了。但是，DATA 节点也在同时作为接入层直接面向业务，考虑到时序数据的量很大，要实现水平扩展，所以必须要选用 CAP 中的 AP 模型，因为 AP 模型不像 CP 模型那样采用一个算法（比如 Raft 算法）就可以实现了，也就是说，AP 模型更复杂.
+
+## 概念
+influxdb行协议是 InfluxDB 数据库独创的一种数据格式，它由纯文本构成，只要数据符合这种格式，就能使用 InfluxDB 的 HTTP API 将数据写入数据库.
+
+一行数据的构成:
+1. measurement: 测量名称, 类似关系型数据库中的表
+1. tag set: 标签集, 可选, 一种索引类型, 标识和过滤数据, 通常用于存储维度信息, 比如地理位置, 设备id等
+1. field set: 字段集, 一种数据类型, 用于存储实际的数值数据, 比如温度
+1. timestamp: 时间戳, 可选, 默认精度是ns
+
+其他:
+1. bucket: 基本存储单元, 类似关系型数据库的实例, 用于组织和存储时间序列数据. 它是数据的逻辑容器, 用于区分和隔离不同类型或来源的数据
+1. org: 组织概念, 用于隔离和管理用户, 应用程序或项目. 每个用户可以属于一个或多个组织, bucket属于一个org
+1. InfluxQL: InfluxDB 3 现在除了 InfluxQL（一种为时间序列查询定制的类 SQL 语言）之外，还支持原生 SQL 用于查询
+
+	InfluxDB 2.0 中引入的语言 Flux 在 InfluxDB 3 中不受支持
+1. point: 类似关系型数据库的行, 包含influxdb行协议中除measurement外的所有字段
+1. series: influxdb使用series来管理数据. (measurement, tag_set, 一个filed)组成一个series.
+
+## 场景
+1. 监控和运维
+1. 物联网
+1. 金融数据/日志分析
+
+## 使用
+InfluxDB 3.0 不再包含像 InfluxDB 2.x 那样内置仪表盘（Dashboard）功能, 可使用Grafana.
+
+```bash
+# influxdb3 create token --admin --host http://localhost:8181 # 创建管理员令牌
+
+New token created successfully!
+
+Token: apiv3_J1sa1xGrrGEHfJ2zdl0nKigFhol4lSi5TvOpLrKk0AUPPkz1CyngRPDZEOkjXJCEm1AYfzKk8uJaEsf0MkF0Ww
+HTTP Requests Header: Authorization: Bearer apiv3_J1sa1xGrrGEHfJ2zdl0nKigFhol4lSi5TvOpLrKk0AUPPkz1CyngRPDZEOkjXJCEm1AYfzKk8uJaEsf0MkF0Ww
+
+IMPORTANT: Store this token securely, as it will not be shown again.
+
+# export INFLUXDB3_AUTH_TOKEN=apiv3_J1sa1xGrrGEHfJ2zdl0nKigFhol4lSi5TvOpLrKk0AUPPkz1CyngRPDZEOkjXJCEm1AYfzKk8uJaEsf0MkF0Ww
+# influxdb3 show tokens # 查看tokens
+```
+
+查询思路:
+1. 指定bucket
+1. 指定数据的时间范围
+1. 指定(measurement, tag_set, 一个filed)
+
+ps: 可以将measurement, tag_set, filed, 时间视为索引
 
 ## data一致性
 1. 自定义副本数

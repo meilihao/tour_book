@@ -4,7 +4,11 @@
 - [^btrfs 使用指南 - 1 概念，创建，块设备管理，性能优化](https://developer.aliyun.com/article/50)
 
 ## 安装
-`apt install btrfs-progs`
+```sh
+$ sudo apt install btrfs-progs
+$ mkfs.btrfs -V
+mkfs.btrfs, part of btrfs-progs v5.2.1
+```
 
 新创建的 Btrfs 文件系统会创建一个`subvol=/`的默认 Subvolume，即 Root Subvolume. 其 ID 为 5 (别名为 0), 这是一个 ID 和目录都预设好的 Subvolume, 可用`mount|grep btrfs`查看.
 

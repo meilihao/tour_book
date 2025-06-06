@@ -95,6 +95,12 @@ prometheus组成:
 > prometheus cluster可使用thanos.
 
 ## 数据模型
+Prometheus时序数据的数据结构：
+1. 指标名称（Metric Name） ：描述数据的类型，例如 node_cpu_seconds_total
+1. 标签（Labels） ：以键值对的形式为数据提供上下文，例如 {cpu="0", mode="user", instance="192.168.1.10:9100"}
+1. 样本值（Sample Value） ：实际的数值数据，通常为浮点数，例如 1345.67
+1. 时间戳（Timestamp） ：每个数据点都有一个关联的时间戳，例如 1701409200000
+
 时间序列数据模型结合了时间序列名称和称为标签（label） 的键/值对, 这些标签提供了维度. 每个时间序列由时间序列名称和标签的组合唯一标识.
 
 [时间序列名称](https://prometheus.io/docs/practices/naming/)通常描述收集的时间序列数据的一般性质, 比如total_website_visits为网站访
