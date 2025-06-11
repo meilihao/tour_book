@@ -40,7 +40,7 @@ JAVA_OPT="${JAVA_OPT} -server -Xms4g -Xmx4g -Xmn1g"
 
 解决:
 1. 事前: 预估+压侧
-1. 事中: 
+1. 事中:
 
 	1. 临时扩容
 
@@ -87,6 +87,10 @@ JAVA_OPT="${JAVA_OPT} -server -Xms4g -Xmx4g -Xmn1g"
 2. 消息携带序号, 消费者消费前检查序号
 
 ### rocksmq持久化
+ref:
+- [RocketMQ之消息持久化存储](https://www.cnblogs.com/ciel717/p/17363789.html)
+- [RocketMQ5源码（七）分层存储](https://juejin.cn/post/7340603873605222435)
+
 RocketMQ 在持久化的设计上，采取的是消息顺序写、随机读的策略，利用磁盘顺序写的速度，让磁盘的写速度不会成为系统的瓶颈。并且采用 MMPP 这种“零拷贝”技术，提高消息存盘和网络发送的速度。极力满足 RocketMQ 的高性能、高可靠要求.
 
 在 RocketMQ 持久化机制中，涉及到了三个角色：
@@ -96,4 +100,6 @@ RocketMQ 在持久化的设计上，采取的是消息顺序写、随机读的�
 	- 异步刷盘方式（默认）：消息写入到内存的 PAGECACHE中，就立刻给客户端返回写操作成功，当 PAGECACHE 中的消息积累到一定的量时，触发一次写操作，将 PAGECACHE 中的消息写入到磁盘中。这种方式吞吐量大，性能高，但是 PAGECACHE 中的数据可能丢失，不能保证数据绝对的安全
 	- 同步刷盘方式：消息写入内存的 PAGECACHE 后，立刻通知刷盘线程刷盘，然后等待刷盘完成，刷盘线程执行完成后唤醒等待的线程，返回消息写成功的状态。这种方式可以保证数据绝对安全，但是吞吐量不大
 - ConsumeQueue：消息消费逻辑队列，类似于 MySQL 中的二级索引
+
+	保存了指定Topic下的队列消息在CommitLog中的起始物理偏移量offset，消息大小size和消息Tag的HashCode值
 - IndexFile：消息索引文件，主要存储消息 Key 与 offset 对应关系，提升消息检索速度

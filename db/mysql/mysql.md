@@ -214,7 +214,7 @@ undo log 主要有两个作用：
 1. 当事务回滚时用于将数据恢复到修改前的样子
 1. 另一个作用是 MVCC ，当读取记录时，若该记录被其他事务占用或当前版本对该事务不可见，则可以通过 undo log 读取之前的版本数据，以此实现非锁定读
 
-在RR级别中，通过MVCC机制，虽然让数据变得可重复读，但读到的数据可能是历史数据，是不及时的数据，不是数据库当前的数据！这在一些对于数据的时效特别敏感的业务中，就很可能出问题. 对于这种读取历史数据的方式，也叫它快照读 (snapshot read)，而读取数据库当前版本数据的方式，叫当前读 (current read).
+在RR级别中，通过MVCC机制，虽然让数据变得可重复读，但读到的数据可能是历史数据，不是数据库当前的数据！这在一些对于数据的时效特别敏感的业务中，就很可能出问题. 对于这种读取历史数据的方式，也叫它快照读 (snapshot read)，而读取数据库当前版本数据的方式，叫当前读 (current read).
 
 事务的隔离级别实际上都是**定义了当前读的级别**，MySQL为了减少锁处理（包括等待其它锁）的时间，提升并发能力，引入了快照读的概念，使得select不用加锁。而update、insert这些“当前读”，就需要另外的机制来解决了.
 
@@ -428,7 +428,7 @@ SELECT
     user_no,
     SUBSTRING_INDEX(GROUP_CONCAT( DISTINCT role_name ORDER BY role_id desc ),',',2) AS role_name
 FROM
-    report_user_role_info 
+    report_user_role_info
 GROUP BY
     user_no;
 ```
