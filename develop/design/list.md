@@ -23,3 +23,6 @@
 
 ## 编码
 - [Base64编码原理与应用*](http://blog.xiayf.cn/2016/01/24/base64-encoding/)
+
+## SSO
+- [SSO单点登录的设计与实现](https://zhuanlan.zhihu.com/p/196728329)

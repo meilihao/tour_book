@@ -1,4 +1,15 @@
 # vue3
+
+## dev
+- oxlint : `pnpm dlx oxlint@latest`
+- vscode
+
+    - `Vue - Official`
+
+        配置:
+        - 启用`Vue>Auto Insert: Dot Value`
+    - `Oxc`
+
 ## 变化
 - template标签下面可以有多个节点
 - setup函数可以代替之前的data，methods，computed，watch，Mounted等对象，但是props声明还是在外面

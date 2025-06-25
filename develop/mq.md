@@ -4,6 +4,7 @@
 - [云原生消息系统设计：NATS + Cloudevents](https://wbsnail.com/p/using-cloudevents-with-nats)
 
 	[NATS Streaming Server supports clustering and data replication, implemented with the Raft consensus algorithm, for the purposes of high availability.](https://docs.nats.io/legacy/stan/intro/clustering)
+- [构建下一代万亿级云原生消息架构：Apache Pulsar 在 vivo 的探索与实践](https://mp.weixin.qq.com/s?__biz=MzI4NjY4MTU5Nw==&mid=2247494958&idx=3&sn=b2f02d545627a1457958289d8f623af3&scene=21&poc_token=HGeLS2ijqKKMc_nU7DO-ZAumeMdvCgfqHtczUSBc)
 
 使用MQ的场景有挺多的，但是比较核心的有3个：异步、解耦、削峰填谷.
 
@@ -58,7 +59,7 @@ JAVA_OPT="${JAVA_OPT} -server -Xms4g -Xmx4g -Xmn1g"
 	1. 优化消费者, 提高消费速度, 比如并行
 	2. 扩容
 
-### 保证消息不被重复消费
+### 保证消息不被重复消费=消费幂等
 原因:
 1. 生产者重复产生消息, 比如接口的幂等操作
 1. 消费者消费后且回复ack前mq挂了
@@ -71,11 +72,13 @@ JAVA_OPT="${JAVA_OPT} -server -Xms4g -Xmx4g -Xmn1g"
 	2. 如果执行成功, 状态改为完成
 	3. 如果失败, 删除该记录并重试
 
+解决消息丢失和消息重复消费基础: 全局唯一id
+
 ### 保证消息不丢失
 原因:
 1. mq收到消息后, 保存失败
 1. 队列中消息未持久化
-1. 消费者开启自动应答, 且消费失败
+1. 消费者应答了ack(特别是开启了自动ack), 但消费失败
 
 解决:
 1. 开启生产者确认

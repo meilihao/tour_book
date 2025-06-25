@@ -1,6 +1,9 @@
 # tigervnc
 ref:
 - [Configuring Tigervnc](https://www.linuxfromscratch.org/blfs/view/systemd/xsoft/tigervnc.html)
+- [Rocky Linux 10.0 Available Now](https://rockylinux.org/zh-CN/news/rocky-linux-10-0-ga-release)
+
+    远程桌面协议（RDP）取代了VNC, 现在是图形远程访问的默认协议
 
 ## 部署
 ```bash
