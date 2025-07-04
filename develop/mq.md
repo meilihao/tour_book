@@ -5,6 +5,7 @@
 
 	[NATS Streaming Server supports clustering and data replication, implemented with the Raft consensus algorithm, for the purposes of high availability.](https://docs.nats.io/legacy/stan/intro/clustering)
 - [构建下一代万亿级云原生消息架构：Apache Pulsar 在 vivo 的探索与实践](https://mp.weixin.qq.com/s?__biz=MzI4NjY4MTU5Nw==&mid=2247494958&idx=3&sn=b2f02d545627a1457958289d8f623af3&scene=21&poc_token=HGeLS2ijqKKMc_nU7DO-ZAumeMdvCgfqHtczUSBc)
+- [RobustMQ - 下一代高性能云原生融合型消息队列](https://robustmq.com/zh/OverView/What-is-RobustMQ.html)
 
 使用MQ的场景有挺多的，但是比较核心的有3个：异步、解耦、削峰填谷.
 

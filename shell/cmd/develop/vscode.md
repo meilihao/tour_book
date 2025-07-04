@@ -42,9 +42,18 @@ markdown:
 ## setting.json
 ```
 {
-    "go.testFlags": ["-v", "-count=1"]
+    "go.testFlags": ["-v", "-count=1"],
+    "go.toolsEnvVars": {
+        "GOEXPERIMENT": "jsonv2" // 开启实验特性
+    }
 }
 ```
+
+更新后需重启vscode
+
+## 快捷键
+- ctrl + `+` : 放大
+- ctrl + `-` : 缩小
 
 ## FAQ
 ### 启动code没反映

@@ -35,3 +35,8 @@ virtualenv pylsp-venv
 source pylsp-venv/bin/activate
 pip install "python-lsp-server[all]"
 ```
+
+### 安装或更新
+`curl -f https://zed.dev/install.sh | sh`
+
+安装或更新使用相同的命令.

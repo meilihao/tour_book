@@ -56,6 +56,13 @@ ref:
 	第18章开始没有更新了 - 2024.3.21
 - [Rust 参考手册 - The Rust Language Reference](https://minstrel1977.gitee.io/rust-reference/types.html)
 - [Rust语言圣经](https://course.rs)
+- [深入RUST标准库](https://github.com/Warrenren/inside-rust-std-library)
+- [rust-course](https://github.com/sunface/rust-course)
+- [Rust 秘典](https://nomicon.purewhite.io/intro.html)
+- [zero-to-production](https://github.com/LukeMathWalker/zero-to-production)
+
+	<<从零构建Rust生产级服务>>
+- [rust-library-i18n:Rust 核心库和标准库中文翻译](https://github.com/wtklbm/rust-library-i18n)
 
 ## gui
 - [Pop!_OS COSMIC 桌面使用 Rust GUI 库 Iced 取代 GTK](https://www.oschina.net/news/212636/cosmic-desktop-iced-toolkit)
@@ -172,19 +179,15 @@ ref:
 - tklog: log
 
 ## example
-- 练手rustlings，小练习 可以让你习惯阅读和编写 Rust 
+- 练手[rustlings](https://github.com/rust-lang/rustlings)，小练习 可以让你习惯阅读和编写 Rust
+
+	- `l` + `选题` + `r` : 重置指定练习题
+	- [Rust学习 | Rustlings通关记录与题解](https://www.cnblogs.com/Roboduster/p/17781712.html)
 - 练手[exercism](https://exercism.org/)，编程语言在线学习网站
 - 刷题[codewars](https://www.codewars.com/)，刷题网站，类似 LeetCode
 - [talent-plan](https://github.com/pingcap/talent-plan)
 - [Writing an OS in Rust](https://os.phil-opp.com/)
 - [Learn Rust With Entirely Too Many Linked Lists](https://rust-unofficial.github.io/too-many-lists/index.html)
-
-## book
-- [rust-course](https://github.com/sunface/rust-course)
-- [Rust 秘典](https://nomicon.purewhite.io/intro.html)
-- [zero-to-production](https://github.com/LukeMathWalker/zero-to-production)
-
-	<<从零构建Rust生产级服务>>
 
 ## ai
 - [Dora-rs：下一代机器人开发框架](https://www.oschina.net/news/347272)

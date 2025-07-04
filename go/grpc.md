@@ -10,9 +10,16 @@
 - [Protobuf 终极教程](https://colobu.com/2019/10/03/protobuf-ultimate-tutorial-in-go/)
 
 ## 搭建环境
+ref:
+- [Quick start](https://grpc.io/docs/languages/go/quickstart/)
+- [Protocol Buffer Basics: Go](https://protobuf.dev/getting-started/gotutorial/)
 
 1. 因grpc使用了ProtoBuffer作为IDL,根据[文档](https://github.com/golang/protobuf),需先安装[Protobuf编译器 c++版](https://github.com/google/protobuf/releases).
-2. 安装protoc的go语言插件,`go get -a github.com/golang/protobuf/protoc-gen-go`.
+
+    **`github.com/golang/protobuf`已被`google.golang.org/protobuf(即https://github.com/protocolbuffers/protobuf-go)`取代**
+2. 安装protoc的go语言插件:
+    - `go install google.golang.org/protobuf/cmd/protoc-gen-go@latest`
+    - `go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest`
 
 ### protoc
 
@@ -21,10 +28,13 @@ protoc --proto_path=IMPORT_PATH --go_out=plugins=grpc:OUT_DIR path/to/file.proto
 ```
 
 - --proto_path=IMPORT_PATH IMPORT_PATH 指定一个目录用于查找`.proto文件`,缺省使用当前目录`.`
-- --go_out=plugins=grpc:OUT_DIR `plugins=grpc`表示使用grpc插件,多个插件用`,`分隔;OUT_DIR用于存放生成的go代码在,和插件间用`:`分隔.
+- --go_out 参数告诉 protoc 使用 protoc-gen-go 插件来生成 Go 代码, 主要用于生成 Protocol Buffers 消息的 Go 结构体代码. 只定义了数据结构（消息），而没有定义 gRPC 服务时，或者需要纯粹的 Protocol Buffers 消息操作时，使用该参数
+- --go-grpc_out 参数告诉 protoc 使用 protoc-gen-go-grpc 插件来生成 Go 代码, 专门用于生成 gRPC 服务接口的 Go 代码. 比如定义了 gRPC 服务（service 关键字），并且需要为该服务生成客户端和服务端代码时，使用该参数.
 - path/to/file.proto 可以提供一个或多个`.proto`文件作为输入. 多个`.proto`文件可以一次指定. 虽然文件被以当前目录的相对路径命名, 每个文件必须位于一个IMPORT_PATH路径下, 以便编译器可以检测到它的标准名字.
 
-更多见[protobuf的官方文档](https://github.com/golang/protobuf).
+> `--go_out=plugins=grpc:OUT_DIR` 是在 Go Protobuf 和 gRPC 生态系统早期使用(`在旧版本的 protoc-gen-go v1.2 之前，对应 github.com/golang/protobuf 模块`)的一种方法，它允许一个插件同时处理消息和服务代码的生成. 但在当前的 Go gRPC 开发中，这种方式已被更模块化和清晰的两步生成方式取代，即分别使用 `--go_out 和 --go-grpc_out`
+
+更多见[protobuf的官方文档](https://github.com/protocolbuffers/protobuf-go).
 
 ### 示例
 

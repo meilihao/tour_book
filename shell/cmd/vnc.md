@@ -114,3 +114,10 @@ tigervnc-standalone-server启动时默认绑定localhost. 因为vncserver没有�
 解决方案:
 - `/etc/vnc.conf`的配置项`$geometry`支持修改分辨率, 比如`$geometry = "1850x900";`
 - vncserver使用参数`-geometry 1852x900`
+
+### vncserver log
+- `~/.vnc/*.log`, **推荐**
+- `~/.xsession-errors`
+
+### 直接执行`vncserver :1`, realvnc连接时报`_amdgpu_device_initialize: amdgpu_query_info(ACCEL_WORKING) failed (-13)`
+使用vncserver@.service启动vncserver后正常
