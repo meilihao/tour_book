@@ -101,6 +101,9 @@ ps:
 mysql -h 10.6.208.183 -u test2 -p  -P 3310 目的数据库名称 < test.sql;也可以直接在mysql命令行下面用source导入(先用use进入到某个数据库，mysql>source /home/xxx/test.sql，后面的参数为sql文件).注意,**导入前应先确保目的数据库存在**.
 ```
 
+### 基于模板表创建新表
+`CREATE TABLE if not EXISTS bill_<N> like bill"`
+
 ### 大小写
 
 数据库中表名用小写,程序中表名用大写开头,mysql报错`Table '数据库名.表名' doesn't exist`.
@@ -436,3 +439,6 @@ exsits仅在内表查询时会用到索引
 一般来说，当子查询的结果集比较大，外表较小时用exist效率更高；当子查询的结果较小，外表较大时，使用in效率更高.
 
 对于not in 和 not exists, not exists效率比not in 效率高，与子查询的结果集无关，因为not in 对于内外表都进行了全表扫描，没有使用到索引. not exists的子查询中可以用到表上的索引.
+
+### mariadb client 11.8连接aliyun rdb报`ERROR 2026 (HY000): TLS/SSL error: SSL is required, but the server does not support it`
+追加`--skip-ssl`

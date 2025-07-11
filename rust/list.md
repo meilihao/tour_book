@@ -189,6 +189,10 @@ ref:
 - [Writing an OS in Rust](https://os.phil-opp.com/)
 - [Learn Rust With Entirely Too Many Linked Lists](https://rust-unofficial.github.io/too-many-lists/index.html)
 
+### read
+- [RobustMQ](https://github.com/robustmq/robustmq-geek)
+- [MsgTrans](https://github.com/zoujiaqing/msgtrans/blob/main/README.zh-CN.md)
+
 ## ai
 - [Dora-rs：下一代机器人开发框架](https://www.oschina.net/news/347272)
 	

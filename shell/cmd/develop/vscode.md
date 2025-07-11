@@ -181,3 +181,14 @@ File->Preferences->Settings->Workbench -> Apperance ->`Color Customizations`, �
     //"titleBar.inactiveForeground": "#cccccc" // 非活动窗口的顶部菜单栏文字颜色
 },
 ```
+
+### golint屏蔽警告`receiver name should be a reflection of its identity; don't use generic names such as "this" or "self" (ST1006)`
+ref:
+- [Configuration](https://staticcheck.dev/docs/configuration/)
+
+1. 创建项目根目录创建staticcheck.conf
+
+    ```json
+    checks = ["-ST1006"]
+    ```
+1. 重启vscode

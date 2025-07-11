@@ -2093,7 +2093,7 @@ rust提供5种复合类型:
 
         enum Message {
             Quit,
-            Move { x: i32, y: i32 }, // 此时并不能像访问结构体字段一样访问枚举类绑定的属性, 而是需要使用`match`
+            Move { x: i32, y: i32 }, // 匿名struct, 此时并不能像访问结构体字段一样访问枚举类绑定的属性, 而是需要使用`match`
             Write(String),
             ChangeColor(i32, i32, i32),
         }

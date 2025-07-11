@@ -177,3 +177,6 @@ ref:
 现象: ssh连上几秒后突然断开, 同时登入观察到ssh服务的Main PID总在两个pid中随机切换
 
 原因: ip冲突
+
+### 停止ssh报`Stopping 'ssh.service', but its triggering units are still active:ssh.socket`
+`systemctl disable ssh.socket` + `systemctl stop ssh.socket` + `systemctl stop ssh`

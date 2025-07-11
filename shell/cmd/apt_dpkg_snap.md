@@ -386,3 +386,8 @@ apt upgrade 和 apt dist-upgrade 本质上是没有什么不同的, 仅在处理
 
 ### apt更新包含phased upgrades
 `apt -o APT::Get::Always-Include-Phased-Updates=true upgrade`, 也可将该配置写入apt配置文件(不推荐)
+
+### `N: 鉴于仓库 'https://tw1.mirror.blendbyte.net/mariadb/repo/11.8/ubuntu noble InRelease' 不支持 'i386' 体系结构，跳过配置文件 'main/binary-i386/Packages' 的获取`
+apt配置:
+- 新版(DEB822 格式): 追加`Architectures: amd64`
+- 旧版: `deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg, arch=amd64] http://nginx.org/packages/ubuntu jammy nginx`
