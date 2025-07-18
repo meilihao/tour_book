@@ -48,3 +48,8 @@
 
 ## endoflife
 - [endoflife](https://endoflife.date/)
+
+## 云计算
+- [云图 -- 云计算图志: 探索 — Cloud Atlas: Discovery](https://cloud-atlas.readthedocs.io/zh-cn/latest/)
+
+    云图 -- 云计算图志: 探索 是实践的指南, 所以我希望能够在个人有限的硬件环境下，模拟出大规模云计算的部署和开发

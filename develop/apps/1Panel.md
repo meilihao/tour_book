@@ -4,7 +4,7 @@ ref:
 - [在线安装](https://1panel.cn/docs/installation/online_installation/)
 - [installer](https://github.com/1Panel-dev/installer)
 
-通过quick_start.sh获悉具体安装脚本是1panel-v1.9.6-linux-amd64.tar.gz的install.sh
+通过quick_start.sh获悉具体安装脚本是1panel-v2.0.4-linux-amd64.tar.gz的install.sh
 
 ## 开发
 ref:

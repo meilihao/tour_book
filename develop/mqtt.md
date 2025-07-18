@@ -1,5 +1,6 @@
 # mqtt
 ref:
+- [**MQTT 教程**](https://www.emqx.com/zh/mqtt-guide)
 - [MQTT 协议快速入门 2025：基础知识和实用教程](https://www.emqx.com/zh/blog/the-easiest-guide-to-getting-started-with-mqtt)
 - [MQTT 服务器（MQTT Broker）：工作原理与快速入门指南](https://www.emqx.com/zh/blog/the-ultimate-guide-to-mqtt-broker-comparison)
 - [MQTT 客户端库 & SDKs](https://www.emqx.com/zh/mqtt-client-sdk)
@@ -16,6 +17,10 @@ mqtt特点:
 1. 大规模物联网设备支持：MQTT 的轻量级特性、低带宽消耗和对资源的高效利用使其成为大规模物联网应用的理想选择。通过采用发布-订阅模式，MQTT 实现了发送者和接收者的解耦，从而有效地减少了网络流量和资源使用。此外，协议对不同 QoS 等级的支持使得消息传递可以根据需求进行定制，确保在各种场景下获得最佳的性能表现。
 1. 语言支持：物联网系统包含使用各种编程语言开发的设备和应用。MQTT 具有广泛的语言支持，使其能够轻松与多个平台和技术进行集成，从而实现了物联网生态系统中的无缝通信和互操作性
 
+## lib
+ref:
+- [libraries](https://github.com/mqtt/mqtt.org/wiki/libraries)
+
 ## 工作原理
 MQTT 是基于发布-订阅模式的通信协议，由 MQTT 客户端通过主题（Topic）发布或订阅消息，通过 MQTT Broker 集中管理消息路由，并依据预设的服务质量等级(QoS)确保端到端消息传递可靠性.
 
@@ -28,19 +33,71 @@ MQTT 是基于发布-订阅模式的通信协议，由 MQTT 客户端通过主�
     MQTT Broker 是负责处理客户端请求的关键组件，包括建立连接、断开连接、订阅和取消订阅等操作，同时还负责消息的转发
 
 ### QoS
-MQTT 提供了三种服务质量（QoS），在不同网络环境下保证消息的可靠性。
+ref:
+- [MQTT QoS 0、1、2 解析：快速入门指南](https://www.emqx.com/zh/blog/introduction-to-mqtt-qos)
 
-QoS 0：消息最多传送一次
+MQTT 提供了三种服务质量（QoS），在不同网络环境下保证消息的可靠性:
+
+1. QoS 0：最多交付一次
 
     如果当前客户端不可用，它将丢失这条消息。
-QoS 1：消息至少传送一次
+2. QoS 1：至少交付一次
 
     包含了简单的重发机制，发布者发送消息之后等待接收者的 ACK，如果没收到 ACK 则重新发送消息。这种模式能保证消息至少能到达一次，但无法保证消息重复
-QoS 2：消息只传送一次
+3. QoS 2：只交付一次
 
-    设计了重发和重复消息发现机制，保证消息到达对方并且严格只到达一
+    设计了重发和重复消息发现机制，保证消息到达对方并且严格只到达一次
+    
+    与 QoS 1 相比，QoS 2 新增了 PUBREL 报文和 PUBCOMP 报文的流程，也正是这个新增的流程带来了消息不会重复的保证. 因此每一次的 QoS 2 消息投递，都要求发送方与接收方进行至少两次请求/响应流程. 
 
 ### MQTT 的工作流程
 1. 客户端使用 TCP/IP 协议与 Broker 建立连接
 1. 客户端既可以向特定主题发布消息，也可以订阅主题以接收消息
-1. MQTT Broker 接收发布的消息，并将这些消息转发给订阅了对应主题的客户端 
+1. MQTT Broker 接收发布的消息，并将这些消息转发给订阅了对应主题的客户端
+
+### topic
+ref:
+- [MQTT 主题与通配符（Topics & Wildcards）入门手册](https://www.emqx.com/zh/blog/advanced-features-of-mqtt-topics)
+
+MQTT 协议根据主题来转发消息。主题通过 / 来区分层级，类似于 URL 路径.
+
+MQTT 主题支持以下两种通配符:
+1. `+`：表示单层通配符，例如 `a/+` 匹配 `a/x` 或 `a/y`
+
+    `+`用于单个主题层级匹配的通配符. 在使用单层通配符时，单层通配符必须占据整个层级
+2. `#`：表示多层通配符，例如 `a/#` 匹配 `a/x`、`a/b/c/d`
+
+    `#`是用于匹配主题中任意层级的通配符. 多层通配符表示它的父级和任意数量的子层级，在使用多层通配符时，它必须占据整个层级并且必须是主题的最后一个字符
+
+注意: 通配符主题**只能用于订阅，不能用于发布**
+
+example:
+```conf
++ 有效
+sensor/+ 有效
+sensor/+/temperature 有效
+sensor+ 无效（没有占据整个层级）
+
+# 有效，匹配所有主题
+sensor/# 有效
+sensor/bedroom# 无效（没有占据整个层级）
+sensor/#/temperature 无效（不是主题最后一个字符）
+```
+
+#### 系统主题
+以 `$SYS/` 开头的主题为系统主题，系统主题主要用于获取 MQTT 服务器自身运行状态、消息统计、客户端上下线事件等数据。目前，MQTT 协议暂未明确规定 $SYS/ 主题标准，但大多数 MQTT 服务器都遵循该标准建议。
+
+例如，EMQX 服务器支持通过以下主题获取集群状态。
+
+主题	说明
+$SYS/brokers	EMQX 集群节点列表
+$SYS/brokers/emqx@127.0.0.1/version	EMQX 版本
+$SYS/brokers/emqx@127.0.0.1/uptime	EMQX 运行时间
+$SYS/brokers/emqx@127.0.0.1/datetime	EMQX 系统时间
+$SYS/brokers/emqx@127.0.0.1/sysdescr	EMQX 系统信息
+EMQX 还支持客户端上下线事件、收发流量、消息收发、系统监控等丰富的系统主题，用户可通过订阅 $SYS/# 主题获取[所有系统主题消息](https://docs.emqx.com/zh/emqx/v5.0/observability/mqtt-system-topics.html#%E5%AE%A2%E6%88%B7%E7%AB%AF%E4%B8%8A%E4%B8%8B%E7%BA%BF%E4%BA%8B%E4%BB%B6)
+
+#### 共享订阅
+共享订阅是 MQTT 5.0 引入的新特性，用于在多个订阅者之间实现订阅的**负载均衡**，MQTT 5.0 规定的共享订阅主题以 $share 开头。
+
+> 虽然 MQTT 协议在 5.0 版本才引入共享订阅，但是 EMQX 从 MQTT 3.1.1 版本开始就支持共享订阅
