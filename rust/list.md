@@ -188,6 +188,8 @@ ref:
 - [talent-plan](https://github.com/pingcap/talent-plan)
 - [Writing an OS in Rust](https://os.phil-opp.com/)
 - [Learn Rust With Entirely Too Many Linked Lists](https://rust-unofficial.github.io/too-many-lists/index.html)
+- [ParvaOS -  用 Rust 语言从头开发的操作系统](https://github.com/gianndev/ParvaOS)
+- [用 Rust 重写 SQLite 数据库入门指南](https://avi.im/blag/2025/rickrolling-turso/)
 
 ### read
 - [RobustMQ](https://github.com/robustmq/robustmq-geek)

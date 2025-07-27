@@ -39,6 +39,9 @@ rust有stable和nightly两个版本, 默认版本可通过`rustup show`查看.
 `rustup component add rls rust-analysis rust-src`
 
 ## toolchians(工具链)
+ref:
+- [Clippy：Rust 官方代码质量增强工具完全指南](https://mp.weixin.qq.com/s/y_YSZKp9sNd2JoKQ-xlTEQ)
+
 - rustc : 编译器
 - cargo : 项目管理工具
 - rustup : 管理工具
@@ -47,6 +50,11 @@ rust有stable和nightly两个版本, 默认版本可通过`rustup show`查看.
 	- `rustup default <stable|nightly>` : 切换rust版本
 	- `rustup show`: 查看默认设置
 	- `rustup component add clippy` # 用`cargo clipy`格式化rust代码, 类似eslint
+
+		```bash
+		# cargo clippy # 项目目录下运行
+		# cargo clippy --tests # 针对特定目标（如测试代码）
+		```
 	- `rustup update nightly` && ` rustup override set nightly` : 为项目指定使用的rust版本 
 - rustdoc : 文档工具
 - rustfmt : 格式化工具
