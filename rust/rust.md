@@ -189,7 +189,7 @@ rust还有零大小类型(zero sized type, zst), 比如单元类型和单元结�
 
 > 动态大小类型(Dynamic sized type, dst)是指编译阶段无法确定占用空间的类型, 为了安全, 指向dst的指针一般是胖指针. 胖指针的设计, 避免了数组类型作为参数传递时自动退化为裸指针类型，丢失了长度信息的问题, 保证了类型安全.
 
-> `&str`是引用类型(包含指针和长度信息), 存储在栈上, str字符串是存储在堆上.
+> `&str`是String的引用类型(包含指针和长度信息), 存储在栈上, str字符串是存储在堆上.
 
 > rust没有gc, 内存首先由编译器分配, rust代码被编译成llvm ir, 其中就携带了内存分配信息. 所以编译器需要事先知道类型, 才好分配合理的内存.
 
@@ -319,7 +319,7 @@ rust组成:
 
         Rust 标准库中还包含一系列其他字符串类型，比如 OsString、OsStr、CString 和 CStr, 前缀(非String/非Str)对应着它们提供的所有权和可借用的字符串变体.
 
-        使用 to_string 方法从字符串字面值创建 String: `"...".to_string()` <=> `String::from("...")` <=> `str::to_string("hello")`<=>`ToString::to_string("hello")`<=>`<str as ToString>::to_string("hello")`.
+        使用 to_string 方法从字符串字面值创建 String: `"...".to_string()` <=> `String::from("...")` <=> `"...".to_owned()` <=>`str::to_string("hello")`<=>`ToString::to_string("hello")`<=>`<str as ToString>::to_string("hello")`.
 
         其他形式称为限定方法调用，因为它们需要指定`方法关联的类型或特型`. 最后一种带尖括号的形式，则同时指定了两者，因此称为完全限定方法调用, 比如`<str as ToString>::to_string()`.
 
@@ -572,6 +572,24 @@ Rust中分配的每块内存都有其所有者，所有者负责该内存的释�
 rust 内存回收策略：内存在拥有它的变量离开作用域后就被自动释放.
 
 所有权规则解决了谁真正拥有数据的生杀大权问题，让堆上数据的多重引用不复存在，这是它最大的优势.
+
+Rust 中会发生所有权移动 (Move) 的类型
+在 Rust 中，所有权移动是其内存安全模型的核心概念之一。当一个值的所有权从一个变量转移到另一个变量时，就会发生移动。一旦所有权被移动，原来的变量就不能再使用该值了。
+
+以下类型的变量在默认情况下会发生所有权移动：
+- 所有堆分配的类型 (Heap-allocated types)：这是最主要的情况。任何存储在堆上的数据结构，例如 String、Vec<T>（动态数组）、Box<T>（堆分配指针）以及其他自定义的、包含堆分配数据的结构体和枚举，在赋值或作为函数参数传递时，都会发生所有权移动
+- 自定义的、非 Copy 特性的结构体和枚举 (Custom structs and enums that don't implement Copy)：即使它们不包含堆分配的数据，只要它们没有实现 Copy，也会发生移动
+
+通常，实现了 Copy trait 的类型都是存储在栈上的、固定大小的、简单的数据类型。它们在复制时开销很小。常见的 Copy 类型包括：
+- 所有整型 (Integer types): i8, u8, i16, u16, i32, u32, i64, u64, isize, usize
+- 所有浮点型 (Floating-point types): f32, f64
+- 布尔型 (Boolean type): bool
+- 字符型 (Character type): char
+- 元组 (Tuples): 如果元组中所有的元素都实现了 Copy trait，那么该元组也实现了 Copy
+- 固定大小的数组 (Fixed-size arrays): 如果数组中所有的元素都实现了 Copy trait，那么该数组也实现了 Copy
+- 实现了 Copy trait 的自定义结构体和枚举: 可以使用 #[derive(Copy, Clone)] 宏为自定义类型自动实现 Copy 和 Clone trait，前提是该类型的所有字段都实现了 Copy
+
+记住一个简单的规则：**如果一个类型在栈上可以完全复制而没有额外的开销，它通常会实现 Copy. 否则，它将默认发生所有权移动**
 
 ```rust
 #[derive(Debug)]
@@ -2057,6 +2075,33 @@ rust提供5种复合类型:
 
     > 引用结构体成员给其他变量赋值时, 要注意：所有权的转移可能会破坏结构体变量的完整性.
 
+    ```rust
+    struct Stu {
+        age: u8,
+    }
+
+    impl Stu {
+        fn new() -> Self{
+            Self{
+                age:28
+            }
+        }
+
+        fn show_age(&self) {
+            println!("{:?}", self.age)
+        }
+    }
+
+    fn main() {
+        let my = Stu {age: 18};
+        Stu::show_age(&my);
+        my.show_age();
+
+        let joh = Stu::new();
+        joh.show_age();
+    }
+    ```
+
 1. 枚举体(Enum)
 
     分三类:
@@ -3529,9 +3574,11 @@ From Into 是定义于 std::convert 模块中的两个 trait. 它们定义了 fr
 
 满足某个条件时会跳转, Rust 支持
 - 分支跳转: `if/else`
+
+    编译器不检查所有可能性, 由开发者自行处理
 - 模式匹配: Rust 的模式匹配可以通过匹配表达式或者值的某部分的内容，来进行分支跳转
 	
-	需要根据表达式**所有可能**的值进行匹配, 并进行相应的处理.
+	编译器会匹配表达式**所有可能**的值并进行相应的处理.
 
 	`match expr {}`或`if let pat = expr {}`. `if let`是match的简写, 表示仅关心一种模式匹配的情况而忽略其他情况, 不加`else{}`分支时即放弃了穷举可能性.
 
