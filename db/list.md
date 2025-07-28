@@ -25,7 +25,8 @@
 - [记一次微信数据库解密过程](https://www.freebuf.com/articles/endpoint/195107.html), 也可参考[ppwwyyxx/wechat-dump(**推荐**)](https://github.com/ppwwyyxx/wechat-dump)
 
 ## 时序db
-- [华为自用的时序数据库开源啦，来看看水平怎么样？](https://my.oschina.net/u/6852546/blog/11052794)
+- [华为自用的时序数据库开源啦，来看看水平怎么样？](https://www.huaweicloud.com/news/2024/20240709153958154.html)
+- [Time Series DBMS排名](https://db-engines.com/en/ranking/time+series+dbms)
 
 ## next db
 ### OceanBase

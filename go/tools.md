@@ -44,6 +44,15 @@
 - template
 
 	- [fasttemplate](https://github.com/valyala/fasttemplate)
+- config
+
+	推荐: spf13/viper
+
+    - yaml
+
+		- [config](https://github.com/uber-go/config)
+
+			多源合并 = 支持覆盖效果, 类似ini
 
 ## http client
 - [github.com/go-resty/resty/v2](https://github.com/go-resty/resty)
