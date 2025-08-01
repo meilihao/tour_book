@@ -1,0 +1,66 @@
+version: '2.0.0' # working
+services:
+  db: # https://www.oceanbase.com/docs/common-oceanbase-database-cn-1000000003378707
+    image: quay.io/oceanbase/oceanbase-ce
+    container_name: oceanbase
+    environment:
+      - OB_CLUSTER_NAME=obstandalone
+      - MODE=MINI
+      - OB_TENANT_PASSWORD=123456
+      - TZ=Asia/Shanghai
+    ports:
+      - "2881:2881"
+    volumes:
+      - oceanbase/ob:/root/ob
+      - oceanbase/obd/cluster:/root/.obd/cluster
+  redis:
+    image: redis:latest
+    container_name: redis
+    environment:
+      - TZ=Asia/Shanghai
+    # restart: always # 调试时建议注释该参数
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis/redis.conf:/etc/redis/redis.conf
+      - redis/data:/data
+      - redis/logs:/var/log/redis
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    environment:
+      - TZ=Asia/Shanghai
+    ports:  
+     - 80:80
+    volumes:  
+     - nginx/conf.d:/etc/nginx/conf.d
+  tdengine:
+    image: tdengine/tsdb:latest
+    container_name: tdengine
+    environment:
+      - TZ=Asia/Shanghai
+    ports:  
+     - 6030:6030
+     - 6041:6041
+     - 6043:6043
+     - 6060:6060
+     - 6044-6049:6044-6049
+     - 6044-6045:6044-6045/udp
+    volumes:  
+     - taos/dnode/data:/var/lib/taos
+     - taos/dnode/log:/var/log/taos
+  emqx:
+    image: emqx/emqx:latest
+    container_name: emqx
+    environment:
+      - EMQX_NAME=emqx
+      - TZ=Asia/Shanghai
+    ports:
+     - 1883:1883 
+     - 8083:8083 
+     - 8084:8084 
+     - 8883:8883
+     - 18083:18083
+    volumes:  
+     - emqx/data:/opt/emqx/data
+     - emqx/log:/opt/emqx/log

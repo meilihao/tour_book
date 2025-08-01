@@ -614,3 +614,6 @@ dd写正常, go写报错误.
 ### 编码转换
 by `golang.org/x/text`:
 - UTF-8/UTF-16/UTF-32<->GB18030
+
+### running "stringer": exec: "stringer": executable file not found in $PATH
+`go install golang.org/x/tools/cmd/stringer@latest`

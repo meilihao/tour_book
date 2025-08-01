@@ -503,14 +503,21 @@ git push
 ```
 
 ### tag version
+version.xxx时全局变量, 它将在编译时被设置
+
+```bash
+# cd <project>
+# pkg/lib/version/version.go
+```
+
 ```bash
 GitTag=$(git describe --tags --dirty --always)
 GitBranch=$(git rev-parse --abbrev-ref HEAD)
 GitHash=$(git rev-parse HEAD)
-BuildTS=$(data -u --rfc-3339=seconds)
+BuildTS=$(date -u --rfc-3339=seconds)
 
-LDFLAGS="-X .../version.gitTag=${GitTag}
-         -X '.../version.gitTag=${BuildTS}'"
+LDFLAGS="-X <project>/pkg/lib/version.gitTag=${GitTag}
+         -X '<project>/pkg/lib/version.gitTag=${BuildTS}'"
 
 go build -ldflags "$LDFLAGS"
 ```
