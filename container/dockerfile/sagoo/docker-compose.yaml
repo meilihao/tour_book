@@ -1,18 +1,19 @@
-version: '2.0.0' # working
+# 正式部署建议启用`restart: always`
 services:
-  db: # https://www.oceanbase.com/docs/common-oceanbase-database-cn-1000000003378707
+  oceanbase: # https://www.oceanbase.com/docs/common-oceanbase-database-cn-1000000003378707
     image: quay.io/oceanbase/oceanbase-ce
     container_name: oceanbase
     environment:
       - OB_CLUSTER_NAME=obstandalone
-      - MODE=MINI
+      - MODE=MINI # min(MINI)=14G
       - OB_TENANT_PASSWORD=123456
+      - OB_SYS_PASSWORD=12345678
       - TZ=Asia/Shanghai
     ports:
       - "2881:2881"
     volumes:
-      - oceanbase/ob:/root/ob
-      - oceanbase/obd/cluster:/root/.obd/cluster
+      - ./oceanbase/ob:/root/ob
+      - ./oceanbase/obd/cluster:/root/.obd/cluster
   redis:
     image: redis:latest
     container_name: redis
@@ -22,33 +23,36 @@ services:
     ports:
       - '6379:6379'
     volumes:
-      - redis/redis.conf:/etc/redis/redis.conf
-      - redis/data:/data
-      - redis/logs:/var/log/redis
+      - ./redis/redis.conf:/etc/redis/redis.conf
+      - ./redis/data:/data
+      - ./redis/logs:/var/log/redis
   nginx:
     image: nginx:latest
     container_name: nginx
     environment:
       - TZ=Asia/Shanghai
     ports:  
-     - 80:80
+      - 80:80
+      - 443:443
     volumes:  
-     - nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/html:/usr/share/nginx/html
+      - ./nginx/log:/var/log/nginx/
   tdengine:
     image: tdengine/tsdb:latest
     container_name: tdengine
     environment:
       - TZ=Asia/Shanghai
     ports:  
-     - 6030:6030
-     - 6041:6041
-     - 6043:6043
-     - 6060:6060
-     - 6044-6049:6044-6049
-     - 6044-6045:6044-6045/udp
+      - 6030:6030
+      - 6041:6041
+      - 6043:6043
+      - 6060:6060
+      - 6044-6049:6044-6049
+      - 6044-6045:6044-6045/udp
     volumes:  
-     - taos/dnode/data:/var/lib/taos
-     - taos/dnode/log:/var/log/taos
+      - ./taos/dnode/data:/var/lib/taos
+      - ./taos/dnode/log:/var/log/taos
   emqx:
     image: emqx/emqx:latest
     container_name: emqx
@@ -56,11 +60,27 @@ services:
       - EMQX_NAME=emqx
       - TZ=Asia/Shanghai
     ports:
-     - 1883:1883 
-     - 8083:8083 
-     - 8084:8084 
-     - 8883:8883
-     - 18083:18083
+      - 1883:1883 
+      - 8083:8083 
+      - 8084:8084 
+      - 8883:8883
+      - 18083:18083
     volumes:  
-     - emqx/data:/opt/emqx/data
-     - emqx/log:/opt/emqx/log
+      - ./emqx/data:/opt/emqx/data
+      - ./emqx/log:/opt/emqx/log
+  sagoo-iot-open:
+    image: duruo850/sagoo-iot-open:v2.0.0
+    container_name: sagoo-iot-open
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - 8200:8200
+    depends_on:
+      - oceanbase
+      - redis
+      - emqx
+      - tdengine
+    volumes:
+      - ./sagoo-iot-open/config:/opt/sagoo-iot-server/config
+      - ./sagoo-iot-open/resource/public/upload_file/:/opt/sagoo-iot-server/resource/public/upload_file
+      - ./sagoo-iot-open/resource/log/:/opt/sagoo-iot-server/resource/log

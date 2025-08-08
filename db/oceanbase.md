@@ -30,3 +30,11 @@ OceanBase 社区版发布节奏为每2年一个大版本 release，每3个月一
 ### 主备
 [`不支持原主租户降备后接入成为新主租户的备租户`](https://www.oceanbase.com/docs/common-oceanbase-database-cn-1000000001574395)
     要重新做主备???
+
+### docker compose 报`oceanbase dir_scan: failed to make directory /root/demo/etc, because File exists`
+删除容器后重新创建
+
+### docker compose 报`No such deploy: demo`
+MODE=slim时, 不知为什么没法创建cluster `demo`(`/root/boot/start.sh`的`fastboot()`), 测试了`oceanbase/oceanbase-ce:4.3.5-lts`, `oceanbase/oceanbase-ce:latest(4.3.5.2-102020032025070315)`都不可以
+
+解决: 换MODE=MINI

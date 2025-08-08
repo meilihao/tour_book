@@ -15,6 +15,8 @@ rabbitmq解决消息丢失:
 1. 关闭RabbitMQ消费者的自动提交ack,在消费者处理完这条消息之后再手动提交ack
 
 ## rocketmq
+ref:
+- [深度解析 RocketMQ 核心组件：ConsumeQueue 的设计与实现](https://my.oschina.net/u/4587289/blog/18499646)
 
 ### FAQ
 #### broker卡死

@@ -507,17 +507,59 @@ version.xxx时全局变量, 它将在编译时被设置
 
 ```bash
 # cd <project>
-# pkg/lib/version/version.go
+# cat pkg/lib/version/version.go
+package version
+
+import (
+	"fmt"
+	"runtime"
+)
+
+var (
+	gitTag    string
+	gitBranch string
+	gitHash   string
+	buildTime string
+)
+
+type VersionInfo struct {
+	GitTag    string
+	GitBranch string
+	GitHash   string
+	BuildTime string
+	GoVersion string
+	Compiler  string
+	Platform  string
+}
+
+func GetVersion() *VersionInfo {
+	return &VersionInfo{
+		GitTag:    gitTag,
+		GitBranch: gitBranch,
+		GitHash:   gitHash,
+		BuildTime: buildTime,
+		GoVersion: runtime.Version(),
+		Compiler:  runtime.Compiler,
+		Platform:  fmt.Sprintf("%s/%s", runtime.GOOS, runtime.GOARCH),
+	}
+}
+
+func (v *VersionInfo) String() string {
+	return fmt.Sprintf("%s | %s | %s | %s | %s | %s | %s", v.GitBranch, v.GitTag, v.GitHash, v.BuildTime, v.GoVersion, v.Platform, v.Compiler)
+}
 ```
 
 ```bash
 GitTag=$(git describe --tags --dirty --always)
 GitBranch=$(git rev-parse --abbrev-ref HEAD)
 GitHash=$(git rev-parse HEAD)
-BuildTS=$(date -u --rfc-3339=seconds)
+# BuildTS=$(date -u --rfc-3339=seconds)
+BuildTS=$(date -u +'%Y-%m-%dT%H:%M:%S')
 
 LDFLAGS="-X <project>/pkg/lib/version.gitTag=${GitTag}
-         -X '<project>/pkg/lib/version.gitTag=${BuildTS}'"
+         -X <project>/pkg/lib/version.gitBranch=${GitBranch}
+         -X <project>/pkg/lib/version.gitHash=${GitHash}
+         -X '<project>/pkg/lib/version.buildTime=${BuildTS}'"
 
 go build -ldflags "$LDFLAGS"
 ```

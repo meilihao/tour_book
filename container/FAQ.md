@@ -366,3 +366,10 @@ ref:
 ```
 
 docker info查看`Registry Mirrors`已生效, 通过系统日志看到`"Attempting next endpoint for pull after error: denied: This request is forbidden. Please proceed to https://help.aliyun.com/zh/acr/product-overview/product-change-acr-mirror-accelerator-function-adjustment-announcement to view the announcement."`
+
+### docker compose 中 service name和container name的关系
+1. docker compose start/stop处理的service name，而不是container name
+1. 指定container_name可避免docker compose按默认规则生成container name
+
+### docker-compose.yaml version
+Docker Compose V2 会自动识别并兼容 YAML 文件格式, 无需手动指定 version

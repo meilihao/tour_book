@@ -4,7 +4,9 @@
 
 ### 日志文件位置
 
-配置`redis.conf # logfile`即可.
+配置`redis.conf # logfile`即可, 默认是空即输出到控制台
+
+> `> config get logfile`
 
 ### 停止redis
 
@@ -16,3 +18,5 @@
     dir ./
 
 默认dump.rdb存放位置是不固定的，而是存放在启动redis时的当前目录下.修改`dir`路径即可.
+
+> `> config get dir`

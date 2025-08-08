@@ -1,4 +1,7 @@
 # [open-eBackup](https://gitcode.com/eBackup/open-eBackup)
+ref:
+- [open-eBackup 1.0.6 Release](https://mp.weixin.qq.com/s/UHyeJ-jdnHXxXRiZ1seWcQ)
+
 date: 2024.10.9 [文档中的路径](https://gitcode.com/eBackup/open-eBackup/blob/master/doc/quick_guide/%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8.md)和开源代码的布局以及各组件的路径还是存在差异
 
 ## src

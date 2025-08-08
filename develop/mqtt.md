@@ -101,3 +101,21 @@ EMQX 还支持客户端上下线事件、收发流量、消息收发、系统监
 共享订阅是 MQTT 5.0 引入的新特性，用于在多个订阅者之间实现订阅的**负载均衡**，MQTT 5.0 规定的共享订阅主题以 $share 开头。
 
 > 虽然 MQTT 协议在 5.0 版本才引入共享订阅，但是 EMQX 从 MQTT 3.1.1 版本开始就支持共享订阅
+
+## tools
+- hbmqtt :  hbmqtt_sub 和 hbmqtt_pub
+
+  ```bash
+  # hbmqtt_sub --url mqtt://mqtt.eclipse.org:1883 -t /geektime/iot
+  # hbmqtt_pub --url mqtt://mqtt.eclipse.org:1883 -t /geektime/iot -m Hello,World!
+  ```
+
+## EMQX
+访问管理控制台： 通过 http://localhost:18083/ 登录，默认账号: admin 密码: public
+
+##
+### 程序行为异常, 定位是mqtt问题
+1. 检查是否使用了相同的clientid
+
+### mqtt client: `not currently connected and ResumeSubs not set`
+多个client使用了相同的clientid

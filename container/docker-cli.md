@@ -41,6 +41,7 @@ docker环境信息: docker info
 查看bridge信息: docker network inspect bridge
 列出docker daemon的所有网络: docker network ls
 为容器添加网卡(比如bridge) : `docker network connect ${network_name} CONTAINER`
+进入容器: docker exec -it CONTAINER bash, 默认进入容器Dockefile指定的WORKDIR
 
 ### 创建镜像
 1. 基于已有镜像的容器创建(不推荐) : `docker commit [OPTIONS] CONTAINER [REPOSITORY[:TAG]]`
