@@ -617,3 +617,6 @@ by `golang.org/x/text`:
 
 ### running "stringer": exec: "stringer": executable file not found in $PATH
 `go install golang.org/x/tools/cmd/stringer@latest`
+
+### package存在但import报`no required module provides package`
+检查该package的go.mod, 看module属性是否正确

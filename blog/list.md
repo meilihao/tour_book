@@ -70,6 +70,9 @@
 - [Linux 性能工具图谱](http://www.brendangregg.com/linuxperf.html)
 - [零拷贝技术](https://colobu.com/2022/11/21/zero-copy-and-how-to-use-it-in-go-2/)
 
+## benchmarks
+- [debian Benchmarks Game](https://benchmarksgame-team.pages.debian.net/benchmarksgame/index.html)
+
 ## kernel
 - [内核如何管理内存](https://linux.cn/article-9393-1.html)
 

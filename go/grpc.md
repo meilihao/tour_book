@@ -53,3 +53,9 @@ protoc --proto_path=IMPORT_PATH --go_out=plugins=grpc:OUT_DIR path/to/file.proto
 
 根据[文档](https://github.com/google/protobuf/blob/master/src/README.md),protobuf的默认安装位置是`/usr/local`,
 而`/usr/local/lib`不在Ubuntu系统默认的`LD_LIBRARY_PATH`里,参照文档configure时使用`./configure --prefix=/usr`.
+
+## 负载均衡和服务发现
+ref:
+- [gRPC客户端的那些事儿](https://tonybai.com/2021/09/17/those-things-about-grpc-client/)
+- [写给go开发者的gRPC教程-服务发现与负载均衡](https://zhuanlan.zhihu.com/p/641743763)
+- [Kratos 源码分析：Warden 负载均衡算法之 P2C](https://pandaychen.github.io/2020/07/25/KRATOS-WARDEN-BALANCER-P2C-ANALYSIS/)
