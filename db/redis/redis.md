@@ -206,6 +206,11 @@ Redis处理key过期有惰性删除和定期删除两种机制，而在配置主
 
 redis sentinal致力于高可用
 
+## cmd
+```bash
+redis-cli keys "*"
+```
+
 ## cluster
 参考:
 - [Redis Cluster数据分片实现原理、及请求路由实现](https://www.huaweicloud.com/articles/38e2316d01880fdbdd63d62aa26b31b4.html)

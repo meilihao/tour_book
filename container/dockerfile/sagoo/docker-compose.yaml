@@ -1,19 +1,29 @@
 # 正式部署建议启用`restart: always`
 services:
-  oceanbase: # https://www.oceanbase.com/docs/common-oceanbase-database-cn-1000000003378707
-    image: quay.io/oceanbase/oceanbase-ce
-    container_name: oceanbase
+  # oceanbase: # https://www.oceanbase.com/docs/common-oceanbase-database-cn-1000000003378707, 实测重启后ip变化导致db启动失败, `obd cluster edit-config obcluster`修正再`obd cluster restart obcluster`也不行
+  #   image: quay.io/oceanbase/oceanbase-ce
+  #   container_name: oceanbase
+  #   environment:
+  #     - OB_CLUSTER_NAME=obstandalone
+  #     - MODE=MINI # min(MINI)=14G
+  #     - OB_TENANT_PASSWORD=123456
+  #     - OB_SYS_PASSWORD=12345678
+  #     - TZ=Asia/Shanghai
+  #   ports:
+  #     - "2881:2881"
+  #   volumes:
+  #     - ./oceanbase/ob:/root/ob
+  #     - ./oceanbase/obd/cluster:/root/.obd/cluster
+  mariadb:
+    image: mariadb:11.8.2-ubi9
+    container_name: mariadb
     environment:
-      - OB_CLUSTER_NAME=obstandalone
-      - MODE=MINI # min(MINI)=14G
-      - OB_TENANT_PASSWORD=123456
-      - OB_SYS_PASSWORD=12345678
+      - MARIADB_ROOT_PASSWORD=123456
       - TZ=Asia/Shanghai
     ports:
-      - "2881:2881"
+      - "3306:3306"
     volumes:
-      - ./oceanbase/ob:/root/ob
-      - ./oceanbase/obd/cluster:/root/.obd/cluster
+      - ./mariadb/data:/var/lib/mysql
   redis:
     image: redis:latest
     container_name: redis
@@ -26,18 +36,6 @@ services:
       - ./redis/redis.conf:/etc/redis/redis.conf
       - ./redis/data:/data
       - ./redis/logs:/var/log/redis
-  nginx:
-    image: nginx:latest
-    container_name: nginx
-    environment:
-      - TZ=Asia/Shanghai
-    ports:  
-      - 80:80
-      - 443:443
-    volumes:  
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/html:/usr/share/nginx/html
-      - ./nginx/log:/var/log/nginx/
   tdengine:
     image: tdengine/tsdb:latest
     container_name: tdengine
@@ -75,8 +73,9 @@ services:
       - TZ=Asia/Shanghai
     ports:
       - 8200:8200
+      - 58089:58089
     depends_on:
-      - oceanbase
+      - mariadb
       - redis
       - emqx
       - tdengine
@@ -84,3 +83,17 @@ services:
       - ./sagoo-iot-open/config:/opt/sagoo-iot-server/config
       - ./sagoo-iot-open/resource/public/upload_file/:/opt/sagoo-iot-server/resource/public/upload_file
       - ./sagoo-iot-open/resource/log/:/opt/sagoo-iot-server/resource/log
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - sagoo-iot-open
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/html:/usr/share/nginx/html
+      - ./nginx/log:/var/log/nginx/

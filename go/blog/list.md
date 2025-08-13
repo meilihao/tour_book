@@ -145,6 +145,9 @@
 - [Go开发者的密码学导航：crypto库使用指南](https://tonybai.com/2024/10/19/go-crypto-package-design-deep-dive/)
 - [云原生AI实战营](https://konglingfei.com/)
     - [onex](https://github.com/onexstack/onex) : 企业级 Go 项目+ 云原生项目开发脚手架
+- [sentinel-golang](https://github.com/alibaba/sentinel-golang)
+
+    流量控制组件
 
 ## mirror
 - [go sdk](https://mirrors.ustc.edu.cn/golang/)

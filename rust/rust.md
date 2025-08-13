@@ -2409,6 +2409,9 @@ std::collections提供了4种通用集合类型:
 - 大小是指集合中包含的元素数量
 
 ## 指针
+ref:
+- [Rust所有权：别再死记硬背了！把智能指针当“玩具”玩，三巨头(Box, Rc, RefCell)让你秒懂内存管理](https://mp.weixin.qq.com/s/RefYCfrJj8LcXlWHzmJ5oA)
+
 与 C 指针不同的是， Rust 引用永远不会是空值，因为在安全 Rust 代码中根本不可能产生空引用, 而且 Rust 引用默认是不可修改的.
 
 无GC 的编程语言， C/C++以及 Rust, 对数据的组织操作有更多的自由度, 表现为:

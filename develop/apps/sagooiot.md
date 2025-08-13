@@ -4,3 +4,7 @@ ref:
 - [SagooIoT V1.x到V2.x升级说明](https://iotdoc.sagoo.cn/blog/sagooiot-updatav1tov2)
 
     所有项目所需仓库和拉取分支说明
+
+## source
+### 配置
+tdengine是必配的, tsd.database可用TdEngine或Influxdb

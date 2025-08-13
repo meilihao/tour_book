@@ -39,6 +39,18 @@ influxdb行协议是 InfluxDB 数据库独创的一种数据格式，它由纯�
 1. point: 类似关系型数据库的行, 包含influxdb行协议中除measurement外的所有字段
 1. series: influxdb使用series来管理数据. (measurement, tag_set, 一个filed)组成一个series.
 
+### datatype(数据类型)
+ref:
+- [data type](https://docs.influxdata.com/influxdb3/core/reference/glossary/#data-type)
+
+tag始终是string, field支持:
+- string
+- boolean
+- float (64-bit)
+- integer (64-bit)
+- unsigned integer (64-bit)
+- time : unix时间戳
+
 ## 场景
 1. 监控和运维
 1. 物联网
@@ -59,6 +71,14 @@ IMPORTANT: Store this token securely, as it will not be shown again.
 
 # export INFLUXDB3_AUTH_TOKEN=apiv3_J1sa1xGrrGEHfJ2zdl0nKigFhol4lSi5TvOpLrKk0AUPPkz1CyngRPDZEOkjXJCEm1AYfzKk8uJaEsf0MkF0Ww
 # influxdb3 show tokens # 查看tokens
+# influx -version
+# influx
+# > show databases
+# > use <database_name>
+# > show measurements: 查看数据库中的表
+# > show tag keys from <measurement_name>: 查看指定表的标签键
+# > show field keys from <measurement_name>: 查看指定表的字段键
+# > select ua from device_prop where time >='2025-08-11 22:50:00' and time <='2025-08-11 23:10:00' and uuid='1757904264136532677'; # influxdb time都是基于UTC
 ```
 
 查询思路:

@@ -15,19 +15,34 @@ yarn install
 cp -rf dist/* $WD/nginx/html
 
 cd $WD
-sudo chown -R 999:999 redis/data # 避免redis没有权限操作数据目录, 可`docker compose up -d redis`后进入容器执行`id redis`获取
+sudo chown -R 999:999 redis/data # 避免redis没有权限操作数据目录, 可`docker compose up -d redis`后进入容器执行`id redis`获取. 或使用`privileged=true`
+sudo chown -R 999:999 mariadb/data # 原因同上
 
 docker compose up -d emqx 
 docker compose up -d redis
-docker compose up -d oceanbase
+docker compose up -d oceanbase/mariadb
 docker compose up -d tdengine
 docker compose up -d nginx
 
-# --- init db
+# oceanbase/mariadb二选一即可, 记得修正sagoo-iot-open/config/config.yaml database相关配置
+# --- init db:oceanbase
 mariadb -h172.19.0.2 -P2881 -uroot@test -p --skip_ssl -e "CREATE DATABASE sagoo_iot_open;"
 mariadb -h172.19.0.2 -P2881 -uroot@test -Dsagoo_iot_open -p --skip_ssl < init.sql # init.sql from [sagooiot/manifest/docker-compose/mysql/init](https://github.com/sagoo-cloud/sagooiot/tree/main/manifest/docker-compose/mysql/init), 它和[sagooiot/manifest/sql/sql.zip](https://github.com/sagoo-cloud/sagooiot/tree/main/manifest/sql)相同
+
+# --- init db:mariadb
+mariadb -hlocalhost -P3306 -uroot -p -e "CREATE DATABASE sagoo_iot_open;"
+mariadb -hlocalhost -P3306 -uroot -Dsagoo_iot_open -p < init.sql
 
 docker compose up -d sagoo-iot-open
 ```
 
 [系统访问](https://iotdoc.sagoo.cn/docs/install/sagooiot-install): http://localhost admin/admin123456
+
+## FAQ
+### oceanbase停止后无法再启动
+ref:
+- [错误码](https://www.oceanbase.com/product/ob-deployer/error-codes)
+
+日志中报`OBD-2002：failed to start x.x.x.x observer`, 无其他明显提示, 未定位到具体问题
+
+资源受限环境建议用mariadb
