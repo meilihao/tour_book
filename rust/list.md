@@ -63,6 +63,7 @@ ref:
 
 	<<从零构建Rust生产级服务>>
 - [rust-library-i18n:Rust 核心库和标准库中文翻译](https://github.com/wtklbm/rust-library-i18n)
+- [**Comprehensive Rust**](https://google.github.io/comprehensive-rust/zh-CN/)
 
 ## gui
 - [Pop!_OS COSMIC 桌面使用 Rust GUI 库 Iced 取代 GTK](https://www.oschina.net/news/212636/cosmic-desktop-iced-toolkit)
@@ -191,6 +192,9 @@ ref:
 - [ParvaOS -  用 Rust 语言从头开发的操作系统](https://github.com/gianndev/ParvaOS)
 - [用 Rust 重写 SQLite 数据库入门指南](https://avi.im/blag/2025/rickrolling-turso/)
 - [RustFS - MinIO 国产化替代方案, 高性能分布式存储](https://github.com/rustfs/rustfs)
+- [我用Rust做了一个QQ](https://juejin.cn/post/7262557466172112956)
+
+	https://github.com/SuanCaiYv/prim
 
 ### read
 - [RobustMQ](https://github.com/robustmq/robustmq-geek)

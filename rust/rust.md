@@ -71,7 +71,7 @@ ref:
 
 1. 零成本抽象
 
-    零成本抽象即如果不使用某个抽象, 就不用为它付出开销.
+    零成本抽象即如果不使用某个抽象, 就不用为它付出开销, 如果使用它, 那么不管是编译器、标准库还是第三方库的提供者，都应该是做到最好的，不可能做得更好.
 
     rust的绝大多数抽象并不存在运行时的开销, 其一切都是在编译期完成的.
 
@@ -1457,7 +1457,7 @@ Rust 引用永远不为空. 没有跟 C 的 NULL 或 C++ 的 nullptr 对应的�
 
 	`type CharacterVec = Vec<char>;`通过关键字 type, 可创建一个新的类型名称，但是这个类型**不是全新的类型，而只是一个具体类型的别名**, 在编译器看来, 这个别名与原先的具体类型是一模一样. 而使用 tuple struct 做包装，则是**创造了一个全新的类型，它跟被包装的类型不能发生隐式类型转换**, 可以具有不同的方法, 满足不同的 trait, 完全按需而定.
 
-	`Account { name, .. }`的`...`表示不关心Account除name外的其他字段; `Account { name, ..account1 }`的`account1`表示Account除name外的其他字段来自于account1实例, 该形式叫struct更新语法.
+	`Account { name, .. }`的`..`表示不关心Account除name外的其他字段; `Account { name, ..account1 }`的`account1`表示Account除name外的其他字段来自于account1实例, 该形式叫struct更新语法.
 
 	struct如果可变, 那么实例中所有字段都是可变的, 不允许部分可变; struct如果不可变, 那么实例中所有字段都是不可变的.
 
@@ -2435,6 +2435,9 @@ rust指针大致分为三种:
 	可以在unsafe块下任意使用, 不受Rust的安全检查规则的限制.
 
     ```rust
+    as_ptr(self) -> * const T; // 返回智能指针内部变量的裸指针
+    as_mut_prt(self) -> * mut T; // 返回智能指针内部变量的可变裸指针
+
     fn main() {
         let mut values: [i32; 2] = [1, 2];
         let p1: *mut i32 = values.as_mut_ptr();
@@ -5131,8 +5134,11 @@ Result<T, E> 类型定义了很多辅助方法来处理各种情况:
 - unwrap_or_else(): 只是传入的不是后备值，而是一个函数或闭包。这个方法适合计算后备值如果用不上会造成浪费的情况。只有在返回错误结果时才会调用 fallback_fn
 - expect : expect 与 unwrap 的使用方式一样. 但expect 在调用 panic! 时使用的错误信息将是传递给 expect 的参数，而不像 unwrap 那样使用默认的 panic! 信息
 - as_ref: 将 Result<T, E> 转换为 Result<&T, &E>，即借用现有 result 中成功或错误值的引用
+
+    `as_ref<'a>(&self)->&'a T` // 获取智能指针内部变量的引用
 - result.as_mut() : 类似as_ref, 只是借用了可修改引用, 返回类型为 Result<&mut T, &mut E>
 
+    `as_mut<'a>(&mut self)->&'a mut T` // 获取智能指针内部变量的可变引用
 
 当编写一个其实现会调用一些可能会失败的操作的函数时，除了在这个函数中处理错误外，还可以选择让调用者知道这个错误并决定该如何处理, 这被称为 传播（propagating）错误，这样能更好的控制代码调用，因为比起你代码所拥有的上下文，调用者可能拥有更多信息或逻辑来决定应该如何处理错误.
 
