@@ -12,9 +12,6 @@ go get golang.org/x/tools/cmd/goimports
 
 LiteIDE默认已经支持了goimports，如果你的不支持请点击属性配置->golangfmt->勾选goimports,之后编辑器保存之前自动fmt代码.
 
-## 代码检查
-go vet,golint
-
 ## 行长约定
 
 一行最长不超过80个字符，超过的请使用换行展示，尽量保持格式优雅.

@@ -47,3 +47,12 @@ package pdf // import "rsc.io/pdf"
 那么那些尝试使用github.com/rsc/pdf导入路径的程序将会被go编译器拒绝编译.
 
 这个权威导入路径检查是在编译期进行的，而不是下载阶段.
+
+### 如何引入fork来的golang项目
+ref:
+- [Go 模块的“分叉之痛”：一个提案能否终结“全局替换”的噩梦？](https://zhuanlan.zhihu.com/p/1938009216372699545)
+
+原项目：[github.com/thinkgos/go-iecp5](https://github.com/thinkgos/go-iecp5)
+fork项目: [github.com/meilihao/go-iecp5](https://github.com/meilihao/go-iecp5), 未修改go.mod
+
+目前解决方法: `replace github.com/thinkgos/go-iecp5 => ../go-iecp5`

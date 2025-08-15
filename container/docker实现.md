@@ -4,6 +4,7 @@ os: Linux chen-pc 4.15.0-30deepin-generic #31 SMP Fri Nov 30 04:29:02 UTC 2018 x
 参考:
 - [Docker背后的内核知识：命名空间资源隔离](https://linux.cn/article-5057-1.html)
 - [容器核心技术详解](https://blog.fliaping.com/container-core-technical-details/)
+- [用不到 100 行 Go 代码构建你自己的容器](https://mp.weixin.qq.com/s/HrWnctcE3d35Fr9Lr7dlrw)
 
 容器是一个**应用层抽象**，用于将代码和依赖资源打包在一起. 多个容器可以在同一台机器上运行，共享操作系统内核，但各自作为独立的进程在用户空间中运行 . 虚拟机 (VM) 是一个**物理硬件层抽象**，用于将一台服务器变成多台服务器。每个 VM 都包含一整套操作系统、一个或多个应用、必要的二进制文件和库资源，因此 占用大量空间.
 

@@ -1,14 +1,6 @@
 # tools
 - [查看pkg, 比如badger被谁使用了](https://pkg.go.dev/github.com/dgraph-io/badger?tab=importedby)
 
-## 规范代码
-- gofmt
-- goimports
-- go vet
-
-	go vet(Go 1.14)默认已经不再支持变量遮蔽检查了, 可安装`go install golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow`配合`go vet`重新启用它.
-- golangci-lint
-
 ## 重构
 - gofmt
 
@@ -53,6 +45,17 @@
 		- [config](https://github.com/uber-go/config)
 
 			多源合并 = 支持覆盖效果, 类似ini
+- 阅读源码
+
+	- [**GoAnalysis**](https://mp.weixin.qq.com/s/IhAR0JJ2mC6gnzoi-gLxBw)
+
+		- [可视化阅读Kubelet（一）：从宏观架构到启动全流程](https://mp.weixin.qq.com/s/IhAR0JJ2mC6gnzoi-gLxBw)
+- ui
+
+	- Wails: [WEB跨平台桌面程序构建工具对比（Electron、Tauri、Wails）](https://juejin.cn/post/7164243328190382093)
+	
+		- [Why Golang instead of Rust to develop the Krater desktop app](https://blog.moonguard.dev/why-golang-instead-of-rust-to-develop-the-krater-desktop-app)
+		- [web-to-desktop-framework-comparison](https://github.com/Elanis/web-to-desktop-framework-comparison)
 
 ## http client
 - [github.com/go-resty/resty/v2](https://github.com/go-resty/resty)

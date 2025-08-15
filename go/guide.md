@@ -25,8 +25,3 @@ export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 1. vscode + golang插件, **推荐**
 1. sublime + gosublime + godef
 1. goland
-
-### style
-- [Go Styleguide](https://github.com/bahlo/go-styleguide/pull/8/commits/d706a55f5538a97b6ed65f490a5dac22efc6f71e)
-- [uber-go/guide](https://github.com/xxjwxc/uber_go_guide_cn)
-- [golangci/golangci-lint](https://github.com/golangci/golangci-lint)
