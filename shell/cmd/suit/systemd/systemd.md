@@ -16,6 +16,13 @@
 - [systemd攻略 - (3)如何利用systemd控制cgroup,实战](https://muahao.github.io/systemd-03/)
 - [cgroup 的默认层级](https://docs.redhat.com/zh_hans/documentation/red_hat_enterprise_linux/7/html/resource_management_guide/sec-default_cgroup_hierarchies#sec-Default_Cgroup_Hierarchies)
 
+## history
+- [systemd 259 将提高运行系统要求，弃用旧版 iptables](https://www.oschina.net/news/367576/systemd-259-requirements)
+
+	systemd 259 将全面提高依赖组件的最低版本要求，并逐步淘汰旧技术支持:
+	1. iptables->nftables, 涉及systemd-networkd, systemd-nspawn
+	2. 移除System V脚本支持
+
 ### systemd 与 System V init 的区别以及作用
 |System V init 运行级别|systemd 目标名称|作用|
 |0| runlevel0.target, poweroff.target |关机|

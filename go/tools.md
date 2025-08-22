@@ -56,6 +56,9 @@
 	
 		- [Why Golang instead of Rust to develop the Krater desktop app](https://blog.moonguard.dev/why-golang-instead-of-rust-to-develop-the-krater-desktop-app)
 		- [web-to-desktop-framework-comparison](https://github.com/Elanis/web-to-desktop-framework-comparison)
+- 任务队列
+
+	- [Asynq简单、可靠、高效的分布式任务队列](https://juejin.cn/post/7184406673879449658)
 
 ## http client
 - [github.com/go-resty/resty/v2](https://github.com/go-resty/resty)

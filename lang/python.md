@@ -397,6 +397,8 @@ Python使用`#`作为注释标识, 但也可将`"""`用作多行注释.
 
 > 列表和元组的主要不同在于，列表是可以修改的，而元组不可以.
 
+> Python 中的列表和元组都支持负数索引，即从列表末尾开始数. 它们也都支持切片操作.
+
 Python为反向访问一个列表元素提供了一种特殊语法, 即通过将索引指定为`-n`, `-1`表示最后一个元素.
 
 Python根据缩进来判断代码行与前一个代码行的关系.
@@ -1526,7 +1528,10 @@ sorted(motorcycles) # motorcycles不变, 返回排序后的内容. 该方法支�
 len(motorcycles) # 获取列表的长度
 len("a我") # python2.7返回字节数, python3返回字符数
 list('Hello')  # list() 方法用于将元组转换为列表
+[1].append(2) # append() 方法用于在列表末尾添加新的对象
+[1].__sizeof__() # 返回对象所占的内存大小
 tuple([1, 2, 3])  # 将list转为元组
+tuple(1) + (2,) # 合并两个元祖成新的元组
 sorted(motorcycles) # 返回排序后的列表
 for magician in magicians: # 不能忘记末尾的`:`
     print(magician) 
@@ -2578,3 +2583,93 @@ stats = 127.0.0.1:3167
 ```
 uwsgitop输出解析:
 - lq : 当前有多少个请求正在等待 uWSGI worker 来处理，但还没被接收
+
+### venv vs Conda
+ref:
+- [Python虚拟环境：venv与Conda的不同，如何选择？](https://blog.csdn.net/weixin_47520540/article/details/133614562)
+
+- 使用venv创建虚拟环境：venv创建的虚拟环境通常更轻量级，适用于纯Python项目。它主要用于管理Python包，不适合管理非Python依赖项
+- virtualenv: 适合需要更灵活的Python 环境管理，支持Python 2 和3，并且可以安装非Python 依赖项
+- 使用Conda创建虚拟环境：Conda是一个更强大的生态系统，可以管理Python包以及其他语言的包和依赖项。它更适合于复杂的项目，特别是涉及到多种语言或非Python依赖项的项目
+
+注意: 安装apache-airflow请参照官方文档, 直接安装可能会报错, 这里只是为了演示python虚拟环境.
+
+venv:
+```bash
+# python3 -m venv .venv
+# source .venv/bin/activate # 激活虚拟环境
+# which python # 验证虚拟环境, 输出路径中包含`.venv`
+# pip install "apache-airflow==3.0.4"
+...
+# deactivate # 退出虚拟环境
+```
+
+virtualenv:
+```bash
+# virtualenv -p /usr/bin/python3.12 myenv
+# source myenv/bin/activate
+# pip install apache-airflow==3.0.4
+# airflow standalone # 初始密码在`AIRFLOW_HOME/simple_auth_manager_passwords.json.generated`里
+# deactivate
+```
+
+conda:
+```bash
+# --- 安装conda
+# wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+# bash Miniconda3-latest-Linux-x86_64.sh
+# conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/ # 添加清华镜像源
+# conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+# conda config --set show_channel_urls yes
+# --- 使用conda
+# conda env list # 列出所有环境
+# conda remove -n env_name --all # 删除环境
+# conda create (--name myenv|--prefix=~/envs/myenv) python=3.12
+# conda activate myenv # 进入环境
+# pip install apache-airflow==3.0.4
+...
+# conda deactivate
+```
+
+### ModuleNotFoundError: No module named 'distutils'
+python3.12开始彻底移除了distutils, 而系统当前环境的pip版本仍然依赖distutils.
+
+解决:
+1. pip install setuptools
+
+    它依赖于 distutils, 安装 setuptools可以间接解决没有"distutils"的问题
+
+    部分pkg可能需要更新 setup.py 文件(from ai)
+    ```python
+    # 修改1:
+    from distutils.core import setup -> from setuptools import setup
+
+    # 修改2:
+    from distutils.core import setup
+    from distutils.extension import Extension
+
+    ext_modules = [
+        Extension('spam', ['spam.c'])
+    ]
+
+    setup(name='spam',
+        version='1.0',
+        ext_modules=ext_modules)
+
+    ->
+    from setuptools import setup, Extension
+
+    ext_modules = [
+        Extension('spam', ['spam.c'])
+    ]
+
+    setup(name='spam',
+        version='1.0',
+        ext_modules=ext_modules)
+    ```
+1. 降python版本到3.12以下
+
+### pip install报`error: externally-managed-environment`
+这个机制是 Python 发行版（如 Ubuntu/Debian、Conda）用来防止用户用 pip 破坏系统或 Conda 环境的一种保护措施.
+
+使用apt安装相关python包

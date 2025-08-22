@@ -1547,3 +1547,15 @@ QEMU 的纯软件虚拟化模式（TCG）为了兼容性，沿用 GICv2 的默�
 验证: `qemu-system-aarch64 -machine,gic.version=3 virt -smp 16 ..`/`virt-install --features gic.version=3 ..`, vm能创建但启动vm报`MSI-X is not supported by interrupt controller`, 见[Unable to create aarch64 TCG guests: "MSIX is not supported by interrupt controller"](https://bugzilla.redhat.com/show_bug.cgi?id=1450433).
 
 > 如果调用virtinst lib去使用的话, 需用`options.features="gic_version=3"`, 因为参数`--features gic.version=3`是被其ParserFeatures的`aliases`帮忙转换处理过的
+
+### Windows 重启卡住
+ref:
+- [一次客户 Windows 重启卡住的探险之旅](https://zhuanlan.zhihu.com/p/1941899367658284282)
+   
+   通过volatility3分析ibvirt dump 出来的内存来定位问题
+   windows dmp文件可用windbg分析
+
+   简单来说就是 Windows 在重启过程中，tsc 异常造成了 Windows 卡住
+- [windows_10_shared_source_kit](https://github.com/xerohour/windows_10_shared_source_kit)
+
+   windows 10 部分源码
