@@ -31,6 +31,7 @@ $ sudo apt-get install python3.8
 $ sudo apt install python3-pip
 $ sudo apt install python-pip # pip2 for python2.7
 $ sudo pip install robotframework==2.8.7 # 安装指定版本
+$ sudo pip install 'polars[pyarrow]' # 安装polars和其可选依赖的pyarrow
 # --- ubuntu20.04开始默认不安装py2.7, 且没有python-pip, 因此要使用get-pip.py安装pip2, 或通过python2-xxx安装package
 $ curl https://bootstrap.pypa.io/get-pip.py --output get-pip.py
 $ sudo python2 get-pip.py
@@ -366,7 +367,7 @@ python内置的基本数据类型: 数字(int, float), 序列(str, bytes(只读)
 
 以下划线开头的名字,有特殊含义:
 - 模块成员以单下划线开头(_x),属私有成员,不会被`import *`语句导入
-- 类型成员以双下划线开头,但无结尾(__x),属私有成员,会被自动重命名
+- 类型成员以双下划线开头,但无结尾(__x),属私有成员, 其不能在类的函数之外的地方被访问和修改
 - 以双下划线开头和结尾(__x__),通常是系统成员,避免使用
 - 交互模式(shell)下,单下划线(_)返回最后一个表达式结果
 
@@ -390,7 +391,7 @@ Python2 和 Python3 中默认编码的差异:
 
 Python使用`**`表示乘方运算.
 Python将带小数点的数字都称为浮点数.
-Python的`"""`(docstring, 文档字符串)类似golang的"``", 输出时原样输出, Python使用它们来生成有关程序中函数的文档.
+Python 中字符串使用单引号、双引号或三引号表示,三者意义相同, 三引号的字符串类似golang的"``", 输出时原样输出, 通常用在多行字符串的场景, 比如函数的文档注释
 Python使用`#`作为注释标识, 但也可将`"""`用作多行注释.
 
 在Python中，用方括号`[]`来表示列表(其他语言的数组)，并用逗号来分隔其中的元素.  **list中元素的类型可以不同**.
@@ -430,11 +431,19 @@ Python并不要求if-elif结构后面必须有else代码块. 在有些情况下�
 字典(dict)是内置类型中唯一的映射(mapping)结构,基于哈希表存储键值对数据. 值(value)可以是任意数据,但主键(key)必须是可哈希类型. 常见的可变类型,如列
 表、集合等都不能作为主键使用, 可通过`hash(xxx)`来验证key.
 
+从Python 3.7开始，字典被正式确认为有序数据结构，意味着字典中的键值对会按照它们被添加的顺序进行存储和遍历. 但集合还是无序的.
+
 条件测试:
 - and : 其他语言的`&&`
 - or : 其他语言的`||`
 - in : 判断特定的值是否已包含在列表中
 - not in : 检查特定值是否不包含在列表中
+
+`if xxx`判断
+- string: ""为False, 其他True
+- int: 0为False, 其他True
+- list/tuple/dict/set: Iterable为空时为False, 其他True
+- Object: None为False, 其他True
 
 函数`input("提示")`让程序暂停运行，等待用户输入一些文本, 获取用户输入后，Python将其存储在一个变量中，以方便之后使用.
 函数`int()`将数字的字符串表示转换为数值表示.
@@ -600,6 +609,8 @@ package 的初始化工作: 一个 package 被导入，不管在什么时候 __i
 > 想使用子package的内容，但是在父package的__init__.py的文件内并没有导入，此时需要手动导入
 
 ## 函数
+> 仅主函数(`if __name__ == '__main__'`或最先执行的函数)调用函数时, 必须保证这个函数此前已经定义过. 在函数内部调用其他函数, 函数间哪个声明在前、哪个在后就无所谓.
+
 使用`def`定义函数.
 **关键字实参**是传递给函数的名称—值对, 此时无需考虑函数调用中的实参顺序，还清楚地指出了函数调用中各个值的用途.
 Python支持指定默认值, 给形参指定默认值时，等号两边不要有空格.
@@ -610,7 +621,12 @@ Python支持指定默认值, 给形参指定默认值时，等号两边不要有
 如果要让函数接受不同类型的实参，必须在函数定义中将接纳任意数量实参的形参放在最后, 比如`def make_pizza(size, *toppings): `.
 `def build_profile(first, last, **user_info):`的形参**user_info中的两个星号让Python创建一个名为user_info的空字典，并将收到的所有名称—值对都封装到这个字典中.
 
-python 使用 lambda 来创建匿名函数, 格式:`lambda [arg1 [,arg2,.....argn]]:expression`.
+python 使用 lambda 来创建匿名函数, 格式:`lambda [arg1 [,arg2,.....argn]]:expression`. ,lambda 的主体是只有一行的简单表达式,并不能扩展成一个多行的代码块.
+
+内置函数:
+- map(function, iterable) : 对 iterable 中的每个元素都运用 function 这个函数,最后返回一个新的可遍历的集合
+- filter(function, iterable) : 对 iterable 中的每个元素都运用 function 这个函数, 将结果为True的元素组成一个新的可遍历的集合返回
+- reduce(function, iterable) : 示对 iterable 中的每个元素以及上一次用后的结果,运用 function 进行计算, 所以最后返回的是一个单独的数值. 通常用来对一个集合做一些累积操作.
 
 ### async/await
 async和await是针对coroutine的新语法, 从python 3.5开始.
@@ -864,6 +880,9 @@ b.funca()
 # function b : bbb
 # (override)function a : aaa
 ```
+
+### classmethod
+类函数的第一个参数一般为 cls,表示必须传一个类进来。类函数最常用的功能是实现不同的init 构造函数
 
 ### metaclass
 metaclass允许创建类或者修改类.
@@ -2673,3 +2692,9 @@ python3.12开始彻底移除了distutils, 而系统当前环境的pip版本仍�
 这个机制是 Python 发行版（如 Ubuntu/Debian、Conda）用来防止用户用 pip 破坏系统或 Conda 环境的一种保护措施.
 
 使用apt安装相关python包
+
+### pdb手动设置断点
+```py
+import pdb
+pdb.set_trace()
+```

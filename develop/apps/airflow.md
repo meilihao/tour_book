@@ -55,6 +55,7 @@ airlfow的配置是通过`AIRFLOW_HOME`下的airflow.cfg配置文件进行读取
 airflow dags list # 查看当前所有 dag 任务
 airflow tasks list -v example_bash_operator # 查看某个 dag 任务
 airflow tasks test example_bash_operator run_after_loop 2015-01-01 # 调试任务, 仅终端有日志, web上没有相关日志
+airflow dags list-import-errors # 查看导入错误
 ```
 
 在手动触发任务的时候，是无法执行还未到执行时间的定时任务的。例如 每天下午3点的任务，如果是今天下午2点30手动触发，实际上跑的是昨天下午3点的脚本。手动点`Trigger`触发，有一个选项`Advanced Options`，点击进去可以选择`Logical date`，例如前天或者大前天的任务；但是如果选择明天的时间，会发现这个任务会处于排队queue的状态

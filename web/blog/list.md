@@ -122,6 +122,8 @@
 
         `./pingap-linux-x86 --admin localhost:5555`
 
+	- [pingsix](https://github.com/zhu327/pingsix)
+
 ## 优化
 - [京东首页前端技术剖析与对比](http://www.barretlee.com/blog/2015/09/09/jd-architecture-analysis/)
 - [利用现代浏览器所提供的强大 API 录制，回放并保存任意 web 界面中的用户操作](https://juejin.im/post/5c4fdf7c51882524fe52dc2b)

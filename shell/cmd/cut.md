@@ -31,3 +31,9 @@ $cut -c-2 file  # 打印前2个字符
 $cut -b 3-5,10 file
 $cut -b -3,3- file # 显示整行, 不会重复输出第3个字符
 ```
+
+# column
+## example
+```bash
+column -t -s, file.csv
+```
