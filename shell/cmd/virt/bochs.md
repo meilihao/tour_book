@@ -335,6 +335,8 @@ $ bochs -f bochsrc
 
 解决方法: 将`config_interface`注释, `display_library`配置为sdl2或x(需安装相应plugin).
 
+ps: apt按照的bochs默认支持wx(自动安装了bochs-wx), 将config_interface和display_library都配置成wx即可
+
 ### unknown host key name 'XK_0' (wrong keymap ?)
 keyboard_mapping与display_library配套
 
@@ -376,3 +378,14 @@ ref:
 
 ### bochs启动报`ata0-0: could not open hard drive image file 'c.img'`
 c.img存在c.img.lock, 删除c.img.lock即可
+
+### `ROM: couldn't open ROM image file '/usr/share/bochs/BIOS-bochs-latest'`
+`apt install bochsbios`
+
+### `ROM: couldn't open ROM image file '/usr/share/bochs/VGABIOS-lgpl-latest'`
+`apt install vgabios`
+
+### bochs启动崩溃
+config_interface和display_library均配置成了wx
+
+解决方法: 将`config_interface`注释, `display_library`配置为sdl2

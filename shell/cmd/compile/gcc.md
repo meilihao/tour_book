@@ -15,6 +15,8 @@ gnu编译套件之一.
 - -E : 仅预编译
 - -g : 生成调试信息, gnu调试器可使用该信息
 - -ggdb: 生成gdb专用调试信息, 使用最适合的格式(stabs等), 会有一些gdb专用的扩展
+
+    -ggdb 是一个专门针对 GDB 优化的选项. 它会生成 GDB 能够利用的、最丰富和最详细的调试信息，包括所有 `-g` 提供的功能，以及一些更高级的调试特性
 - -gdwarf2: 附带输出调试信息 
 - -fPIC: 构建动态库
 
@@ -237,6 +239,8 @@ C++23   未完全支持（标准还在发展中）  从GCC 11版本开始支持C
 
 ### `__stack_chk_fail_local`
 在makefile CFLAGS中加入`-fno-stack-protector`
+
+> -fstack-protector: gcc提供的缓冲区溢出检测机制, 关闭用`-fno-stack-protector`
 
 注意是在gcc编译时加上参数，不是在ld链接时加上. 需要`make clean + make`
 

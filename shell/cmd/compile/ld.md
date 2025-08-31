@@ -16,6 +16,8 @@ ref:
 - -o : 指定输出文件的名称
 - -O <level> : 对于非零level, ld将进行level优化
 - -T <scriptflie>: 指定链接脚本
+
+	ld有默认的内置链接脚本, 但也可用`-T`指定
 - -Ttext 指定text段的加载地址, 不指定默认为0
 
 > lld可使用`-e xxx`指定程序入口; clang不加`-nostdlib`时会连接ld.so即反汇编时main函数前面的部分代码.
