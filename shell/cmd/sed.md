@@ -98,6 +98,7 @@ $ cat /sys/class/fc_host/host*/port_name | sed -e s/0x// -e 's/../&:/g' -e s/:$/
 $ sed -i '$a Trailor xxx' t.txt # 在t.txt追加`Trailor xxx`
 $ sed -e 's|^mirrorlist=|#mirrorlist=|g' -i.bak /etc/yum.repos.d/Centos-*.repo # 修改 Centos-*.repo的同时生成Centos-*.repo.bak的备份
 $ sed -i 's/bind to =.*$/bind to = */' conf # 整行匹配
+$ sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' # 在sed中d表示删除命令，s表示替换命令，a表示新增操作，c表示取代操作，i表示插入操作. 所以：`1,/SYMBOL TABLE/d;` 表示删除第一行到出现SYMBOL TABLE字符串第一次出现的行; `s/ .* / /;` 表示将被空格包围的字符串替换成一个空格; `/^$$/d` 表示将一行中只有一个$字符的行删除
 ```
 
 ps:

@@ -43,6 +43,8 @@ ref:
 - ENTRY: 指定程序的入口
 - `.`: 当前地址
 - PROVIDE: 定义符号及其值, 这类符号在目标文件内被引用, 但没有在任何目标文件内被定义的符号. `PROVIDE(etext = .)`定义了符号etext, 其值是当前地址
+
+	`readelf -s kernel | grep -E "etext|stack0|end"`: 查看PROVIDE定义的地址
 - ALIGN: 字节对齐调整, 0x1000即4KB对
 - SECTION: 定义段的链接分布
 

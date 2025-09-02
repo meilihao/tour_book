@@ -8,6 +8,8 @@
 - -s : 设置读取的符号表文件
 - -tui : 有窗口
 
+    ctrl x + a: 关闭/打开窗口
+
 ## 命令模式
 ```gdb
 $ gdb
@@ -269,3 +271,14 @@ From                To                  Syms Read   Shared Object Library
 
 ### traceback内容是`No debugger available on this platform, please install one to get proper stack traces`
 `dnf install gdb`
+
+### gdbinit
+GDB 在启动时，如果它在当前工作目录或父目录中找到一个名为 .gdbinit 的文件，它会尝试自动加载并执行其中的命令。这个功能非常有用，可以让开发者预设一些调试命令，比如设置断点、加载符号表等。
+
+然而，这也是一个潜在的安全风险。恶意用户可以在一个项目中植入一个 .gdbinit 文件，其中包含一些恶意命令。如果开发者不知情地进入这个目录并启动 GDB，这些恶意命令就会被自动执行，可能导致意外或有害的行为。
+
+为了防止这种情况，现代的 GDB 版本默认关闭了对本地 .gdbinit 文件的自动加载.
+
+解决:
+- `(gdb) source /path/to/your/project/.gdbinit`
+- `gdb -x /path/to/your/project/.gdbinit`
