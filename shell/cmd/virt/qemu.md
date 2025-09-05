@@ -660,3 +660,12 @@ env:
 结合ref, 是host将cpu feature: pdcm给了vm, 因host qemu本身不支持pdcm, 但vm(cpu=host-passthrough)使用了它导致
 
 修复方法: 在xml的<cpu>中加`<feature policy='disable' name='pdcm'/>`
+
+### 生成dts
+ref:
+- [`[21/31] dt: Add -machine dumpdtb option to dump the current dtb`](https://patchwork.ozlabs.org/project/qemu-devel/patch/1338940402-28502-22-git-send-email-agraf@suse.de/)
+
+```bash
+# qemu-system-riscv64 -machine virt -machine dumpdtb=virt.dtb
+# dtc -I dtb -O dts -o virt.dts virt.dtb
+```
