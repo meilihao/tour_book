@@ -8,7 +8,7 @@ ver: v3.0.4
 
 一个可编程, 调度和监控的工作流平台, 核心是DAG工作流
 
-> 竞品: DolphinScheduler, XXL-Job
+> 竞品: [**DolphinScheduler**](https://dolphinscheduler.apache.org/zh-cn/), XXL-Job
 
 ## [安装](https://airflow.apache.org/docs/apache-airflow/stable/start.html)
 
@@ -145,6 +145,40 @@ Operator的类型有以下几种:
 
     用的最广泛的Operator
 
+    dags间通信:
+    ```py
+    # down_dag.py: python_callable = calc
+    # down_body.py for down_dag.py
+    def handle_dag_param(**kwargs):
+    param = kwargs.get("params")
+    print(param)
+
+    def calc(**kwargs):
+        time_range, handle_mode, owner = handle_dag_param(**kwargs)
+
+    # up_body.py
+    kwargs["ti"].xcom_push(
+        key="stat_payload",
+        value={
+            "start": payload["start"],
+            "end": payload["end"],
+        },
+    )
+    return time_range, handle_mode, owner
+
+
+    def deal(**kwargs):
+        time_range, handle_mode, owner = handle_dag_param(**kwargs)
+
+    # up_dag.py: python_callable = deal
+    up_trigger = TriggerDagRunOperator(
+        task_id="up_trigger",
+        trigger_dag_id="down_dag",
+        conf={"payload": "{{ task_instance.xcom_pull('up_dag', key='stat_payload') }}"},
+    )
+
+    up_dag.set_downstream(up_trigger)
+    ```
  
 1. 图之间依赖关系的operator
 

@@ -309,4 +309,5 @@ type(df2["D"].iloc[0].astype(int)) # 输出numpy.int64
 df2[(df2["E"] == "test") & (df2["F"].str.contains("foo", na=False))] # 不能去掉两个条件的(), 因为&的优先级高于==, 去掉会报"Cannot perform 'rand_' with a dtyped [bool] array and scalar of type [bool]"
 df2['Deadline']=pd.to_datetime('2025-8-1') - pd.to_datetime(df2['Date'])
 df2['Date']=pd.to_datetime(df2['Date'])
+df_items["cost"].astype(float).sum() # 将cost列从string转为float后再求和
 ```

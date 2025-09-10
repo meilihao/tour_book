@@ -38,6 +38,7 @@ markdown:
 - Bracket Pair Colorizer : 彩虹括号插件, 用顔色区分括号层次
 - koroFileHeader : 自动插入文件头部信息, 快捷键是`Ctrl + Alt +i`
 - Chinese (Simplified) Language Pack for Visual Studio Code : vscode中文语言包
+- SFTP
 
 ## setting.json
 ```
@@ -192,3 +193,23 @@ ref:
     checks = ["-ST1006"]
     ```
 1. 重启vscode
+
+### SFTP配置
+1. 按下 F1（或 Ctrl+Shift+P / Cmd+Shift+P）
+1. 输入并选择：SFTP: Config → 会生成 .vscode/sftp.json 文件
+
+    sftp.json:
+    ```json
+    {
+        "name": "env-sit",
+        "host": "120.55.x.y",
+        "protocol": "sftp",
+        "port": 22,
+        "username": "root",
+        "remotePath": "/root/demo",
+        "privateKeyPath": "~/.ssh/dev_ed25519",
+        "uploadOnSave": false,
+        "useTempFile": false,
+        "openSsh": false
+    }
+    ```
