@@ -15,7 +15,7 @@
 $ gdb
 (gdb) target remote :1234 # 连接gdb server
 (gdb) set [arch/architecture] i386:x86-64:intel # 可直接输入`set arch/architecture`查询可得
-(gdb) info reg # 获取寄存器信息
+(gdb) info reg [x] # 获取寄存器信息, 可指定寄存器, 默认是全部寄存器
 ```
 
 ## gdb调试工具常用命令

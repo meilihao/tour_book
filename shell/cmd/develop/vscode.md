@@ -212,4 +212,26 @@ ref:
         "useTempFile": false,
         "openSsh": false
     }
+
+    // 配置多个env
+    {
+        "protocol": "sftp",
+        "port": 22,
+        "remotePath": "/root/demo",
+        "uploadOnSave": false,
+        "useTempFile": false,
+        "openSsh": false,
+        "profiles": {
+            "dev": {
+                "host": "120.26.1.2",
+                "username": "root",
+                "privateKeyPath": "~/.ssh/dev_ed25519"
+            },
+            "sit":{
+                "host": "120.55.1.2",
+                "username": "root",
+                "privateKeyPath": "~/.ssh/dev_ed25519"
+            }
+        }
+    }
     ```

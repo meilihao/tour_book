@@ -1,5 +1,29 @@
 # zed
 
+## 插件
+1. ruff
+
+## setting
+```json
+{
+  "ui_font_size": 16,
+  "buffer_font_size": 16,
+  "theme": {
+    "mode": "system",
+    "light": "One Dark",
+    "dark": "One Dark"
+  },
+  "proxy": "localhost:20171",
+  "languages": {
+    "Python": {
+      "language_servers": ["!pylsp", "pyright", "ruff"]
+    }
+  }
+}
+```
+
+> 仅用pylsp, 占用cpu太高. `pyright + ruff`首次检查耗时过长, 需等待. ruff目前提示不如pyright好用, 因此排后面.
+
 ## FAQ
 ### 修改theme
 `ctrl-k ctrl-t`
@@ -25,6 +49,8 @@
 `ctrl-shift-x`
 
 ### [failed to spawn command "~/.local/share/zed/languages/pylsp/pylsp-venv/bin/pylsp"](https://github.com/zed-industries/zed/issues/21452)
+**不推荐使用pylsp, cpu占用太高, 改为pyright/ruff**
+
 zed原生支持python, 不知为什么没有`~/.local/share/zed/languages/pylsp/pylsp-venv/bin/pylsp`
 
 当前解决方法, 自行安装pylsp:

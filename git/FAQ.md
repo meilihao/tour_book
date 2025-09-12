@@ -563,3 +563,15 @@ LDFLAGS="-X <project>/pkg/lib/version.gitTag=${GitTag}
 
 go build -ldflags "$LDFLAGS"
 ```
+
+### git pull报`cannot lock ref`
+```
+# git pull
+error: cannot lock ref 'refs/remotes/origin/feature': 'refs/remotes/origin/feature/xdd-manager-backend' exists; cannot create 'refs/remotes/origin/feature'
+From codeup.aliyun.com:xxx/server
+ ! [new branch]        feature    -> origin/feature  (unable to update local ref)
+```
+
+手动删除`refs/remotes/origin/feature/xdd-manager-backend`没效果
+
+解决: `git remote prune origin`
