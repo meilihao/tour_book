@@ -42,6 +42,7 @@ gdb中命令：
 (gdb) start：单步执行，运行程序，停在第一执行语句, 简写st
 (gdb) layout src : 弹出窗口用于查看代码
 (gdb) layout asm : 弹出窗口用于查看汇编. `CTRL+x+a`: 退出
+(gdb) layout split # 同时查看汇编和源码
 (gdb) list：查看原代码,简写l
 
     list : 默认显示当前行和之后的10行，再执行又下滚10行
@@ -172,6 +173,8 @@ gdb中命令：
 
     格式: display[/i|s] [expression | addr], i表示机器指令码, 即汇编; s,字符串
     **display命令会被gdb记忆，如果打印一个值，后续遇到该值均会被打印出来.**
+
+    `display /x $sepc`: 16进制查看sepc寄存器
     
     disable和enalbe不删除自动显示的设置，而只是让其失效和恢复:
     - disable display
