@@ -41,3 +41,6 @@
 
 ### GaussDB
 - [分布式数据库技术的演进和发展方向](https://my.oschina.net/u/4526289/blog/11049010)
+
+### 分区表
+- [TiDB：分区表使用的实践经验和技巧](https://tidb.net/blog/0515deee)

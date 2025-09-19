@@ -442,3 +442,41 @@ exsits仅在内表查询时会用到索引
 
 ### mariadb client 11.8连接aliyun rdb报`ERROR 2026 (HY000): TLS/SSL error: SSL is required, but the server does not support it`
 追加`--skip-ssl`
+
+### 排查rds mysql 8.0 系统数据库数据量占用很大
+ref:
+- [RDS MySQL General log常见问题](https://www.alibabacloud.com/help/zh/rds/apsaradb-rds-for-mysql/handle-the-issue-that-the-storage-capacity-of-an-apsaradb-rds-for-mysql-instance-is-exhausted-by-the-general-log-file)
+
+总空间:200G
+磁盘占用: 177.44G
+数据库占用: 2.56G
+系统数据库数据量: 177G.44 - 2.56G
+
+步骤:
+1. 使用`一键诊断`-`空间分析`-`立即分析`, 发现实际数据仅占用2.56G, 用下面sql也能验证该结果
+
+    ```sql
+    SELECT 
+        table_schema AS `数据库名`,
+        ROUND(SUM(data_length) / 1024 / 1024, 2) AS `数据大小(MB)`,
+        ROUND(SUM(index_length) / 1024 / 1024, 2) AS `索引大小(MB)`,
+        ROUND(SUM(data_length + index_length) / 1024 / 1024, 2) AS `总大小(MB)`
+    FROM 
+        information_schema.tables
+    GROUP BY 
+        table_schema
+    ORDER BY 
+        `总大小(MB)` DESC
+    ```
+1. 查看`监控与报警`-`物理存储空间使用量`发现是physical_sys_data_size(sys数据物理使用量)占用177.33G导致的问题
+
+    ```sql
+    SHOW VARIABLES LIKE 'general_log%';
+    ```
+    
+解决:
+1. 关闭general log
+
+    必须先关闭, 因为 mysql.general_log 表正在被写入或读取，而 TRUNCATE 操作需要获得 表级锁（WRITE 锁）.
+    由于这是一个系统表（记录所有数据库操作日志），MySQL 本身可能正在使用它，导致锁无法立即获取，从而卡住.
+2. 执行`TRUNCATE TABLE mysql.general_log;`清理general log

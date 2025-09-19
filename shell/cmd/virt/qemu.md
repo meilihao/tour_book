@@ -275,7 +275,7 @@ ref:
 - [[Qemu-devel] [RFC] monitor: add memory search commands s, sp](https://lists.gnu.org/archive/html/qemu-devel/2015-03/msg02309.html)
 
 全屏: ctrl+alt+f
-进入: 鼠标点击qemu窗口，然后ctrl+alt+2即可切换到控制台; ctrl+alt+1回到guest窗口.
+进入: 鼠标点击qemu窗口，然后ctrl+alt+2即可切换到控制台; ctrl+alt+1回到guest窗口/字符界面: `Ctrl + A` + C
 滚屏: ctrl + 上/下
 查看是否使用kvm: info kvm
 显示内存层次: info mtree
