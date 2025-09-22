@@ -20,8 +20,10 @@ USS和PSS仅包括物理内存使用情况, 它们不包括已换出到磁盘的
 - -k 开关显示以 MB/GB 为单位的内存使用情况，而不是单纯的字节数
 - -m 按映射统计
 - -p 以百分比显示
-- -s 以 PSS 的值排序
-- -t 开关显示总数
+- -P 进程过滤器
+- -r 反向排序（从大到小）
+- -s 按指定列排序, 比如pss, uss, rss
+- -t 显示总数
 - -w 按系统地址范围(system wide)统计
 - -u 按用户统计
 - --- # 输出图形
@@ -32,6 +34,11 @@ USS和PSS仅包括物理内存使用情况, 它们不包括已换出到磁盘的
 ## example
 ```bash
 # smem -k # 默认按pss递增
+# smem -t -k -s pss -r # 按pss从大到小并汇总大小, 常用
+# sudo smem -r -k | sort -k 8 -nr | head -n 20 # 按 PSS 排名
+# sudo smem -r -k | sort -k 6 -nr | head -n 20 # 按 USS 排名
+# sudo smem -r -k | sort -k 5 -nr | head -n 20 # 按 RSS 排名
+# smem -c "name pss uss rss" -s pss -r -k | head -20 # 按进程名显示内存占用排名
 # smem -uk # 统计每个用户的内存占用
 # smem -mk # 统计映射的内存使用情况
 # smem -c "name user pss rss" # 仅显示部分列

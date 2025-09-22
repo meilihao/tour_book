@@ -66,7 +66,7 @@ gdb中命令：
     set print array on  : 设置数组显示方式，打开后当显示数组时，每个元素占一行，否则每个元素则以逗号分隔
     set print elements : 设置数组的最大展示长度，当到达这个长度时，GDB就不再往下显示了. 如果设置为0，则表示不限制
     set print null-stop : 如果打开了这个选项，那么当显示字符串时，遇到结束符则停止显示, 默认为off
-    set print pretty on : 如果打开, 那么当GDB显示结构体时会比较漂亮
+    set print pretty on : 默认是关. 如果打开, 那么当GDB显示结构体时会比较漂亮
     set print union : 设置显示结构体时，是否显式其内的联合体数据
     set print object : 在C++中，如果一个对象指针指向其派生类，如果打开这个选项，GDB会自动按照虚方法调用的规则显示输出，如果关闭这个选项的话，GDB就不管虚函数表了
     set language <lan> : 设在程序语言类型
@@ -137,6 +137,7 @@ gdb中命令：
     print 开始表达式@连续打印空间的大小 : 还可以打印出内存的某个部分开始的连续值
     p 'file'::variable : 查看指定文件的变量
     p 'func_name'::variable : 查看指定函数的变量
+    p *struct_ptr : 打印struct
     p array@len : 打印动态数组, 静态数组可直接print. array:数组的首地址，len:数据的长度. 比如`p *0x6001a8@500`, 0x6001a8为数组地址
     p $<regname> : 查看reg
     p /<format> <name> : 打印格式, 比如`p /x $rax`

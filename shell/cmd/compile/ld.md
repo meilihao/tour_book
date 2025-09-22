@@ -4,21 +4,33 @@ ref:
 
 链接器命令, 将`.o`文件转成可执行文件
 
+> ld采用AT&T链接脚本语言
+
 ## 选项
 - -b : 指定目标代码输入文件的格式, 比如binary
+- -Bstatic : 只使用静态库
+- -Bdynamic : 只使用动态库
+- -defsym : 在输出文件中定义指定的全局符号
 - --dynamic-linker /lib/ld-linux.so.2 : 采用32-bit动态连接
 - --dynamic-linker /lib64/ld-linux-x86-64.so.2 : 采用64-bit动态连接
 - -e : 指定程序入口符号
 - -m elf_i386 : 生成 32-bit 的程序
+- -l : 将指定的要链接的库文件
 - -L : 将比如lib32-glibc的库加入库搜索路径
 - -lc : 连接标准 C 语言库， 比如printf
+- -Map : 生成符号表文件
 - -N : 指定可读写的text和data(section)
 - -o : 指定输出文件的名称
 - -O <level> : 对于非零level, ld将进行level优化
+- -S : 忽略来自输出文件的调试器符号信息
+- -s : 忽略来自输出文件的所有符号信息
+- -t : 在处理输入文件时显示它们的名称
 - -T <scriptflie>: 指定链接脚本
 
 	ld有默认的内置链接脚本, 但也可用`-T`指定
-- -Ttext 指定text段的加载地址, 不指定默认为0
+- -Ttext : 指定text段的加载地址, 不指定默认为0
+- -Tdata : 指定data段的加载地址
+- -Tbss : 指定bss段的加载地址
 
 > lld可使用`-e xxx`指定程序入口; clang不加`-nostdlib`时会连接ld.so即反汇编时main函数前面的部分代码.
 
@@ -41,17 +53,21 @@ ref:
 - OUTPUT_FORMAT: 输出elf文件的BFD格式
 - OUTPUT_ARCH: 指定elf文件头中的机器体系结构
 - ENTRY: 指定程序的入口
-- `.`: 当前地址
-- PROVIDE: 定义符号及其值, 这类符号在目标文件内被引用, 但没有在任何目标文件内被定义的符号. `PROVIDE(etext = .)`定义了符号etext, 其值是当前地址
 
-	`readelf -s kernel | grep -E "etext|stack0|end"`: 查看PROVIDE定义的地址
+  设置入口优先规则:
+  1. `ld -e`
+  1. 链接脚本的ENTRY命令
+  1. 通过特定符号(start)指定
+  1. 使用代码段的起始地址
+  1. 设置为0
+- `.`: 当前位置计数器(Location Count, LC)
 - ALIGN: 字节对齐调整, 0x1000即4KB对
 - SECTION: 定义段的链接分布
 
 	段格式:
 	```
 	SECTION-NAME [ADDR] [(TYPE)] : [AT(LMA)]
-	{	
+	{
 		OUTPUT-SECTION-COMMAND
 		OUTPUT-SECTION-COMMAND
 		...
@@ -63,8 +79,40 @@ ref:
 	- ADDR: 用于设置虚拟内存地址VMA(Virtual Memory Address)
 	- AT: 指定加载内存地址(LMA, Load Memory Address)
 
+	  没有指定AT时, VMA=LMA
+
 	加载内存地址是程序被加载的地址
 	虚拟内存地址是程序运行的地址
+
+	`*(.text .rodata)`和`*(.text) *(.rodata)`区别:
+	1. `*(.text .rodata)`: 按照输入文件的顺序把相应的代码段和只读数据段加入
+	1. `*(.text) *(.rodata)`: 先加入所有文件的代码段, 再加入所有文件的只读数据段
+- 内置函数
+
+  - ABSOLUTE(exp) : 返回表达式的绝对地址, 主要用于在段定义中给符号赋绝对值
+  - ADDR(section) : 返回段的虚拟地址
+  - ALIGN(align) : 返回下一个与align对其的地址
+  - SIZEOF(section) : 返回一个段的大小
+  - INCLUDE : 引入其他的链接脚本
+  - LOADADDR(section) : 返回段的加载地址
+  - MAX(exp1, exp2) : 返回最大值
+  - MIN(exp1, exp2) : 返回最小值
+  - PROVIDE: 定义符号及其值, 这类符号可在目标文件内被引用, 但需要其没有在任何目标文件内被定义过. `PROVIDE(etext = .)`定义了符号etext, 其值是当前地址
+
+  	`readelf -s kernel | grep -E "etext|stack0|end"`: 查看PROVIDE定义的地址
+
+  	在链接脚本中, 符号可以像c一样进行赋值和操作, 允许的操作包括赋值, 加法, 减法, 乘法, 除法, 左移, 右移, 与, 或等
+
+    c中声明一个符号时, 会在符号表中创建一个保存该符号地址的条目. 链接脚本定义的符号仅在符号表中创建一个符号, 并没有分配内存来存储这个符号.
+
+    ```
+    # cat xxx.ld
+    start_of_ROM = .ROM;
+    end_of_ROM = .ROM + sizeof(.ROM);
+    # cat yyy.c
+    extern char start_of_ROM, end_of_ROM; # 使用时用`&`获取符号地址
+    extern char start_of_ROM[], end_of_ROM[]; # 直接使用
+    ```
 
 xv6 kernel.ld:
 ```
