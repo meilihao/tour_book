@@ -546,6 +546,26 @@ False
 [1, 2]
 ```
 
+```py
+# list
+stations = []
+result = {"stations": stations}
+
+if 1>0:
+    stations = [1] # 重新赋值切断了 stations 和 result 的关联，导致 result 没有更新
+
+result # {'stations': []}
+
+# dict
+stations = {"item": []}
+result = {"stations": stations}
+
+if 1>0:
+    stations["item"] = [1] # 修改对象内容使 result 和 stations 都能看到更改，因为它们共享同一个底层对象
+
+result # {'stations': {'item': [1]}}
+```
+
 ## 模块
 import语句允许在当前运行的程序文件中使用模块中的代码.
 
@@ -2702,4 +2722,10 @@ python3.12开始彻底移除了distutils, 而系统当前环境的pip版本仍�
 ```py
 import pdb
 pdb.set_trace()
+```
+
+### 获取异常
+```py
+import traceback
+traceback.print_exc()
 ```

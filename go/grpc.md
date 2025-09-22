@@ -59,3 +59,27 @@ ref:
 - [gRPC客户端的那些事儿](https://tonybai.com/2021/09/17/those-things-about-grpc-client/)
 - [写给go开发者的gRPC教程-服务发现与负载均衡](https://zhuanlan.zhihu.com/p/641743763)
 - [Kratos 源码分析：Warden 负载均衡算法之 P2C](https://pandaychen.github.io/2020/07/25/KRATOS-WARDEN-BALANCER-P2C-ANALYSIS/)
+
+## FAQ
+### 让gin和grpc-gateway共用端口
+```go
+    r := gin.Default()
+	grpcServer := grpc.NewServer()
+	pb.RegisterHelloHTTPServer(grpcServer, HelloHTTPService)
+
+	r.Use(func(ctx *gin.Context) {
+		// 判断协议是否为http/2
+		// 判断是否是grpc
+		if ctx.Request.ProtoMajor == 2 &&
+			strings.HasPrefix(ctx.GetHeader("Content-Type"), "application/grpc") {
+			// 按grpc方式来请求
+			ctx.Status(http.StatusOK)
+			grpcServer.ServeHTTP(ctx.Writer, ctx.Request)
+			// 不要再往下请求了,防止继续链式调用拦截器
+			ctx.Abort()
+			return
+		}
+		// 当作普通api
+		ctx.Next()
+	})
+```

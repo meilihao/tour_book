@@ -16,6 +16,7 @@
 1. postman
 1. wechat
 1. git
+1. ripgrep,Zellij
 
 ## other
 - [github.com/coolcode/tomato-clock-rs](https://github.com/coolcode/tomato-clock-rs)
