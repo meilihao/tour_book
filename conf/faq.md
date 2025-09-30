@@ -395,3 +395,8 @@ ref:
 - [设置 Fcitx 5](https://fcitx-im.org/wiki/Setup_Fcitx_5/zh-cn#.2Fetc.2Fprofile)
 
 调试输出见fcitx5-diagnose
+
+### chrome登入google账号一会就退出, 终端报`[3809650:3809676:0925/140540.278349:ERROR:google_apis/gcm/engine/registration_request.cc:291] Registration response error message: DEPRECATED_ENDPOINT`
+chrome已最新并重装, 问题依旧
+
+将ZeroOmega代理切换到proxy, 再登入

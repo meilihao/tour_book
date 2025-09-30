@@ -14,6 +14,7 @@
 $ jq -r .arch version.json
 $  curl http://localhost:5984/ussfed_tmm -s | jq  # `-s`作用: 忽略curl的process header, 否则jq的输出内容带该信息
 $ jq -S . my_file > sorted_file
+$ jq -c . t.json # 压缩json
 ```
 
 ## FAQ
