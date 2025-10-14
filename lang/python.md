@@ -590,6 +590,8 @@ module搜索顺序:
 > 路径应为**module的上级目录**.
 
 ### __init__.py
+> 在 Python 3 规范中,__init__.py 并不是必须的, 它是python2的规范
+
 __init__.py 文件的作用是将所在的文件夹变为一个Python package, 因此Python 中的每个package中，都有__init__.py 文件, 且python在导入一个包时，实际上是导入了它的__init__.py文件.
 
 __init__.py中的__all__变量，可用于模块导入时限制，比如`from module import *`, 此时被导入模块若定义了__all__变量，则只有__all__内指定的变量、方法、类可被导出; 若没定义，导出将按照以下规则执行：

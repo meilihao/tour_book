@@ -217,3 +217,16 @@ func InsertData(db *gorm.DB) {
 	}
 }
 ```
+
+### 乐观锁更新
+```go
+db.Table(TableTemplate).Updates(map[string]any{"import_count": gorm.Expr("import_count + 1")}).Error
+```
+
+### ON DUPLICATE KEY UPDATE
+```go
+model.GetDB().Table(opt.Table).Clauses(clause.OnConflict{
+	Columns:   []clause.Column{{Name: "agent_id"}, {Name: "dt"}},
+	DoUpdates: clause.Assignments(map[string]interface{}{"next_max_load": one.NextMaxLoad, "next_max_time": one.NextMaxTime}),
+}).Create(one).Error
+```

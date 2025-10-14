@@ -17,6 +17,8 @@
 
 	cgcreate + cgset
 - [zfs空间估算 : ZFS / RAIDZ Capacity Calculator (beta)](https://wintelguy.com/zfs-calc.pl)
+- [zfs-ha](https://github.com/jdelker/zfs-ha/tree/master)
+- [ZFS High-Availability NAS](https://github.com/ewwhite/zfs-ha/wiki)
 
 ```sh
 # ubuntu 18.04

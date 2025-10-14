@@ -46,6 +46,7 @@
 - [Go 1.19中值得关注的几个变化](https://tonybai.com/2022/08/22/some-changes-in-go-1-19/)
 - [**腾讯 tRPC-Go 框架核心实现源码解读**](https://blog.hackerpie.com/posts/architecture/tencent-trpc-go-framework-source/)
 - [C语言竟可以调用Go语言函数，这是如何实现的？](https://cloud.tencent.com/developer/article/2422108)
+- [go-runtime/debug](https://www.jianshu.com/p/0b3d11f7af57)
 
 ## go src
 - [go-under-the-hood](https://github.com/changkun/go-under-the-hood)
@@ -56,6 +57,7 @@
 - [GO GMP调度实现原理5w字长文史上最全](https://segmentfault.com/a/1190000041938854)
 - [golang源码分析](https://www.modb.pro/u/535208)
 - [ 技术笔记 ( 高性能/分布式/kubernetes/golang/kv引擎等 )](https://github.com/rfyiamcool/notes)
+- [深度解密GO语言之反射](https://juejin.cn/post/6844903839036866573)
 
 ## RPC
  - ~~[Thrift RPC 使用指南实战(附golang&PHP代码)](http://blog.csdn.net/liuxinmingcode/article/details/45696237)~~
@@ -148,6 +150,7 @@
 - [sentinel-golang](https://github.com/alibaba/sentinel-golang)
 
     流量控制组件
+- [restic](https://www.escapelife.site/posts/912084a4.html)
 
 ## mirror
 - [go sdk](https://mirrors.ustc.edu.cn/golang/)

@@ -2,6 +2,7 @@
 参考:
 - [boot loader对btrfs的支持](https://wiki.archlinux.org/index.php/Arch_boot_process)
 - [^btrfs 使用指南 - 1 概念，创建，块设备管理，性能优化](https://developer.aliyun.com/article/50)
+- [Understanding and Working With BtrFS Filesystem in Linux](https://computingforgeeks.com/working-with-btrfs-filesystem-in-linux/)
 
 ## 安装
 ```sh

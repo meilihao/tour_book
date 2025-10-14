@@ -480,3 +480,10 @@ ref:
     必须先关闭, 因为 mysql.general_log 表正在被写入或读取，而 TRUNCATE 操作需要获得 表级锁（WRITE 锁）.
     由于这是一个系统表（记录所有数据库操作日志），MySQL 本身可能正在使用它，导致锁无法立即获取，从而卡住.
 2. 执行`TRUNCATE TABLE mysql.general_log;`清理general log
+
+### 创建唯一索引报"Specified key was too long; max key length is 3072 bytes"
+在使用utf8字符集时，每个字符可能占用3个字节，那么对于innodb表，索引键的最大长度大约为1000个字符左右（因为3072 / 3 ≈ 1024）; 若字符集是utf8mb4，每个字符可能占用4个字节，所以最大长度会进一步减少到768个字符左右（3072 / 4 = 768）
+
+解决:
+1. 缩短构成索引的字段长度
+1. 调整字符集, 比如utf8mb4(最多4B)改为utf8(最多3B)

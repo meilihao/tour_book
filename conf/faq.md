@@ -400,3 +400,10 @@ ref:
 chrome已最新并重装, 问题依旧
 
 将ZeroOmega代理切换到proxy, 再登入
+
+### chrome不同步数据
+进`chrome://sync-internals/`点击`Trigger GetUpdates`
+
+解决:
+1. 将ZeroOmega切换到proxy, 并重启chrome, **关键步骤**
+2. 重新触发`Trigger GetUpdates`

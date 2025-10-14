@@ -218,6 +218,7 @@ rpmlint RPMS/x86_64/dalong-demo-1-1.x86_64.rpm
 - [RPM 包的构建 - SPEC 基础知识](https://www.cnblogs.com/michael-xiang/p/10480809.html)
 - [RPM 包的构建 - 实例](https://www.cnblogs.com/michael-xiang/p/10500704.html)
 - [How to create an RPM package/zh-cn](https://fedoraproject.org/wiki/How_to_create_an_RPM_package/zh-cn)
+- [SRPM 的使用：rpmbuild](https://zq99299.github.io/linux-tutorial/tutorial-basis/22/04.html#srpm-%E7%9A%84%E4%BD%BF%E7%94%A8%EF%BC%9Arpmbuild)
 
 ```bash
 # yum install -y rpm-build rpmdevtools

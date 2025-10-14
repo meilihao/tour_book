@@ -8,6 +8,7 @@ ref:
 - [PostgreSQL 支持增量备份 (Incremental Backups)](https://www.oschina.net/news/272121/postgresql-incremental-backups)
 
 	新的 pg_combinebackup 工具可用于从完整备份和一系列增量备份重建数据目录
+- [Postgres数据库归档热备份](https://www.escapelife.site/posts/b47f1fcb.html)
 
 冷备份, 以及逻辑备份都是某一个时间点的备份, 没有增量的概念.
 

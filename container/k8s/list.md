@@ -1,6 +1,7 @@
 # k8s
 
 ## base
+- [**Kubernetes 基础教程**](https://jimmysong.io/book/kubernetes-handbook/)
 - [10 张图，说透 Kubernetes 架构原理，这会算是真懂了](https://my.oschina.net/morflameblog/blog/11572634)
 
 ## new
@@ -20,12 +21,15 @@
     它伪装成kubelet，与Kubernetes集群API通信, 实现Kubernetes API向阿里云的ECI、AWS的Fargate等serverless平台扩展.
 - [OpenELB及其与 MetalLB 的对比](https://kubesphere.io/zh/blogs/openelb-joins-cncf-sandbox-project/)
 - [kubernetes源码解析](https://www.cnblogs.com/lianngkyle/tag/kubernetes%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/)
+- [How does 'kubectl exec' work?](https://erkanerol.github.io/post/how-kubectl-exec-works/)
+- [胡伟煌 Kubernetes 学习笔记](https://www.bookstack.cn/read/huweihuang-kubernetes-notes/develop-client-go.md)
 
 ## ha
 - [[k8s源码分析][kube-scheduler]scheduler之高可用及原理](https://www.jianshu.com/p/e30addc18560)
 - [关于kube-controller-manager以及kube-scheduler的HA实现方式](https://w564791.gitbooks.io/kubernetes_gitbook/content/concept/leader-election.html)
 - [谈谈k8s的leader选举--分布式资源锁](https://blog.csdn.net/weixin_39961559/article/details/81877056)
 - [Kubernetes 源码剖析之 Leader 选举](https://wemp.app/posts/8ca1c89e-856e-4e37-bd20-5f34b43ddc40)
+- [Kubernetes指南](https://kubernetes.feisky.xyz/)
 
 ## dashboard
 - [kuboard](https://kuboard.cn/install/v3/install-in-k8s.html)

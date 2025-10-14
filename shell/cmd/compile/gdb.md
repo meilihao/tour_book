@@ -1,4 +1,7 @@
 # gdb
+ref:
+- [Linux gdb调试器用法全面解析](https://blog.csdn.net/21cnbao/article/details/7385161)
+- [100个gdb小技巧](https://wizardforcel.gitbooks.io/100-gdb-tips/content/)
 
 注：如果如果程序编译时开启了优化选项，那么在用GDB调试被优化过的程序时，可能会发生某些变量不能访问，或是取值错误码的情况. 对付这种情况时，需要在编译程序时关闭编译优化. GCC中可以使用`-gstabs`选项来解决这个问题.
 ## 选项
