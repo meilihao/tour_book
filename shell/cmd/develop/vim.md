@@ -261,3 +261,11 @@ vim可以直接打开压缩包, 然后对想要的压缩文件进行编辑保存
 sudo add-apt-repository ppa:jonathonf/vim
 sudo add-apt-repository -r ppa:jonathonf/vim # 移除repo
 ```
+
+### vim配置文件位置
+进入vim,输入命令`:version`,找到vimrc相关内容即是.
+
+### 关闭自动创建备份档(即*~的文件)
+
+> 检查vimrc是否存在(用户配置文件为~/.vimrc，相关的文件位于~/.vim/；全局配置文件为/etc/vimrc，相关的文件位于/usr/share/vim/),不存在时,`cp /usr/share/vim/vim74/vimrc_example.vim ~/.vimrc`
+> 打开配置文件，找到这一句：if has("vms"),将这个判断里的if部分保留，else部分注释（Vim的注释符是"）掉`set backup`即可.
