@@ -373,3 +373,18 @@ docker info查看`Registry Mirrors`已生效, 通过系统日志看到`"Attempti
 
 ### docker-compose.yaml version
 Docker Compose V2 会自动识别并兼容 YAML 文件格式, 无需手动指定 version
+
+### 容器如何操作宿主机的docker?
+这是一个关于 Docker in Docker (DinD) 或 Docker out of Docker (DooD) 的问题，也就是如何在容器内部操作宿主机上的 Docker 守护进程.
+
+`docker run -v /var/run/docker.sock:/var/run/docker.sock -it <镜像名称，例如：docker/dind 或任意包含 docker client 的镜像] sh`
+
+原理: 将宿主机上 Docker 守护进程的通信接口（/var/run/docker.sock）共享给容器
+
+### 专为作为 Docker 容器的 PID 1 进程而设计的守护进程方案
+方案名称  核心特点  适用场景  优势  劣势
+tini  超轻量级（仅几十 KB），仅做两件事：回收僵尸进程、转发信号给子进程  绝大多数容器场景，尤其需要最小化镜像体积时 体积极小、无依赖、性能开销可忽略  功能单一，无日志、进程管理等扩展能力
+s6-overlay  基于 s6 supervision 框架，支持多进程管理、日志轮转、优雅重启  容器内需要运行多个进程（如 app + 日志收集） 支持多进程、功能丰富、稳定性强 体积较大（几 MB），配置相对复杂
+
+单进程容器：优先用 tini（Docker 内置，零成本）
+多进程容器：必须用 s6-overlay（轻量且专为容器设计）

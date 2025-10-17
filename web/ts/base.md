@@ -1,6 +1,9 @@
 # base
 通常约定使用 TypeScript 编写的文件以`.ts`为后缀; 用 TypeScript 编写 React 时, 以.tsx`为后缀.
 
+其他最佳实践:
+1. 不再使用var声明变量: 避免var带来的副作用和影响
+
 ## 类型
 原始类型:
 ```ts
@@ -27,11 +30,6 @@ let myAge: number = 25;
 // 模板字符串
 let sentence: string = `Hello, my name is ${myName}.
 I'll be ${myAge + 1} years old next month.`;
-
-// 在 TypeScript 中，可以用 void 表示没有任何返回值的函数
-function alertName(): void {
-    alert('My name is Tom');
-}
 
 // --- Null 和 Undefined
 // 与 void 的区别是，undefined 和 null 是所有类型的子类型。也就是说 undefined 类型的变量，可以赋值给其他类型的变量, 比如number 类型
@@ -76,6 +74,7 @@ let tom: Person = {
 };
 
 // 一个接口可以同时定义这两种任意属性，但是 number 类型的签名指定的值类型必须是 string 类型的签名指定的值类型的子集
+// object表示非原始类型，也就是除number，string，boolean，symbol，null或undefined之外的类型
 interface C {
     [prop: string]: object;
     [index: number]: Function; // Function 是 object 的子集
@@ -103,6 +102,20 @@ let fibonacci: NumberArray = [1, 1, 2, 3, 5];
 let list: any[] = ['xcatliu', 25, { website: 'http://xcatliu.com' }];
 
 // --- function
+// 在 TypeScript 中，可以用 void 表示没有任何返回值的函数
+function alertName(): void {
+    alert('My name is Tom');
+}
+
+// 函数参数类型注解
+function params (value: string) {
+    console.log(value) // 返回string类型
+}
+// 函数返回值类型注解
+function returnValue (): string {
+    return 'value is stirng'
+}
+
 // 函数声明（Function Declaration）
 function sum(x: number, y: number): number { // 输入多余的（或者少于要求的）参数，是不被允许的
     return x + y;
@@ -165,7 +178,10 @@ function reverse(x: number | string): number | string | void {
     }
 }
 
-// --- 类型断言: 值 as 类型
+// --- 类型断言: 值 as 类型/尖括号
+let someValue: any = "this is a string";
+let strLength: number = (<string>someValue).length;
+
 // 类型断言只能够「欺骗」TypeScript 编译器，无法避免运行时的错误. 使用类型断言时一定要格外小心，尽量避免断言后调用方法或引用深层属性，以减少不必要的运行时错误
 interface Cat {
     name: string;
