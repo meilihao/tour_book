@@ -167,6 +167,12 @@ pg_dump -h localhost -U postgres -f xxx.sql
 psql -d newdatabase -U postgres -f mydatabase.sql
 ```
 
+COPY 命令和 \copy命令也支持导出/导入, 但两者有以下区别:
+1. COPY 命令是 SQL 命令, \copy 是元命令 。
+2. COPY 命令必须具有 SUPERUSER 超级权限(将数据通过 stdin 、 stdout 方式导人导出情况除外), 而\copy 元命令不需要 SUPERUSER 权限
+3. COPY 命令读取或写入数据库服务端主机上的文件,而\copy 元命令是从 psql 客户端主机读取或写入文件
+4. 从性能方面看, 大数据量 导出到文件或大文件数据导入数据库, COPY 比 \copy 性能高
+
 ### pgadmin 安装
 方式:
 1. 官方docker镜像
@@ -356,4 +362,3 @@ pg_rewind参数:
     输出很多Debug的信息。如果失败时，可以用此选项定位错误原因
 
 pg_rewind的排除目录见[这里](https://github.com/postgres/postgres/blob/REL_12_STABLE/src/bin/pg_rewind/filemap.c).
-

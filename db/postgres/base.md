@@ -90,6 +90,8 @@ PG数据存储结构分为：逻辑存储结构和物理存储存储. 其中：�
   - pg_ident.conf
 
     pg_ident.conf是用户映射配置文件，用来配置哪些操作系统用户可以映射为数据库用户。结合pg_hba.conf中，method为ident可以用特定的操作系统用户和指定的数据库用户登录数据库.
+  - postgresql.auto.conf: 参数文件,只保存 ALTER SYSTEM 命令修改的参数
+  - postmaster. opts : 记录服务器最后一次启动时使用的命令行参数
 - 控制文件
 
   控制文件记录了数据库运行的一些信息，比如数据库id，是否open，wal的位置，checkpoint的位置等等。controlfile是很重要的文件。  
@@ -155,6 +157,8 @@ PostgreSQL的内存结构，分为：本地内存和共享内存
 |--------|--------|
 |numeric|numeric(M,N).M称为精度,即总的位数;N是标度,即小数的位数.如果用户数据的精度超出指定精度,则会四舍五入|
 
+> decimal 和 numeric 是等效的
+
 ### 日期和时间类型
 | 类型名称 | 含义 |存储需求|
 |--------|--------|----------|
@@ -172,6 +176,8 @@ PostgreSQL的内存结构，分为：本地内存和共享内存
 |  varchar	      |    变长非二进制字符串,有长度限制  |
 |  text	      |     变长非二进制字符串,无长度限制  |
 
+> char_length( string)显示字符串字符数; octet_length(string) 显示字符串占用的字节数
+
 ### 二进制类型
 | 类型名称 | 说明 |存储需求|
 |--------|--------|----------|
@@ -183,10 +189,20 @@ PostgreSQL的内存结构，分为：本地内存和共享内存
 |--------|--------|----------|
 |  boolean      | true/false       |1B|
 
+### 网络地址
+| 类型名称 | 说明 |存储需求|
+|--------|--------|----------|
+|  cidr      | ipv4/ipv6的掩码       |7~19B|
+|  inet      | ipv4/ipv6       |7~19B|
+|  macaddr      | mac地址       |6B|
+|  macaddr8      | mac地址(EUI-64格式)       |8B|
+
 ### 数组类型
 允许将字段定义为定长或变长的一维或多维数组.不过目前pg并不强制数组的长度,所以声明长度和不声明长度是一样的.
 
 ### json
+PostgreSQL 支持两种 JSON 数据类型: json 和 jsonb ,两种类型在使用上几乎完全相同, 两者主要区别为以下: json 存储格式为文本而 jsonb 存储格式为二进制,由于存储格式的不同使得两种 json 数据类型的处理效率不一样. json 类型以文本存储并且存储的内容和输入数据一样 ,当检索 json 数据时必须重新解析,而 jsonb 以二进制形式存储已解析好的数据, 当检索 jsonb 数据时不需要重新解析,因此 json 写 人比 jsonb 快,但检索比 jsonb 慢
+
 使用 PostgreSQL 的 JSON 运算符和函数高效查询 JSON 数据:
 1. `->>`从 JSON 数据中提取特定字段
 
@@ -454,6 +470,12 @@ SUM(total_due) AS total_sales
 FROM sales_today;
 ```
 
+## returning
+PostgreSQL 的RETURNING 特性可以返回 DML 修改的数据,具体为三个场景:
+1. INSERT 语句后接 RETURNING 属性返回插入的数据
+1. UPDATE 语句后接 RETURNING 属性返回更新后的新值
+1. DELETE 语句后接 RETURNING 属性返回删除的数据
+
 ## 递归查询
 支持使用 WITH RECURSIVE 子句的递归查询，这允许查询引用自己的输出. 递归查询对于查询层次数据结构（例如组织结构图或产品类别）特别有用.
 
@@ -546,6 +568,8 @@ SetOp	INTERCECT，EXCEPT 有启动时
 
 PostgreSQL使用表空间映射逻辑名称和磁盘物理位置, 默认提供了两个表空间：
 - pg_default 表空间存储用户数据, 比如存储系统目录对象、用户表、用户表index、和临时表、临时表index、内部临时表的默认空间, 对应存储目录`$PADATA/base/`
+
+  创建数据库时,默认从 template1数据库进行克隆, 因此除非特别指定了新建数据库的表空间, 默认使用template1 的表空间即pg_default
 - pg_global 表空间存储全局数据, 比如存放系统字典表pg_database、pg_authid、pg_tablespace等表以及它们的索引, 对应存储目录`$PADATA/global/`
 
 自定义表空间, 是用户创建的表空间, 对应文件系统目录`$PADATA/pg_tblspc/`, 当手动创建表空间时, 该目录下会自动生成一个软链接, 指向表空间设定的路径.

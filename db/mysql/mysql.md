@@ -26,6 +26,8 @@ MySQL可以分为Server层和存储引擎层两部分:
 ## 数据类型
 [](https://oss.javaguide.cn/github/javaguide/mysql/summary-of-mysql-field-types.png)
 
+JSON 类型在 5.7 版本被首次引入 InnoDB.
+
 DECIMAL 和 FLOAT 的区别是：DECIMAL 是定点数，FLOAT/DOUBLE 是浮点数。DECIMAL 可以存储精确的小数值，FLOAT/DOUBLE 只能存储近似的小数值.
 
 如果预期长度范围可以通过 VARCHAR 来满足，建议避免使用 TEXT. 数据库规范通常不推荐使用 BLOB 和 TEXT 类型，这两种类型具有一些缺点和限制, 比如没有默认值, 检索效率较低. 必须使用时建议把 BLOB 或是 TEXT 列分离到单独的扩展表中.
@@ -127,6 +129,9 @@ binlog 日志有三种格式，可以通过binlog_format参数指定:
 
   MySQL 会判断这条SQL语句是否可能引起数据不一致，如果是，就用row格式，否则就用statement格式
 
+建议坚持使用基于行的复制,除非某些场景下明确需要临时使用基于语句的复制. 
+基于行的复制提供了最安全的数据复制方法
+
 binlog 的写入时机: 事务执行过程中，先把日志写到binlog cache，事务提交的时候，再把binlog cache写到 binlog 文件中.
 
 一个事务的 binlog 不能被拆开，无论这个事务多大，也要确保一次性写入，所以系统会给每个线程分配一个块内存作为binlog cache. 通过binlog_cache_size参数控制单个线程 binlog cache 大小，如果存储内容超过了这个参数就要暂存到Swap.
@@ -188,6 +193,10 @@ MySQL 的隔离级别基于锁和 MVCC 机制共同实现的.
 
 MVCC 是一种并发控制机制，用于在多个并发事务同时读写数据库时保持数据的一致性和隔离性。它是通过在每个数据行上维护多个版本的数据来实现的.
 
+InnoDB 通过为每个事务在启动时分配 一个事务ID来实现 MVCC, 该 ID 在事务首次读取任何数据时分配.
+
+> MVCC 仅适用于 REPEATABLE READ 和 READ COMMITTED 隔离级别. READ UNCOMMITTED 与 MVCC 不兼容, 是因为查询不会读取适合其事务版本的行版本,而是不管怎样都读最新版本. SERIALIZABLE 与 MVCC 也不兼容,是因为读取会锁定它们返回的每一行.
+
 > 查看隔离级别: `SELECT @@tx_isolation/SELECT @@transaction_isolation (from v8.0)`
 
 事务隔离的机制是通过视图（read-view即consistent read view, 一致性读视图）来实现的并发版本控制（MVCC），不同的事务隔离级别创建读视图的时间点不同:
@@ -231,7 +240,7 @@ undo log 主要有两个作用：
 
 事务的隔离级别实际上都是**定义了当前读的级别**，MySQL为了减少锁处理（包括等待其它锁）的时间，提升并发能力，引入了快照读的概念，使得select不用加锁。而update、insert这些“当前读”，就需要另外的机制来解决了.
 
-为了解决当前读中的幻读问题，MySQL事务使用了Next-Key锁(`=行锁和GAP（间隙锁）`). 行锁防止别的事务修改或删除，GAP锁防止别的事务新增，行锁和GAP锁结合形成的的Next-Key锁共同解决了RR级别在写数据时的幻读问题. 注意: 如果使用的是没有索引的字段, 即使没有匹配到任何数据, 那么会给全表加入gap锁, 除非该事务提交, 否则其它事务无法插入任何数据.
+为了解决当前读中的幻读问题，MySQL事务使用了Next-Key锁(`=行锁和GAP（间隙锁）`).  行锁防止别的事务修改或删除，GAP锁防止别的事务新增(幻行被插入) ，行锁和GAP锁结合形成的的Next-Key锁共同解决了RR级别在写数据时的幻读问题. 注意: 如果使用的是没有索引的字段, 即使没有匹配到任何数据, 那么会给全表加入gap锁, 除非该事务提交, 否则其它事务无法插入任何数据.
 
 > 间隙锁是两个值间(不包含边界值)的空隙加锁, 用于解决RR幻读的机制, 仅在RR下生效.
 
@@ -301,7 +310,12 @@ InnoDB使用了B+树索引模型.
     )
     ```
 
-MySQL 5.7 可以通过查询 sys 库的 schema_unused_indexes 视图来查询哪些索引从未被使用=
+MySQL 5.7 可以通过查询 sys 库的 schema_unused_indexes 视图来查询哪些索引从未被使用.
+
+一 般地, MySQL 能够使用如下 三种方式应用 WHERE 条件, 从好到坏依次为:
+1. 在索引中使用 WHERE 条件来过滤不匹配的记录, 这是在存储引擎层完成的
+1. 使用索引覆盖扫描( 在 Extra 列中出现了 Using index) 来返回记录, 直接从索引中过滤不需要的记录并返回命中的结果. 这是在 MySQL 服务器层完成的,但无须再回表查询记录
+1. 从数据表中返回数据, 然后过滤不满足条件的记录 ( 在 Extra 列中出现 Using where) . 这在 MySQL 服务器层 完成, MySQL 需要先从数据表中读出记录然后过滤
 
 ## 锁
 根据加锁的范围，MySQL里面的锁大致可以分成全局锁、表级锁和行锁三类.
@@ -455,6 +469,133 @@ mysql> select * from information_schema.INNODB_SYS_TABLESPACES; -- 查看表空�
 mysql> create table t2(c1 int primary key) tablespace test_tablespace;
 mysql> DROP TABLESPACE tablespace_name [ENGINE [=] engine_name];
 ```
+
+> 在 8.0 版本中, MySQL 将表的元数据重新设计为一种数据字典,包含在表的 ibd 文件中, 
+这使得表结构上的信息支持事务和原子级数据定义更改.
+
+## performance_schema
+Performance Schema 提供了有关 MySQL 服 务器内部运行的操作上的底层指标, 它通过埋点实现, performance_schema.setup_instruments包含所有支持的埋点(即插桩)列表, 消费相关埋点的消费表的分类:
+1. 当前和历史数据
+
+  存放`事件`的表名包含如下结尾:
+  1. `*_current` : 当前服务器上进行中的事件
+  1. `*_history` : 每个线程最近完成的 10 个 事件
+  1. `*_history _ long`: 从全局来看,每个线程最近完成的 10000 个事件
+  1. `*_history 和*_ history_ long` 表的大小是可配置的
+
+  比如事件:
+  1. events_waits : 底层服务器等待,例如获取互斥对象
+  1. events_statements : SQL 查询语句
+  1. events_stages : 配置文件信息,例如创建临时表或发送数据
+  1. events_transactions : 事务
+1. 汇总表和摘要
+
+  汇总表保存有关该表所建议的内容的聚合信息. 例如, memory_summary_by_thread_by_event_name 表保存了用户连接或任何后台线程的每个 MySQL 线程的聚合内存使用情况.
+
+  摘要是一种通过删除查询中的变量来聚合查询的方法(比如sql中的变量用`?`替换), 这允许 Performance Schema 跟踪摘要的延迟等指标,而无须单独保留查询的每个变体.
+1. 实例表 (Instance)
+
+  实例是指对象实例
+1. 设置表 (Setup)
+
+  设置表用于performance_ schema的运行时设置
+1. 其他表
+
+  还有一些表的名称没有遵循严格的模式. 例如, metadata_locks 表保存关千元数据锁的数据
+
+常用performance_schema的表:
+1. 将语句指标存储在 events_statements_current 、 events_statements
+history 和 events_statements_history_long 表中, 这三个表具有相同的结构
+
+  statement 类型的插桩对于理解工作负载是受读还是受写限制非常有用
+1. prepared_statements_instances 表包含服务器中存在的所有预处理语句. 它和 events_
+statements_[current|history|history_long] 表有相同的统计数据
+1. 使用 performance_schema 可以检索有关存储例程如何执行的信息
+1. events_stages_[current|history|history_long] 表包含剖析信息
+1. metadata_locks 表包含关千当前由不同线程设置的锁的信息, 以及处于等待状态的锁请求信息
+1. 将内存使用统计信息存储在摘要表中, 摘要表的名称以 memory_summary_前缀开头
+
+  使用 sys schema 中的视图可以更好地获取内存统计信息, 比如`sys.memory_global_total(使用总量), sys.memory_by_thread_by_current_bytes(已按当前分配的内存降序排序)`
+1. 除了特定错误信息, performance_schema 还提供摘要表, 可以按用户、 主机、账户、线程和错误号聚合错误信息. 所有的聚合表都有类似于events_errors_summary_global_by_error 表的结构
+
+有三个方法可用于启用或禁用 performance_schema埋点:
+1. 使用 setup_instruments 表
+
+  更新enabled字段即可
+2. 调用 sys_schema 中的 `ps_setup_(enable|disable)_instrument` 存储过程
+
+  `call sys.ps_setup_enable_instrument('statement/sql/select')`
+3. 使用 performance-schema-instrument 启动参数
+
+  `performance-schema-instrument='statement/sql/select=ON'`
+
+前两种是在线修改, 重启后失效.
+
+有三个方法可用于启用或禁用 performance_schema的消费表:
+1. 使用 Performance Schema 中的 setup_consumers 表
+2. 调用 sys_schema 中的`ps_setup_(enable|disable)_consumer`存储过程
+3. 使用 performance-schema-consumer 启动参数
+
+Performance Schema 也可以针对特定对象类型 、 schema 和对象名称启用或禁用监控, 是在
+setup_objects 表中完成. 对象类型 ( OBJECT_TYPE 列)可以是下面的五个值之一: EVENT、 FUNCTION 、 PROCEDURE 、
+TABLE 和 TRIGGER. 此外, 还可以指定OBJECT_SCHEMA 和 OBJECT_NAME, 并且支持通配符. 该操作的持久化方法是将将这些操作的INSERT 语句写入SQL文件中, 再在启动时使用 init_file 选项加载该 SQL 文件.
+
+Performance Schema 收集的数据保存在内存中, 可以通过设置消费者表的最大大小来限制其使用的内存用量.
+
+Performance Schema局限性:
+1. MySQL 组件需要支持, 否则无法收集相关信息
+1. 它只在特定的插桩和用户启用后才收集数据
+1. 它很难释放内存
+
+  即使以后禁用了特定的埋点或消费者表,也不会释放内存,除非重新启动服务器
+
+从 5.7 版开始, Performance Schema 在默认情况下是启用的. 大多数插桩默认是禁用的, 只启用了全局 、线 程、语句和卞务插桩. 从 8.0 版本开始,默认情况下还启用了元数据锁和内存插桩.
+
+mysql, information_schema 和 performance_schema 数据库没有启用插桩, 但所有其他对象、线程和 actor 都启用了插桩.
+
+Performance Schema 将变量监测提升到了一个新的水平. 它为以下方面提供了工具:
+1. 服务器变量
+
+  1. 全局级
+  1. 会话级,针对当前所有打开的会话
+  1. 源,所有当前变量值的来源
+
+  全局变最值被存储在表 global_variables 中. 当前会话的会话变量被存储在 session_variables 表中.
+1. 状态变量
+
+  1. 全局级
+  1. 会话级,针对当前所有打开的会话
+  
+  支持的聚合维度:
+  1. 主机
+  1. 用户名
+  1. 账号
+  1. 线程
+
+  全局和当前会话状态值分别被存储在表 global_status 和 session_status 中.
+1. 用户变量
+
+## 调优(部分)
+1. 使用xfs
+1. 使用tcmalloc/jemalloc
+1. 禁用swap
+
+## 配置
+查看配置:`mysqld --verbose --help`
+
+> MySQL 8.0 引入了一个名为持久化系统变量的新功能: SET PERSIST 允许在运行时设置一次值, MySQL 将把这个设置 写入磁盘, 以便在下次重启后继续使用该值
+
+## tools
+- innotop : 监控 InnoDB缓冲池的内存使用情况
+
+## innodb
+查看状态: `SHOW INNODB STATUS`
+
+## 备份
+有两种主要的方法来备份 MySQL 数据:逻辑备份(也叫导出)和直接复制原始文件的裸文件备份(即物理备份).
+
+基于快照的备份,例如 Percona XtraBackup 和 MySQL Enterprise Backup , 是最好的选择. 对于较小的数据库, 逻
+辑备份可以很好地胜任.
 
 ## FAQ
 ### 从 innodb 的索引结构分析,为什么索引的 key 长度不能太长

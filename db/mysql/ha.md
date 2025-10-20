@@ -1,5 +1,5 @@
 # ha
-推荐**tidb**.
+推荐**分布式db, 比如tidb, oceanbase等**.
 
 ha需要解决的两个问题:
 1. 数据共享或数据同步
@@ -70,8 +70,12 @@ auto-increment-increment=2  #步长为2
 常用架构:
 1. 一主一从 : 最常见
 1. 一主多从 : 写操作不频繁; 查询频繁
-1. 主主互备 : 写操作频繁 
+1. 主主互备 : 写操作频繁
+
+    不建议: 最终会将数据不一致引入应用程序(复制延迟), 并且始终处于没有足够容量进行故障切换的边缘. 一旦失去了 故障切换的可能性,也就失去了灵活性
 1. 双主多从 : 读写都频繁
+
+    不建议: 主要是出于数据访问问题的考虑, 两个可写的源只会带来麻烦
 
 原则:
 1. 同一时刻只有一个server在写
@@ -80,6 +84,8 @@ auto-increment-increment=2  #步长为2
 
     当从库的io_thread发现binlog event的源与自己的server-id相同时，就会跳过该event, 导致数据遗失.
 1. 从server可以级联
+
+推荐使用至少三台server的 n+2 冗余配置
 
 ### 复制方式
 1. 异步复制（Asynchronous replication）
@@ -143,3 +149,15 @@ CHANGE MASTER TO MASTER_HOST='192.168.16.44',MASTER_PORT=3306,MASTER_USER='repl'
 ```
 
 > Slave的执行状态（最后一个执行的 GTID）被记录在 mysql.gtid_slave_pos 系统表中
+
+## FAQ
+### GTID(全局事务标识符)
+GTID 解决了运行 MySQL 复制的 一个令人痛苦的问题: 处理日志文件和位置
+
+### 多线程复制
+多线程复制有两种模式: DATABASE 和 LOGICAL_CLOCK. 在 DATABASE 模式下,可以使用多线程更新不同的数据库,但不会有两个线程同时更新同一个数据库. 另一个模式 LOGICAL_CLOCK 允许对同一个数据库进行并行更新, 只要它们都是同一个二进制日志组提交的一部分.
+
+当使用多线程复制时, 确保在副本配置了参数 replica_preserve_commit_order, 这样就不会出现无序提交的问题
+
+### 复制心跳
+Percona Toolkit 中包含的 pt-heartbeat 脚本是当前最流行的复制心跳实现方案.

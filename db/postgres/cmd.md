@@ -1,17 +1,21 @@
 # 常用命令
+psql 中的元命令是指以反斜线开头的命令, psql 提供丰富的元命令, 能够便捷地管理数据库 
+
 - `su postgres -c psql` = `sudo -u postgres psql`
 - `sudo -u postgres psql`
 - `psql -h 127.0.0.1 -p 5432 -U user -d dbname` : 连接数据库
 - `psql -U user -d dbname -W` : 没有`-h`即连接数据库 by unix socket
+- `psql -E ...` : 获取元命令对应的 SQL
+- `psql -v xxx=yyy ...` : `-v`传递变量
 - `\encoding [编码名称]` : 显示或设定用户端编码
-- `\?` : help
+- `\?` : 列出所有的元命令
 - `\h [NAME]` : help
 - `\q` : 退出 psql
 - `\c dbname` : 切换数据库
 - `\l` : 列举数据库
 - `\dt` : 列举表
 - `\d tblname` : 查看表结构
-- `\di` : 查看索引
+- `\di[+]` : 查看索引大小
 - `\db+` : 查看表空间
 - `\x` : 以列显示的开关
 - `\timing on/off` : 显示执行时长
@@ -31,10 +35,17 @@
 - `\du` : 列出所有用户及其用户权限
 - `\ds` : 查看用户自定义序列
 - `\df` : 查看用户自定义函数
+- `\sf xxx` : 查看函数定义
+- `\timing` : 显示 SQL 执行时间
+- `\watch [seconds]` : 反复执行当前查询缓冲区的SQL命令,直到 SQL 被中止或执行失败
+- `\echo :PROMPT1` : 查看提示符格式
 - `SHOW config_file;` : 显示postgresql.conf路径
 - `SHOW data_directory;` : 显示pg data目录
 - `SHOW unix_socket_directories` : 显示unix socket路径
 - `SHOW hba_file;`
+
+其他:
+1. psql 支持箭头键上下翻历史 SQL 命令, 需要readline
 
 script:
 ```bash
@@ -97,7 +108,7 @@ alter table xxx drop constraint yyy;
 - `vacuum full test` : vacuum test表, 是通过独占锁表, 并重写整个表来回收额外的空间
 - `VACUUM (PARALLEL 2) test;` : vacuum test表, 并发2
 - `VACUUM ANALYZE test;` : vacuum test表并分析表(ANALYZE会更新查询规划器的表统计信息, 应该能体现vacuum前后的查询性能)
-- `select * from pg_stat_activity;`: 查看会话
+- `select * from pg_stat_activity;`: 查看PostgreSQL 进程信息,每一个进程在视图中存在一条记录
 - `select * from pg_locks where granted is not true;` : 查看锁等待信息
 - `select name,setting from pg_settings where name in('synchronous_commit','synchronous_standby_names');` : 查看配置
 - `select pg_size_pretty(pg_database_size(db_name)); ` : 查看db大小
