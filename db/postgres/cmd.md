@@ -17,6 +17,7 @@ psql 中的元命令是指以反斜线开头的命令, psql 提供丰富的元�
 - `\d tblname` : 查看表结构
 - `\di[+]` : 查看索引大小
 - `\db+` : 查看表空间
+- `\d+` : 可查看分区表
 - `\x` : 以列显示的开关
 - `\timing on/off` : 显示执行时长
 - `\conninfo` : 显示连接信息
@@ -103,7 +104,8 @@ alter table xxx drop constraint yyy;
 - `show ident_file`
 - `show all`: 查看所有pg配置参数或使用`select * from pg_settings;`
 - `show archive_command` : 查看指定参数
-- `show transaction_isolation;` : 查看隔离基本
+- `show transaction_isolation;` : 查看当前session的隔离级别, 默认是"read committed"
+- `SET SESSION CHARACTERISTICS AS TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;` : 修改当前session的隔离级别
 - `vacuum test` : vacuum test表
 - `vacuum full test` : vacuum test表, 是通过独占锁表, 并重写整个表来回收额外的空间
 - `VACUUM (PARALLEL 2) test;` : vacuum test表, 并发2
@@ -115,6 +117,8 @@ alter table xxx drop constraint yyy;
 - `select pg_database.datname, pg_size_pretty (pg_database_size(pg_database.datname)) AS size from pg_database;` : 查看所有数据库的大小
 - `select pg_size_pretty(pg_relation_size(table_name))`: 查看表大小
 - `alter table xxx owner to new_owner;` # 修改表owner
+- `SELECT name, setting FROM pg_settings WHERE name ='default_transaction_isolation'/SELECT current_setting ('default_transaction_isolation');` : 默认隔离级别
+- `ALTER SYSTEM SET default_transaction_isolation TO 'REPEATABLE READ'`
 
 ## 内置函数
 ```psql

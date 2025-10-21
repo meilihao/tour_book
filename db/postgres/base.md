@@ -62,7 +62,9 @@ PG数据存储结构分为：逻辑存储结构和物理存储存储. 其中：�
 
   顾名思义，数据文件用于存储数据。文件名以OID命名，对于超出1G的表数据文件，PostgreSQL会自动将其拆分为多个文件来存储，而拆分的文件名将由pg_class中的relfilenode字段来决定, 例如`select oid,relname,relkind,relfilenode from pg_class where relname ='testtable1';`
 
-  在PostgreSQL中，将保存在磁盘中的块（Block）称为Page。数据的读写是以Page为最小单位，每个Page默认的大小是8K。在编译PostgreSQL时指定BLCKSZ大小将决定Page的大小。每个表文件由逗哥BLCKSZ字节大小的Page组成。在分析型数据库中，适当增加BLCKSZ大小可以小幅度提升数据库的性能。
+  后缀为`.fsm 和._vm` 的这两个表文件的附属文件是空闲空间映射表文件和可见性映射表文件. 空闲空间映射用来映射表文件中可用的空间, 可见性映射表文件跟踪哪些页面只包含己知对所有活动事务可见的元组,它也跟踪哪些页面只包含未被冻结的元组.
+
+  在PostgreSQL中，将保存在磁盘中的块（Block）称为Page, 而将内存中的块称为 Buffer ,表和索引称为 Relation , 行称为 Tuple. 数据的读写是以Page为最小单位，每个Page默认的大小是8K。在编译PostgreSQL时指定BLCKSZ大小将决定Page的大小。每个表文件由多个BLCKSZ字节大小的Page组成, 每个 Page 包含若干Tuple. 在分析型数据库中，适当增加BLCKSZ大小可以小幅度提升数据库的性能。
 - 日志文件
 
   PostgreSQL日志文件的类型，分为以下几种:
@@ -133,7 +135,18 @@ PG数据存储结构分为：逻辑存储结构和物理存储存储. 其中：�
 - CheckPoint检查点进程
 
 ### 内存结构
-PostgreSQL的内存结构，分为：本地内存和共享内存
+PostgreSQL的内存结构，分为：本地内存和共享内存, 另外还有一些为辅助进程分配的内存等.
+
+本地内存由每个后端服务进程分配以供自己使用,当后端服务进程被 fork 时,每个后端进程为查询分配一个本地内存区域. 本地内存由 三部分组成:
+1. work_mem : 当使用 ORDER BY 或 DISTINCT 操作对元组进行排序时会使用这部分内存
+1. maintenance_work_mem :维护操作,例如 VACUUM 、 REINDEX 、 CREATE INDEX等操作使用这部分内存
+1. temp_buffers : 临时表相关操作使用这部分内存
+
+共享内存在 PostgreSQL 服务器启动时分配,由所有后端进程共同使用. 共享内存主要
+由三部分组成
+1. shared buffer pool : PostgreSQL 将表和索引中的页面从持久存储装载到这里, 并直接操作它们
+1. WAL buffer: WAL 文件持久化之前的缓冲区
+1. CommitLog buffer : PostgreSQL 在 Commit Log 中保存事务的状态, 并将这些状态保留在共享内存缓冲区中, 在整个事务处理过程中使用
 
 ## 数据类型
 
@@ -432,6 +445,32 @@ pg的有事务管理器负责事务, 可分为两部分:
 1. 锁管理器 : 主要提供在事务的写阶段并发控制所需要的各种锁, 从而保证事务的各种隔离级别
 1. 日志管理器 : 主要记录事务执行的状态和数据的变化过程
 
+PostgreSQL 为每一个事务分配一个递增的、int32整数 作为唯一的事务ID, 称为 xid; 为了解决事务回卷问题, pg13开始引入64位的xid8, 它将 32位的 xid作为其低32位部分, `xid_current()`可返回当前事务的 xid8.
+
+> 回卷问题 (Transaction ID Wraparound): 当 32位的 xid 达到最大值后会从 0 重新开始计数.
+
+Xid 是 PostgreSQL MVCC 并发机制和流复制的基础
+
+PostgreSQL 还在系统里的每一行记录上都存储了事务相关的信息, 这被用来判断某一行记录对于当前事务是否可见. 在 PostgreSQL 的内部数据结构中, 每个元组(行记录)有 4 个与事务可见性相关的隐藏列,分别是 xmin 、 xmax 、 cmin 、cmax , 其中 cmin 和 cmax 分别是插入和删除该元组的命令在事务 中的命令序列标识, xmin 、 xmax 与 事务对其他事务 的可见性相关,用于同一个事务中的可见性判断.
+
+1. 通过 xmin 决定事务的可见性
+
+  当插入一行数据时, PostgreSQL 会将插入这行数据的事务 的 xid 存储在 xmin 中.
+  通过 xmin 值判断事务中插入的行记录对其他事务的可见性有两种情况:
+  1. 由回滚的事务或未提交的事务创建的行对于任何其他事务都是不可见的
+  1. 无论提交成功或回滚的事务 , xid 都会递增
+
+    对于 Repeatable Read 和 Serializable 隔离级别的事务,如果 它的 xid 小于另外 一个事务的 xid ,也就是元组的 xmin 小于另外一个事务的 xmin ,那么另外一个事务对这个事务是不可见的
+1. 通过 xmax 决定事务的可见性
+
+  通过 xmax 值判断事务的更新操作和删除操作对其他 事务 的可见性有这几种情况:
+  1. 如果没有设置 xmax 值,该行对其他事务总是可见的
+  2. 如果它被设置为回滚事务的xid ,该行对其他事务也是可见的
+  3. 如果它被设置为一个正在运行,没有 COMMIT 和 ROLLBACK 的 事务的 xid, 该行对其他事务是可见的
+  4. 如果它被设置为一个已提交的事务的 xid, 该行对在这个己提交事务之后发起的所有事务都是不可见的
+
+可用pageinspect观察mvcc.
+
 ## 权限
 在PostgreSQL 里没有区分用户和角色的概念，"CREATE USER" 为 "CREATE ROLE" 的别名，这两个命令几乎是完全相同的，唯一的区别是"CREATE USER" 命令创建的用户默认带有LOGIN属性，而"CREATE ROLE" 命令创建的用户默认不带LOGIN属性.
 
@@ -646,6 +685,8 @@ FROM pg_stat_bgwriter;
 ```
 
 ## 分区
+> pg10前分区表通过继承加触发器方式实现, pg10开始内置分区表.
+
 分区是一种关键技术，通过将大型表划分为更小、更易管理的分区来提高查询性能和管理.
 
 PostgreSQL 支持垂直和水平分区，提供了更大的数据组织和查询性能的灵活性. 垂直分区涉及根据列将一个表拆分为多个表，使能够隔离频繁访问或大型数据列以提高性能, 而水平分区则涉及根据行将一个表拆分为多个表，通常使用类似于标准分区策略的技术.
@@ -693,6 +734,11 @@ PostgreSQL支持几种分区策略：范围、列表和哈希:
 分片是一种通过将数据分布在多个节点上来水平扩展数据库的技术, 可以使用灵活的 FWD 和 CitusData 来实现分片，从而处理更大的数据集并提高性能. FWD 和 CitusData 是在 PostgreSQL 中实现分片的流行工具.
 
 ## 优化
+### 系统配置
+1. 禁用swap
+1. 透明大页( Transparent HugePages )在运行时动态分配内存,而运行时的内存分配会有延误,对于数据库管理系统来说并不友好,所以建议关闭透明大页
+1. 关闭 NUMA : 通过bios或kernel参数追加numa=off
+
 ### 使用 SIMD 加速优化 JSON 查询
 1. 使用 EXPLAIN ANALYZE 评估查询执行计划并识别性能改进的可能地方
 1. PostgreSQL 16会在适用时自动使用SIMD，因此要专注于减少任何不必要的计算，并确保查询经过良好优化
@@ -1010,3 +1056,6 @@ Barman 是一个强大的工具，用于管理 PostgreSQL 备份和恢复，支�
 # barman show-restore-logs adventureworks restore_id # 检查日志消息以获取有关恢复过程的详细信息
 # barman stop-restore adventureworks restore_id # 如有需要，停止正在进行的恢复操作
 ```
+
+## 压侧
+pgbench
