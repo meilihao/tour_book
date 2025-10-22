@@ -1,0 +1,6 @@
+# https://github.com/VictoriaMetrics/VictoriaMetrics/blob/master/deployment/docker/alertmanager.yml
+route:
+  receiver: blackhole
+
+receivers:
+  - name: blackhole

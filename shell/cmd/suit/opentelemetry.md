@@ -208,6 +208,7 @@ EOF
     # cat << EOF > otel-config.yaml
     extensions:
       health_check:
+        endpoint: 0.0.0.0:13133
       pprof:
         endpoint: 0.0.0.0:1777
       zpages:

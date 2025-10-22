@@ -1,0 +1,196 @@
+# 正式部署建议启用`restart: always`
+services:
+  # 1. 采集器 (Collector) - OpenTelemetry 统一入口
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: otel-collector
+    command: ["--config=/etc/otel-collector-config.yml"]
+    volumes:
+      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+    ports:
+      # Expose OTLP gRPC for all data types (Metrics, Logs, Traces)
+      - "4317:4317"
+    depends_on:
+      - "victoriametrics"
+      - "victoriatraces"
+      - "victorialogs"
+    #restart: always
+
+  #  VictoriaTraces instance, a single process responsible for
+  #  storing trace span and serving read queries.
+  victoriatraces:
+    image: "victoriametrics/victoria-traces:v0.4.0"
+    ports:
+      - "10428:10428"
+    command:
+      - "--storageDataPath=/vtraces"
+    volumes:
+      - vtdata:/vtraces
+
+  # VictoriaMetrics instance, a single process responsible for
+  # scraping, storing metrics and serve read requests.
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:v1.128.0
+    ports:
+      - "8428:8428"
+    volumes:
+      - vmdata:/storage
+      - ./prometheus-vt-single.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--storageDataPath=/storage"
+      - "--promscrape.config=/etc/prometheus/prometheus.yml"
+    #restart: always
+
+  #  VictoriaLogs instance, a single process responsible for
+  #  storing logs and serving read queries.
+  victorialogs:
+    image: victoriametrics/victoria-logs:v1.36.1
+    ports:
+      - "9428:9428"
+    command:
+      - "--storageDataPath=/vlogs"
+    volumes:
+      - vldata:/vlogs
+
+  # vmalert executes alerting and recording rules on VictoriaMetrics.
+  vmalert-metrics:
+    image: victoriametrics/vmalert:v1.128.0
+    depends_on:
+      - "alertmanager"
+      - "victoriametrics"
+    ports:
+      - 8880:8880
+    volumes:
+      - ./rules/alerts-vtraces.yml:/etc/alerts/vtraces.yml
+      - ./rules/alerts-health.yml:/etc/alerts/alerts-health.yml
+    command:
+      # it evaluates data against VictoriaMetrics
+      - "--datasource.url=http://victoriametrics:8428/"
+      # results of alerting and recording rules are persisted to VictoriaMetrics only
+      - "--remoteWrite.url=http://victoriametrics:8428/"
+      # alerts state is restored from VictoriaMetrics on restarts
+      - "--remoteRead.url=http://victoriametrics:8428/"
+      - "--notifier.url=http://alertmanager:9093/"
+      - "--rule=/etc/alerts/*.yml"
+    #restart: always
+
+  # vmalert executes alerting and recording rules on VictoriaTraces.
+  vmalert-traces:
+    image: victoriametrics/vmalert:v1.128.0
+    depends_on:
+      - "alertmanager"
+      - "victoriatraces"
+      - "victoriametrics"
+    ports:
+      - 8881:8881
+    volumes:
+      - ./vtraces-example-alerts.yml:/etc/alerts/vtraces-example-alerts.yml
+    command:
+      - "--httpListenAddr=0.0.0.0:8881"
+      # it evaluates data against VictoriaTraces
+      - "--datasource.url=http://victoriatraces:10428/"
+      # results of alerting and recording rules are persisted to VictoriaMetrics only
+      - "--remoteWrite.url=http://victoriametrics:8428/"
+      # alerts state is restored from VictoriaMetrics on restarts
+      - "--remoteRead.url=http://victoriametrics:8428/"
+      - "--notifier.url=http://alertmanager:9093/"
+      - "--rule=/etc/alerts/*.yml"
+    #restart: always
+
+  # vmauth is a router and balancer for HTTP requests.
+  # It proxies query requests from vmalert to either VictoriaMetrics or VictoriaLogs,
+  # depending on the requested path.
+  vmauth:
+    image: victoriametrics/vmauth:v1.128.0
+    depends_on:
+      - "victoriametrics"
+      - "victorialogs"
+    volumes:
+      - ./auth-vl-single.yml:/etc/auth.yml
+    command:
+      - "--auth.config=/etc/auth.yml"
+    ports:
+      - 8427:8427
+    restart: always
+
+  # https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/compose-vl-single.yml
+  # vmalert executes alerting and recording rules according to the given rule type.
+  vmalert-logs:
+    image: victoriametrics/vmalert:v1.128.0
+    depends_on:
+      - "vmauth"
+      - "alertmanager"
+      - "victoriametrics"
+    ports:
+      - 8882:8882
+    volumes:
+      - ./vlogs-example-alerts.yml:/etc/alerts/vlogs-example-alerts.yml
+    command:
+      - "--httpListenAddr=0.0.0.0:8882"
+      # it evaluates data against VictoriaMetrics and VictoriaLogs
+      # vmauth routes queries to corresponding datasource based on API path
+      - "--datasource.url=http://vmauth:8427/"
+      # results of alerting and recording rules are persisted to VictoriaMetrics only
+      - "--remoteWrite.url=http://victoriametrics:8428/"
+      # alerts state is restored from VictoriaMetrics on restarts
+      - "--remoteRead.url=http://victoriametrics:8428/"
+      - "--notifier.url=http://alertmanager:9093/"
+      - "--rule=/etc/alerts/*.yml"
+      # display source of alerts in grafana
+      - "--external.url=http://127.0.0.1:3000" #grafana outside container
+      - '--external.alert.source=explore?orgId=1&left={"datasource":"{{ if eq .Type "vlogs" }}VictoriaLogs{{ else }}VictoriaMetrics{{ end }}","queries":[{"expr":{{.Expr|jsonEscape|queryEscape}},"refId":"A"}],"range":{"from":"{{ .ActiveAt.UnixMilli }}","to":"now"}}'
+    restart: always
+
+  # Grafana instance configured with VictoriaLogs as datasource
+  grafana:
+    image: grafana/grafana:12.3.0-18638286877
+    depends_on:
+      - "victoriametrics"
+      - "victoriatraces"
+      - "victorialogs"
+    ports:
+      - 3000:3000
+    volumes:
+      - grafanadata:/var/lib/grafana
+      - ./provisioning/datasources/victoriametrics-traces-datasource/single.yml:/etc/grafana/provisioning/datasources/single.yml
+      - ./provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      # - ./provisioning/plugins/:/var/lib/grafana/plugins
+      - ./dashboards/victoriatraces.json:/var/lib/grafana/dashboards/vt.json
+      - ./dashboards/victoriametrics.json:/var/lib/grafana/dashboards/vm.json
+      - ./dashboards/victorialogs.json:/var/lib/grafana/dashboards/vl.json
+    #restart: always
+
+  # alertmanager receives alerting notifications from vmalert
+  # and distributes them according to --config.file.
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    volumes:
+      - ./alertmanager.yml:/config/alertmanager.yml
+    command:
+      - "--config.file=/config/alertmanager.yml"
+    ports:
+      - 9093:9093
+    #restart: always
+
+  nginx:
+    image: nginx:latest
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - 8080:8080
+    depends_on:
+      - victoriatraces
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/html:/usr/share/nginx/html
+      - ./nginx/log:/var/log/nginx/
+
+volumes:
+  vmdata: {}
+  vtdata: {}
+  vldata: {}
+  grafanadata: {}
+
+networks:
+  jaeger:
+    external: true

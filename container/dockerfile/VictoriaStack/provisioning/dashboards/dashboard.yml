@@ -1,0 +1,10 @@
+# https://github.com/VictoriaMetrics/VictoriaMetrics/blob/master/deployment/docker/provisioning/dashboards/dashboard.yml
+apiVersion: 1
+
+providers:
+- name: Prometheus
+  orgId: 1
+  folder: ''
+  type: file
+  options:
+    path: /var/lib/grafana/dashboards

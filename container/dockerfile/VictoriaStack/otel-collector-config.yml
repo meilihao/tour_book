@@ -1,0 +1,44 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+processors:
+  batch:
+
+exporters:
+  # 将endpoint写一起时参考[Add OpenTelemetry Collector values](https://docs.victoriametrics.com/guides/getting-started-with-opentelemetry/), 未验证
+  # Metrics -> VictoriaMetrics
+  # https://docs.victoriametrics.com/guides/getting-started-with-opentelemetry/
+  otlphttp/victoria-metrics:
+    endpoint: "http://victoriametrics:8428/opentelemetry"
+
+  # https://docs.victoriametrics.com/victoriatraces/data-ingestion/opentelemetry/#opentelemetry
+  # Traces -> VictoriaTraces
+  otlphttp/victoria-traces:
+    endpoint: "http://victoriatraces:10428/insert/opentelemetry"
+
+  # Logs -> VictoriaLogs
+  # https://docs.victoriametrics.com/victorialogs/data-ingestion/opentelemetry/
+  otlphttp/victoria-logs:
+    endpoint: "http://victorialogs:9428/insert/opentelemetry"
+    # or the OTLP alternative if supported; check docs for VictoriaLogs OTLP ingestion
+
+  debug:
+    verbosity: detailed
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/victoria-metrics, debug]
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/victoria-traces, debug]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/victoria-logs, debug]

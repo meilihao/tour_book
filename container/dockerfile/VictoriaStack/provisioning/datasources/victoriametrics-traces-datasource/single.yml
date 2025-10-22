@@ -1,0 +1,19 @@
+# https://github.com/VictoriaMetrics/VictoriaTraces/blob/master/deployment/docker/provisioning/datasources/victoriametrics-traces-datasource/single.yml
+apiVersion: 1
+
+datasources:
+  - name: VictoriaTraces
+    type: jaeger
+    access: proxy
+    url:  http://victoriatraces:10428/select/jaeger/
+
+  - name: VictoriaMetrics
+    type: prometheus
+    access: proxy
+    url: http://victoriametrics:8428/
+
+  # https://github.com/VictoriaMetrics/VictoriaLogs/blob/master/deployment/docker/provisioning/datasources/victoriametrics-logs-datasource/single.yml
+  - name: VictoriaLogs
+    type: victoriametrics-logs-datasource
+    access: proxy
+    url:  http://vmauth:8427/
