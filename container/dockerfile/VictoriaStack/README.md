@@ -36,10 +36,14 @@ jaeger-query架构:
 # cd VictoriaStack
 # cp -r /data/tmpfs/jaeger-ui-1.74.0/packages/jaeger-ui/build nginx/html/jaeger-ui/
 # docker compose -f docker-compose.yaml up -d
+# docker compose -f docker-compose.yaml down
 ```
 
 jaeger访问: http://127.0.0.1:8080
 grafana: http://localhost:3000/login admin/admin
+
+VictoriaTraces导航: http://localhost:10428
+VictoriaTraces web ui: http://localhost:10428/select/vmui
 
 VictoriaLogs导航: http://localhost:9428
 VictoriaLogs web ui: http://localhost:9428/select/vmui
@@ -48,3 +52,5 @@ VictoriaMetrics导航: http://localhost:8428
 VictoriaMetrics web ui: http://localhost:8428/vmui
 
 alertmanager web ui: http://localhost:9093
+## TODO
+将victoria-metrics-prod用vminsert 、 vmselect 和 vmstorage取代, 便于向集群版靠拢

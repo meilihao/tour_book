@@ -143,7 +143,7 @@ services:
 
   # Grafana instance configured with VictoriaLogs as datasource
   grafana:
-    image: grafana/grafana:12.3.0-18638286877
+    image: grafana/grafana:12.2.1
     depends_on:
       - "victoriametrics"
       - "victoriatraces"
