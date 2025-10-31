@@ -208,6 +208,35 @@ RabbitMQ 确保持久性消息能从服务器重启中恢复的方式是，将�
 A 系统处理完了直接返回成功了，人都以为你这个请求就成功了；但是问题是，要是 BCD 三个系统那里，BD 两个系统写库成功了，结果 C 系统写库失败了，这数据就不一致了。
 
 ## FAQ
+### rabbitmq 多消费者消费同一个队列, 如何配置
+不需要额外的特殊配置，但需要关注两个关键设置:
+- basic.consume
+
+	```go
+	msgs, err := ch.Consume(
+        q.Name,       // 队列名称
+        consumerID,   // consumerTag: 消费者标签，用于标识
+        false,        // autoAck: 禁用自动确认，使用手动确认
+        false,        // exclusive: 非独占
+        false,        // noLocal: 仅限 AMQP 0-9-1
+        false,        // noWait
+        nil,          // arguments
+    )
+	```
+- basic.qos
+
+	RabbitMQ 默认会将消息以轮询的方式公平地分发给所有连接到该队列的消费者
+
+	通过设置 basic.qos 的 prefetchCount（预取值），可以限制 RabbitMQ 一次性发送给每个消费者的未确认消息数量
+
+	```go
+	err = ch.Qos(
+        1,     // prefetchCount: 一次最多接收 1 条未确认消息
+        0,     // prefetchSize: 0 表示不限制消息大小
+        false, // global: false 表示只应用于当前 Channel
+    )
+	```
+
 ### epmd error for host xxx：address (cannot connect to host/port)
 `/etc/hosts`错误导致解析host报错, 是之前修改ip导致, 修正即可.
 

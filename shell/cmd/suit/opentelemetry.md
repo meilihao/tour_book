@@ -289,6 +289,20 @@ otelcol端口:
 - 55679 : zpages extension
 - 14250 : 安装otelcol-contrib 0.54.0后, 起来后会占用jaeger的14250端口, 使用上述otel-config.yaml重启后没再使用14250
 
+Collector 的内部主要分为三类组件:
+1. Receivers
+
+  - 接收数据输入
+  - 支持多种协议，比如 OTLP（OpenTelemetry Protocol）、Jaeger、Zipkin、Prometheus Remote Write、Fluentd 等
+1. Processors
+
+  - 在数据导出前做中间处理
+  - 功能包括：批处理 (batching)、采样 (sampling)、限流 (rate limiting)、属性/标签处理、格式转换等
+1. Exporters
+
+  - 把处理好的数据发送到后端系统
+  - 支持 Prometheus、Grafana Tempo、Jaeger、Zipkin、Datadog、Elastic、云监控服务（AWS/GCP/Azure）等
+
 > opentelemetry collector 支持级联by [otlpexporter](https://github.com/open-telemetry/opentelemetry-collector/tree/master/exporter/otlpexporter)/[otlphttpexporter](https://github.com/open-telemetry/opentelemetry-collector/tree/master/exporter/otlphttpexporter), 此时前一级的opentelemetry-collector也被成为opentelemetry agent.
 
 ## FAQ
