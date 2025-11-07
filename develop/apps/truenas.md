@@ -38,7 +38,7 @@ middlewared设置的主要参数:
 
 > 设置ip和gateway并重启后即可使用webui
 
-> 使用ssh前需要在`webui->System Setting->Services`中打开ssh服务, truenas ssh默认禁止root登录, 修改勾选其配置`Log in as Root with Password`即可. 从25.04开始, truenas管理员账号名改为truenas_admin, 可将root和truenas_admin账户组加入ssh 服务的`Password Login Groups`, 再通过truenas_admin+密码登入并使用su root切换到root, 最后创建`/root/.ssh/authorized_keys`并添加pub key后即可使用root进行ssh登入.
+> 使用ssh前需要在`webui->System Setting->Services`中打开ssh服务, truenas ssh默认禁止root登录, ~~修改勾选其配置`Log in as Root with Password`即可(25.10开始没有该选项)~~. 从25.04开始, truenas管理员账号名改为truenas_admin, 可将root和truenas_admin账户组加入ssh 服务的`Password Login Groups`, 再通过truenas_admin+密码登入并使用sudo su root切换到root(truenas_admin默认已有sudo权限), 最后创建`/root/.ssh/authorized_keys`并添加pub key后即可使用root进行ssh登入.
 
 > 访问`localhost/api/docs`即可获取api docs(有cdn资源依赖); 访问`localhost/api/v2.0`即可获取openapi json文档, 访问`localhost/api/docs/restful`即可获取已加载openapi json的swagger ui.
 

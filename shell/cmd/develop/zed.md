@@ -41,7 +41,7 @@
 # vim ~/.config/zed/settings.json
 {
     ...
-    "proxy" : "socks5://localhost:20170"
+    "proxy" : "socks5://127.0.0.1:20170"
 }
 ```
 
@@ -66,3 +66,6 @@ pip install "python-lsp-server[all]"
 `curl -f https://zed.dev/install.sh | sh`
 
 安装或更新使用相同的命令.
+
+### log位置
+`/home/chen/.local/share/zed/logs`, 包括crash log

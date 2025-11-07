@@ -1,10 +1,19 @@
 # grpcui
-grpc调试工具
+grpc调试工具grpcui/grpcurl, 推荐grpcui
 
-获取grpcui:
 ```bash
 # --- go get github.com/fullstorydev/grpcui
-go install github.com/fullstorydev/grpcui/cmd/grpcui
+# go install github.com/fullstorydev/grpcui/cmd/grpcui@latest
+# grpcui -plaintext localhost:57081
+# --- https://github.com/fullstorydev/grpcurl
+# go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
+# grpcurl -plaintext localhost:57081 list # 获取服务列表
+driverdevice.RpcDevice
+# grpcurl -plaintext localhost:57081 list driverdevice.RpcDevice
+driverdevice.RpcDevice.GetDeviceConnectStatus
+# grpcurl -plaintext localhost:57081 describe driverdevice.RpcDevice.GetDeviceConnectStatus
+driverdevice.RpcDevice.GetDeviceConnectStatus is a method:
+rpc GetDeviceConnectStatus ( .driverdevice.GetDeviceConnectStatusRequest ) returns ( .driverdevice.GetDeviceConnectStatusResponse );
 ```
 
 > 类似的调试工具还有[github.com/fullstorydev/grpcurl](https://chai2010.cn/advanced-go-programming-book/ch4-rpc/ch4-08-grpcurl.html)

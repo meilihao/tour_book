@@ -2,6 +2,14 @@
 **推荐使用xorm**.
 
 ## gorm
+### 指定列名
+```go
+type MpointRuleProp struct {
+	Id        int64           `gorm:"id,primaryKey"`
+	Match     sql.NullString  `gorm:"mathch"` // 错误用法. gorm字段命名默认由配置的NamingStrategy指定, 或`gorm:"column:mathch"`显式指定
+}
+```
+
 ### field map
 ```go
 uint64 // bigint unsigned

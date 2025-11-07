@@ -1,6 +1,7 @@
 # grpc
 
 参考:
+- [**第 4 章 RPC 和 Protobuf**](https://chai2010.cn/advanced-go-programming-book/ch4-rpc/readme.html)
 - [gRPC学习笔记](https://github.com/skyao/leaning-grpc)
 - [proto3学习笔记和资料翻译](github.com/skyao/leaning-proto3)
 - [gRPC 官方文档中文版](http://doc.oschina.net/grpc)

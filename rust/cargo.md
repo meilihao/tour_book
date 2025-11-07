@@ -306,3 +306,6 @@ registry = "https://mirrors.tuna.tsinghua.edu.cn/git/crates.io-index.git"
 ```
 ### 大小优化
 - [min-sized-rust](https://github.com/johnthagen/min-sized-rust)
+
+### `fatal error: 'stddef.h' file not found`
+cargo build报`'stddef.h' file not found`, cargo使用llvm组建, 安装clang即可

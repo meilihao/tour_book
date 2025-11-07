@@ -1,5 +1,9 @@
 # go-zero
 
+## 服务调用
+ref:
+- [go-zero api 调用 rpc 实践](https://www.cnblogs.com/davis12/p/18335134)
+
 ## generate
 ```bash
 # goctl api go --api demo.api --dir demo # 从api定义生成项目

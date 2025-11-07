@@ -18,3 +18,6 @@
 
 ## net
 - [Life of a Packet in Cilium：实地探索 Pod-to-Service 转发路径及 BPF 处理逻辑, **他的其他博文也很好**](https://arthurchiao.art/blog/cilium-life-of-a-packet-pod-to-service-zh/)
+- [K8s 双 AZ 在香港机房的落地部署：Calico 与 Cilium 深度对比、eBPF 加速实测、Pod 安全边界与零信任网络](https://www.a5idc.com/helpcontent/1187.html)
+
+	建议: vxlan+ebpf -> Cilium
