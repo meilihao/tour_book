@@ -1,0 +1,255 @@
+# deploy/docker/run-all/docker-compose.yml
+version: '3.2'
+# Network
+networks:
+  unitedrhino_net:
+    name: unitedrhino_net
+# 定义命名卷
+volumes:
+  front_dist_volume:  # 卷名，与上面的挂载对应
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '../conf/core/dist'  # 卷数据实际存储的宿主机路径
+services:
+  things:
+    image: docker.unitedrhino.com/unitedrhino/things:latest
+    container_name: things
+    hostname: things
+    restart: always
+    ports:
+      - "7788:7788"
+      - "17788:17788"
+      - "9081:9081" # dmsvr rpc端口
+    volumes:
+      - ../conf/oss:/oss
+      - ../conf/things/etc/init:/unitedrhino/etc/init
+      - ../conf/things/etc:/unitedrhino/etc
+    depends_on:
+      - tdengine
+      - nats-server
+      - etcd
+      - redis
+      - emqx
+      - core
+    environment:
+      - confSuffix=${confSuffix}
+      - devOpenApiApiKey=${devOpenApiApiKey} #emq的秘钥配置,参考: https://doc.unitedrhino.com/pages/24d647/#%E8%AE%BE%E5%A4%87%E5%9C%A8%E7%BA%BF%E7%8A%B6%E6%80%81%E6%A0%A1%E5%87%86-%E5%8F%AF%E9%80%89
+      - devOpenApiSecretKey=${devOpenApiSecretKey} #如上
+      - OssCustomHost=${OssCustomHost} #ota升级给设备的路径,需要外网可以访问,替换ip即可
+      - isInitTable=${isInitTable}
+      - dbType=${dbType}
+      - dbDSN=${dbDSN}
+#      - dbType=pgsql #pgsql打开这个配置和下面pgsql的容器注释
+#      - dbDSN=postgres://postgres:password@postgres:5432/postgres
+      - tsDBDSN=${tsDBDSN}
+      - tsDBDriver=${tsDBDriver}
+#      - tsDBDSN=root:taosdata@ws(tdengine:6041)/ithings?readBufferSize=5242880 # ws模式,性能更好,但是需要提前初始化数据库
+#      - tsDBDriver=taosWS
+    logging:
+      options:
+        max-size: "50M"
+        max-file: "10"
+      driver: json-file
+    networks:
+      - unitedrhino_net
+  core:
+    image: docker.unitedrhino.com/unitedrhino/core:latest
+    container_name: core
+    hostname: core
+    restart: always
+    ports:
+      - "7777:7777"
+      - "17777:17777"
+      - "9180:9180" # sys rpc 端口
+      - "3256:3256" # timedJob 端口
+    depends_on:
+      - tdengine
+      - nats-server
+      - etcd
+      - redis
+      - emqx
+    volumes:
+      - ../conf/oss:/oss
+      - ../conf/core/etc:/unitedrhino/etc
+      - ../conf/core/etc/init:/unitedrhino/etc/init
+      - front_dist_volume:/unitedrhino/dist
+    environment:
+      - confSuffix=${confSuffix}
+      - isInitTable=${isInitTable}
+      - dbType=${dbType}
+      - dbDSN=${dbDSN}
+    logging:
+      options:
+        max-size: "50M"
+        max-file: "10"
+      driver: json-file
+    networks:
+      - unitedrhino_net
+
+  nats-server:
+    image: nats:latest
+    container_name: nats
+    hostname: nats
+    restart: always
+    command: --jetstream  -m 8222 #启用jetstream
+    ports:
+      - "4222:4222"
+      - "6222:6222" #
+      - "8222:8222" # http监控端口
+    logging:
+      options:
+        max-size: "50M"
+        max-file: "10"
+      driver: json-file
+    networks:
+      - unitedrhino_net
+
+  etcd:
+    image: registry.cn-qingdao.aliyuncs.com/ithings-open/ithings-open:bitnami-etcd-3.5
+    container_name: etcd-v3
+    hostname: etcd
+    restart: always
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes # 允许不用密码登录
+      - ETCD_NAME=etcd                                     # etcd 的名字
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=http://etcd:2380  # 列出这个成员的伙伴 URL 以便通告给集群的其他成员
+      - ETCD_LISTEN_PEER_URLS=http://0.0.0.0:2380           # 用于监听伙伴通讯的URL列表
+      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379         # 用于监听客户端通讯的URL列表
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379        # 列出这个成员的客户端URL，通告给集群中的其他成员
+    logging:
+      options:
+        max-size: "50M"
+        max-file: "10"
+      driver: json-file
+    networks:
+      - unitedrhino_net
+
+  mariadb:
+    image:  docker.unitedrhino.com/unitedrhino/mariadb:11.4.5
+    container_name: mariadb
+    hostname: mariadb
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      TZ: Asia/Shanghai
+    volumes:
+      - ../conf/mysql/sql:/docker-entrypoint-initdb.d
+      - ../conf/mysql/data:/var/lib/mysql
+      - ../conf/mysql/user:/var/user
+    logging:
+      options:
+        max-size: "50M"
+        max-file: "10"
+      driver: json-file
+    networks:
+      - unitedrhino_net
+
+  redis:
+    image: registry.cn-qingdao.aliyuncs.com/ithings-open/ithings-open:redis-7-alpine
+    container_name: redis
+    hostname: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    logging:
+      options:
+        max-size: "50M"
+        max-file: "10"
+      driver: json-file
+    networks:
+      - unitedrhino_net
+    volumes:
+      - ../conf/redis:/usr/local/etc/redis
+      - ../conf/redis/data:/data
+  tdengine:
+    image: tdengine/tdengine:latest
+    container_name: tdengine
+    hostname: tdengine
+    ports:
+      - "6030:6030"
+      - "6035:6035"
+      - "6041:6041"
+      - "6060:6060"
+      - "6030-6040:6030-6040/udp"
+    restart: always
+    tty: true
+    logging:
+      options:
+        max-size: "50M"
+        max-file: "10"
+      driver: json-file
+    networks:
+      - unitedrhino_net
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - ../conf/taos/dnode/data:/var/lib/taos
+      - ../conf/taos/dnode/log:/var/log/taos
+  emqx:
+    image: emqx/emqx:5.8
+    container_name: emqx
+    hostname: emqx
+    restart: always
+    ports:
+      - "1883:1883"
+      - "8083:8083"
+      - "8883:8883"
+      - "8084:8084"
+      - "18083:18083"
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - ../conf/emqx5/etc:/opt/emqx/etc
+    environment:
+      - EMQX_NAME=emqx
+      - EMQX_HOST=emqx
+    logging:
+      options:
+        max-size: "50M"
+        max-file: "10"
+      driver: json-file
+    networks:
+      - unitedrhino_net
+
+  minio:
+    image: minio/minio:latest
+    hostname: minio
+    container_name: minio
+    ports:
+      - "9000:9000"
+      - "9090:9090" # 控制台端口
+    restart: always
+    command: server --console-address ':9090' /data  #指定容器中的目录 /data
+    environment:
+      MINIO_ROOT_USER: root
+      MINIO_ROOT_PASSWORD: password #大于等于8位
+    logging:
+      options:
+        max-size: "50M" # 最大文件上传限制
+        max-file: "10"
+      driver: json-file
+    volumes:
+      - ../conf/minio/data:/data               #映射当前目录下的data目录至容器内/data目录
+      - ../conf/minio/config:/root/.minio/     #映射配置目录
+    networks:
+      - unitedrhino_net
+
+#  monibuca:
+#    image: langhuihui/monibuca:v5
+#    container_name: monibuca
+#    restart: always
+#    ports:
+#      - "1935:1935"    # RTMP 端口
+#      - "6000:6000"    # 自定义端口
+#      - "8180:8080"    # HTTP 端口
+#      - "554:554"      # RTSP 端口
+#      - "50051:50051"  # gRPC 端口
+#      - "5060:5060/udp" # SIP UDP 端口
+#    #      - "9000:9000"    # 自定义端口
+#    networks:
+#      - unitedrhino_net

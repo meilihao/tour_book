@@ -1,6 +1,9 @@
 # list
 - [高并发库存秒杀场景，阿里巴巴数据库是这样应对的](https://mp.weixin.qq.com/s?__biz=MzI0NTE4NjA0OQ==&mid=2658363882&idx=3&sn=569eac5d2c26f1939c148b6be16e5878)
 - [架构思考与实践：从通用到场景的转变](https://my.oschina.net/u/4662964/blog/17286337)
+- [“6 个月，47 个微服务”：一场由“简历驱动”引发的架构灾难](https://tonybai.com/2025/11/02/6-months-47-microservices-architecture-disaster/)
+
+	**架构是一系列关于权衡 (Trade-offs) 的决策，而不是一套可以盲目套用的信条或模式**
 
 ## 唯一ID
 - [UKG (Unique Key Generate Server)](http://www.oschina.net/p/ukg)

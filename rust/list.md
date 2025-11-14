@@ -68,6 +68,7 @@ ref:
 ## gui
 - [Pop!_OS COSMIC 桌面使用 Rust GUI 库 Iced 取代 GTK](https://www.oschina.net/news/212636/cosmic-desktop-iced-toolkit)
 - [Slint 1.0 正式发布，Rust 编写的原生 GUI 工具包](https://www.oschina.net/news/235410/slint-1-0-released)
+- [gpui-component](https://github.com/longbridge/gpui-component)
 
 ## next
 - [用Rust实现用户态高性能存储 - Wang Pu (王璞) from DatenLord](https://weibo.com/1945106210/JAflese1N?type=repost)
@@ -178,6 +179,11 @@ ref:
 - zola: 对标 hugo
 - orm: diesel(不支持异步), sea-orm(支持异步), sqlx
 - [tklog](https://www.oschina.net/news/294608/tklog-released): log
+- malloc
+
+	- [rust的web框架单机百万并发的性能与开销](https://rustcc.cn/article?id=42f6ad67-55d6-4377-a6f6-f97e6dcc0d0e)
+
+		测试了更换MiMalloc和JeMalloc，MiMalloc效果最好，JeMalloc次之，如果不更换内存分配器，axum的内存不会自动归还系统
 
 ## example
 - 练手[rustlings](https://github.com/rust-lang/rustlings)，小练习 可以让你习惯阅读和编写 Rust
@@ -189,7 +195,7 @@ ref:
 - [talent-plan](https://github.com/pingcap/talent-plan)
 - [Writing an OS in Rust](https://os.phil-opp.com/)
 - [Learn Rust With Entirely Too Many Linked Lists](https://rust-unofficial.github.io/too-many-lists/index.html)
-- [ParvaOS -  用 Rust 语言从头开发的操作系统](https://github.com/gianndev/ParvaOS)
+- [ParvaOS - 用 Rust 语言从头开发的操作系统](https://github.com/gianndev/ParvaOS)
 - [用 Rust 重写 SQLite 数据库入门指南](https://avi.im/blag/2025/rickrolling-turso/)
 - [RustFS - MinIO 国产化替代方案, 高性能分布式存储](https://github.com/rustfs/rustfs)
 - [我用Rust做了一个QQ](https://juejin.cn/post/7262557466172112956)

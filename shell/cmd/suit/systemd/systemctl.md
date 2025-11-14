@@ -251,6 +251,7 @@ systemd-ask-password-conso
 # systemctl suspend # 待机/挂起
 # systemctl hibernate # 休眠
 # systemctl hybrid-sleep # 混合休眠
+# systemctl restart sddm/display-manager # 注销并重新进入kde
 ```
 
  对于不知运行等级为何物的人，参考`ls -al /lib/systemd/system/runlevel`, 说明如下:

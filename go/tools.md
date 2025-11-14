@@ -59,6 +59,9 @@
 - 任务队列
 
 	- [Asynq简单、可靠、高效的分布式任务队列](https://juejin.cn/post/7184406673879449658)
+- Go Interpreter(解析器)
+
+	- [Yaegi](https://github.com/traefik/yaegi)
 
 ## http client
 - [github.com/go-resty/resty/v2](https://github.com/go-resty/resty)

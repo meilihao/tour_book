@@ -22,3 +22,5 @@ docker run -d \
   --name tsdb \
   tdengine/tsdb-ee
 ```
+
+访问: http://localhost:6030 root/taosdata

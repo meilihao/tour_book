@@ -35,6 +35,8 @@ OpenTelemetry的终极目标是：实现Metrics、Tracing、Logging的融合及�
 - 多种维度的关联基于元信息(标签)实现，元信息由业务确定，例如：通过Env来区别是测试还是生产环境等
 - 提供分布式的Context传播方式，例如通过W3C的traceparent/tracestate头、GRPC协议等
 
+> rust crate: opentelemetry_sdk和opentelemetry的区别, opentelemetry是api接口定义, opentelemetry_sdk是具体实现. opentelemetry很能体现设计和实现的分离. 生产环境使用 SDK Builder, 开发/测试环境使用 Trait Builder.
+
 ## opentelemetry-collector
 参考:
 - [Opentelemetry Collector的配置和使用](https://cloud.tencent.com/developer/article/1735992)
