@@ -335,6 +335,8 @@ rust组成:
 
         使用 to_string 方法从字符串字面值创建 String: `"...".to_string()` <=> `String::from("...")` <=> `"...".to_owned()` <=>`str::to_string("hello")`<=>`ToString::to_string("hello")`<=>`<str as ToString>::to_string("hello")`.
 
+        > 要将任何类型转换为 String，只需为该类型实现 ToString 特质即可. 但更好的做法是实现 fmt::Display 特质，它不仅会自动提供 ToString，还允许打印该类型.
+
         其他形式称为限定方法调用，因为它们需要指定`方法关联的类型或特型`. 最后一种带尖括号的形式，则同时指定了两者，因此称为完全限定方法调用, 比如`<str as ToString>::to_string()`.
 
         完全限定方法调用用途:
@@ -532,11 +534,11 @@ ref:
 - eprintln!：与 eprint! 类似，但输出结果追加一个换行符
 
 [println! format](https://doc.rust-lang.org/std/fmt/#formatting-traits):
-- nothing(即默认)⇒ Display : `println!("{}",2)`
-- ? ⇒ Debug : `println!("{:?}",2)`
+- nothing(即默认)⇒ Display : `println!("{}",2)`, 以更优雅、用户友好的方式格式化文本
+- ? ⇒ Debug : `println!("{:?}",2)`, 用于调试目的的文本格式化
 - x? ⇒ Debug with lower-case hexadecimal integers
 - X? ⇒ Debug with upper-case hexadecimal integers
-- :#? ⇒ 带换行和缩进的Debug打印 : `println!("{:#?}",("t1","t2"))` 
+- :#? ⇒ 美化的(带换行和缩进)Debug打印 : `println!("{:#?}",("t1","t2"))` 
 - o ⇒ Octal : `println!("{:o}",2)`
 - x ⇒ LowerHex : `println!("{:x}",12)`
 - X ⇒ UpperHex : `println!("{:X}",12)`/`println!("{:X}", '居' as u32)`(打印unicode码点)
@@ -1178,22 +1180,32 @@ rust编译器目前可以支持的常量表达式有字面量、元组、数组�
 rust代码使用`.rs`扩展名, 且必须是utf-8编码.
 
 注释由rustdoc解析, 支持:
-- 元素级：这些注释适用于模块中的元素, 例如结构体、枚举声明、函数及特征常量等. 它们应该出现在元素的上方. 对于单行注释, 它们以`//`开头, 而对于多行
-注释, 则以`/*`开头，以`*/`结尾, 但它也可用在代码中间, 比如`let some_number/*: i16*/ = 100;`
-- 模块级：这些是出现在根层级的注释, 例如 main.rs、 lib.rs, 以及其他任意模块, 可使用`//!`表示单行注释的开始, 使用`/*!`表示多行注释的开始, 并将`*/`
-作为结尾标记. 它们适用于包和模块.
+- 普通注释：编译器会忽略这些注释. 这些注释适用于模块中的元素, 例如结构体、枚举声明、函数及特征常量等. 它们应该出现在元素的上方. 
 
-> `///`=`#[doc]`, `//!`=`#![doc]`
+    形式:
+    1. `//`: 行注释, 从双斜杠开始到行尾
+    1. `/**/`: 块注释, 从开始符号到结束符号. 它也可用在代码中间, 比如`let some_number/*: i16*/ = 100;`
 
-这些注释会被转成文档属性`#[doc(key=value)]`.
+- 文档注释：这些注释会被解析成 HTML 格式的库文档. 这些是出现在根层级的注释, 例如 main.rs、 lib.rs, 以及其他任意模块
+
+    形式:
+    1. `///`: 为接下来的项生成库文档
+    1. `//!`: 为当前项（如 crate、模块或函数）生成库文档
+
+    这些注释会被转成文档属性`#[doc(key=value)]`.
+
+    > `///`=`#[doc]`, `//!`=`#![doc]`
+
+    构建文档:
+    1. 使用 cargo doc 在 target/doc 目录下构建文档. 运行 cargo doc --open 将自动在浏览器中打开文档
+    1. 使用 cargo test 运行所有测试（包括文档测试）. 如果只想运行文档测试，请使用 cargo test --doc
 
 常见文档属性:
 - #![doc(html_logo_url = "image url")：用于在文档页面的左上角添加徽标（ logo）
 - #![doc(html_root_url = "https://docs.rs/slotmap/0.2.1")]：用于设置文档页面的统一资源定位器（ Uniform Resource Locator， URL）
 - #![doc(html_playground_url = "https://play.rust-lang.org/")]： 用于在文档中的代码示例附近放置一个“ Run”按钮，以便能够通过在线 Rust 工作台运行它
 元素级属性
-- #[doc(hidden)]：假定你已经为公共函数 foo 编写了文档作为自己的注释，但是不希望该函数的使用者查看这些文档，那么可以使用此属性告知 rustdoc 忽略为 foo 生
-成文档
+- #[doc(hidden)]：告诉 rustdoc 不要在文档中包含此内容
 - #[doc(include)]：用于引用来自其他文件的文档。如果文档很长，这有助于你将文档和代码分开
 - #[doc(inline)]: 用于内联文档, 而不是链接到一个单独的页面
 - #[doc(no_inline)]: 用于防止链接到单独的页面或其它地方
@@ -1571,6 +1583,8 @@ type alias:
 type Carry = u8;
 ```
 
+> type的新类型名必须使用 UpperCamelCase（大驼峰）命名，否则编译器会发出警告. 此规则的例外是原始类型，如 usize、f32 等
+
 ## 基本数据类型
 ref:
 - [字符串操作 - 《Rust程序设计 - 17.3 String与str》]()
@@ -1580,10 +1594,29 @@ ref:
 
 > primitive types (primitive = very basic)
 
-基本数据类型也叫标量类型(scalar type), 表示只能存储单个值的类型.
+rust基本数据类型(primitive=原生)包括:
+1. 标量类型(scalar type), 表示只能存储单个值的类型
 
-rust有四种主要的标量类型:整型, 浮点, 布尔, 字符型.
+    rust有5种主要的标量类型:整型(包括isize和usize), 浮点, 布尔, 字符型(char), `单元类型 ()`
 
+    > 尽管单元类型的值是一个元组，但它不被视为复合类型，因为它不包含多个值
+
+    > 在数字字面值中插入下划线可提高可读性
+2. 复合类型
+
+    复合类型包括:
+    1. 数组
+    2. 元组
+
+Rust 的自定义数据类型主要通过以下两个关键字来创建：
+1. struct：定义结构体
+1. enum：定义枚举
+
+rust常量也可以通过 const 和 static 关键字来创建:
+- const：不可变值（常见用法）
+- static：具有 `'static` 生命周期的变量. 静态生命周期会被自动推断，无需明确指定. 访问或修改可变静态变量是 unsafe 的.
+
+常见类型:
 - bool : true, false
 - char : 单个字符, 大小为4B, 并代表了一个 Unicode 标量值（Unicode Scalar Value）, 等价于go的rune. char 由单引号包裹, 不同于字符串使用双引号.
 
@@ -2254,6 +2287,17 @@ rust提供5种复合类型:
         ```
 
         Rust enum 类型的变量需要区分它里面的数据究竟是哪种变体, 所以它包含了一个内部的`tag 标记`来描述当前变量属于哪种类型. 这个标记对用户是不可见的, 通过恰当的语法设计, 保证标记与类型始终是匹配的，以防止用户错误地使用内部数据, 可用`std::mem::size_of::<Number>()`输出大小来验证.
+
+        使用 enum 是实现链表的常见方法:
+        ```rust
+        // https://doc.rust-lang.org/rust-by-example/zh/custom_types/enum/testcase_linked_list.html
+        enum List {
+            // Cons：包含一个元素和指向下一节点指针的元组结构体
+            Cons(u32, Box<List>),
+            // Nil：表示链表末尾的节点
+            Nil,
+        }
+        ```
 1. 联合体(Union) 
     rust也支持 union 类型, 这个类型与C中的 union 完全一致, 但在 Rust 里面, 读取它内部的值被认为是 unsafe 行为, 一般情况下不使用这种类型, 而它存在的主要目的是为了方便与C语言进行交互.
 
@@ -3597,7 +3641,7 @@ let  c: &'static str = b as &'static str; // &'static str
 ### From和Into
 From Into 是定义于 std::convert 模块中的两个 trait. 它们定义了 from和into 两个方法, 这两方法互为反操作.
 
-关于 Into 有一条默认的规则: 如果类型U实现了 `From<T>`, 则T类型实例调用 into方法就可以转换为类型U. 这是因为 Rust 标准库内部有一个默认的实现.
+关于 Into 有一条默认的规则: 如果类型U实现了 `From<T>`, 则T类型实例调用 into方法就可以转换为类型U. 这是因为 Rust 标准库内部有一个默认的实现; 但反过来并不成立, 为U类型实现 Into 不会自动为它提供 From 的实现.
 
 在标准库中 还包含了 TryFrom和TryInto 两种 trait, 是 From和Into的错误处理版本, 因为类型转换是有可能发生错误的，所以在需要进行错误处理的时候可以使用它们.
 
@@ -4693,7 +4737,10 @@ Rust 的 闭包（closures）是可以保存进变量或作为参数传递给其
 
 闭包可以作为函数参数，这一点直接提升了Rust语言的抽象表达能力. 当它作为函数参数传递时，可以被用作泛型的trait限定，也可以直接作为trait对象来使用.
 
-> 在函数外部，一个闭包可以在Fn、FnMut和FnOnce之间自行决定，但在函数内部你必须选择一个.
+在函数外部，一个闭包可以在Fn、FnMut和FnOnce之间自行决定，但在函数内部你必须选择一个:
+- Fn：闭包通过引用使用捕获的值（&T）
+- FnMut：闭包通过可变引用使用捕获的值（&mut T）
+- FnOnce：闭包通过值使用捕获的值（T）
 
 闭包无法直接作为函数的返回值，如果要把闭包作为返回值，必须使用trait对象.
 
@@ -4859,8 +4906,14 @@ iterator trait 有大量的方法，但绝大多数情况下，只需要定义�
 
 选择迭代器:
 - iter() 引用的迭代器, 生成一个不可变引用的迭代器
+
+    在每次迭代中借用集合的每个元素. 集合保持不变，并且在循环之后可以重复使用
 - iter_mut() 可变引用的迭代器
+
+    可变地借用集合的每个元素，允许在原地修改集合
 - into_iter() 值的迭代器(不是引用), 获取所有权并返回拥有所有权的迭代器
+
+    会消耗集合，使得在每次迭代中提供确切的数据。一旦集合被消耗，它就不再可用于重复使用，因为它已经在循环中被"移动"了
 
 <table>
 <thead>
@@ -5351,18 +5404,17 @@ macro_rules! 是 Rust 中定义宏的主要方式. 并非所有的宏都是以�
 
 Rust 代码中的属性是指元素的注释. 属性通常是编译器内置的，不过也可以由用户通过编译器插件创建。它们指示编译器为其下显示的元素注入额外的代码或含义.
 
-属性:
-- `#[<name>]`：这适用于每个元素，通常显示在它们定义的上方
-- `#![<name>]`：这适用于每个软件包. 它通常位于用户软件包根目录的最顶端部分
-- 其他属性
-
-    - `#[cfg(test)]`: 此属性添加在测试模块之上，以提示编译器有条件地编译模块，但仅在测试模式下有效
+属性的形式为` #[outer_attribute]（外部属性）或 #![inner_attribute]（内部属性）`，它们的区别在于应用的位置:
+- `#[<name>]`：应用于紧随其后的条目, 条目的例子包括：函数、模块声明、常量、结构体、枚举等
+- `#![<name>]`：应用于包含它的条目（通常是模块或 crate）. 这种属性被解释为应用于它所在的整个作用域
 
 常见属性:
+- `#[cfg(test)]`: 此属性添加在测试模块之上，以提示编译器有条件地编译模块，但仅在测试模式下有效
 - `#[repr(C)]` : 要求 Rust 以兼容 C 和 C++ 的方式在内存中存储结构体
 
     与 C 和 C++ 不同, Rust 不保证结构体的字段或元素在内存中会以某种顺序存储, 但保证把字段的值直接存储在结构体的内存块中.
 - `#[allow(unused_variables)]`: 允许存在未使用的变量
+- `#[allow(dead_code)]`: 用于隐藏未使用代码的警告
 
 ### 调试宏
 调试宏代码基本有两种办法：

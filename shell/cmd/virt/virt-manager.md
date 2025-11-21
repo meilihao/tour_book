@@ -300,3 +300,8 @@ ref:
 
 ### 连接远程libvirt报`Configure SSH key access for the remote host, or install an SSH askpass package locally`
 `apt install ssh-askpass`
+
+### uefi安装popos 24.04报`bad shim signature`
+`bad shim signature`表明 Shim 无法验证 GRUB 的签名
+
+解决方法: uefi选择带secboot的固件

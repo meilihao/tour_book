@@ -12,6 +12,10 @@ ref:
 
 	答案在repo的solutions目录里
 - [一个用rust实现 简易应用管理系统](https://github.com/shanliu/lsys)
+- [**通过例子学 Rust**](https://doc.rust-lang.org/rust-by-example/zh/index.html)
+
+	其他版本:
+	- [**通过例子学 Rust**](https://rustwiki.org/zh-CN/rust-by-example/index.html)
 
 ### 重写
 #### 命令行

@@ -2,6 +2,7 @@
 ref:
 - [浅谈DDD领域驱动设计架构](https://zhuanlan.zhihu.com/p/16335704108)
 - [领域驱动设计在互联网业务开发中的实践](https://tech.meituan.com/2017/12/22/ddd-in-practice.html)
+- [Building an API Server with Rust and DDD](https://medium.com/@tattu.0310/building-an-api-server-with-rust-and-ddd-86a276890a36)
 
 DDD的核心诉求就是将业务架构映射到系统架构上，在响应业务变化调整业务架构时，也随之变化系统架构。而微服务追求业务层面的复用，设计出来的系统架构和业务一致；在技术架构上则系统模块之间充分解耦，可以自由地选择合适的技术架构，去中心化地治理技术和数据.
 
