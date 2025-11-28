@@ -5,6 +5,7 @@
 - perf tools : 综合性能概要分析工具
 - ftrace : 追踪kernel的函数调用
 - systemtap
+- [tracy](https://mp.weixin.qq.com/s/VWdMizmmVlf-7Bsd0AkRzQ)
 
 ## 网络
 - nuttcp : 带宽吞吐量测试工具

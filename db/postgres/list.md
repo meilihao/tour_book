@@ -22,6 +22,7 @@
 - [PostgreSQL手册](http://pgsqlcn.com)
 
 ## ha
+- [PostgreSQL 高可用方案对比](https://mp.weixin.qq.com/s/DXv0ID19-MKQhzE8rThxZg)
 - [pigsty 数据库高可用](https://pigsty.io/zh/docs/concept/ha/)
 - [PostgreSQL部署|基于Stream复制的手工主从切换](https://www.modb.pro/db/404682)
 - [PostgreSQL流复制之主备切换](https://www.modb.pro/db/235078)

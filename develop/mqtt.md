@@ -116,7 +116,12 @@ EMQX 还支持客户端上下线事件、收发流量、消息收发、系统监
 ## EMQX
 访问管理控制台： 通过 http://localhost:18083/ 登录，默认账号: admin 密码: public
 
-##
+## mosquitto
+```bash
+# mosquitto_sub -t /db/change # 订阅topic
+```
+
+## FAQ
 ### 程序行为异常, 定位是mqtt问题
 1. 检查是否使用了相同的clientid
 
