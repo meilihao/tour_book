@@ -1335,3 +1335,6 @@ ref:
 - [JPA criteria 查询:类型安全与面向对象](https://blog.51cto.com/u_9058648/3563753)
 
 静态属性SingularAttribute<A, B> b，这里b是定义在类A中的类型为B的一个对象
+
+### 启动jar
+`java -jar PBoxClient.jar`

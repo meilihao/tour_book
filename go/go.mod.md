@@ -257,3 +257,15 @@ go-mod-upgrade
 
 ### 更新go vendor
 更新go.mod后重新执行`go mod tidy && go mod vendor`
+
+### `unrecognized import path "codeup.aliyun.com/xxx/go-common/go-dto": parse https://codeup.aliyun.com/xxx/go-common/go-dto?go-get=1: no go-import meta tags ()`
+问题原因: Codeup的代码托管具备**多级组**的结构组织能力，同时由于Codeup不支持全局公开仓库
+
+配置[`~/.netrc`](https://help.aliyun.com/zh/yunxiao/user-guide/how-to-use-go-dependency-management): `machine codeup.aliyun.com login <username> password <password>`
+
+可能还需要配置`GOPRIVATE='codeup.aliyun.com'`和`~/gitconfig`的`[url "git@codeup.aliyun.com:"]\ninsteadOf = https://codeup.aliyun.com/`
+
+### `go build cmd/main.go`报`cmd/main.go:3:8: package xxx/internal is not in std (/usr/local/go/src/xxx/internal)`
+项目路径规划没有问题
+
+解决方法: 将本mod加入上级目录中的go.work

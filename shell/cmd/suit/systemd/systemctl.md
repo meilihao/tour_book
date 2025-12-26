@@ -251,7 +251,7 @@ systemd-ask-password-conso
 # systemctl suspend # 待机/挂起
 # systemctl hibernate # 休眠
 # systemctl hybrid-sleep # 混合休眠
-# systemctl restart sddm/display-manager # 注销并重新进入kde
+# systemctl restart sddm/display-manager # 注销并重新进入kde. 重启sddm时要到终端上执行, 因为在桌面terminal里执行可能导致重启后的桌面没有任务栏
 ```
 
  对于不知运行等级为何物的人，参考`ls -al /lib/systemd/system/runlevel`, 说明如下:

@@ -100,3 +100,32 @@ ps: 可以将measurement, tag_set, filed, 时间视为索引
 	1. 相关参数信息，比如缓存空间大小 (max-szie)、缓存周期（max-age）、尝试间隔（retry-interval）等，是可配置的
 1. 反熵
 1. Quorum NWR
+
+## FAQ
+### inflexdb 1.6 select时将time转成可读时间
+```bash
+# apt install python3-influxdb
+# vim s.py
+import pandas as pd
+from influxdb import InfluxDBClient
+
+# 设置 pandas 显示选项
+pd.set_option('display.max_rows', 1000)  # 最大行数
+pd.set_option('display.max_columns', 100)  # 最大列数
+pd.set_option('display.width', None)  # 自动调整宽度
+pd.set_option('display.max_colwidth', None)  # 显示完整列内容
+
+client = InfluxDBClient(host='localhost', port=8086, database='test')
+
+results = client.query("SELECT * FROM device_prop where uuid='xxx' order by time desc LIMIT 100")
+
+df = pd.DataFrame(list(results.get_points()))
+
+# 将utc时间戳转换为可读时间格式
+df['time'] = pd.to_datetime(df['time']) 
+df['time_local'] = df['time'].dt.tz_convert('Asia/Shanghai') # 如果原始数据是 UTC 时间，转换为本地时间
+# df['time_local'] = df['time'].dt.tz_localize('Asia/Shanghai') # 如果原始数据没有时区（naive），直接设成本地时间
+
+print(df)
+# python3 s.py
+```

@@ -1,6 +1,9 @@
 # fio
 参考:
 - [磁盘测试工具FIO](https://www.cnblogs.com/klb561/p/11939355.html)
+- [存储设备性能benchmark](https://pibenchmarks.com/)
+
+    - [TheRemote/PiBenchmarks : Linux Storage Benchmarking Script](https://github.com/TheRemote/PiBenchmarks)
 
 模拟各种情况的i/o基准测试工具, 支持 14 种不同的 I/O 引擎，包括: sync,mmap, libaio, posixaio, SG v3, splice, null, network, syslet, guasi, solarisaio, iouring 等等.
 
@@ -50,6 +53,8 @@ fio 分顺序读，随机读，顺序写，随机写，混合随机读写模式.
 - size=100G            # io测试的寻址空间
 - rwmixwrite=30        # 在混合读写的模式下，写占30%
 - -fdatasync=1         # 落盘方式
+- `--debug=all`        : debug log
+- -thread : fio 默认使用 进程（Process） 模式来运行任务，而不添加 --thread 会导致内存占用大幅增加，甚至在嵌入式设备（如 MMC 卡应用场景）上导致 OOM（内存溢出）
 
 ## fio输出解读
 slat / clat / lat, 这几个是 latency 指标:
@@ -148,3 +153,7 @@ $ fio --name=big-file-sequential-write \
 ## FAQ
 ### io scheduler noop not found
 `cat /sys/block/sda/queue/scheduler`, 查看当前系统是否没选中noop. 修改即可:`echo 'noop' > /sys/block/sda/queue/scheduler`.
+
+### fio测试时报`fio: job startup hung? exiting.`
+可能的问题:
+1. 内存不足

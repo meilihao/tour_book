@@ -34,6 +34,9 @@
 	insteadOf = git://github.com/
 [url "https://github.com/"]
 	insteadOf = git://github.com/
+[url "git@codeup.aliyun.com:"]
+    insteadOf = https://codeup.aliyun.com/
+
 [init]
 	defaultBranch = main
 ```

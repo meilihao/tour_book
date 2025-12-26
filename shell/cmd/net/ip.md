@@ -802,3 +802,14 @@ NetworkManager 是一个功能强大的网络管理工具, 支持动态管理和
 systemd-networkd 是 systemd 组件的一部分，主要用于管理系统的网络配置. 它适合于服务器、嵌入式设备和其他不需要图形界面的环境, 主要提供基础的网络配置功能，较为轻量级和稳定.
 
 Netplan是Canonical(Ubuntu)开发的做为ubuntu Linux发行版上默认的网络配置命令行工具. Netplan 使用 YAML 描述文件来配置网络，然后通过这些描述为任何给定的底层呈现工具(主要就是systemd-networkd和networkmanager二种工具)生成必要的配置选项.
+
+## FAQ
+### 诡异/莫明其妙网络排查顺序
+1. ip冲突, **大概率**
+
+    表现:
+    1. tcp连接总是莫名断开
+    1. 均能ping通目标ip, 但有些电脑能连上该ip, 有些则不能连接(抓包发现是syn包没有响应)
+    1. 抓包中出现很多`TCP Spurious Retransmission`, `TCP Dup ACK`, `TCP Retransmission`包
+
+2. mac重复

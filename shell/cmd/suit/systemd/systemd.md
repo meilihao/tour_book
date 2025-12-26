@@ -600,3 +600,12 @@ ExecStart=-/sbin/agetty --noissue --autologin xxx --noclear %I $TERM
 ...
 # reboot
 ```
+
+### client-xxx.service由manager.service动态创建, 但manager.service退出时client-xxx.service也会退出
+```bash
+# vim manager.service
+...
+# 关键：仅杀死manager主进程，不清理其创建的cgroup/子进程
+KillMode=process
+...
+```

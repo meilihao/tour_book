@@ -75,6 +75,7 @@ Storage选项:
 > [systemd loglevel](https://wiki.archlinux.org/title/Systemd/Journal)
 
 ```
+# systemctl stop systemd-journal.service # 关闭日志, 可能还需要关门其他一些会触发启动它的服务. 重新start systemd-journal.service后, 原有服务可能需要重启, 否则打印日志
 # 查看所有日志（默认情况下 ，只保存本次启动的日志）
 $ sudo journalctl
 
@@ -154,7 +155,7 @@ $ sudo journalctl -b -u nginx.serviceqq
 $ sudo journalctl --vacuum-size=1G // /etc/systemd/journald.conf#SystemMaxUse=100M + systemctl restart systemd-journald
 
 # 指定日志文件保存多久
-$ sudo journalctl --vacuum-time=1years
+$ sudo journalctl --vacuum-time=1years //  /etc/systemd/journald.conf#MaxRetentionSec=15day ( "year", "month", "week", "day", "h" or " m")
 
 # 显示journalctl日志的字段名, 保存位置
 journalctl -f -o verbose

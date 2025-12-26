@@ -49,3 +49,6 @@
 
     在v1.27后, k8s所有csi in-tree代码都将被移除, 由out-of-tree代码取代.
 - [container-storage-interface/spec](https://github.com/container-storage-interface/spec)
+
+## 网络
+- [k8s 必备知识点18：CNI 插件对比：Flannel、Calico、Cilium 到底有什么不同？](https://mp.weixin.qq.com/s/6ZsKT3OgpNEZNH_-pFnOMA)

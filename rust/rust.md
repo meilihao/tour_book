@@ -7267,3 +7267,8 @@ Rust shim 主要做四件事情:
 1. 所有要暴露给 C 的独立函数，都要声明成 #[no_mangle]，不做函数名称的改写
 1. 数据结构需要处理成和 C 兼容的结构
 1. 要使用 catch_unwind 把所有可能产生 panic! 的代码包裹起来
+
+### `在 Rust 中，引用（&mut T）不能直接通过 as 关键字强制转换为 *mut c_void`
+方法:
+1. 需要先将引用转换为其对应类型的原始指针，然后再将原始指针转换为 void 指针, 比如: `let ptr = reference as *mut _ as *mut std::ffi::c_void;`
+2. 在现代 Rust 中，如果是在处理 FFI，推荐使用 std::ptr::addr_of_mut! 宏
