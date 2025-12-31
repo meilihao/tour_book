@@ -129,3 +129,6 @@ df['time_local'] = df['time'].dt.tz_convert('Asia/Shanghai') # 如果原始数�
 print(df)
 # python3 s.py
 ```
+
+### `SELECT * FROM device_prop limit 1`高cpu占用
+加其他where条件

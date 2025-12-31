@@ -6,6 +6,7 @@
 	editor = vim
 	quotepath = false
 	filemode = false
+	whitespace = cr-at-eol
 [user]
 	name = meilihao
 	email = 563278383@qq.com

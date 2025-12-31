@@ -13,7 +13,7 @@
     "light": "One Dark",
     "dark": "One Dark"
   },
-  "proxy": "localhost:20171",
+  "proxy": "socks5://127.0.0.1:20170",
   "languages": {
     "Python": {
       "language_servers": ["!pylsp", "pyright", "ruff"]
