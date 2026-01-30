@@ -318,3 +318,6 @@ registry = "https://mirrors.tuna.tsinghua.edu.cn/git/crates.io-index.git"
 
 ### `fatal error: 'stddef.h' file not found`
 cargo build报`'stddef.h' file not found`, cargo使用llvm组建, 安装clang即可
+
+### use of unresolved module or unlinked crate `webapi`/"unresolved import\nhelp: a similar path exists: `webapi::config`
+当项目中同时存在lib.rs和main.rs时, main.rs应该使用项目名`use webapi::...`作为crate起始, 而其他rs应使用`use crate::...`作为crate起始, 同时main.rs中不能重复声明lib.rs中的模块(即main.rs也使用了`mod xxx`)

@@ -13,6 +13,7 @@
 - [PostgreSQL正在吞噬数据库世界](https://pigsty.io/zh/blog/pg/pg-eat-db-world/)
 - [postgres-howtos in chinese](https://postgres-howto.cn/)
 - [PostgreSQL 内参：深入解析运行原理](https://postgres-internals.cn/)
+- [3MB 就能跑 PostgreSQL？开源神器 PGlite 让数据库突破部署边界](https://mp.weixin.qq.com/s/nHI6wDJpyF9ovYi0pblLjQ)
 
 ### 相关主页
 

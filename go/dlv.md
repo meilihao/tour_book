@@ -8,6 +8,12 @@
 > gccgo是GCC编译器的前端, 比原生编译器慢, 同时支持的go版本也更低, 但具有更为强大的优化能力和支持更多的处理器架构, 也支持gdb调试
 
 ## FAQ
+### terminal绑定给当前程序, 导致dlv exec时无法输入调试命令
+```bash
+dlv exec ./my-app --headless --listen=:2345 --api-version=2 --accept-multiclient
+dlv connect :2345
+```
+
 ### [给被调试程序传入参数](https://github.com/go-delve/delve/issues/562)
 ```
 dlv debug main.go -- -conf=conf.yaml

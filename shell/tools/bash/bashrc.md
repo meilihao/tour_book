@@ -6,47 +6,85 @@ env: xubuntu 20.04/deepin v20
 1. `.bashrc`
 ```
 ...
-# --- alias
 alias ls="ls --color"
 alias vim="nvim"
-alias grep="grep --color=auto" # [设置grep高亮显示匹配项和基本用法](https://www.cnblogs.com/lazyfang/p/7645627.html)
+alias grep="grep --color=auto" 
 
-alias python="/usr/bin/python3.8"
+alias clang="clang-11"
+alias clang++="clang++-11"
+alias clang2++="clang++-11 -std=c++20"
+alias ncdu="ncdu --exclude-kernfs "
 
-# --- fcitx
-export GTK_IM_MODULE="fcitx"
-export QT_IM_MODULE="fcitx"
-export XMODIFIERS="@im=fcitx"
-
-# --- go
-export GO111MODULE=on
-export GOPROXY=https://goproxy.cn,direct
-export GOROOT=/usr/local/go
-export GOPATH=/home/chen/git/go
-export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
-
-# --- rust
-export RUSTUP_HOME=/opt/rust/rustup # default: ~/.rustup
-export CARGO_HOME=/opt/rust/cargo   # default: ~/.cargo
-source $CARGO_HOME/env
-# https://lug.ustc.edu.cn/wiki/mirrors/help/rust-static/
-export RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static # 用于更新 toolchain
-export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup # 用于更新 rustup
+alias unzip_cn="unzip -O GBK"
 
 # --- git
 export LESSCHARSET=utf-8 # git diff中文乱码
 
-# --- llvm
-alias clang="clang-13"
-alias opt="opt-13"
-alias llvm-dis="llvm-dis-13"
-alias llvm-as="llvm-as-13"
-alias llvm-link="llvm-link-13"
-alias llvm-mc="llvm-mc-13"
-alias lli="lli-13"
-alias llc="llc-13"
-alias ncdu="ncdu --exclude-kernfs "
+export CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:$INSTALL_PATH/include
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$INSTALL_PATH/lib
+export LIBRARY_PATH=${LIBRARY_PATH}:$INSTALL_PATH/lib
 
-# --- liteide
-export LD_LIBRARY_PATH="/opt/liteide/lib:$LD_LIBRARY_PATH"
+export GOPRIVATE=codeup.aliyun.com
+export GOCACHE=/home/chen/.cache/go-build
+export GO111MODULE=auto
+export GOPROXY=https://goproxy.cn,direct
+export GOROOT=/usr/local/go
+export GOPATH=/home/chen/go
+export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+
+export PATH="$HOME/.cargo/bin:$PATH:/opt/qemu/bin"
+
+
+export RUSTUP_HOME=/opt/rust/rustup
+export CARGO_HOME=/opt/rust/cargo
+# . $CARGO_HOME/env
+export RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static # 用于更新 toolchain
+export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup
+#export RUSTUP_DIST_SERVER=https://mirrors.tuna.tsinghua.edu.cn/rustup
+#export RUSTUP_UPDATE_ROOT=https://mirrors.tuna.tsinghua.edu.cn/rustup/rustup # 用于更新 rustup
+
+export PATH=$PATH:/usr/local/node-v14.15.3-linux-x64/bin:/home/chen/.local/bin
+
+#export LD_LIBRARY_PATH=/opt/liteide/lib:$LD_LIBRARY_PATH
+#export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="/home/chen/.sdkman"
+[[ -s "/home/chen/.sdkman/bin/sdkman-init.sh" ]] && source "/home/chen/.sdkman/bin/sdkman-init.sh"
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+export PATH=/home/chen/.tiup/bin:$PATH
+export PATH=$PATH:/opt/yunion/bin
+#source <(climc --completion bash)
+
+# pnpm
+export PNPM_HOME="/home/chen/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
+. "/opt/rust/cargo/env"
+export PATH="$PATH:/home/chen/.influxdb/"
+
+# # >>> conda initialize >>>
+# # !! Contents within this block are managed by 'conda init' !!
+# __conda_setup="$('/home/chen/miniconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+# if [ $? -eq 0 ]; then
+#     eval "$__conda_setup"
+# else
+#     if [ -f "/home/chen/miniconda3/etc/profile.d/conda.sh" ]; then
+#         . "/home/chen/miniconda3/etc/profile.d/conda.sh"
+#     else
+#         export PATH="/home/chen/miniconda3/bin:$PATH"
+#     fi
+# fi
+# unset __conda_setup
+# # <<< conda initialize <<<
+
+ulimit -c unlimited
+
 ```

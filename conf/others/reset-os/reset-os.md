@@ -5,6 +5,8 @@
     1. v2rayA
 1. apt/dnf
 1. nginx.conf/备份DB
+
+    1. dbeaver
 1. 浏览器配置
 
     1. 书签

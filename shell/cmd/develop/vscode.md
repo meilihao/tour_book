@@ -42,12 +42,35 @@ markdown:
 - REST Client
 
 ## setting.json
-```
+```json
 {
-    "go.testFlags": ["-v", "-count=1"],
+    "go.testFlags": [
+        "-v", "-count=1"
+    ],
+    "go.toolsManagement.autoUpdate": true,
+    "remote.SSH.enableDynamicForwarding": false,
+    "workbench.colorCustomizations": {
+        "tab.activeBackground": "#555555",
+        "tab.hoverBackground": "#464646",
+        "titleBar.activeBackground": "#555555", // 活动窗口的顶部菜单栏背景色
+        "titleBar.inactiveBackground": "#464646", // 非活动窗口的顶部菜单栏背景色
+        //"titleBar.activeForeground": "#ffffff", // 活动窗口的顶部菜单栏文字颜色
+        //"titleBar.inactiveForeground": "#cccccc" // 非活动窗口的顶部菜单栏文字颜色
+    },
+    "cmake.showOptionsMovedNotification": false,
+    "git.openRepositoryInParentFolders": "never",
+    "vue.autoInsert.dotValue": true,
     "go.toolsEnvVars": {
-        "GOEXPERIMENT": "jsonv2" // 开启实验特性
-    }
+        "GOEXPERIMENT": "jsonv2"
+    },
+    "git.blame.editorDecoration.enabled": false,
+    "workbench.editor.empty.hint": "hidden",
+    "go.testTimeout": "60s",
+    "workbench.secondarySideBar.defaultVisibility": "hidden",
+    "Lingma.DisplayLanguage": "简体中文",
+    "Lingma.PreferredLanguage for AI Chat": "简体中文",
+    "Lingma.PreferredLanguage forCommitMessage": "简体中文",
+    "terminal.integrated.initialHint": false
 }
 ```
 

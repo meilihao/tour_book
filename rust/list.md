@@ -170,6 +170,7 @@ ref:
 ## web
 - [salvo](https://salvo.rs/zh-hans/)
 - [Web Frameworks Benchmark - rust](https://web-frameworks-benchmark.netlify.app/result?l=rust)
+- [zensical：开箱即用的静态网站生成器]()
 
 ## lib
 ref:

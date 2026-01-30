@@ -43,6 +43,7 @@
 - [修复正向保密(PFS)](https://linuxstory.org/tls-session-resumption/)
 - [TLS 1.3科普——新特性与协议实现](https://zhuanlan.zhihu.com/p/28850798)
 - [防止中间人攻击原理 - 证书](https://imququ.com/post/how-to-decrypt-https.html)
+- [eCapture - 基于eBPF技术实现SSL/TLS加密的明文捕获，无需CA证书](https://github.com/gojue/ecapture/blob/master/README_CN.md)
 
 ## grpc
 - [grpc-go基于双向认证安全通信](https://cloud.tencent.com/developer/article/1423345)

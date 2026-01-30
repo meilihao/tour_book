@@ -407,3 +407,5 @@ chrome已最新并重装, 问题依旧
 解决:
 1. 将ZeroOmega切换到proxy, 并重启chrome, **关键步骤**
 2. 重新触发`Trigger GetUpdates`
+
+遇到`google-chrome-stable --proxy-server="socks5://127.0.0.1:20170"`+上述步骤还是无法同步, 换成`google-chrome-stable --proxy-server="127.0.0.1:20171"`后恢复

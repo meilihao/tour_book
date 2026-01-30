@@ -57,6 +57,9 @@ $ sudo reboot
 ## releases
 - [ubuntu](https://wiki.ubuntu.com/Releases)
 - [EL系操作系统发行版哪家强？](https://pigsty.io/zh/blog/db/rhel-compatibility/)
+- [如何在 Ubuntu 24.04 LTS 上安装 COSMIC 桌面环境](https://www.linuxmi.com/ubuntu-24-04-lts-cosmic.html)
+
+    ps: 选择原有窗口管理器, 而不是cosmic-greeter, 便于COSMIC 和 其他桌面环境之间切换
 
 ## 大版本升级
 - ubuntukylin

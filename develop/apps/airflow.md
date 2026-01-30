@@ -8,7 +8,9 @@ ver: v3.0.4
 
 一个可编程, 调度和监控的工作流平台, 核心是DAG工作流
 
-> 竞品: [**DolphinScheduler**](https://dolphinscheduler.apache.org/zh-cn/), XXL-Job
+> 竞品:
+> 1. [**DolphinScheduler**](https://dolphinscheduler.apache.org/zh-cn/), XXL-Job
+> 1. [cadence-workflow/cadence](https://cadenceworkflow.io/)
 
 ## [安装](https://airflow.apache.org/docs/apache-airflow/stable/start.html)
 

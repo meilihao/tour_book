@@ -190,7 +190,7 @@ happen before
 ch := make(chan struct{}, 10)
 wg := sync.WaitGroup{}
 
-for i:=range ls {
+for _,i:=range ls {
 	ch <- struct{}{}
 	wg.Add(1)
 

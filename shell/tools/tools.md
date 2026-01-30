@@ -27,3 +27,6 @@ ref:
 - windows
 
 	`cmd /c soffice --headless --invisible --convert-to pdf <in_path> --outdir <out_path>`
+
+# file
+- [httpfs Go 编写的静态文件服务器](https://github.com/hellojukay/httpfs)

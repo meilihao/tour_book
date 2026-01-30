@@ -269,3 +269,37 @@ go-mod-upgrade
 项目路径规划没有问题
 
 解决方法: 将本mod加入上级目录中的go.work
+
+### 查找依赖
+```
+# go list -m all | grep xxx
+# go mod why -m codeup.aliyun.com/xxx/go-model # 查看是谁依赖了它
+# go mod graph | grep go-model # 找哪个模块要求它及其版本
+# go list -m -json codeup.aliyun.com/xxx/go-model # 实际使用的依赖来源
+```
+
+### go.work中项目未使用其go.mod定义的版本, 而是使用了同级项目的更新版本?
+原因:
+1. 依赖 module 被 go.work 的 use 引入覆盖
+
+ ```
+ # go list -m -json codeup.aliyun.com/xxx/go-model
+ {
+  "Path": "codeup.aliyun.com/.../go-model",
+  "Replace": {
+    "Path": "./go-model",
+    "Dir": "/abs/path/go-model"
+  }
+}
+ ```
+2. 另一个 workspace 项目拉高了版本（MVS）
+
+	```
+	# go list -m -json codeup.aliyun.com/xxx/go-model
+	{
+	  "Path": "codeup.aliyun.com/.../go-model",
+	  "Version": "v1.4.0"
+	}
+	```
+
+	解决方法: go.mod添加`replace codeup.aliyun.com/xxx/go-model => codeup.aliyun.com/xxx/go-model v1.0.0`

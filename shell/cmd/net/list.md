@@ -6,6 +6,7 @@
 ## tools
 - [dropwatch - 监听系统丢包信息工具](https://cloud.tencent.com/developer/article/1638140)
 - [命令行 DNS 查询工具，支持 DNS-over-TLS 和 DNS-over-HTTPS](https://github.com/mr-karan/doggo)
+- [NextTrace : 源轻量级可视化路由追踪工具](https://www.nxtrace.org/)
 - [BGP 工具探索](https://linux.cn/article-13857-1.html)
 
 ## bgp

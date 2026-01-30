@@ -16,6 +16,7 @@ rabbitmq解决消息丢失:
 
 ## rocketmq
 ref:
+- [RocketMQ 高性能揭秘：承载万亿级流量的架构奥秘](https://my.oschina.net/u/5783135/blog/19108015)
 - [深度解析 RocketMQ 核心组件：ConsumeQueue 的设计与实现](https://my.oschina.net/u/4587289/blog/18499646)
 
 ### FAQ

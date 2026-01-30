@@ -20,6 +20,8 @@ Pandas 是 Python 的核心数据分析支持库，提供了快速、灵活、�
 
 Pandas 的主要数据结构是 Series（一维数据）与 DataFrame（二维数据），这两种数据结构足以处理金融、统计、社会科学、工程等领域里的大多数典型用例.
 
+在 Pandas 的agg()中，每个聚合操作通常只能直接访问它自己那一列
+
 ## 概念
 - 标签
 
@@ -65,7 +67,7 @@ Pandas 的主要数据结构是 Series（一维数据）与 DataFrame（二维�
 - df.apply(pd.Series.value_counts)：查看DataFrame对象中每一列的唯一值和计数
 
     groupby和apply通常联用即对分组应用apply
-- df.groupby('A')['C1'].apply(min).reset_index() : groupby 分组默认会把分组依据列变成索引，用reset_index 将保留其在df的索引
+- df.groupby('A')['C1'].apply(min).reset_index() : groupby 分组默认会把分组依据列变成索引，用reset_index 将保留其在df的索引. 使用`reset_index(drop=True)`时就丢弃旧索引，生成从 0 开始的连续整数索引
 
 数据选取:
 - df[col]：根据列名，并以Series的形式返回列
@@ -80,6 +82,7 @@ Pandas 的主要数据结构是 Series（一维数据）与 DataFrame（二维�
 - df.loc[df["A"]==1],['C1','C2']]
 - df.loc[df["A"].isin([1,2]), ['C1']]
 - df.loc[(df['A']=1) & (df['B']=2),:] : 查询条件用`&`包裹避免因优先级报错
+- df[(df.hvac == 0) & (df.meter == 0)] : 多条件查询
 
 数据清理:
 - df.columns = ['a','b','c']：重命名列名
@@ -114,7 +117,7 @@ Pandas 的主要数据结构是 Series（一维数据）与 DataFrame（二维�
     - df.sort_values(col1)：按照列col1排序数据，默认升序排列
     - df.sort_values(col2, ascending=False)：按照列col1降序排列数据
     - df.sort_values([col1,col2], ascending=[True,False])：先按列col1升序排列，后按col2降序排列数据
-    - df.groupby(col)：返回一个按列col进行分组的Groupby对象. 流量级别作为汇总的依据列，默认转化为索引列，如果不希望它变成索引，向groupby 内传入参数 as_index = False
+    - df.groupby(col)：返回一个按列col进行分组的Groupby对象. 流量级别作为汇总的依据列，默认转化为索引列，变成索引后print时该列会消失. 如果不希望它变成索引，向groupby 内传入参数 as_index = False
     - df.groupby([col1,col2])：返回一个按多列进行分组的Groupby对象
     - df.groupby(col1)[col2]：返回按列col1进行分组后，列col2的均值
     - df.pivot_table(index=col1, values=[col2,col3], aggfunc=max)：创建一个按列col1进行分组，并计算col2和col3的最大值的数据透视表
@@ -310,4 +313,44 @@ df2[(df2["E"] == "test") & (df2["F"].str.contains("foo", na=False))] # 不能去
 df2['Deadline']=pd.to_datetime('2025-8-1') - pd.to_datetime(df2['Date'])
 df2['Date']=pd.to_datetime(df2['Date'])
 df_items["cost"].astype(float).sum() # 将cost列从string转为float后再求和
+
+df_items = df_items[~df_items["pae"].isna()] # 使用布尔索引过滤 DataFrame, 只保留 "pae" 列不是 NaN 的行
+
+def custom_agg(group):
+    hvac_val = group['hvac'].iloc[0]
+
+    if hvac_val == 0:
+        return pd.Series({
+        'meter': group['meter'].iloc[0],
+        'energy': group['energy'].sum(),
+        'uptime': group['uptime'].sum(),
+        'cap': group['cap'].dropna().iloc[0],
+    })
+    else:
+        unique_havc_dt_uptime = group[['hvac', 'uptime','dt']].drop_duplicates()
+
+        return pd.Series({
+            'meter': group['meter'].dropna().iloc[0],
+            'energy': group['energy'].sum(),
+            'uptime': unique_havc_dt_uptime['uptime'].sum(),
+            'cap': group['cap'].dropna().iloc[0],
+        })
+
+df2 = df.groupby("hvac", as_index=False).apply(custom_agg).reset_index(drop=True)
+
+df["tag"] = np.select(
+    [
+        (df.hvac == 0) & (df.meter == 0),
+        (df.hvac != 0) & (df.meter == 0),
+        (df.hvac != 0) & (df.meter != 0),
+    ],
+    [
+        "Total",
+        "HvacTotal",
+        "Other",
+    ]
+) # 添加tag列, 用于辅助groupby
+
+s = pd.Series(["10", "20", "abc", "30"])
+pd.to_numeric(s, errors="coerce") # errors="coerce": 如果转换失败，不报错，直接变成 NaN
 ```

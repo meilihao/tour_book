@@ -13,3 +13,11 @@
 ```
 
 再保存重启即可.
+
+### 修改右键`Open Terminal Here`使用的terminal
+Preferences->Package Settings->Terminal->Settings:
+```json
+{
+	"terminal":"cosmic-term"
+}
+```

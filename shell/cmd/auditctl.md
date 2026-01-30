@@ -45,6 +45,9 @@ audit主要包含2个命令:
 # service auditd restart
 # ausearch -sc kill # 使用ausearch搜索结果
 # ausearch -i -k log_kill # `-i`可解析 uid, gid, syscalls, arguments等
+# auditctl -a always,exit -F arch=b64 -S execve -k ssh_cmds # 捕获几乎所有系统调用和命令，包括 SSH 会话内的命令
+# auditctl -l # 查看规则
+# usearch -k ssh_cmds # 查询日志
 ```
 
 ## FAQ
