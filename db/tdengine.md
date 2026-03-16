@@ -10,6 +10,9 @@ ref:
 ### datatype(数据类型)
 ref:
 - [数据类型](https://docs.taosdata.com/reference/taos-sql/datatype/)
+- [命名与边界](https://docs.taosdata.com/reference/taos-sql/limit/#%E5%90%8D%E7%A7%B0%E5%91%BD%E5%90%8D%E8%A7%84%E5%88%99)
+
+  不区分大小写
 
 ### 组件
 ref:
@@ -96,11 +99,20 @@ taos> show databases;
 ## sql
 ```bash
 > SELECT _wstart, _wend, sum(annual_bilateral) FROM dee.ml_1384 where ts > '2025-12-15T00:00:01.000+08:00' INTERVAL(1d, 57601s); -- 按天具体数据, 当天零点属于前一天. 57601s = 16h1s, 但tdengine不支持"16h1s"
-> SELECT sum(annual_bilateral) FROM dee.ml_1384 where ts > '2025-12-31T00:00:00.000+08:00' and ts <= '2026-01-01T00:00:00.000+08:00'
+> SELECT sum(annual_bilateral) FROM dee.ml_1384 where ts > '2025-12-31T00:00:00.000+08:00' and ts <= '2026-01-01T00:00:00.000+08:00' FILL(VALUE,0)
+> SELECT 
+  substring(dt,1,8) as ndt, 
+  AVG(power) 
+FROM xxx 
+WHERE ts >= '2026-01-01T00:00:00Z' 
+group by ndt 
 ```
 
 可用函数:
 - to_iso8601(ts)
+- substring()
+
+  pos从1开始, 0开始则返回空字符串
 
 ## FAQ
 ### taos显示不完全
@@ -109,4 +121,9 @@ taos> show databases;
 2. vim taos.cfg 文件中的设置项`maxBinaryDisplayWidth:1000`
 
 ### interval
-GROUP BY time(1d), tsdb 会从 UTC 时间的凌晨 00:00:00 开始对齐, 而GROUP BY time(1d, 16h), 是utc的[... 16:00:00Z, ... 15:59:59Z) -> 北京时间[... 00:00:00+8:00, ... 23:59:59+8:00]
+- GROUP BY time(1d), tsdb 会从 UTC 时间的凌晨 00:00:00 开始对齐, 而GROUP BY time(1d, 16h), 是utc的[... 16:00:00Z, ... 15:59:59Z) -> 北京时间[... 00:00:00+8:00, ... 23:59:59+8:00]
+- `WHERE ts >= '2026-01-31T16:00:00Z' and ts < '2026-03-31T16:00:00Z' and owner = 1001 INTERVAL(1n, 57600s) FILL(VALUE, 0, 0)`: intervel是按utc的每月第一天+偏移开始聚合, 导致第一个窗口起始时间是`2026-01-02T00:00:00.000+08:00`
+
+  解决方法:
+  1. 用代码创建where去实现按北京时间+月聚合数据, **推荐**
+  2. 用时间函数 + group by实现

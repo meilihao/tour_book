@@ -11,6 +11,7 @@
 - [qemu 9.1](https://m.ithome.com/html/794375.htm)
 
     大幅提升了虚拟机实时迁移的效率
+- [用于快速创建和运行 QEMU 虚拟机的工具](https://github.com/quickemu-project/quickemu)
 
 Qemu是一个广泛使用的开源计算机仿真器和虚拟机.
 

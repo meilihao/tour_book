@@ -27,6 +27,7 @@ ref:
 
 ### blog
 - [Actix-Blog](https://github.com/Dengjianping/Actix-Blog)
+- [Axum](https://xieyu.github.io/blog/axum/index.html)
 
 ## 教程
 - [easy_rust](https://github.com/Dhghomon/easy_rust)
@@ -73,6 +74,7 @@ ref:
 - [Pop!_OS COSMIC 桌面使用 Rust GUI 库 Iced 取代 GTK](https://www.oschina.net/news/212636/cosmic-desktop-iced-toolkit)
 - [Slint 1.0 正式发布，Rust 编写的原生 GUI 工具包](https://www.oschina.net/news/235410/slint-1-0-released)
 - [gpui-component](https://github.com/longbridge/gpui-component)
+- [Yororen UI：一个对 gpui应用开发进行主题化、可访问性优先系统重构的Rust组件库](https://mp.weixin.qq.com/s/Me6M8hEs9iPfZn4M54opqw)
 
 ## next
 - [用Rust实现用户态高性能存储 - Wang Pu (王璞) from DatenLord](https://weibo.com/1945106210/JAflese1N?type=repost)

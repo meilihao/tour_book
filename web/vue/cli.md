@@ -19,3 +19,6 @@ module.exports = {
   ...
 }
 ```
+
+### 查看组件版本
+`npm/pnpm view vite versions`

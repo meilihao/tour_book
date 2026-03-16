@@ -1,5 +1,6 @@
 # tools
 # 输入法
+
 ubuntu 24.04:
 ```
 sudo apt install fcitx5

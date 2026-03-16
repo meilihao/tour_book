@@ -1,4 +1,6 @@
 # vue3
+ref:
+- [Vue 3.6 革命性更新：虚拟DOM已死，Vapor Mode永生！](https://zhuanlan.zhihu.com/p/1946652800265226070)
 
 ## dev
 - oxlint : `pnpm dlx oxlint@latest`

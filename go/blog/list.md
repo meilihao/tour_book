@@ -47,6 +47,7 @@
 - [**腾讯 tRPC-Go 框架核心实现源码解读**](https://blog.hackerpie.com/posts/architecture/tencent-trpc-go-framework-source/)
 - [C语言竟可以调用Go语言函数，这是如何实现的？](https://cloud.tencent.com/developer/article/2422108)
 - [go-runtime/debug](https://www.jianshu.com/p/0b3d11f7af57)
+- [Go 错误处理，如何才能恰到好处的处理错误，提升问题定位效率](https://mp.weixin.qq.com/s/mECdXqgi31GuG_ogwoUT7w)
 
 ## go src
 - [go-under-the-hood](https://github.com/changkun/go-under-the-hood)
@@ -58,6 +59,9 @@
 - [golang源码分析](https://www.modb.pro/u/535208)
 - [ 技术笔记 ( 高性能/分布式/kubernetes/golang/kv引擎等 )](https://github.com/rfyiamcool/notes)
 - [深度解密GO语言之反射](https://juejin.cn/post/6844903839036866573)
+
+## layout
+- [Golang 领域驱动设计 (DDD) 落地实践：从理论到 Kratos 实战](https://mp.weixin.qq.com/s/wgEoxT_655vBCMxLL_FQ_A)
 
 ## RPC
  - ~~[Thrift RPC 使用指南实战(附golang&PHP代码)](http://blog.csdn.net/liuxinmingcode/article/details/45696237)~~
@@ -160,6 +164,7 @@
 
 ## example
 - [mattn/go-generics-example - 泛型](https://github.com/mattn/go-generics-example)
+- [使用google的wire实现依赖注入](https://mp.weixin.qq.com/s/ps4fgouc4jTfjzDAJL0wgA)
 
 ## cache
 - [Golang 本地缓存选型对比及原理总结](https://www.tuicool.com/articles/aquUJrF)

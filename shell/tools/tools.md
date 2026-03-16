@@ -30,3 +30,4 @@ ref:
 
 # file
 - [httpfs Go 编写的静态文件服务器](https://github.com/hellojukay/httpfs)
+- [Surge：终端里的高速下载工具](https://github.com/surge-downloader/Surge)

@@ -575,3 +575,15 @@ From codeup.aliyun.com:xxx/server
 手动删除`refs/remotes/origin/feature/xdd-manager-backend`没效果
 
 解决: `git remote prune origin`
+
+### git checkout远程分支报`fatal: 'origin/feature' is not a commit and a branch 'feature' cannot be created from it`
+```bash
+$ git co -b feature origin/feature
+fatal: 'origin/feature' is not a commit and a branch 'feature' cannot be created from it
+```
+
+解决方法:
+1. 检查origin是否有该分支
+2. 远程有这个分支，但是本地认为远程没有这个分支
+    
+    `git fetch origin`

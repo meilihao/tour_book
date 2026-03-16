@@ -2,6 +2,7 @@
 参考:
 - [tmux快捷键](http://blog.csdn.net/hcx25909/article/details/7602935)
 - [Tmux 使用教程](https://www.ruanyifeng.com/blog/2019/10/tmux.html)
+- [Zellij：一个对开发者工作流进行系统性重构的Rust终端复用器](https://mp.weixin.qq.com/s/_ZCYdjEBLjtc7agCh4wn6Q)
 
 tmux是一款优秀的终端复用软件，类似 GNU screen，但比screen更出色. 通常当终端关闭后该shell里面运行的任务进程也会随之中断，通过使用tmux就能很容易的解决这个问题.
 

@@ -3,6 +3,25 @@
  参考:
  - [最新县及县以上行政区划代码](http://www.stats.gov.cn/tjsj/tjbz/xzqhdm/)
  - [统计用区划和城乡划分代码](http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/),比上面的`最新县及县以上行政区划代码`更细.
+ - [2023年中华人民共和国县以上行政区划代码](https://www.mca.gov.cn/mzsj/xzqh/2023/202301xzqh.html)
+ - [全国行政区划信息查询平台](http://xzqh.mca.gov.cn/map)
+ - [中华人民共和国行政区划统计表](http://xzqh.mca.gov.cn/statistics/)
+ - [行政区划代码](https://dmfw.mca.gov.cn/XzqhVersionPublish.html)
+
+ > [自2024年10月起，国家统计局继续公开《关于统计上划分城乡的规定》《统计用区划代码和城乡划分代码编制规则》等统计标准方法，不再公开具体相关代码](https://www.stats.gov.cn/hd/lyzx/zxgk/202509/t20250903_1960996.html)
+
+ 其他工具:
+ - [Administrative-divisions-of-China, **推荐**](https://github.com/modood/Administrative-divisions-of-China)
+ - [mooon-district](https://github.com/eyjian/mooon-district/tree/main)
+
+## 坐标
+- 坐标拾取器: 支持按地名或坐标查找
+	- [百度地图-坐标拾取器](https://lbs.baidu.com/maptool/getpoint)	
+	- [高德地图-坐标拾取器](https://lbs.amap.com/tools/picker)
+
+- [范围选择器](https://datav.aliyun.com/portal/school/atlas/area_selector)
+
+	获取GeoJSON
 
 ## 使用淘宝的收货地址
 参考:

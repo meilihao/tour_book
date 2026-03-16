@@ -62,3 +62,7 @@ ref:
 场景	推荐方法	理由
 数据库连接池、全局配置、缓存	State<AppState>	最规范，将所有核心状态集中管理，并且 Axum 官方推荐。
 中间件注入的认证信息	Extension<User>	数据是在请求处理过程中（例如在 Auth 中间件之后）生成的，需要传递给后续 Handler。
+
+## FAQ
+### `#[async_trait]`
+axum 0.8 使用了 Rust 1.75+ 支持的原生异步 trait（使用 impl Future<...> 返回类型），不再使用 `#[async_trait]` 宏
