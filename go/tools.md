@@ -66,6 +66,7 @@
 - terminal
 	
 	- [tuios](https://github.com/Gaurav-Gosain/tuios)
+	- [Go 终端 UI 神器 Bubble Tea：打造优雅命令行应用的终极框架](https://mp.weixin.qq.com/s/ZSGVu2xkeLlPzer58uWwGA)
 
 ## http client
 - [github.com/go-resty/resty/v2](https://github.com/go-resty/resty)
@@ -148,6 +149,8 @@ dot -Tpng -o a.png a.dot
 
 ## 代码混淆
 - [go代码混淆 - gobfuscate](https://www.bcskill.com/index.php/archives/1000.html)
+- [Go 隐身术：用 Garble 混淆你的代码](https://github.com/burrowers/garble)
+- [gostringungarbler: 自动解密garble 混淆字串](https://github.com/mandiant/gostringungarbler)
 
 ## 调优
 - [Go调优神器trace介绍](https://studygolang.com/articles/9693)
@@ -174,6 +177,8 @@ https://pkg.go.dev/github.com/dgraph-io/badger?tab=importedby
 	- 当且仅有一个sheet时, 其无法删除
 ### pdf
 - [github.com/johnfercher/maroto](https://github.com/johnfercher/maroto)
+
+unipdf提取文字有水印干扰, 建议用github.com/ledongthuc/pdf
 
 ## cgo
 ### 调用so

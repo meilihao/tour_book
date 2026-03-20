@@ -37,6 +37,11 @@ protoc --proto_path=IMPORT_PATH --go_out=plugins=grpc:OUT_DIR path/to/file.proto
 
 更多见[protobuf的官方文档](https://github.com/protocolbuffers/protobuf-go).
 
+```
+$ cat xxx.proto
+option go_package = "./internal/xxx/interfaces/transport/pd"; # 生成grpc文件的目标目录
+```
+
 ### 示例
 
 - [sikang99/grpc-example](https://github.com/sikang99/grpc-example)

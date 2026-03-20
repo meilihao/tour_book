@@ -69,3 +69,8 @@ pip install "python-lsp-server[all]"
 
 ### log位置
 `/home/chen/.local/share/zed/logs`, 包括crash log
+
+### [`"Aquire image error A host memory allocation has failed" when opening editor`](https://github.com/zed-industries/zed/issues/42164)
+现象: 执行二进制后没有任何提示就退出
+
+根源: `env |grep so`:`LD_PRELOAD=/usr/NX/lib/libnxegl.so`(from nomachine), 图形渲染驱动被劫持

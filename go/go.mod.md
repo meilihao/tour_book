@@ -303,3 +303,19 @@ go-mod-upgrade
 	```
 
 	解决方法: go.mod添加`replace codeup.aliyun.com/xxx/go-model => codeup.aliyun.com/xxx/go-model v1.0.0`
+
+### go test报错`go test -test.fullpath=true -timeout 60s -run ^TestExcelImporter_Basic$ codeup.aliyun.com/63d5133e7aebf2b610034850/impex/importer -v -count=1`
+```bash
+$ go test -test.fullpath=true -timeout 60s -run ^TestExcelImporter_Basic$ codeup.aliyun.com/xxx/impex/importer -v -count=1
+# codeup.aliyun.com/xxx/impex/importer
+importer/excel_importer.go:14:2: codeup.aliyun.com/xxx/impex@v0.0.0-20260317030429-1c7224db96e9: parsing go.mod:
+        module declares its path as: codeup.aliyun.com/xxx/go-common/impex
+                but was required as: codeup.aliyun.com/xxx/impex
+FAIL    codeup.aliyun.com/xxx/impex/importer [setup failed]
+FAIL
+```
+
+将项目go.mod的`module codeup.aliyun.com/xxx/go-common/impex`改为`module codeup.aliyun.com/xxx/impex`并执行`go mod tidy`+`git push`后, go test报错, 再执行`go clean -modcache && 
+go clean -testcache`后go test还是报错
+
+原因: 依赖该项目的其他项目还在使用`codeup.aliyun.com/xxx/go-common/impex`, 修正错误的go.mod后, 再在执行go test后就正常了.

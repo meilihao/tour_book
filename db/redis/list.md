@@ -24,3 +24,7 @@
 
 ## book
 - [Redis 设计与实现]()
+
+## tools
+- [基于 GPUI 的跨平台 Redis 可视化客户端： zedis](https://github.com/vicanso/zedis)
+- [Medis 高性能的全局唯一 ID 发号服务](https://github.com/asyncins/medis)

@@ -1,6 +1,8 @@
 # ai
 ref:
 - [AI 编程工具全景图（2025 年版）](https://www.vibevibe.cn/Basic/01-awakening/1.3-tools-guide/1.3.1-tool-overview.html)
+- [Claude Code 一篇带你从入门到精通](https://mp.weixin.qq.com/s/v_WJC6pCK6qdN4GEMeaFDA)
+- [Claude Code 快速上手核心指南](https://mp.weixin.qq.com/s/zb8BI7gMHuK0QvRhz4T1pA)
 
 ## book
 agent:
@@ -8,6 +10,7 @@ agent:
 - [Vibe Vibe人人都能学会 AI 编程](https://www.vibevibe.cn/)
 - [从零开始构建智能体](https://github.com/datawhalechina/hello-agents)
 - [AI编程能力边界探索：基于 Claude Code 的 Spec Coding 项目实战](https://my.oschina.net/u/5783135/blog/19210069)
+- [拆开Claude Code的壳子，里边住着什么，发现它根本没那么神秘，但是设计真的太美了](https://mp.weixin.qq.com/s/fzDkK_kWU09nhFnE1ox6SA)
 
 ## agent
 ref:
