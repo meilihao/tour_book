@@ -10,7 +10,7 @@
 ## FAQ
 ### terminal绑定给当前程序, 导致dlv exec时无法输入调试命令
 ```bash
-dlv exec ./my-app --headless --listen=:2345 --api-version=2 --accept-multiclient
+dlv exec ./my-app --headless --listen=:2345 --api-version=2 --accept-multiclient 或 dlv dap --listen=127.0.0.1:42793 --log-dest=3
 dlv connect :2345
 ```
 

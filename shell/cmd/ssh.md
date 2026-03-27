@@ -56,6 +56,9 @@ Host *
 ### 查看ssh-agent已缓存的key
 `ssh-add -l`
 
+移除key: ssh-add -d ~/.ssh/id_rsa_old
+清空ssh-agent的缓存: `ssh-add -D`
+
 ### ssh登录后立即退出
 login script有问题, 登录时禁止执行即可: `ssh -t user@host bash --noprofile`.
 

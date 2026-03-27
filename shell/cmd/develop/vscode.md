@@ -11,7 +11,7 @@
 - Ruff : 基于 Rust 编写的高性能 Python 代码分析工具 (Python linter)
 - x86 and x86_64 Assembly
 - ASM Code Lens
-- vscode-proto3
+- Protobuf VSC
 - Clang-Format : format proto3 using by google
 
     `apt install clang-format`

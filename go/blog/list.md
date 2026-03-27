@@ -69,6 +69,7 @@
 - [Go使用gRPC与Protocol Buffers构建高性能API 服务](https://xiequan.info/go%E4%BD%BF%E7%94%A8grpc%E4%B8%8Eprotocol-buffers%E6%9E%84%E5%BB%BA%E9%AB%98%E6%80%A7%E8%83%BDapi-%E6%9C%8D%E5%8A%A1/)
 - [Go-gRPC 实践指南/案例](https://legacy.gitbook.com/book/jergoo/go-grpc-practice-guide/details)
 - [micro-svc/go-rpc-framework-benchmark](https://github.com/micro-svc/go-rpc-framework-benchmark)
+- [腾讯开源 tRPC-Go 深度剖析：如何用 Go 打造“插件化”与“高性能”的极致架构？](https://mp.weixin.qq.com/s/y8uM41ohXGBFnMIP0t0WLA)
 
 ## 性能
 - [Go程序调试、分析与优化](http://tonybai.com/2015/08/25/go-debugging-profiling-optimization/)
@@ -165,6 +166,8 @@
 ## example
 - [mattn/go-generics-example - 泛型](https://github.com/mattn/go-generics-example)
 - [使用google的wire实现依赖注入](https://mp.weixin.qq.com/s/ps4fgouc4jTfjzDAJL0wgA)
+- [Go-kratos 框架商城微服务实战之用户服务 (三) 实现 RPC](https://learnku.com/articles/64992)
+- [Golang微服务框架居然可以开发单体应用？—— Kratos单体架构实践](https://zhuanlan.zhihu.com/p/665047661)
 
 ## cache
 - [Golang 本地缓存选型对比及原理总结](https://www.tuicool.com/articles/aquUJrF)

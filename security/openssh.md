@@ -267,3 +267,16 @@ openssh 9.2没有AuthenticationMethods, 保证其他如`当前配置`, 即可使
 是ssh.service的`ExecStartPre=sshd -t`抛出的
 
 解决方案: `ssh-keygen -A`
+
+### 清理sever上~/.ssh/authorized_keys中的旧pub key后, 为什么ssh+旧key还是能成功登入?
+删掉 server上~/.ssh/authorized_keys 里的旧 key 后还能登录，说明ssh client根本不是靠那个 key 在认证
+
+原因: ssh登入时不仅会使用`~/.ssh/config`中定义的IdentityFile , 也会使用ssh-agent缓存中的其他key来登入, 可通过`ssh -v xxx`来验证:
+```bash
+$ ssh -v xxx-sit-ecs
+...
+debug1: Offering public key: chenzhen@xxx ED25519 SHA256:tPg...b0w agent
+debug1: Server accepts key: chenzhen@xxx ED25519 SHA256:tPg...b0w agent
+```
+
+解决: `ssh-add -D`, 避免其他key干扰

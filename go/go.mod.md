@@ -319,3 +319,19 @@ FAIL
 go clean -testcache`后go test还是报错
 
 原因: 依赖该项目的其他项目还在使用`codeup.aliyun.com/xxx/go-common/impex`, 修正错误的go.mod后, 再在执行go test后就正常了.
+
+### 在`xxx-js-core`中执行`go get codeup.aliyun.com/yyy/go-model/infrastructure/repository/tdengine`报错
+```bash
+$  go build cmd/main.go 
+internal/xxx-core/domain/dataobject/do/agent_load_forecast.go:6:2: no required module provides package codeup.aliyun.com/yyy/go-model/infrastructure/repository/tdengine; to add it:
+        go get codeup.aliyun.com/yyy/go-model/infrastructure/repository/tdengine
+$ go get codeup.aliyun.com/yyy/go-model/infrastructure/repository/base # 正常
+$ go get codeup.aliyun.com/yyy/go-model/infrastructure/repository/tdengine # 报错, go mod cache下存在`../go-model@v1.4.5-0.20260209030613-83fe6161fdf3/infrastructure/repository/tdengine`
+go: codeup.aliyun.com/yyy/go-model/infrastructure/repository/tdengine: cannot find module providing package codeup.aliyun.com/yyy/go-model/infrastructure/repository/tdengine
+```
+
+go-model有`infrastructure/repository/tdengine`路径, 且其下没有go.mod
+
+解决方法: 将git clone codeup.aliyun.com/yyy/go-model并加入go.work, xxx-js-core的go build正常
+
+推测: go work机制导致

@@ -69,6 +69,7 @@ ref:
 	<<从零构建Rust生产级服务>>
 - [rust-library-i18n:Rust 核心库和标准库中文翻译](https://github.com/wtklbm/rust-library-i18n)
 - [**Comprehensive Rust**](https://google.github.io/comprehensive-rust/zh-CN/)
+- [Rust Cookbook 中文版](https://rustwiki.org/zh-CN/rust-cookbook/)
 
 ## gui
 - [Pop!_OS COSMIC 桌面使用 Rust GUI 库 Iced 取代 GTK](https://www.oschina.net/news/212636/cosmic-desktop-iced-toolkit)
@@ -79,6 +80,9 @@ ref:
 ## next
 - [用Rust实现用户态高性能存储 - Wang Pu (王璞) from DatenLord](https://weibo.com/1945106210/JAflese1N?type=repost)
 - [Rust for Linux](https://rust-for-linux.com/)
+
+## profile
+- [Rust 性能优化神器：火焰图（Flame Graph）完全实战指南](https://mp.weixin.qq.com/s/aTyXcIjPPP-lyHTM4Sq0jw)
 
 ## 备份
 - [rustic](https://github.com/rustic-rs/rustic)
