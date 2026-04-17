@@ -446,6 +446,10 @@ ps:
    - 网桥报文是否开启iptables过滤(`cat /proc/sys/net/bridge/bridge-nf-call-iptables`): 0表示没有开启，若为1则需要检查iptables配置
 
 1. 不同网段的ip不通，检查路由
+
+   - nat
+
+      - vm能ping通nat网关, 但ping不通baidu.com: `sudo sysctl -w net.ipv4.ip_forward=1` 
   
 ### `virsh insall`报`unsupported configuration: ACPI requires UEFI on this architecture`
 [aarch64 KVM只支持UEFI BIOS，编译源码时未安装edk2, 无法识别Firmware文件](https://support.huaweicloud.com/trouble-kunpengcpfs/kunpengkvm_09_0006.html)

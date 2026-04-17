@@ -84,6 +84,36 @@ markdown:
 ref:
 - [VS Code插件创作中文开发文档](https://liiked.github.io/VS-Code-Extension-Doc-ZH/)
 
+## 调试
+### go
+.vscode/launch.json:
+```json
+{
+    // 使用 IntelliSense 了解相关属性。 
+    // 悬停以查看现有属性的描述。
+    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Package",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "cmd/main.go",
+            "cwd": "${workspaceFolder}",
+            "env": {
+                "LOG_LEVEL": "DEBUG"
+            },
+            "args": [
+                "build",
+                "--with",
+                "github.com/apache/answer-plugins/connector-github"
+            ]
+        }
+    ]
+}
+```
+
 ## FAQ
 ### 启动code没反映
 env : xubuntu 20.04(xfce) + tightvncserver 

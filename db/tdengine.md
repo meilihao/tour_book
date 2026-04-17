@@ -51,9 +51,7 @@ ref:
 - [技术内幕](https://docs.taosdata.com/tdinternal/)
 - [实践案例](https://docs.taosdata.com/application/)
 
-对于 WebSocket 连接和原生连接，连接器都提供了相同或相似的 API 操作数据库，只是初始化连接的方式稍有不同，用户在使用上不会感到什么差别.
-
-推荐使用websocket.
+推荐使用websocket. [不推荐原生连接, 部分语言比如go的原生连接已下线](https://docs.taosdata.com/reference/connector/#%E8%BF%9E%E6%8E%A5%E6%96%B9%E5%BC%8F).
 
 ### 数据模型
 一张超级表至少包含一个时间戳列、一个或多个采集量列以及一个或多个标签列.
@@ -127,3 +125,11 @@ group by ndt
   解决方法:
   1. 用代码创建where去实现按北京时间+月聚合数据, **推荐**
   2. 用时间函数 + group by实现
+
+### dbeaver下载tdengine驱动报`netty-codec-native-quic-4.2.11.Final.${packaging.type}': Not Found`
+原因: DBeaver 内置的 TDengine 3.8.3+ WebSocket 驱动依赖 Netty QUIC, 而ubuntu 24.04 下 Maven 无法下载
+
+直接到https://repo1.maven.org/maven2/com/taosdata/jdbc/taos-jdbcdriver/3.8.3/下载taos-jdbcdriver-3.8.3-dist.jar, 并安装:
+1. 打开 DBeaver → Database → Driver Manager
+1. 找到 TDengine → Edit
+1. 在 Libraries 标签页 → 删除原有的驱动, 再点击 Add File, 选择下载的 taos-jdbcdriver-3.8.3-dist.jar

@@ -335,3 +335,6 @@ go-model有`infrastructure/repository/tdengine`路径, 且其下没有go.mod
 解决方法: 将git clone codeup.aliyun.com/yyy/go-model并加入go.work, xxx-js-core的go build正常
 
 推测: go work机制导致
+
+### 获取可用版本
+`go list -m -versions codeup.aliyun.com/xxx/go-model`

@@ -33,3 +33,6 @@ ref:
 
 ## claude
 - [claude-hud：实时显示 Claude Code 执行状态的插件](github.com/jarrodwatts/claude-hud)
+
+## 实践
+- [让 OpenCode 如虎添翼：Oh-My-OpenCode + OpenSpec + Superpowers 深度协作指南](https://mp.weixin.qq.com/s/y7S-z8cwM5b6zHjo_PDzXQ)

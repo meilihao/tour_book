@@ -48,6 +48,7 @@
 - [C语言竟可以调用Go语言函数，这是如何实现的？](https://cloud.tencent.com/developer/article/2422108)
 - [go-runtime/debug](https://www.jianshu.com/p/0b3d11f7af57)
 - [Go 错误处理，如何才能恰到好处的处理错误，提升问题定位效率](https://mp.weixin.qq.com/s/mECdXqgi31GuG_ogwoUT7w)
+- [Go GC 十年：一部延迟战争史](https://mp.weixin.qq.com/s/kgFL5G65aIJM-uKEnPZcOA)
 
 ## go src
 - [go-under-the-hood](https://github.com/changkun/go-under-the-hood)
@@ -62,6 +63,7 @@
 
 ## layout
 - [Golang 领域驱动设计 (DDD) 落地实践：从理论到 Kratos 实战](https://mp.weixin.qq.com/s/wgEoxT_655vBCMxLL_FQ_A)
+- [Go 微服务生产级实战：Gin 架构设计、工程治理与 GitOps 自动化交付全链路](https://mp.weixin.qq.com/s/Zz-GNgMXUPtdZ647XIvcow)
 
 ## RPC
  - ~~[Thrift RPC 使用指南实战(附golang&PHP代码)](http://blog.csdn.net/liuxinmingcode/article/details/45696237)~~
@@ -180,3 +182,6 @@
     注意:
     1. xxx install后, 服务未启动
     2. xxx uninstall前, 要先停止服务
+
+## 工程
+- [Go 后端生产级实践：架构、工程化、性能、质量四维度全攻略](https://mp.weixin.qq.com/s/HuRKQuRP7BXt_dFOvxm9nw)

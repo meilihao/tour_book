@@ -52,3 +52,5 @@
 
 ## 网络
 - [k8s 必备知识点18：CNI 插件对比：Flannel、Calico、Cilium 到底有什么不同？](https://mp.weixin.qq.com/s/6ZsKT3OgpNEZNH_-pFnOMA)
+- [接近线速！深度解析 Cilium + eBPF + BGP 生产环境落地：自建机房 K8s 网络终极演进](https://mp.weixin.qq.com/s/g_y9DzYa1N7DEF7xGCf2sA)
+- [<<Cilium Up and Running>>]()

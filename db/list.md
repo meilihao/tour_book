@@ -44,3 +44,12 @@
 
 ### 分区表
 - [TiDB：分区表使用的实践经验和技巧](https://tidb.net/blog/0515deee)
+
+## tools
+- [GoNavi](https://github.com/Syngnat/GoNavi)
+
+	```bash
+	# sudo apt install -y libgtk-3-0 libwebkit2gtk-4.1-0 libjavascriptcoregtk-4.1-0
+	# ln -sf /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
+	# ln -sf /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18
+	```
