@@ -27,6 +27,7 @@ ref:
 - [[开源] myclaw：2000 行 Go 平替 43 万行的 OpenClaw](https://zhuanlan.zhihu.com/p/2003885299256812722)
 - [矽速科技使用AI在数小时内自举构建了超轻量级PicoClaw](https://github.com/sipeed/picoclaw)
 - [gstack：让 AI 编程助手变身虚拟开发团队](https://github.com/garrytan/gstack)
+- [快用 OpenAgents Workspace，让 ai 分身替你打工！](https://www.oschina.net/news/437453)
 
 ## others
 - [freemocap：免费开源的动作捕捉系统](https://github.com/freemocap/freemocap)
