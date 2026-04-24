@@ -60,3 +60,8 @@ ref:
 补: 实际测试couchdb更新大视图即使分成2步也是没有问题. 部署14套环境, 2套出相同问题, 推测可能与防火墙有关, 待查明
 
 ### couchdb更新大视图报`curl -v -X PUT -H 'Expect:' --data ...`报`upload completely sent off: 40 out of 40 bytes`阻塞
+
+### curl: (60) SSL certificate problem: unable to get local issuer certificate
+curl对https服务端证书的检查未通过,解决:
+1. 加`-k`跳过服务端证书的检查
+1. 时`--cacert`,检查服务端证书

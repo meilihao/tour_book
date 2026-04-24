@@ -269,3 +269,12 @@ sudo add-apt-repository -r ppa:jonathonf/vim # 移除repo
 
 > 检查vimrc是否存在(用户配置文件为~/.vimrc，相关的文件位于~/.vim/；全局配置文件为/etc/vimrc，相关的文件位于/usr/share/vim/),不存在时,`cp /usr/share/vim/vim74/vimrc_example.vim ~/.vimrc`
 > 打开配置文件，找到这一句：if has("vms"),将这个判断里的if部分保留，else部分注释（Vim的注释符是"）掉`set backup`即可.
+
+### /bin/bash^M: bad interpreter
+文件使用了windows换行.
+
+方法:
+- 用vim打开, 再`:set ff?`查看`fileformat`是否为`doc`, 即是否使用了windows的换行.
+- 用`cat -A xxx`查看文档换行
+
+解决方法: `vim` + `:set ff=unix` + `:wq`

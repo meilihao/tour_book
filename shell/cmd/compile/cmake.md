@@ -19,6 +19,14 @@ cd <source> (CMakeLists.txt 所在目录)
 cmake .
 ```
 
+## cmake用法
+```
+$ cd ${project} # 该目录需包含`CMakeLists.txt`
+$ mkdir build && cd build
+$ cmake ..
+$ make -j
+```
+
 ## FAQ
 ### No CMAKE_CXX_COMPILER could be found
 - gcc: `apt install g++`

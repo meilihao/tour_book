@@ -150,6 +150,19 @@ ref:
 # createrepo /root/rpmbuild/RPMS/aarch64 # 创建repo. rpm repo支持软件多版本共存的, 因此离线部署时便于处理版本变化(只需累加即可)
 ```
 
+## 公钥认证
+
+```shell
+# 导入公钥
+rpm --import /path/to/key_file
+# 显示所有已经导入的gpg格式的公钥
+rpm -qa gpg-*
+# 显示某个密钥的详细信息
+rpm -qi gpg-pubkey-NAME
+# 检查包的公钥认证：安装过程中会自动执行
+rpm -K /path/to/package_file
+```
+
 # yum
 rehat开发的包管理软件, 已被dnf取代.
 
@@ -310,6 +323,12 @@ scripts section:
 ```
 
 ## FAQ
+### 包查找
+- [rpmfind](https://rpmfind.net/)
+
+    能获取到`src.rpm`
+- Fedora的koji下的rpm包：http://koji.fedoraproject.org/koji/
+- [pkgs.org](https://pkgs.org)
 
 ### 从rpm提前spec
 `rpmrebuild -e -p --notest-install rsyslog-8.39.0-4.el7.x86_64.rpm`

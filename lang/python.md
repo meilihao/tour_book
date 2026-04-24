@@ -53,6 +53,17 @@ python解析器:
 
 ### 切换python版本
 - [update-alternatives](https://blog.csdn.net/White_Idiot/article/details/78240298)
+
+    ```bash
+    $ sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1
+    $ sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 2
+    $ sudo update-alternatives --config python3
+    ```
+
+    > 语法为: `update-alternatives --install <link> <name> <path> <priority> [--slave link name path]...`
+
+    > 语法为: `update-alternatives --remove name path`
+
 - alias
     ```
     $ vim ~/.bashrc

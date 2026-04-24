@@ -307,3 +307,6 @@ User=root #nobody
 先systemctl daemon-reload/systemctl reset-failed <service_name>, 再start/restart
 
 ### start service报`Start request repeated too quickly`
+### 窗口管理
+1. `super + shift + tab`: 重启窗口管理器
+1. `sudo systemctl restart lightdm`: 注销用户

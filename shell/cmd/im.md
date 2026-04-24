@@ -33,3 +33,19 @@ export XIM=fcitx # SDL1
 ```
 
 逻辑：应用 -> GTK/QT的 fcitx 模块 -> D-Bus -> Fcitx 输入法服务
+
+## FAQ
+### kde的fcitx5-configtool 中显示`无法通过 DBus 连接到 Fcitx，Fcitx 是否正在运行？`
+ref:
+- [设置 Fcitx 5](https://fcitx-im.org/wiki/Setup_Fcitx_5/zh-cn#.2Fetc.2Fprofile)
+
+调试输出见fcitx5-diagnose
+
+### 输入法切换
+env: fedora 40 + kde + fcitx5, 自带的`输入法选择器`无法切换输入法
+
+```bash
+$ imsettings-info # 当前输入法信息
+$ imsettings-list # 支持的输入法
+$ imsettings-switch fcitx5 # 切换输入法
+```

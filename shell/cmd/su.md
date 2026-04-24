@@ -9,3 +9,10 @@
 ```
 $ sudo su - freeswitch  -s /bin/bash -c "/home/chen/node_server" # 以freeswitch运行node_server(su xxx不能切换用户时使用), 要使用绝对路径.
 ```
+
+## FAQ
+## su root报错`无法执行 fish: 没有那个文件或目录`
+```sh
+$ cat /etc/passwd|grep root
+root:x:0:0:root:/root:fish # root的shell的路径不对
+```

@@ -131,6 +131,11 @@ $ dpkg-scanpackages . | gzip -9c > Packages.gz #  制作本地软件源
 - [Debian 新维护者手册](https://www.debian.org/doc/manuals/maint-guide/)
 
 ## FAQ
+### deb包查找
+- 查找Ubuntu的deb包地址：http://packages.ubuntu.com/,推荐
+- 查找Debian的deb包地址：https://www.debian.org/distrib/packages
+- [pkgs.org](https://pkgs.org)
+
 ### dpkg-deb: error: archive '<file>.deb' has premature member 'data.tar.gz' before
 dpkg的bug: [dpkg无法解析tar.xz格式-xz compressed control.tar files not supported](https://bugs.launchpad.net/ubuntu/+source/dpkg/+bug/1730627)
 
@@ -391,3 +396,32 @@ apt upgrade 和 apt dist-upgrade 本质上是没有什么不同的, 仅在处理
 apt配置:
 - 新版(DEB822 格式): 追加`Architectures: amd64`
 - 旧版: `deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg, arch=amd64] http://nginx.org/packages/ubuntu jammy nginx`
+
+### apt update 由于没有公钥，无法验证下列签名： NO_PUBKEY A1715D88E1DF1F24
+```
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A1715D88E1DF1F24
+```
+
+### apt purge xxx,报"子进程 已安装 post-removal 脚本 返回错误状态 1"
+一般来说是由于我们在安装/卸载的过程中突然中止, 所以导致的环境异常, 软件已经可能已安装/已卸载了, 但是系统的信息却没有更新:
+- 软件的状态信息有误, 状态信息在`/var/lib/dpkg/status`, 删除相应记录即可.
+- 软件的配置信息不全, 位于`/var/lib/dpkg/info/.*`, 删除相应的文件即可.
+
+一般来说, 前面两种方法之一即可解决该问题, 如果还是没觉得, 可以重建info列表:
+1. 首先将info文件夹更名备份 : `sudo mv /var/lib/dpkg/info /var/lib/dpkg/info_old`
+1. 再新建一个新的info文件夹,更新缓存信息,恢复info文件夹的内容 : `sudo mkdir /var/lib/dpkg/info && sudo apt update, apt -f install`
+1. 执行完上一步操作后会在新的info文件夹下生成一些文件，现用这些文件覆盖info_old文件夹的内容,`sudo mv /var/lib/dpkg/info/* /var/lib/dpkg/info_old`
+1. 把自己新建的info文件夹删掉,再把以前的info文件夹重新改回名字 : `sudo rm -rf /var/lib/dpkg/info && sudo mv /var/lib/dpkg/info_old /var/lib/dpkg/info`
+
+### apt update报错, packages metadata的长度错误
+经核对报错文件的官方repo大小是正确的即仅是本地文件大小错误, 因此应该是本地apt cache出现了问题, 清理一下再更新即可.
+```bash
+sudo apt clean all # 先清理apt cache即可
+sudo apt update
+```
+
+### dpkg-query: 错误: --listfiles 需要一个有效的软件包名。而 libldap-2.4-2 不是: 软件包名 'libldap-2.4-2' 含糊不清， 它有一个以上的安装实例
+deepin wine应用依赖i386, i386和amd64共存导致`apt dist-upgrade`失败, 先卸载wine应用再`apt autoremove`, 最后重新更新即可.
+
+### `do-release-upgrade -d`升级下载新版包时意外中断(即开始安装新版包前)后, 重新执行时报`请在升级前安装您的发行版所有可用更新`
+将`/etc/apt/sources.list`(新版源)替换回`/etc/apt/sources.list.distUpgrade`(旧版源), 重新执行`do-release-upgrade`

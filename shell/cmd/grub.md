@@ -33,7 +33,32 @@ grub> initrd /boot/initrd.img-2.6.15-26-386
 grub> boot
 ```
 
+
+### android清除密码
+前提: 已root
+
+1. 下载adb工具, 比如adb1.0.32.zip
+2. 执行`adb shell`, 强制手机打开usb调试模式
+3. 执行`rm password.key`, 再`reboot`
+
 ## FAQ
+### linux 忘记/重置密码
+- dedpin 15.4.1
+```
+1、首先开机选择"Advanced options for *****"这一行按回车
+2、然后选中最后是"（recovery mode）"这一行按"E"进入编辑页面
+3、将"ro recovery"改为"rw single init=/bin/bash". 有些系统没有bash可改为`init=sh`
+4、按ctrl+X或者F10启动，进入root shell
+5、执行"passwd 用户名"
+6、修改完成后按ctrl + alt + del重启电脑
+```
+
+单用户默认启用网络: `systemctl start NetworkManager`
+
+单用户环境:
+- lvm:
+    - lvm盘已识别, 见`/dev/mapper`, mount即可
+
 ### 添加bootargs
 ```bash
 # vim /etc/default/grub
@@ -72,3 +97,13 @@ grup2-install
 ### GRUB_CMDLINE_LINUX和GRUB_CMDLINE_LINUX_DEFAULT的区别
 GRUB_CMDLINE_LINUX: 定义所有内核启动项（包括默认启动、恢复模式、手动编辑的选项）的内核命令行参数
 GRUB_CMDLINE_LINUX_DEFAULT: 定义默认的内核命令行参数，仅影响普通启动菜单项（即非恢复模式或高级选项）
+
+### 启动时显示grub
+```bash
+$ sudo vim /etc/default/grub
+GRUB_TIMEOUT=10
+GRUB_TIMEOUT_STYLE=menu
+...
+$ sudo grub2-mkconfig -o "$(readlink -e /etc/grub2.cfg)" # for fedora/centos
+$ sudo update-grub # for debian/ubuntu
+```

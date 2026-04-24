@@ -13,12 +13,6 @@
 ## tools
 - [command-not-found](https://command-not-found.com/)
 - [cmd package search by man](http://manpages.ubuntu.com/manpages/focal/man8/), 比如[cgdisk](http://manpages.ubuntu.com/manpages/focal/man8/cgdisk.8.html)
-- [pkgs.org](https://pkgs.org)
-- rpm
-
-    - [rpmfind](https://rpmfind.net/)
-
-        能获取到`src.rpm`
 - [repology.org/projects](https://repology.org/projects/)
 - [Arch Linux 的最佳 GUI 包管理器](https://linux.cn/article-15727-1.html)
 
@@ -81,6 +75,9 @@ $ sudo reboot
 - [How Do I Change the Default Boot Kernel in Ubuntu?](https://support.huaweicloud.com/intl/en-us/trouble-ecs/ecs_trouble_0327.html)
 
 ## FAQ
+### fedora rawhide
+- `fedora rawhide` ： 简单的说，Rawhide就是Fedora的滚动更新版，但这与 Gentoo、ArchLinux 等又不同，因为这个分支指向的是当前开发版（如同 FreeBSD 的 CURRENT 分支），所以极其不稳定。需要注意的是，这不是测试版，而是开发版.
+
 ### do-release-upgrade 离线升级
 env: 有apt repo proxy(且支持ubuntu jammy, 比如`nexus repository manager`是可以限制代理的Ubuntu版本的), 但无法访问changelogs.ubuntu.com
 

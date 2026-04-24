@@ -1563,3 +1563,13 @@ ref:
 - [windows_10_shared_source_kit](https://github.com/xerohour/windows_10_shared_source_kit)
 
    windows 10 部分源码
+
+### virsh unknown os type hvm
+原因: qemu 虚拟机配置中的`<emulator>...</emulator>`路径不存在, 即未安装qemu kvm.
+apt install qemu-kvm qemu-system-x86 # for ubuntu 16.04, 必须同时安装qemu-system-x86,否则会报"qemu-system-x86_64: not found"
+
+同时用`lsmod |grep kvm`检查kernel是否已加载kvm, 不然用`modprobe kvm`加载.
+
+> virsh create启动kvm虚拟机前提: cpu支持虚拟化, 检测方法`grep -E "^flags.*(vmx|svm)" /proc/cpuinfo`.
+
+> 可用`kvm-ok`检查kvm环境是否ok.

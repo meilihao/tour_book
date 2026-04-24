@@ -42,3 +42,25 @@ chrome: 111.0.5564.111
 网页操作发现chrome对同一个接口请求了两次, 最后一个请求返回的数据是以前的缓存. 同时DevTools Network上, 第二个请求只有"Name"有内容, 其他都为空, 点击第一个请求看到的resp是正确数据, 点击第二个请求, 自动跳转到第一关请求上, 且其resp变为以前的缓存.
 
 解决方法: 重启chrome
+
+### fonts.googleapis.com被屏蔽导致网站加载变慢
+
+Google的字体(fonts.googleapis.com)服务被屏蔽，导致很多网站打开都极慢.
+
+```shell
+# 通过修改hosts文件解决,以linux为例
+# 编辑/etc/hosts
+# 方法1: 将谷歌字体服务的链接替换成[科大LUG](https://lug.ustc.edu.cn/wiki/mirrors/help/revproxy)
+fonts.googleapis.com         fonts.lug.ustc.edu.cn
+ajax.googleapis.com          ajax.lug.ustc.edu.cn
+themes.googleusercontent.com google-themes.lug.ustc.edu.cn
+storage.googleapis.com       storage-googleapis.lug.ustc.edu.cn
+fonts.gstatic.com            fonts-gstatic.lug.ustc.edu.cn
+gerrit.googlesource.com      gerrit-googlesource.lug.ustc.edu.cn
+secure.gravatar.com          gravatar.lug.ustc.edu.cn
+# 方法2: 直接屏蔽,缺点是看不到Google字体的真正效果
+127.0.0.1       fonts.googleapis.com
+```
+
+类似:
+- [ReplaceGoogleCDN](https://github.com/justjavac/ReplaceGoogleCDN)

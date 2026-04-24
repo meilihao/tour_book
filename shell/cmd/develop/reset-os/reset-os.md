@@ -1,8 +1,17 @@
 ## ClearOS
-1. 环境变量
+1. 环境变量/配置
 
-    1. `~/.ssh`
-    1. v2rayA
+    ```
+    /etc/sysctl.conf
+    ~/.bashrc
+    ~/.gitconfig
+    ~/.npmrc
+    ~/.vimrc
+    ~/.netrc
+    ~/.pip
+    ~/.ssh
+    ```
+1. v2rayA
 1. apt/dnf
 1. nginx.conf/备份DB
 
@@ -10,7 +19,7 @@
 1. 浏览器配置
 
     1. 书签
-    1. Proxy SwitchyOmega (V3)
+    1. ZeroOmega
     1. OneTab Pro+数据
 
         [better-onetab](https://github.com/cnwangjie/better-onetab)因chrome v131.0.6778.204不支持Manifest v3而被禁用

@@ -80,3 +80,9 @@ $ dig @223.5.5.5 www.baidu.com A
 
 ## 参考
 - [DNS 查询之 10 个 dig 详细例子](https://www.tuicool.com/articles/MvMrI36)
+
+## FAQ
+### 查找域名对应的ip
+`http://IPAddress.com`
+
+> [for github被屏蔽](https://zhuanlan.zhihu.com/p/65154116)

@@ -1,5 +1,6 @@
 # windows
-
+## tools
+- [Everything](https://www.voidtools.com/zh-cn/) : 基于名称快速定位文件和文件夹
 
 ## 注册表
 - 网络配置: `HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces\<InterfaceGUID>`
