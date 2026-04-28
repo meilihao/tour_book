@@ -242,3 +242,7 @@ NULL和空值是不一样的，空值是不占用空间的，而NULL是占用空
 - 在where 和 order by 涉及的列建立索引
 - 尽量少使用in 或者 not in , 可能会进行全表扫描
 - 避免在where子句中对字段进行表达式, 类型转换或者函数操作，会导致存储引擎放弃索引进而全表扫描
+
+### 字段menus类型是text, 内容是用","拼接整数数组而成的字符串, 比如"30301,30201", sql如何查询menus是否包含某个整数
+- MySQL / MariaDB:`FIND_IN_SET('3', menu) > 0`
+- PostgreSQL:`'3' = ANY(string_to_array(menu, ','))`

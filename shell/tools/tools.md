@@ -260,11 +260,6 @@ systemctl --user stop gvfs-daemon
 systemctl --user mask gvfs-daemon
 ```
 
-### firefox + fcitx5无法输入中文
-env: fedora 40 + kde + fcitx5
-
-使用chrome
-
 ### fedora 39/40禁止自动挂起
 服务器用的fedora 40(使用了默认的gnome桌面)，ssh总是隔一段时间就自动挂起了, 并且提示：
 ```

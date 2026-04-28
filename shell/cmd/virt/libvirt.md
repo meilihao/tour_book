@@ -1573,3 +1573,9 @@ apt install qemu-kvm qemu-system-x86 # for ubuntu 16.04, 必须同时安装qemu-
 > virsh create启动kvm虚拟机前提: cpu支持虚拟化, 检测方法`grep -E "^flags.*(vmx|svm)" /proc/cpuinfo`.
 
 > 可用`kvm-ok`检查kvm环境是否ok.
+
+### libvirtd报`Initialization of QEMU state driver failed: invalid argument: Failed to parse user 'libvirt-qemu'`
+刚安装libvirt, 需要`systemctl restart libvirtd`, 最好是重启
+
+### virt-manager连接libvirtd报`libvirt.libvirtError: Failed to connect socket to '/var/run/libvirt/libvirt-sock': Permission denied`
+刚安装libvirt, 当前用户已属于libvirt组, 但需要重启

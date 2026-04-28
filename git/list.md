@@ -14,3 +14,6 @@
 
 ## misc
 - [蚂蚁开源基于云的下一代版本控制系统 - HugeSCM](https://www.oschina.net/news/324205)
+
+## client
+- [rgitui](https://github.com/noahbclarkson/rgitui/releases)

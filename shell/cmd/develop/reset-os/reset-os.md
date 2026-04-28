@@ -11,6 +11,7 @@
     ~/.pip
     ~/.ssh
     ```
+1. docker配置
 1. v2rayA
 1. apt/dnf
 1. nginx.conf/备份DB

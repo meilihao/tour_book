@@ -1,4 +1,6 @@
 # zed
+ref:
+- [Zed on Linux](https://zed.dev/docs/linux#other-ways-to-install-zed-on-linux)
 
 ## 插件
 1. ruff
