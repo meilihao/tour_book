@@ -79,10 +79,17 @@ ref:
 	- ADDR: 用于设置虚拟内存地址VMA(Virtual Memory Address)
 	- AT: 指定加载内存地址(LMA, Load Memory Address)
 
-	  没有指定AT时, VMA=LMA
+	  没有指定AT时, VMA=LMA. 当VMA!=LMA时需要复制代码段
 
 	加载内存地址是程序被加载的地址
 	虚拟内存地址是程序运行的地址
+
+	加载重定位:
+	1. 链接地址(`.=0x...`), 运行地址和加载地址相同: 无需处理
+	1. 加载地址和链接地址不同: 将代码段从加载地址复制到链接地址
+	1. 运行地址与链接地址不同: 初始化MMU, 并把物理内存映射到内核空间, 然后做一次重定位, 让cpu运行地址重定位到链接地址, 该做法在u-boot和linux中很常见
+
+	  见relocate汇编函数(`linux5.15/arch/riscv/kernel/head.S`), 它的主要功能就是实现重定位: 启动MMU后, 通过li指令把PAGE_OFFSET宏的值加载到a1, 然后修改返回地址(ra)来跳转到内核空间的链接地址, 从而实现重定位
 
 	`*(.text .rodata)`和`*(.text) *(.rodata)`区别:
 	1. `*(.text .rodata)`: 按照输入文件的顺序把相应的代码段和只读数据段加入
