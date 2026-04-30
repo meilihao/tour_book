@@ -76,3 +76,27 @@ pip install "python-lsp-server[all]"
 现象: 执行二进制后没有任何提示就退出
 
 根源: `env |grep so`:`LD_PRELOAD=/usr/NX/lib/libnxegl.so`(from nomachine), 图形渲染驱动被劫持
+
+### vscode + go无法跳转`This file may be excluded due to its build tags; try adding "-tags=<build tag>" to your gopls "buildFlags" configuration`
+使用了build tags, 需要gopls支持才能跳转
+
+解决方法:
+1. 创建`.zed/settings.json`
+
+    ```json
+    {
+      "lsp": {
+        "gopls": {
+          "initialization_options": {
+            "buildFlags": ["-tags=gui"],
+          },
+        },
+      },
+    }
+    ```
+1. 重启gols
+
+    - 在 zed 左下角工具栏找到"闪电"图标, 通过它重启gopls, **推荐**
+    - 按下 Ctrl + Shift + P 打开命令面板, 再输入并执行：editor: restart language server
+
+ps: 启用tags和非启用tags的文件gols是互斥识别的

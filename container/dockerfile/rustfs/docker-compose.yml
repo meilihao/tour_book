@@ -1,0 +1,16 @@
+services:
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: rustfs-server
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - RUSTFS_VOLUMES=/data
+#      - RUSTFS_TLS_PATH=/opt/tls/
+    volumes:
+      - /data/tmpfs/rustfs/data/:/data
+#      - /data/tmpfs/rustfs/certs/:/opt/tls
+#      - /data/tmpfs/rustfs/logs/:/app/logs
+    restart: no # unless-stopped
+

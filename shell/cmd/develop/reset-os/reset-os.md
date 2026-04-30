@@ -30,13 +30,6 @@
 1. git
 1. ripgrep,Zellij
 
-## other
-- [github.com/coolcode/tomato-clock-rs](https://github.com/coolcode/tomato-clock-rs)
-- [Ubuntu上安装番茄时钟](https://zhuanlan.zhihu.com/p/350023097)
-
-    `pip3 install tomato-clock`
-- [alarm clock](https://alarm-clock-applet.github.io/)
-
 ## Dell PowerEdge T630
 安装系统选basic graphics mode/字符安装, 估计与其内置显卡次(显存32M, 分辨率最高`1024*768`)有关.
 

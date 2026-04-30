@@ -620,3 +620,14 @@ by `golang.org/x/text`:
 
 ### package存在但import报`no required module provides package`
 检查该package的go.mod, 看module属性是否正确
+
+### `//go:embed xxx`报`pattern xxx: no matching files found`
+排查:
+1. 文件或目录不存在, 这是最直接的原因
+
+	检查是否存在一个名为 xxx 的文件或目录, `//go:embed` 指令指定的路径是相对于包含该指令的 Go 源文件的
+1. 路径语法错误
+
+	1. 相对路径问题：路径中不能包含`.`或`..`，也不能以`/`或`\`开头
+	1. 目录嵌入规则：如果 xxx 是一个空目录，或目录下只包含以`.` 或`_`开头的文件（这些文件默认会被排除），则嵌入会失败
+	1. 通配符误用：xxx 本身不是通配符. 如果想匹配 xxx 目录下所有文件，应使用 `//go:embed admin/*`

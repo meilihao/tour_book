@@ -302,3 +302,25 @@ ref:
 ### 中文界面
 1. ctrl+shift+p
 1. 输入`Configure Display Language`, 再选择"中文(简体)"并重启即可
+
+### vscode + go无法跳转`This file may be excluded due to its build tags; try adding "-tags=<build tag>" to your gopls "buildFlags" configuration`
+使用了build tags, 需要gopls支持才能跳转
+
+解决方法:
+1. 创建`.vscode/settings.json`
+
+    ```json
+    {
+        "gopls": {
+            "build.buildFlags": [
+                "-tags=gui"
+            ]
+        }
+    }
+    ```
+1. 重启gols
+
+    1. 在 VS Code 中按下 Ctrl + Shift + P
+    1. 输入并选择：Go: Restart Language Server
+
+ps: 启用tags和非启用tags的文件gols是互斥识别的

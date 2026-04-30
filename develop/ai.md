@@ -5,6 +5,9 @@ ref:
 - [Claude Code + OpenSpec 正在加速 AICoding 落地：从模型博弈到工程化的范式转移](https://my.oschina.net/u/5783135/blog/19362360)
 - [Claude Code 快速上手核心指南](https://mp.weixin.qq.com/s/zb8BI7gMHuK0QvRhz4T1pA)
 
+## base
+- [把 Agent 面试从底层到实战全部讲透](https://mp.weixin.qq.com/s/eE8PHFRXyTirRMrlJDyZGg)
+
 ## book
 agent:
 - [《Agentic Design Patterns》中文翻译版](https://github.com/ginobefun/agentic-design-patterns-cn)

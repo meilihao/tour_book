@@ -55,6 +55,13 @@ ref:
 
 # 注意力
 - [开源应用 Pomatez 使你保持专注](https://linux.cn/article-16268-1.html)
+- [Ubuntu上安装番茄时钟](https://zhuanlan.zhihu.com/p/350023097)
+
+    `pip3 install tomato-clock`
+- [github.com/coolcode/tomato-clock-rs](https://github.com/coolcode/tomato-clock-rs)
+
+	上面tomato-clock的rust实现
+- [alarm clock](https://alarm-clock-applet.github.io/)
 
 # 启动盘
 1. [Ventoy](https://www.ventoy.net/cn/doc_start.html), 推荐

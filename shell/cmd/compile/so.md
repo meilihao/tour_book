@@ -92,3 +92,6 @@ $ sudo ln -s  /usr/lib/samba/wbclient/libwbclient.so.0.12 /usr/lib/libwbclient.s
 类似的还有`dlclose, dlerror, dlsym`, 是某个地方引用了`#include <dlfcn.h>`所致.
 
 解决方法: 编译选项里加`-ldl`, 即`gcc DBSim.c -o DBSim -ldl`
+
+### "pkg-config": executable file not found in $PATH
+`apt-get install pkg-config`
