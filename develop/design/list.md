@@ -29,3 +29,8 @@
 
 ## SSO
 - [SSO单点登录的设计与实现](https://zhuanlan.zhihu.com/p/196728329)
+
+## 其他api
+- [DouYin_Spider](https://github.com/cv-cat/DouYin_Spider)
+
+	抖音逆向，抖音爬虫，抖音全部api、私信、直播间监听

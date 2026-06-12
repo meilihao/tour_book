@@ -225,3 +225,6 @@ ref:
 
 ## profiling
 - [Rust 性能提升 “最后一公里”：详解 Profiling 瓶颈定位与优化｜得物技术](https://my.oschina.net/u/5783135/blog/18687884)
+
+## 编译
+- [oxidizer : A Rust decompiler built on top of angr](https://github.com/sefcom/oxidizer)

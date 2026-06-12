@@ -44,4 +44,4 @@ $ cat package.json
 启动dev server时, 
 `vp dev`使用`/home/xxx/.vite-plus/js_runtime/node/24.15.0/bin/node /data/tmpfs/voidzero/yyy/node_modules/.pnpm/vite-plus@0.1.18_@types+node@25.6.0_jiti@2.6.1_typescript@6.0.2_vite@8.0.8_@types+node@_6c3352028afd0d77232260e20359556f/node_modules/vite-plus/dist/bin.js dev`, 而`cd <project>/apps/website && vp dev`使用`/home/xxx/.vite-plus/js_runtime/node/24.15.0/bin/node /data/tmpfs/voidzero/yyy/node_modules/.pnpm/vite-plus@0.1.18_@types+node@25.6.0_@voidzero-dev+vite-plus-core@0.1.18_@types+node@25._7394d3fc3cf68e557d6eebcdb659f21e/node_modules/vite-plus/dist/bin.js dev`
 
-原因未知.
+`ss -anltp|grep 9245`看看9245端口绑定到ipv4还是ipv6, 从而确定用`http://localhost:9245`还是`http://127.0.0.1:9245`访问

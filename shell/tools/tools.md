@@ -88,6 +88,11 @@ ref:
 
 	> system-config-kickstart 是一款图形化的 Kickstart 应答文件生成工具,可以根据自己的需求生成自定义的应答文件.
 
+	其他批量安装系统工具:
+	- [Cobbler](https://mp.weixin.qq.com/s/cFXIF5QqS_hewzTeHHuFhA)
+
+		Cobbler 是基于 Kickstart 的更高级封装工具，集成了DHCP、TFTP、DNS和PXE环境
+
 ## 上网
 ### chrome离线下载
 `https://www.google.cn/chrome/?standalone=1&platform=win64`, 不加platform时即下载当前os对应的版本.
@@ -98,8 +103,6 @@ platform:
 - linux
 
 > [测试版](https://www.google.cn/intl/zh-CN/chrome/beta/?hl=zh-CN&standalone=1), [开发者版](https://www.google.cn/intl/zh-CN/chrome/dev/?hl=zh-CN&standalone=1)
-
-> [firefox离线包](https://www.mozilla.org/zh-CN/firefox/all)
 
 > [Microsoft Edge 离线安装包](https://www.microsoft.com/zh-cn/edge/business-pages/download)
 
@@ -117,9 +120,8 @@ $ sudo apt install google-chrome-stable
 https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
 https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 
-### [apt安装firefox](https://www.omgubuntu.co.uk/2022/04/how-to-install-firefox-deb-apt-ubuntu-22-04)
-ref:
-- [Firefox Developer Edition and Beta: Try out Mozilla’s .deb package!](https://hacks.mozilla.org/2023/11/firefox-developer-edition-and-beta-try-out-mozillas-deb-package/)
+### [安装firefox](https://www.omgubuntu.co.uk/2022/04/how-to-install-firefox-deb-apt-ubuntu-22-04)
+推荐: [firefox离线包](https://www.firefox.com/zh-CN/) + [从 Mozilla 安装 Firefox](https://support.mozilla.org/zh-CN/kb/install-firefox-linux)
 
 ```bash
 sudo snap remove firefox

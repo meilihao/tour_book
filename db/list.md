@@ -28,6 +28,9 @@
 - [华为自用的时序数据库开源啦，来看看水平怎么样？](https://www.huaweicloud.com/news/2024/20240709153958154.html)
 - [Time Series DBMS排名](https://db-engines.com/en/ranking/time+series+dbms)
 
+## 大数据
+- [《大数据理论与实践》课程学习材料仓库](https://github.com/ForceInjection/Big-Data-Theory-and-Practice)
+
 ## next db
 ### OceanBase
 - [蚂蚁金服庆涛：OceanBase支撑2135亿成交额背后的技术原理](https://blog.51cto.com/u_14164343/2344929)
@@ -53,3 +56,5 @@
 	# ln -sf /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
 	# ln -sf /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18
 	```
+## 分布式事务
+- [分布式事务终极指南：TCC 和 Saga](https://mp.weixin.qq.com/s/Wdawwr5fEV0GKNOz0JKK7Q)

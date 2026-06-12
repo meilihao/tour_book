@@ -99,7 +99,7 @@ ref:
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "cmd/main.go",
+            "program": "cmd", // 应指向包路径而非单个文件
             "cwd": "${workspaceFolder}",
             "env": {
                 "LOG_LEVEL": "DEBUG"
@@ -324,3 +324,17 @@ ref:
     1. 输入并选择：Go: Restart Language Server
 
 ps: 启用tags和非启用tags的文件gols是互斥识别的
+
+### gopls无法识别`encoding/json/v2`
+`.vscode/settings.json`添加:
+```json
+{
+    "makefile.configureOnOpen": false,
+    "go.toolsEnvVars": {
+        "GOEXPERIMENT": "jsonv2"
+    }
+}
+```
+
+### clangd报`clang pp_file_not_found`, 但配置`.clangd`的`CompileFlags#Add`不起作用
+用构建目录下的`compile_commands.json`链接到项目根目录下来代替, 需重启lsp

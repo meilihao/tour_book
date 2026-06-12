@@ -587,3 +587,6 @@ fatal: 'origin/feature' is not a commit and a branch 'feature' cannot be created
 2. 远程有这个分支，但是本地认为远程没有这个分支
     
     `git fetch origin`
+3. 重新git clone
+
+    出错原因未知

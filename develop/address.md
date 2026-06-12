@@ -1,16 +1,22 @@
 # 地址
 
  参考:
+ - [中国国家地名信息库](https://dmfw.mca.gov.cn/XzqhVersionPublish.html)
  - [最新县及县以上行政区划代码](http://www.stats.gov.cn/tjsj/tjbz/xzqhdm/)
  - [统计用区划和城乡划分代码](http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/),比上面的`最新县及县以上行政区划代码`更细.
  - [2023年中华人民共和国县以上行政区划代码](https://www.mca.gov.cn/mzsj/xzqh/2023/202301xzqh.html)
  - [全国行政区划信息查询平台](http://xzqh.mca.gov.cn/map)
  - [中华人民共和国行政区划统计表](http://xzqh.mca.gov.cn/statistics/)
  - [行政区划代码](https://dmfw.mca.gov.cn/XzqhVersionPublish.html)
+ - [**adcode 信息可参考 城市编码表**](https://lbs.amap.com/api/webservice/download) from [地理/逆地理编码](https://lbs.amap.com/api/webservice/guide/api/georegeo)
+
+	1. 城市编码表
+	2. 海外城市编码表
 
  > [自2024年10月起，国家统计局继续公开《关于统计上划分城乡的规定》《统计用区划代码和城乡划分代码编制规则》等统计标准方法，不再公开具体相关代码](https://www.stats.gov.cn/hd/lyzx/zxgk/202509/t20250903_1960996.html)
 
  其他工具:
+ - [AreaCity-JsSpider-StatsGov](https://github.com/xiangyuecn/AreaCity-JsSpider-StatsGov)
  - [Administrative-divisions-of-China, **推荐**](https://github.com/modood/Administrative-divisions-of-China)
  - [mooon-district](https://github.com/eyjian/mooon-district/tree/main)
 
@@ -33,6 +39,9 @@
 1. 下载网页, 用命令`grep -r "A-G"`检索地址入口文件,得到`http://g.alicdn.com//vip/address/6.0.14/index-min.js`(`A-G`是淘宝地址选项卡省份分类的一个标识).
 1. 用网上工具格式该js,提取地址信息.
 1. 用js解码获取所需地址信息
+
+## 地理围栏
+- [揭秘外卖平台城市区域地理围栏/电子围栏设计](https://juejin.cn/post/7632034549866037275)
 
 ## 自己处理
 ```go

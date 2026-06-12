@@ -82,6 +82,7 @@
 - [性能优化：优化一个已经很快了的Go程序](https://boyter.org/posts/sloc-cloc-code-performance/)
 - [Two Go programs, three different profiling techniques, in 50 minutes](https://about.sourcegraph.com/go/gophercon-2019-two-go-programs-three-different-profiling-techniques-in-50-minutes)
 - [CGO 和 CGO 性能之谜](https://cloud.tencent.com/developer/article/1650525)
+- [Go 的“魔法指针”——C 程序员眼中的 Go 内存布局](https://mp.weixin.qq.com/s/ycap40cgYTH70bYqgr66lA)
 
 ### 内存泄露
 - [Hi, 使用多年的go pprof检查内存泄漏的方法居然是错的?!](https://colobu.com/2019/08/20/use-pprof-to-compare-go-memory-usage/)

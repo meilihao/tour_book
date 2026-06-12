@@ -183,3 +183,13 @@ ref:
 
 ### 停止ssh报`Stopping 'ssh.service', but its triggering units are still active:ssh.socket`
 `systemctl disable ssh.socket` + `systemctl stop ssh.socket` + `systemctl stop ssh`
+
+### 禁止弹窗输入密码
+```
+export SSH_ASKPASS_REQUIRE=never
+```
+或
+```
+unset SSH_ASKPASS
+unset DISPLAY
+```

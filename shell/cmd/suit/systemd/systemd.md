@@ -23,6 +23,31 @@
 	1. iptables->nftables, 涉及systemd-networkd, systemd-nspawn
 	2. 移除System V脚本支持
 
+### systemd 原生服务速览表
+- systemd-journald.service : 系统日志收集、存储与管理
+- systemd-logind.service : 用户登录、会话与席位管理
+- systemd-udevd.service : 设备管理与节点创建（udev）
+- systemd-resolved.service : DNS 解析、mDNS 与 DNSSEC 验证
+- systemd-networkd.service : 网络设备检测与配置
+- systemd-timesyncd.service : 轻量 SNTP 时间同步
+- systemd-tmpfiles-setup.service : 创建临时文件、目录及权限
+- systemd-tmpfiles-clean.service : 定时清理过期临时文件
+- systemd-random-seed.service : 保存/恢复内核随机数种子
+- systemd-modules-load.service : 启动时加载内核模块
+- systemd-sysusers.service : 创建系统用户和组
+- systemd-sysctl.service : 应用 sysctl 内核参数
+- systemd-binfmt.service : 注册额外可执行文件格式
+- systemd-machine-id-commit.service : 提交 /etc/machine-id
+- systemd-hwdb-update.service : 更新硬件数据库索引
+- systemd-fsck@.service : 文件系统检查（模板）
+- systemd-quotacheck.service : 磁盘配额检查与更新
+- systemd-vconsole-setup.service : 虚拟控制台字体与键盘初始化
+- systemd-hostnamed.service : 主机名查询与修改（D-Bus 激活）
+- systemd-localed.service : 区域与语言设置（D-Bus 激活）
+- systemd-timedated.service : 时间、时区与同步设置（D-Bus 激活）
+- systemd-portabled.service : 可移植服务镜像管理
+- systemd-userdbd.service : 增强用户/组查询（userdb）
+
 ### systemd 与 System V init 的区别以及作用
 |System V init 运行级别|systemd 目标名称|作用|
 |0| runlevel0.target, poweroff.target |关机|

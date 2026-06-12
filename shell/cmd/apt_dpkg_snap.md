@@ -131,6 +131,13 @@ $ dpkg-scanpackages . | gzip -9c > Packages.gz #  制作本地软件源
 - [Debian 新维护者手册](https://www.debian.org/doc/manuals/maint-guide/)
 
 ## FAQ
+### hwe
+```bahs
+$ apt search linux-generic-hwe-
+$ sudo apt install --install-recommends linux-generic-hwe-26.04
+$ hwe-support-status --verbose
+```
+
 ### deb包查找
 - 查找Ubuntu的deb包地址：http://packages.ubuntu.com/,推荐
 - 查找Debian的deb包地址：https://www.debian.org/distrib/packages

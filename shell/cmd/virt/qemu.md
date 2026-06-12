@@ -100,6 +100,8 @@ $ ln -sf /usr/bin/qemu-system-x86_64 /usr/libexec/qemu-kvm
         - backing_file=xxx : 基于img xxx创建镜像, 即实现增量镜像的效果, 参考[KVM虚拟机镜像那点儿事，qcow2六大功能，内部快照和外部快照有啥区别？](https://sq.sf.163.com/blog/article/218146701477384192)
 
             backing file就是基于这个原理的用处，一个qcow2的image可以保存另一个disk image的改变，而不影响另一个image.
+
+        `qemu-img create -f qcow2 -F qcow2 -b <后端镜像路径> <新镜像路径>`
     - test-vm-1.qcow2 是镜像文件的名字
     - 10G是镜像文件大小
 
@@ -628,6 +630,22 @@ ps kill nbd相关进程无效, 需重启
 
     密码: `root:openEuler12#$`, grub密码也是这个
     ssh: 默认启动/支持root+password
+- [Fedora Cloud Base 44](https://fedoraproject.org/cloud/download/)
+
+    使用cloud-init:
+    ```bash
+    # apt install cloud-image-utils
+    # vim user-data 
+    #cloud-config
+    user: fedora
+    password: fedora
+    chpasswd: { expire: False }
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_pwauth: True
+    ssh_authorized_keys: # 下面是pub key内容
+    - ssh-ed25519 AAA...
+    # cloud-localds my-cloud-init.iso user-data # virtmanager添加SATA光驱并加载my-cloud-init.iso, Cloud-init 仅在虚拟机第一次启动时执行 user-data 中的指令, 执行完Cloud-init指令后需移除该iso
+    ```
 
 #### 网络
 ref:

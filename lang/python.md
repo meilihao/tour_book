@@ -2644,7 +2644,7 @@ stats = 127.0.0.1:3167
 uwsgitop输出解析:
 - lq : 当前有多少个请求正在等待 uWSGI worker 来处理，但还没被接收
 
-### venv vs Conda
+### venv vs Conda vs **uv**
 ref:
 - [Python虚拟环境：venv与Conda的不同，如何选择？](https://blog.csdn.net/weixin_47520540/article/details/133614562)
 

@@ -95,3 +95,9 @@ $ sudo ln -s  /usr/lib/samba/wbclient/libwbclient.so.0.12 /usr/lib/libwbclient.s
 
 ### "pkg-config": executable file not found in $PATH
 `apt-get install pkg-config`
+
+### `libwebkit2gtk-4.0.so.37/libjavascriptcoregtk-4.0.so.18: cannot open shared object file`
+```bash
+sudo ln -sf /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libwebkit2gtk-4.0.so.37
+sudo ln -sf /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.1.so.0 /usr/lib/x86_64-linux-gnu/libjavascriptcoregtk-4.0.so.18
+```

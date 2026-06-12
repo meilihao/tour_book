@@ -40,11 +40,27 @@ os:
     - gnome, 启动桌面失败
 - fedora worktation 39: basic graphics mode, ok
 
-## repo
+## vm env
+init:
 ```
-# from https://www.atzlinux.com/faq.htm#apt-hand-other from install v2raylui
-# wget -qO - https://download.sublimetext.com/sublimehq-pub.gpg | sudo apt-key add -
-# echo "deb https://apt.atzlinux.com/atzlinux buster main contrib non-free" sudo tee -a /etc/apt/sources.list
+# dnf remove libreoffice*
+# dnf remove parole
+# dnf remove transmission*
+# dnf remove hexchat
+# dnf remove pidgin
+# dnf remove thunderbird
+# dnf remove tigervnc*
+# dnf remove mate-dictionary
+# dnf remove filezilla
+# dnf autoremove
+# dnf clean all
+# systemctl disable cups && systemctl stop cups
+# systemctl disable bluetooth && systemctl stop bluetooth
+# systemctl disable ModemManager && systemctl stop ModemManager
+# systemctl disable firewalld && systemctl stop firewalld
+# systemctl disable avahi-daemon && systemctl stop avahi-daemon && systemctl stop avahi-daemon.socket
+# setenforce 0
+# sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
 ```
 
 ## softwares

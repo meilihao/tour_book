@@ -42,6 +42,7 @@ $ curl -c cookies http://example.com
 $ curl -b cookies http://example.com
 $ curl --header "Content-Type:application/json" http://example.com
 $ curl -v -k https://127.0.0.1:8081 # 查看https交互过程
+$ curl -v -o /dev/null -s -w "DNS时间: %{time_namelookup}s\nTCP建立: %{time_connect}s\nTLS握手: %{time_appconnect}s\n首字节(TTFB): %{time_starttransfer}s\n总耗时: %{time_total}s\n" "https://baidu.com
 ```
 
 ## FAQ

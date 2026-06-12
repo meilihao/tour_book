@@ -398,7 +398,7 @@ scripts section:
 使用`yum/dnf install`时会先移除旧软件包再安装.
 
 ### `rpm -e`遇到script error
-`rpm -e --noscripts xxx`, 删除软件包时不执行script.
+`rpm -e --noscripts xxx`, 删除软件包时不执行script. 当系统里有同一程序的多个安装版本要一起删除，可使用`--allmatches`
 
 ### yum/dnf upgrade script执行顺序
 参考:
