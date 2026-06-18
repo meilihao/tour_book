@@ -562,3 +562,8 @@ $ openssl x509 -inform DER -in yourdownloaded.crt -out outcert.pem -text  # crt�
 解决方法:
 1. 调查client timeout原因
 1. 设置`send_timeout 5m;`(默认是1m)
+
+### api调用返回404, location的proxy_pass没有生效
+proxy_pass后端返回404时, nginx是access.log有404记录, 但error.log没有记录
+
+解决: 排查proxy_pass后端404

@@ -3,13 +3,14 @@ ref:
 - [etcd、Zookeeper和Consul性能对比](https://my.oschina.net/u/588516/blog/5512628)
 - [一篇文章带你搞懂 etcd 3.5 的核心特性](https://cloud.tencent.com/developer/article/1836291)
 - [多维度解析etcd，一个比zookeeper更加优秀的键值对存储系统](https://www.cnblogs.com/traditional/p/9445930.html)
+- [每日K8s知识点：etcd深度解析](https://mp.weixin.qq.com/s/Ic6epQvIbCSfes7Stu4r4w)
 - [**《彻底搞懂 etcd 系列》**](https://www.zhihu.com/column/c_1248405562469597184)
 
 etcd 应用场景包括但不限于分布式数据库、服务注册与发现 、 分布式锁 、 分布式消息队列 、 分布式系统选主等.
 
 ps: ETCD 相比ZooKeeper来说更优秀一些，提供了更稳定的高负载读写能力，对 ZooKeeper 暴露的许多问题进行了改进优化, 并且ETCD 基本能够覆盖 ZooKeeper 的所有应用场景，实现对其的替代.
 
-etcd server 默认使用 2380 端口监听集群中其他 server 的请求.
+etcd server 默认使用 2380 端口监听集群中其他 server 的请求. 生产环境etcd至少3节点，推荐5节点（可容忍2个节点故障）
 
 > [搭建本地etcd集群](https://doczhcn.gitbook.io/etcd/index/index/local_cluster)
 
@@ -163,6 +164,13 @@ ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster # 集群名称
 ETCD_INITIAL_CLUSTER="etcd1=https://192.168.18.3:2380,etcd2=https://192.168.18.4:2380,etcd3=https://192.168.18.5:2380" # 集群各节点的endpoint列表
 ETCD_INITIAL_CLUSTER_STATE=new # new, 初始集群状态; existing,集群已存在时使用
 ```
+
+etcd参数调优:
+- quota-backend-bytes : 2GB -> 8GB
+- max-request-bytes: 1.5MB -> 10MB（大Deployment需调整）
+- auto-compaction-retention: 0（关闭）-> 1h（自动压缩历史版本）
+- heartbeat-interval: 100ms -> 跨IDC部署可调大（如500ms）
+- eletion-timeout: 5s -> 高延迟网络可调大（如10s）
 
 ## 数据模型
 etcd支持多版本, 且提供了可靠的watcher机制, 通过向一个key添加watcher, 同时指定一个历史版本, 从该版本开始的所有事件都会触发该wather.

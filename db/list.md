@@ -58,3 +58,6 @@
 	```
 ## 分布式事务
 - [分布式事务终极指南：TCC 和 Saga](https://mp.weixin.qq.com/s/Wdawwr5fEV0GKNOz0JKK7Q)
+
+## 练手
+- [MiniOB](https://github.com/oceanbase/miniob)

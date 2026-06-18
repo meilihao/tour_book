@@ -8,6 +8,8 @@ tmux是一款优秀的终端复用软件，类似 GNU screen，但比screen更�
 
 tmux也可用于会话共享.
 
+[**rmux**]可取代tmux
+
 ## example
 ```bash
 $ tmux list-keys # 列出所有快捷键，及其对应的 Tmux 命令

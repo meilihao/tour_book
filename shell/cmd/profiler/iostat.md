@@ -30,7 +30,9 @@ cpu属性值说明：
 - %user：CPU处在用户模式(application)下的时间百分比
 - %nice：CPU花费在re-nicing进程(更改进程的执行顺序和优先级)上的时间百分比
 - %system：CPU处在系统模式(kernel)下的时间百分比
-- %iowait：CPU等待I/O操作的时间的百分比
+- %iowait：CPU **空闲（idle）**的时间里，有多少比例是因为在等磁盘I/O而空闲的
+
+    iowait是CPU指标，只说明**CPU在等I/O, 不是磁盘在"忙"的时间占比**, 可能只是单个慢查询，磁盘整体很闲. 要看 iostat await + avgqu-sz
 - %steal：管理程序(hypervisor)为另一个虚拟进程提供服务而等待虚拟 CPU 的百分比
 - %idle：CPU空闲时间百分比
 
@@ -39,22 +41,35 @@ cpu属性值说明：
 disk属性值说明：
 - rrqm/s: 设备请求队列中, 每秒进行 merge 的读操作数目. 即 rmerge/s
 - wrqm/s: 设备请求队列中, 每秒进行 merge 的写操作数目. 即 wmerge/s
-- r/s: 每秒完成的读请求的次数(合并后的). 即 rio/s
-- w/s: 每秒完成的写请求的次数(合并后的). 即 wio/s
+- `r/s`/`w/s`: 每秒完成的读/写请求的次数即IOPS(合并后的). 随机I/O看这个，顺序I/O看kB/s
 - rsec/s: 每秒读扇区数, 每个扇区512B. 即 rsect/s. ssd没有该项
 - wsec/s: 每秒写扇区数. 即 wsect/s. ssd没有该项
-- rkB/s: 每秒读K字节数. 是 rsect/s 的一半，因为每扇区大小为512字节. 
-- wkB/s: 每秒写K字节数. 是 wsect/s 的一半. 
+- `rkB/s`/`wkB/s`: 每秒读/写吞吐量. 是 `rsect/s`/`wsect/s` 的一半，因为每扇区大小为512字节. 顺序读写的瓶颈看这个
 - avgrq-sz: 平均每次设备I/O操作的数据大小 (以扇区为单位). 
-- avgqu-sz: 平均I/O队列(即io等待中)长度. 
-- await: 平均每次发出到设备的I/O请求直至到被服务的耗时 (毫秒), 包括请求在队列中的耗时和svctm.
+- avgqu-sz: 平均I/O队列(正在处理+等待的I/O数)深度. 这个比%util更能反映磁盘繁忙程度 
+- await: 平均I/O响应时间（队列等待+实际处理）, 包括请求在队列中的耗时和svctm. 高不一定等于磁盘慢，可能是队列太长
+
+    await = (所有I/O的总等待时间 + 所有I/O的总服务时间) / I/O总数
+    
+    await 高，可能是队列排太长（并发I/O多），不一定是磁盘处理慢, 看 avgqu-sz 来判断
 - r_await: 平均每次设备read操作的等待时间 (毫秒). 
 - w_await: 平均每次设备write操作的等待时间 (毫秒). 
-- svctm: 平均每次设备I/O操作的服务(即响应)时间 (毫秒), 不包括队列时间
-- %util: 一秒中有百分之多少的时间用于 I/O 操作,就是io使用率，即被io消耗的cpu百分比, 越小表示磁盘越空闲, 持续大于90%, 需重视, 说明产生的I/O请求太多，I/O系统已经满负荷，该磁盘可能存在瓶颈.
+- svctm: 平均I/O服务时间（实际处理时间）
 
-r/s和w/s就是磁盘的iops, 分别是读iops和写iops.
-rkB/s和wkB/s是磁盘的吞吐
+    假设I/O是串行处理的, 在SSD/NVMe上，这个假设不成立，svctm 的值严重失真, 因此现代iostat已废弃
+
+    想知道磁盘的真实服务时间，用 fio 做基准测试，或者在应用层用 blktrace + blkparse 追踪每个I/O的实际处理时间
+- %util: 采样周期内磁盘"有I/O在处理"的时间占比, 就是io使用率，即被io消耗的cpu百分比, 越小表示磁盘越空闲, 持续大于90%, 需重视, 说明产生的I/O请求太多，I/O系统已经满负荷，该磁盘可能存在瓶颈. 
+
+    %util = (磁盘有I/O在处理的时间) / (采样周期), %util=100% 只说明"磁盘每一微秒都在处理I/O"，但不代表"没有更多I/O可以被并行处理":
+    - 机械盘（HDD）是串行处理I/O的，同一时刻只能处理一个I/O。所以 %util=100% 确实意味着磁盘饱和了，新I/O必须排队等
+    - SSD/NVMe 是并行处理I/O的。NVMe 可以同时处理 数万到数十万个 I/O（看队列深度）
+
+        SSD/NVMe上%util=100%是正常现象
+        SATA SSD需看NCQ深度, 可能还有并行能力
+        NVMe应完全忽略它
+
+        avgqu-sz 持续接近设备的最大队列深度，且 await 在增长 → 才是真正的SSD/NVMe瓶颈
 
 await和svctm是一对相对的数据, await是i/o的处理时间, 包括队列时间和操作时间, 一般系统i/o处理时间应小于5ms, 一旦超过20ms, server会感觉卡顿. syctm表示设备i/o操作的服务时间, 一般await大于svctm, 它们差值越小, 说明 I/O 几乎没有等待时间即队列时间越短, 性能越好. 如果 await 远大于 svctm，说明I/O 队列太长，io响应太慢，则需要进行必要优化. 如果avgqu-sz比较大，也表示有当量io在等待. 
 
@@ -66,6 +81,30 @@ tps和吞吐量:
 - kB_wrtn : 写入的总块数
 
 > iostat 工具是 sysstat 包的一部分
+
+实战结论：
+- iowait 高 + CPU 还有富余 → 可能是少数的I/O密集型进程在拖，整体还好
+- iowait 高 + CPU 也跑满 → 系统整体I/O压力大，需要查
+- iowait 低 + 应用很卡 → 可能是网络I/O（iowait不统计网络等待）
+
+磁盘I/O排查决策树
+1. Step 1：确认是不是I/O问题（别被iowait骗了）
+    iostat -x 1 看 await 和 avgqu-sz，不是看 %util 或 iowait
+    await < 10ms（SSD）或 < 100ms（HDD）→ I/O不慢，问题在别处
+1. Step 2：区分是吞吐量瓶颈还是IOPS瓶颈
+
+    rkB/s 很高但 r/s 不高 → 顺序读写，吞吐量瓶颈，看 kB/s 是否接近磁盘理论带宽
+    r/s 很高但 rkB/s 不高 → 随机I/O，IOPS瓶颈，看 r/s 是否接近磁盘最大IOPS
+1. Step 3：找是哪些进程在搞I/O
+
+    iotop 或 pidstat -d 1 看每个进程的 I/O 吞吐量
+    iotop -o 只看有I/O活动的进程，更清晰
+1. Step 4：查I/O调度器是否合适
+
+    cat /sys/block/sda/queue/scheduler 看当前调度器。
+    HDD 建议 mq-deadline；SSD/NVMe 建议 none（或 kyber 高负载场景）
+1. Step 5：深入追踪（必要时）
+    blktrace -d /dev/sda -o - | blkparse -i - 追踪每个I/O从发起到完成的完整路径，精确到微秒级，可以看到I/O在哪个环节耗时最多
 
 ## 选项
 
