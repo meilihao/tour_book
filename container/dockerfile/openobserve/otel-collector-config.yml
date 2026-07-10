@@ -1,0 +1,65 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+
+exporters:
+  otlphttp/openobserve:
+    endpoint: http://openobserve:5080/api/default
+    headers:
+      Authorization: Basic cm9vdEBleGFtcGxlLmNvbTpvMm9pX09vRHg0STY0VUs0Wlp2NUtUbERKZnF1OU5WTmVtdHAy
+      stream-name: default
+  debug:
+    verbosity: detailed
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/openobserve, debug]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/openobserve, debug]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/openobserve, debug]
+
+# exporters:
+#   otlp_grpc/openobserve:
+#     endpoint: openobserve:5081
+#     headers:
+#       authorization: "Basic cm9vdEBleGFtcGxlLmNvbTpvMm9pX09vRHg0STY0VUs0Wlp2NUtUbERKZnF1OU5WTmVtdHAy"
+#       organization: default
+#       stream-name: default
+#     tls:
+#       insecure: true
+#   debug:
+#     verbosity: detailed
+
+# service:
+#   pipelines:
+#     traces:
+#       receivers: [otlp]
+#       processors: [batch]
+#       exporters: [otlp_grpc/openobserve, debug]
+#     metrics:
+#       receivers: [otlp]
+#       processors: [batch]
+#       exporters: [otlp_grpc/openobserve, debug]
+#     logs:
+#       receivers: [otlp]
+#       processors: [batch]
+#       exporters: [otlp_grpc/openobserve, debug]
+#   telemetry:
+#     logs:
+#       level: DEBUG
+#       development: true

@@ -5,8 +5,9 @@ sudo apt/yum install chrony
 vim /etc/chrony/chrony.conf
 sudo systemctl restart chronyd
 sudo systemctl enable chronyd
-chronyc sources # 查看时间源
-chronyc tracking 使用 chronyc 查询同步状态
+chronyc sources -v # 查看时间源
+chronyc sourcestats -v # 查看时间同步的详细偏差
+chronyc tracking # 查看时间同步的具体跟踪状态（如偏差、频率、更新间隔等）
 ```
 
 ## 配置上游ntp

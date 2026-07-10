@@ -107,7 +107,9 @@
 - [全面总结： Golang 调用 C/C++，例子式教程](https://juejin.im/post/5a62f7cff265da3e4c07e0ab)
 - [配置 sql.DB 获得更好的性能](https://www.tuicool.com/articles/6nYJryF)
 - [Go内存分配那些事，就这么简单！](https://www.tuicool.com/articles/FJVFFzZ)
+- [内存管理：Go 如何压制内存碎片](https://mp.weixin.qq.com/s/o99_Ttw5TqCjszBz-PP_3g)
 - [从Go编程看IO多路复用Epoll](https://www.tuicool.com/articles/bYfi6vi)
+- [GC Barriers：读屏障 vs. 写屏障](https://mp.weixin.qq.com/s/gZiwhPyal_LUrcxXwfXJZA)
 
 ## 教程
 - [Go by Example 中文](http://gobyexample.everyx.in/)
@@ -136,6 +138,7 @@
 - [从Java到Golang快速入门](https://www.flysnow.org/2016/12/28/from-java-to-golang.html)
 - [深入Go Module.pdf](/misc/pdf/深入Go Module.pdf)
 - [Getting Started with Go Context](https://dev.to/gopher/getting-started-with-go-context-l7g)
+- [为什么业务并发优先用 errgroup 而非 WaitGroup？](https://mp.weixin.qq.com/s/AnO7hUkmC0urtXFLPyONKA)
 
 ## 推荐源码阅读
 - [badger](https://github.com/dgraph-io)

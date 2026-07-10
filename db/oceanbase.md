@@ -54,7 +54,7 @@ $ make -j4 # 构建所有test case
 $ sudo dnf install epel-release # for install gtest-devel cmake, only for 查看源码
 $ -- 按照官方`OceanBase Developer Guide`安装依赖
 $ sudo apt install git wget cmake make build-essential binutils m4 libgtest-dev
-$ vim .clangd # 可以用locate或从build_debug/compile_commands.json中查找缺失的头文件
+$ vim .clangd # 可以用locate或从build_debug/compile_commands.json中查找缺失的头文件, 变更后需要重启clangd
 CompileFlags:
   Add:
     [
@@ -75,6 +75,7 @@ CompileFlags:
       "-I/home/chen/test/oceanbase/deps/3rd/usr/local/oceanbase/deps/devel/include/oss_c_sdk",
       "-I/home/chen/test/oceanbase/deps/3rd/usr/local/oceanbase/deps/devel/include/apr-1",
       "-I/home/chen/test/oceanbase/deps/3rd/usr/local/oceanbase/deps/devel/include/mxml",
+      "-I/home/chen/test/oceanbase/deps/3rd/usr/local/oceanbase/deps/devel/include/icu/common"
     ]
 ```
 

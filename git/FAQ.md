@@ -590,3 +590,6 @@ fatal: 'origin/feature' is not a commit and a branch 'feature' cannot be created
 3. 重新git clone
 
     出错原因未知
+
+### git commit <历史commit>后, 如何回到原先的HEAD
+`git reflog`

@@ -82,6 +82,10 @@
 	- [ArtifactFS：Cloudflare 用 Go 写了个 FUSE 文件系统，Git 大仓库秒挂载](https://mp.weixin.qq.com/s/2S84p85rupg3FUqYLYGJEg)
 
 		- FUSE 驱动：用 jacobsa/fuse 实现用户态文件系统
+- glob
+	[gobwas/glob]()
+
+		gobwas/glob 是 Go 生态里最快的 glob 模式匹配库。支持完整的 shell 风格通配符，包括 ** 超级通配、 {a,b} 花括号、 [a-z] 字符范围
 
 ## http client
 - [github.com/go-resty/resty/v2](https://github.com/go-resty/resty)

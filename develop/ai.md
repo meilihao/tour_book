@@ -10,6 +10,7 @@ ref:
 
 ## book
 agent:
+- [**从0开始构建 AI 智能体**](https://github.com/hyyhf/agent-book-code)
 - [《Agentic Design Patterns》中文翻译版](https://github.com/ginobefun/agentic-design-patterns-cn)
 - [Vibe Vibe人人都能学会 AI 编程](https://www.vibevibe.cn/)
 - [从零开始构建智能体](https://github.com/datawhalechina/hello-agents)
@@ -21,6 +22,7 @@ agent:
 - [从0开始学AI Agent](https://www.feishu.cn/community/article?id=7592079808767462628)
 - [从零开始构建智能体](https://github.com/datawhalechina/hello-agents)
 - [Mark的AI产品经理知识库](https://www.feishu.cn/community/prompts?id=7594849297678486475)
+- [从 0 开始构建 Agent Harness](https://time.geekbang.org/column/intro/101132501)
 
 ## agent
 ref:
@@ -33,6 +35,10 @@ ref:
 	https://github.com/shareAI-lab/learn-claude-code
 - [Qwen-Agent是一个开发框架。开发者可基于本框架开发Agent应用](https://github.com/QwenLM/Qwen-Agent/blob/main/README_CN.md)
 - [OpenCode 是一个开源代理，帮助您在终端、IDE 或桌面端编写代码](https://opencode.ai/zh)
+
+	- [华为 DevEco Code 和小米 MiMo Code，都基于 OpenCode 开源项目二次开发](https://mp.weixin.qq.com/s/ITKB5QJs0W_GtX9Hu7WeTQ)
+- [OpenDev 是个 Rust 写的开源终端编程 agent](https://github.com/opendev-to/opendev)
+- [atomcode : 用 Rust 编写的开源终端 AI 编码助手](https://atomgit.com/atomgit_atomcode/atomcode)
 - [[开源] myclaw：2000 行 Go 平替 43 万行的 OpenClaw](https://zhuanlan.zhihu.com/p/2003885299256812722)
 - [矽速科技使用AI在数小时内自举构建了超轻量级PicoClaw](https://github.com/sipeed/picoclaw)
 - [gstack：让 AI 编程助手变身虚拟开发团队](https://github.com/garrytan/gstack)
@@ -60,3 +66,8 @@ ref:
 
 ## 提示
 - [bun : Zig → Rust porting guide](https://github.com/oven-sh/bun/blob/46d3bc29f270fa881dd5730ef1549e88407701a5/docs/PORTING.md)
+
+## skill
+- [给 Go 开发者的 AI 技能包：cc-skills-golang](https://mp.weixin.qq.com/s/oyYSe7keyVzibLp15jRUPg)
+
+	`https://github.com/samber/cc-skills-golang.git`

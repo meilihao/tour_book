@@ -14,7 +14,7 @@ debian,ubuntu等发行版的包管理.
 # apt-cache madison pouch # 列出软件包的所有版本
 # apt install pouch=1.0.0-0~ubuntu # 安装指定版本的软件包
 # apt-get install --reinstall aptitude # 重新安装package
-# apt-get install --only-upgrade samba # 仅更新单个package
+# apt-get install --only-upgrade samba # 仅更新单个package, 可以跳过“分阶段更新”（phased updates）
 # apt list -a cifs-utils # package all version
 # apt-cache policy cifs-utils # package all version, 推荐
 # rmadison cifs-utils # package all version, 推荐
@@ -31,6 +31,7 @@ debian,ubuntu等发行版的包管理.
 # apt-mark unhold package_name
 # add-apt-repository ppa:jonathonf/vim # add repo
 # add-apt-repository -r ppa:jonathonf/vim # remove repo
+# apt policy <xxx> # 了解该包“分阶段更新”（phased updates）的推送比例
 ```
 
 > apt-file也可用于查找文件; apt-rdepends生成依赖树

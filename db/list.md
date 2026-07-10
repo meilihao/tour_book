@@ -27,6 +27,7 @@
 ## 时序db
 - [华为自用的时序数据库开源啦，来看看水平怎么样？](https://www.huaweicloud.com/news/2024/20240709153958154.html)
 - [Time Series DBMS排名](https://db-engines.com/en/ranking/time+series+dbms)
+- [VictoriaMetrics：每数据点仅 0.4 字节，Go 如何写出世界级时序数据库](https://mp.weixin.qq.com/s/AYHkHKzNBn668HfM_iessg)
 
 ## 大数据
 - [《大数据理论与实践》课程学习材料仓库](https://github.com/ForceInjection/Big-Data-Theory-and-Practice)

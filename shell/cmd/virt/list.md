@@ -1,4 +1,7 @@
-# other
+# list
+## 虚拟机控制台
+- [QVMConsole](https://github.com/QVMConsole/QVMConsole)
+
 ## 管理虚拟化
 - [Multipass](https://www.modb.pro/db/179718)
 - [OpenNebula]()
