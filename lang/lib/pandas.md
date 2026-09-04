@@ -355,3 +355,12 @@ df["tag"] = np.select(
 s = pd.Series(["10", "20", "abc", "30"])
 pd.to_numeric(s, errors="coerce") # errors="coerce": 如果转换失败，不报错，直接变成 NaN
 ```
+
+## FAQ
+### 避免在空df列上执行apply
+```python
+# df原先不存在rate_p列
+mask = df['resource_type'] == 'resource_ac_load'
+if mask.any():
+    df.loc[mask, 'rate_p'] = df.loc[mask, 'agent'].map(get_ac_power)
+```

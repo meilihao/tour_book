@@ -112,6 +112,13 @@ EMQX 还支持客户端上下线事件、收发流量、消息收发、系统监
   # hbmqtt_sub --url mqtt://mqtt.eclipse.org:1883 -t /geektime/iot
   # hbmqtt_pub --url mqtt://mqtt.eclipse.org:1883 -t /geektime/iot -m Hello,World!
   ```
+- nanomq
+
+    ```bash
+    nanomq start 
+    nanomq_cli sub --url "mqtt-tcp://127.0.0.1:1883" -t "topic/test"
+    nanomq_cli pub --url "mqtt-tcp://127.0.0.1:1883" -t "topic/test" -m "Hello NanoMQ"
+    ```
 
 ## EMQX
 访问管理控制台： 通过 http://localhost:18083/ 登录，默认账号: admin 密码: public

@@ -96,3 +96,6 @@ map[string]Student 中储存的Student是数值拷贝，当要修改Student里�
 
 更直接的理解就是:
 `m["people"].name`的意图是修改元素的属性, 而`m["people"]`获取的元素的copy, 意图和实际不符.
+
+### 排查循环依赖
+`go list -f '{{.ImportPath}}: {{.Error}}' ./...`

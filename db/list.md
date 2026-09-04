@@ -62,3 +62,6 @@
 
 ## 练手
 - [MiniOB](https://github.com/oceanbase/miniob)
+
+## 备份
+- [databasus](https://mp.weixin.qq.com/s/htHHt9KZa5BqZa7QMeRElw)

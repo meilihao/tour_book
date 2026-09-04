@@ -6,6 +6,7 @@
 - [Configuring iSCSI Initiator(优化)](https://spdk.io/doc/iscsi.html)
 - [Highly Available SCST & LIO iSCSI Clustering How-To Guide Update & Comparison](https://linbit.com/blog/highly-available-scst-lio-iscsi-clustering-how-to-guide-update-comparison/)
 - [Create a Highly Available iSCSI Target Using a LINSTOR Gateway Cluster](https://linbit.com/blog/create-a-highly-available-iscsi-target-using-linstor-gateway/)
+- [OpenEuler 存储多路径 DM-Multipath 全维度实战手册](https://mp.weixin.qq.com/s/ySA2mShkh1c8g11303temA)
 
 ```bash
 # yum -y install targetd targetcli-fb

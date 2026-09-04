@@ -16,6 +16,9 @@ tmpfs /data/tmpfs tmpfs rw,nodev,nosuid,size=256m 0 0
 ### zram
 ref:
 - [Enable Zram on Linux For Better System Performance](https://fosspost.org/enable-zram-on-linux-better-system-performance)
+- [终极性能优化：zram-generator让你的Linux内存利用率提升50%](https://blog.csdn.net/gitblog_00525/article/details/158630093)
+
+systemd-zram-generator创建的dev是swap
 
 debian:
 ```bash
@@ -41,6 +44,16 @@ $ sudo systemctl daemon-reload
 $ sudo systemctl start systemd-zram-setup@zram0
 $ sudo zramctl
 $ sudo swapon --show
+```
+
+查看zram设备状态:
+```
+# 查看所有zram设备
+zramctl
+# 查看交换空间使用情况
+swapon --show
+# 监控压缩率
+cat /sys/block/zram0/mm_stat
 ```
 
 ## FAQ

@@ -33,3 +33,11 @@ ref:
 
 ### wps office无法输入中文
 同上编辑`WPS Office`快捷图标, 环境变量加`QT_IM_MODULE=fcitx XMODIFIERS=@im=fcitx`
+
+### fedora安装中文语言包
+```
+sudo dnf install langpacks-zh_CN
+sudo dnf install wqy-microhei-fonts google-noto-cjk-fonts # 为了防止中文乱码，建议安装常见的中文字体（如文泉驿或思源黑体）
+
+sudo localectl set-locale LANG=zh_CN.UTF-8 # 设置系统语言为中文即`echo 'LANG="zh_CN.UTF-8"' | sudo tee /etc/locale.conf`
+```

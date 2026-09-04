@@ -23,6 +23,7 @@ agent:
 - [从零开始构建智能体](https://github.com/datawhalechina/hello-agents)
 - [Mark的AI产品经理知识库](https://www.feishu.cn/community/prompts?id=7594849297678486475)
 - [从 0 开始构建 Agent Harness](https://time.geekbang.org/column/intro/101132501)
+- [**深入理解 AI Agent：设计原理与工程实践**](https://github.com/bojieli/ai-agent-book)
 
 ## agent
 ref:

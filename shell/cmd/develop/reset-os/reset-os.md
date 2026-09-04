@@ -40,6 +40,8 @@ os:
     - gnome, 启动桌面失败
 - fedora worktation 39: basic graphics mode, ok
 
+从选中安装模式到进入安装界面黑屏久, 估计与其显卡次有关
+
 ## vm env
 init:
 ```

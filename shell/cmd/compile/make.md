@@ -274,6 +274,21 @@ config-host.mak is out-of-date running configure
 
 某些源文件比生成的目标文件要新, 设置正确的系统时间即可
 
+### 让`make xxx`每次都能执行
+```makefile
+xxx:
+	@echo "xxx"
+```
+
+将xxx声明为伪目标, 就能每次执行.
+
+.PHONY 用于声明 伪目标 （phony targets）。当一个目标被标记为伪目标时：
+
+1. make 不会检查同名文件是否存在 ——即使当前目录下有一个名为 xxx 的文件，make 仍然会执行该目标的命令
+2. make 不会进行依赖时间戳检查 ——这意味着 make 不会比较目标和依赖的修改时间来决定是否需要重新执行
+
+执行`make xxx`即可, 每次都能执行.
+
 ## cmake
 参考:
 - [抛弃 Autotools 向 CMake 迈进吧](https://linux.cn/article-13419-1.html)
