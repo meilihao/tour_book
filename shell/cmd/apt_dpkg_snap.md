@@ -448,3 +448,9 @@ Chrome 安装包里包含一个脚本 /etc/cron.daily/google-chrome。每天这�
 
 ### 修改mirror源
 kubuntu-driver-manager
+
+### 查看依赖
+- 查看 libllvm21 依赖了什么（正向依赖）：`apt-cache depends libllvm21`
+- 查看谁依赖了 libllvm21（反向依赖）：`apt-cache rdepends libllvm21`
+- 查看软件包的详细信息与依赖：`apt show libllvm21`, 可以直接在输出的 Depends 行中看到依赖关系
+- 模拟卸载: apt remove --simulate libllvm21

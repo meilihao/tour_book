@@ -193,3 +193,6 @@ export SSH_ASKPASS_REQUIRE=never
 unset SSH_ASKPASS
 unset DISPLAY
 ```
+
+### ssh连接remote时记住了密码, 之后remote修改了密码, 如何重置
+安装seahorse, 然后在seahorse的`passwords`中删除/重置对应的ssh session, 再重新连接remote即可

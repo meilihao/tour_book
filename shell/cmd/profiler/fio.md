@@ -5,6 +5,7 @@
 
     - [TheRemote/PiBenchmarks : Linux Storage Benchmarking Script](https://github.com/TheRemote/PiBenchmarks)
 - [搞不懂 IOPS，做存储优化全是“瞎调”！一组 fio+iostat 实测带你抓真凶](https://mp.weixin.qq.com/s/geykhQb7mF4_FKj3OtPGew)
+- [一文吃透存储压测：FIO & Vdbench 零基础实操指南](https://mp.weixin.qq.com/s/1yCT5KPcAGj2Dd-DX9OTqA)
 
 模拟各种情况的i/o基准测试工具, 支持 14 种不同的 I/O 引擎，包括: sync,mmap, libaio, posixaio, SG v3, splice, null, network, syslet, guasi, solarisaio, iouring 等等.
 
