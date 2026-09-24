@@ -196,3 +196,16 @@ unset DISPLAY
 
 ### ssh连接remote时记住了密码, 之后remote修改了密码, 如何重置
 安装seahorse, 然后在seahorse的`passwords`中删除/重置对应的ssh session, 再重新连接remote即可
+
+### fedora ssh登入不执行.bashrc
+通过 SSH 登录时，启动的是一个交互式登录 Shell. 按照 Bash 的设计，它不会自动读取 ~/.bashrc，而是去读取 ~/.bash_profile, 可以修改`.bash_profile`:
+```bash
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+    . ~/.bashrc
+fi
+
+# User specific environment and startup programs
+PATH=$PATH:$HOME/.local/bin:$HOME/bin
+export PATH
+```

@@ -34,7 +34,7 @@ $ sudo systemctl start systemd-zram-setup@zram0
 
 opensuse:
 ```bash
-$ sudo zypper install systemd-zram-service zram-generator
+$ sudo zypper install systemd-zram-service zram-generator/ dnf install zram-generator-defaults
 $ sudo vim /etc/systemd/zram-generator.conf
 [zram0]
 compression-algorithm = zstd

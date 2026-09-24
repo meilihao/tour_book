@@ -640,3 +640,6 @@ ref:
 # 创建一个不使用 openssl 进行构建的选项（“--without openssl”），因此默认为使用它进行构建
 %bcond_without openssl
 ```
+
+### fedora /etc/yum.repos.d /usr/share/dnf5/repos.d区别
+源于 Fedora 正在进行的一次重大配置架构调整。简单来说：/etc/yum.repos.d 是给用户和系统管理员用的“本地配置层”, 优先级最高，而 /usr/share/dnf5/repos.d 是未来存放发行版“出厂默认配置”的目录

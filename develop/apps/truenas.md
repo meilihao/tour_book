@@ -5,6 +5,9 @@ ref:
 - [fnOS](https://news.mydrivers.com/1/999/999891.htm)
 - [truenas scale 下载地址(**全部版本**)](https://download.sys.truenas.net/)
 - [TrueNAS 25.04.0 "Fangtooth" 正式发布，统一 CORE 和 SCALE 分支](https://www.oschina.net/news/345966/truenas-fangtooth-25-04-released)
+- [FreeCORE](https://mp.weixin.qq.com/s/xXAa2iR11bOxwQCCOpq9ZA)
+
+    TrueNAS放弃CORE后, 坚守freebsd
 
 version: 24.04
 

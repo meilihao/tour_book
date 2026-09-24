@@ -48,7 +48,7 @@ init:
 # dnf remove libreoffice*
 # dnf remove parole
 # dnf remove transmission*
-# dnf remove hexchat
+# dnf remove hexchat neochat
 # dnf remove pidgin
 # dnf remove thunderbird
 # dnf remove tigervnc*
@@ -63,6 +63,9 @@ init:
 # systemctl disable avahi-daemon && systemctl stop avahi-daemon && systemctl stop avahi-daemon.socket
 # setenforce 0
 # sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
+# --- kde
+# nvim ~/.config/akonadi/akonadiserverrc
+StartServer = false
 ```
 
 ## softwares
