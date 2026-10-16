@@ -1,6 +1,7 @@
 # ld
 ref:
 - [充分理解Linux GCC 链接生成的Map文件](https://zhuanlan.zhihu.com/p/502051758)
+- [**GNU ld 链接脚本（.ld）详解**](https://mp.weixin.qq.com/s/hSEKXekff5F2lIrUIjTvHg)
 
 链接器命令, 将`.o`文件转成可执行文件
 
@@ -31,6 +32,7 @@ ref:
 - -Ttext : 指定text段的加载地址, 不指定默认为0
 - -Tdata : 指定data段的加载地址
 - -Tbss : 指定bss段的加载地址
+- -verbose: 输出默认的链接script, 在`/usr/lib/x86_64-linux-gnu/ldscripts`下
 
 > lld可使用`-e xxx`指定程序入口; clang不加`-nostdlib`时会连接ld.so即反汇编时main函数前面的部分代码.
 

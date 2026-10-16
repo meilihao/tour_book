@@ -291,3 +291,6 @@ GDB 在启动时，如果它在当前工作目录或父目录中找到一个名�
 解决:
 - `(gdb) source /path/to/your/project/.gdbinit`
 - `gdb -x /path/to/your/project/.gdbinit`
+
+### Segmentation fault
+进程访问了未经允许的地址
